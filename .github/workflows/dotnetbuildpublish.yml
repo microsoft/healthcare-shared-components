@@ -12,8 +12,8 @@ jobs:
     - name: Setup .NET Core
       uses: actions/setup-dotnet@v1
     - name: Build with dotnet
-      run: dotnet build --configuration Release --version-suffix 
+      run: dotnet build --configuration Release
     - name: Pack with dotnet
-      run: dotnet pack --version-suffix "pr-$($GITHUB_REF)-$(date +%Y%m%d%H%M%S)"
+      run: dotnet pack --configuration Release --version-suffix "pr-$($GITHUB_REF)-$(date +%Y%m%d%H%M%S)"
     - name: Nuget push with dotnet
       run: dotnet nuget push --source "github"
