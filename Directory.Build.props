@@ -10,6 +10,7 @@
     <EnableSourceControlManagerQueries>$(EnableSourceLink)</EnableSourceControlManagerQueries>
     <!--This will target the latest patch release of the runtime released with the current SDK.  -->
     <TargetLatestRuntimePatch>true</TargetLatestRuntimePatch>
+    <RepositoryUrl>https://github.com/microsoft/healthcare-components</RepositoryUrl>
   </PropertyGroup>
 
   <PropertyGroup Condition=" '$(EnableSourceLink)' == 'true' ">

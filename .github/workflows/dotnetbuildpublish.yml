@@ -1,0 +1,19 @@
+name: .NET Core Build & Publish
+
+on: [pull_request]
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: Setup .NET Core
+      uses: actions/setup-dotnet@v1
+    - name: Build with dotnet
+      run: dotnet build --configuration Release --version-suffix 
+    - name: Pack with dotnet
+      run: dotnet pack --version-suffix "pr-$($GITHUB_REF)-$(date +%Y%m%d%H%M%S)"
+    - name: Nuget push with dotnet
+      run: dotnet nuget push --source "github"
