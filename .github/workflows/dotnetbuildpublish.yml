@@ -16,4 +16,4 @@ jobs:
     - name: Pack with dotnet
       run: dotnet pack --configuration Release --version-suffix "pr-${GITHUB_SHA::8}-$(date +%Y%m%d%H%M%S)"
     - name: Nuget push with dotnet
-      run: dotnet nuget push *.nupkg --source "github"
+      run: dotnet nuget push *.nupkg --source "https://nuget.pkg.github.com/microsoft/index.json"
