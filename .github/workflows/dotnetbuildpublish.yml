@@ -15,7 +15,5 @@ jobs:
       run: dotnet build --configuration Release
     - name: Pack with dotnet
       run: dotnet pack --configuration Release --version-suffix "pr-${GITHUB_SHA::8}-$(date +%Y%m%d%H%M%S)"
-    - name: Setup NuGet Sources
-      run: nuget sources add -Name "GPR" -Source "https://nuget.pkg.github.com/microsoft/index.json" -UserName "microsoft" -Password "${{ secrets.GITHUB_TOKEN }}"
     - name: Nuget push with dotnet
-      run: dotnet nuget push *.nupkg --source "GPR"
+      run: dotnet nuget push *.nupkg --source "github"
