@@ -1,4 +1,6 @@
 
+![](https://github.com/microsoft/healthcare-components/workflows/.NET%20Core%20Build%20%26%20Test/badge.svg?branch=master)
+
 # Contributing
 
 This project welcomes contributions and suggestions.  Most contributions require you to agree to a
