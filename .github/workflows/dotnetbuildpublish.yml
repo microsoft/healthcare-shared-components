@@ -18,4 +18,4 @@ jobs:
     - name: Build with dotnet
       run: dotnet build --configuration Release
     - name: Pack with dotnet
-      run: dotnet pack --configuration Release -p:PackageVersion=${github.ref}
+      run: dotnet pack --configuration Release -p:PackageVersion=${GITHUB_REF}
