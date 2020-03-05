@@ -20,6 +20,6 @@ jobs:
     - name: Build with dotnet
       run: dotnet build --configuration Release
     - name: Pack with dotnet
-      run: dotnet pack --configuration Release -p:PackageVersion=${{GITHUB_REF}}
+      run: dotnet pack --configuration Release -p:PackageVersion=${GITHUB_REF}
     - name: Nuget push with dotnet
       run: dotnet nuget push **/*.nupkg --source "https://nuget.pkg.github.com/microsoft/index.json"
