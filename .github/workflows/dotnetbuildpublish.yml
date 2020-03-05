@@ -1,6 +1,8 @@
 name: .NET Core Build & Publish
 
-on: [pull_request]
+on:
+  release:
+    types: [published]
 
 jobs:
   build:
@@ -19,6 +21,8 @@ jobs:
       run: dotnet build --configuration Release
     - name: Get the version
       id: get_version
-      run: echo ::set-output name=VERSION::${GITHUB_REF/refs\/pull\//}
+      run: echo ::set-output name=VERSION::${GITHUB_REF/refs\/tags\//}
     - name: Pack with dotnet
       run: dotnet pack --configuration Release -p:PackageVersion=${{steps.get_version.outputs.VERSION}}
+    - name: Nuget push with dotnet
+      run: dotnet nuget push **/*.nupkg --source "https://nuget.pkg.github.com/microsoft/index.json"
