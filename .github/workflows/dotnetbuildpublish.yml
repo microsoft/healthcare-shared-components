@@ -21,4 +21,4 @@ jobs:
       id: get_version
       run: echo ::set-output name=VERSION::${GITHUB_REF/refs\/pull\//}
     - name: Pack with dotnet
-      run: dotnet pack --configuration Release -p:PackageVersion=${steps.get_version.outputs.VERSION}
+      run: dotnet pack --configuration Release -p:PackageVersion=${{steps.get_version.outputs.VERSION}}
