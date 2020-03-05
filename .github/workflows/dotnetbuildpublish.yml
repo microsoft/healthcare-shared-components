@@ -19,7 +19,10 @@ jobs:
         NUGET_AUTH_TOKEN: ${{secrets.GITHUB_TOKEN}}
     - name: Build with dotnet
       run: dotnet build --configuration Release
+    - name: Get the version
+      id: get_version
+      run: echo ::set-output name=VERSION::${GITHUB_REF/refs\/tags\//}
     - name: Pack with dotnet
-      run: dotnet pack --configuration Release -p:PackageVersion=${GITHUB_REF}
+      run: dotnet pack --configuration Release -p:PackageVersion=${{steps.get_version.outputs.VERSION}}
     - name: Nuget push with dotnet
       run: dotnet nuget push **/*.nupkg --source "https://nuget.pkg.github.com/microsoft/index.json"
