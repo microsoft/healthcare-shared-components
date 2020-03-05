@@ -1,0 +1,25 @@
+steps:
+  
+    # Package nugets
+  
+    - task: DotNetCoreCLI@2
+      displayName: 'dotnet pack nugets'
+      inputs:
+        command: pack
+        configuration: '$(buildConfiguration)'
+        packDirectory: '$(build.artifactStagingDirectory)/nupkgs'
+        versioningScheme: 'byEnvVar'
+        versionEnvVar: 'nuget_version'
+        nobuild: true
+        zipAfterPublish: true
+      env:
+        nuget_version: 1.0.0-$(build.buildNumber)
+  
+    # Publish artifacts
+  
+    - task: NuGetCommand@2
+        displayName: 'NuGet push Internal'
+        inputs:
+        command: push
+        packagesToPush: '$(build.artifactStagingDirectory)/**/*.nupkg'
+        publishVstsFeed: '749ee777-54da-4e3a-81b2-f045c993a66a'
