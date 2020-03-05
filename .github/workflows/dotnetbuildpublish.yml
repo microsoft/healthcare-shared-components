@@ -1,0 +1,25 @@
+name: .NET Core Build & Publish
+
+on:
+  release:
+    types: [published]
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: Setup .NET Core
+      uses: actions/setup-dotnet@v1
+      with:
+        source-url: https://nuget.pkg.github.com/microsoft/index.json
+      env:
+        NUGET_AUTH_TOKEN: ${{secrets.GITHUB_TOKEN}}
+    - name: Build with dotnet
+      run: dotnet build --configuration Release
+    - name: Pack with dotnet
+      run: dotnet pack --configuration Release -p:PackageVersion=${{GITHUB_REF}}
+    - name: Nuget push with dotnet
+      run: dotnet nuget push **/*.nupkg --source "https://nuget.pkg.github.com/microsoft/index.json"
