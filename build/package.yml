@@ -27,7 +27,8 @@ steps:
   - task: GithubRelease@0 
     displayName: 'Create GitHub Release'      
     inputs:
-      gitHubConnection: FhirServer
+      gitHubConnection: GitHub (mshsvc)
       repositoryName: microsoft/healthcare-components
       tagSource: manual
-      tag: $(Build.BuildNumber)
+      tag: 1.0.0-$(build.buildNumber)
+      isPreRelease: true
