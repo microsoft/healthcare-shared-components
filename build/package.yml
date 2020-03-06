@@ -1,4 +1,8 @@
 steps:
+  - task: DownloadPipelineArtifact@2
+    inputs:
+      artifact: publishArtifacts
+
   # Package nugets
 
   - task: DotNetCoreCLI@2

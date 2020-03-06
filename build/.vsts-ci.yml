@@ -4,17 +4,31 @@
 name: $(SourceBranchName)-$(Date:yyyyMMdd)$(Rev:-r)
 variables:
   buildConfiguration: 'Release'
-jobs:
-- job: Windows
-  pool:
-    vmImage: 'vs2017-win2016'
-  steps:
-  - template: build.yml
 
-- job: Linux
-  pool:
-    vmImage: 'ubuntu-16.04'
-  steps:
-  - template: build.yml
-    parameters:
-      packageArtifacts: false
+stages:
+  - stage 
+    displayName: build_project
+    jobs:
+    - job: Windows
+      pool:
+        vmImage: 'vs2017-win2016'
+      steps:
+      - template: build.yml
+
+    - job: Linux
+      pool:
+        vmImage: 'ubuntu-16.04'
+      steps:
+      - template: build.yml
+        parameters:
+          publishArtifacts: false
+
+  - stage
+    displayName: pack_and_release
+    dependsOn: build_project
+    jobs:
+    - job: package
+      pool:
+        vmImage: 'vs2017-win2016'
+      steps:
+        - template: package.yml
