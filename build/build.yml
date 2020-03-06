@@ -19,7 +19,7 @@ steps:
     arguments: '--configuration $(buildConfiguration)'
 
 - task: PublishPipelineArtifact@1
-  condition: and(succeeded(), eq(parameters.publishArtifacts, 'true'))
+  condition: and(succeeded(), eq(${{parameters.publishArtifacts}}, 'true'))
   inputs:
     path: $(System.DefaultWorkingDirectory)
     artifact: publishArtifacts
