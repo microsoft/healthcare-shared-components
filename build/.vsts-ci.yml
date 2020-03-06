@@ -6,7 +6,7 @@ variables:
   buildConfiguration: 'Release'
 
 stages:
-  - stage 
+  - stage: buildProject
     displayName: 'Build project'
     jobs:
     - job: Windows
@@ -23,9 +23,9 @@ stages:
         parameters:
           publishArtifacts: false
 
-  - stage
+  - stage: packAndRelease
     displayName: 'Pack and release'
-    dependsOn: 'Build project'
+    dependsOn: buildProject
     jobs:
     - job: package
       pool:
