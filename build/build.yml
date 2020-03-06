@@ -1,6 +1,6 @@
 parameters:
-  publishArtifacts: true
-
+  packageArtifacts: true
+  
 steps:
 
 - task: UseDotNet@2
@@ -17,9 +17,6 @@ steps:
     command: test
     projects: '**/*UnitTests/*.csproj'
     arguments: '--configuration $(buildConfiguration)'
-
-- task: PublishPipelineArtifact@1
-  condition: and(succeeded(), eq(${{parameters.publishArtifacts}}, 'true'))
-  inputs:
-    path: $(System.DefaultWorkingDirectory)
-    artifact: publishArtifacts
+ 
+- ${{ if eq(parameters.packageArtifacts, 'true') }}:
+  - template: package.yml
