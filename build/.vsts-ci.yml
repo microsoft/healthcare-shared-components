@@ -7,7 +7,7 @@ variables:
 
 stages:
   - stage 
-    displayName: build_project
+    displayName: 'Build project'
     jobs:
     - job: Windows
       pool:
@@ -24,8 +24,8 @@ stages:
           publishArtifacts: false
 
   - stage
-    displayName: pack_and_release
-    dependsOn: build_project
+    displayName: 'Pack and release'
+    dependsOn: 'Build project'
     jobs:
     - job: package
       pool:
