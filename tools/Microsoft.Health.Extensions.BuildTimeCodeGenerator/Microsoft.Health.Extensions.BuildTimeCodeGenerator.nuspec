@@ -1,0 +1,19 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2012/06/nuspec.xsd">
+    <metadata>
+        <id>Microsoft.Health.Extensions.BuildTimeCodeGenerator</id>
+        <version>1.0.0</version>
+        <authors>Microsoft.Health.Extensions.BuildTimeCodeGenerator</authors>
+        <owners>Microsoft.Health.Extensions.BuildTimeCodeGenerator</owners>
+        <requireLicenseAcceptance>false</requireLicenseAcceptance>
+        <description>Package Description</description>
+        <repository type="git" url="https://github.com/microsoft/healthcare-components" commit="78ab4548640918ee439c9ddd69dc38bc2213f748" />
+    </metadata>
+    <files>
+        <file src="_._" target="lib/netstandard2.1/" />
+        <file src="Microsoft.Health.Extensions.BuildTimeCodeGenerator.targets" target="build/netstandard2.1/Microsoft.Health.Extensions.BuildTimeCodeGenerator.targets" />
+
+        <file src="Microsoft.Health.Extensions.BuildTimeCodeGenerator.targets" target="tools/" />
+        <file src="$publishdir$\netcoreapp3.1\**\*" target="tools/netcoreapp3.1/" />
+    </files>
+</package>

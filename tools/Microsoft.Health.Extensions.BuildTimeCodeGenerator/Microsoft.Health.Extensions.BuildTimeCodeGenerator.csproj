@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
-    <AssemblyName>BuildTimeCodeGenerator</AssemblyName>
+    <AssemblyName>Microsoft.Health.Extensions.BuildTimeCodeGenerator</AssemblyName>
     <TargetFramework>netcoreapp3.1</TargetFramework>
   </PropertyGroup>
 
@@ -18,7 +18,7 @@
   <!-- Pack settings -->
   <PropertyGroup>
     <NoPackageAnalysis>true</NoPackageAnalysis>
-    <NuspecFile>BuildTimeCodeGenerator.nuspec</NuspecFile>
+    <NuspecFile>Microsoft.Health.Extensions.BuildTimeCodeGenerator.nuspec</NuspecFile>
     <IntermediatePackDir>$(MSBuildProjectDirectory)/bin/$(Configuration)/publish/</IntermediatePackDir>
     <PublishDir>$(IntermediatePackDir)$(TargetFramework)/</PublishDir>
     <NuspecProperties>publishDir=$([MSBuild]::NormalizeDirectory($(IntermediatePackDir)));version=$(PackageVersion)</NuspecProperties>

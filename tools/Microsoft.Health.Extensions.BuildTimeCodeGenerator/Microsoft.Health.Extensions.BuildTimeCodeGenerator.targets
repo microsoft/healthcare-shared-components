@@ -3,14 +3,13 @@
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
 
     <PropertyGroup>
-        <GeneratorPath>$(MSBuildThisFileDirectory)../../tools/netcoreapp3.1/BuildTimeCodeGenerator.dll</GeneratorPath>
+        <GeneratorPath>$(MSBuildThisFileDirectory)../../tools/netcoreapp3.1/Microsoft.Health.Extensions.BuildTimeCodeGenerator.dll</GeneratorPath>
     </PropertyGroup>
 
     <Target Name="CollectGenerateFilesInputs" BeforeTargets="GenerateFiles">
         <Message Text="hello" />
 
         <ItemGroup>
-            <GenerateFilesInputs Include="@(GeneratorPath)" />
             <GenerateFilesInputs Include="$(MSBuildProjectFile)" />
             <GenerateFilesInputs Include="$(MSBuildThisFileFullPath)" />
         </ItemGroup>
