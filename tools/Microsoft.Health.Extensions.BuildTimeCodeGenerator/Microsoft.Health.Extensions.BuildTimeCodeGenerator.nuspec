@@ -7,7 +7,7 @@
         <owners>Microsoft.Health.Extensions.BuildTimeCodeGenerator</owners>
         <requireLicenseAcceptance>false</requireLicenseAcceptance>
         <description>Package Description</description>
-        <repository type="git" url="https://github.com/microsoft/healthcare-components" commit="78ab4548640918ee439c9ddd69dc38bc2213f748" />
+        <repository type="git" url="https://github.com/microsoft/healthcare-components.git" />
     </metadata>
     <files>
         <file src="_._" target="lib/netstandard2.1/" />
