@@ -1,6 +1,6 @@
 
 # Healthcare Components
-![](https://github.com/microsoft/healthcare-components/workflows/.NET%20Core%20Build%20%26%20Test/badge.svg?branch=master)
+[![Build Status](https://microsofthealthoss.visualstudio.com/FhirServer/_apis/build/status/healthcare-components%20CI?branchName=master)](https://microsofthealthoss.visualstudio.com/FhirServer/_build/latest?definitionId=21&branchName=master)
 
 This repository is a collection of components used within the Microsoft Healthcare team who develop the [FHIR Server for Azure](https://github.com/microsoft/fhir-server) and related
 projects.
