@@ -37,7 +37,7 @@ namespace Microsoft.Health.SqlServer.Features.Schema
             _logger = logger;
         }
 
-        internal void Initialize(bool forceIncrementalSchemaUpgrade = false)
+        public void Initialize(bool forceIncrementalSchemaUpgrade = false)
         {
             if (!CanInitialize())
             {

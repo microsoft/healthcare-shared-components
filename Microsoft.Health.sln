@@ -27,6 +27,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.Health.SqlServer.
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.Health.SqlServer.Api.UnitTests", "src\Microsoft.Health.SqlServer.Api.UnitTests\Microsoft.Health.SqlServer.Api.UnitTests.csproj", "{7650CF08-00B4-419B-8AF9-26E4079F08F2}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.Health.SqlServer.UnitTests", "src\Microsoft.Health.SqlServer.UnitTests\Microsoft.Health.SqlServer.UnitTests.csproj", "{8FEF74DC-94A5-4E20-9BE2-095941935EC4}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -61,6 +63,10 @@ Global
 		{7650CF08-00B4-419B-8AF9-26E4079F08F2}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{7650CF08-00B4-419B-8AF9-26E4079F08F2}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{7650CF08-00B4-419B-8AF9-26E4079F08F2}.Release|Any CPU.Build.0 = Release|Any CPU
+		{8FEF74DC-94A5-4E20-9BE2-095941935EC4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8FEF74DC-94A5-4E20-9BE2-095941935EC4}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8FEF74DC-94A5-4E20-9BE2-095941935EC4}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8FEF74DC-94A5-4E20-9BE2-095941935EC4}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -73,6 +79,7 @@ Global
 		{CF5D97F8-DE8F-4965-923D-82CA40CC9E49} = {8AD2A324-DAB5-4380-94A5-31F7D817C384}
 		{561B1075-FA22-4D4E-881B-366230423B2D} = {8AD2A324-DAB5-4380-94A5-31F7D817C384}
 		{7650CF08-00B4-419B-8AF9-26E4079F08F2} = {8AD2A324-DAB5-4380-94A5-31F7D817C384}
+		{8FEF74DC-94A5-4E20-9BE2-095941935EC4} = {8AD2A324-DAB5-4380-94A5-31F7D817C384}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		RESX_SortFileContentOnSave = True
