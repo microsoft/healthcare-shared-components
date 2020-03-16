@@ -5,12 +5,10 @@
 
 namespace Microsoft.Health.SqlServer.Features.Schema
 {
-    public interface ISchemaInformation
+    public interface IScriptProvider
     {
-        public int MinimumSupportedVersion { get; }
+        string GetMigrationScript(int version, bool applyFullSchemaSnapshot);
 
-        public int MaximumSupportedVersion { get; }
-
-        public int? Current { get; set; }
+        byte[] GetMigrationScriptAsBytes(int version);
     }
 }
