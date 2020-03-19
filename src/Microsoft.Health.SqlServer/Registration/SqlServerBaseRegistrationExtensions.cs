@@ -14,9 +14,10 @@ namespace Microsoft.Health.SqlServer.Registration
 {
     public static class SqlServerBaseRegistrationExtensions
     {
-        public static IServiceCollection AddSqlServerBase(
+        public static IServiceCollection AddSqlServerBase<TSchemaVersionEnum>(
             this IServiceCollection services,
             Action<SqlServerDataStoreConfiguration> configureAction = null)
+            where TSchemaVersionEnum : Enum
         {
             services.Add(provider =>
                 {
@@ -37,7 +38,7 @@ namespace Microsoft.Health.SqlServer.Registration
                 .Singleton()
                 .AsService<IStartable>();
 
-            services.Add<ScriptProvider>()
+            services.Add<ScriptProvider<TSchemaVersionEnum>>()
                 .Singleton()
                 .AsSelf()
                 .AsImplementedInterfaces();

@@ -120,4 +120,7 @@
   <data name="RequestRateExceeded" xml:space="preserve">
     <value>The request rate has exceeded the maximum API request rate and is being throttled. Please try again later.</value>
   </data>
+  <data name="ServiceUnavailable" xml:space="preserve">
+    <value>The operation could not be completed, because the service was unable to accept new requests. It is safe to retry the operation. If the issue persists, please contact support.</value>
+  </data>
 </root>
