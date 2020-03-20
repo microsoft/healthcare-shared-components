@@ -6,6 +6,7 @@
 using System;
 using Microsoft.AspNetCore.Cors.Infrastructure;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Health.Api.Configuration;
 using Microsoft.Health.Api.Features.Cors;
 using Microsoft.Health.Api.Modules;
 using NSubstitute;
@@ -21,7 +22,9 @@ namespace Microsoft.Health.Api.UnitTests.Modules
 
         public CorsModuleTests()
         {
-            _corsModule = new CorsModule(_corsConfiguration);
+            var apiConfiguration = Substitute.For<IApiConfiguration>();
+            apiConfiguration.Cors.Returns(_corsConfiguration);
+            _corsModule = new CorsModule(apiConfiguration);
         }
 
         [Fact]

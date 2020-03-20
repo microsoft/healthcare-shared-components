@@ -4,19 +4,17 @@
 // -------------------------------------------------------------------------------------------------
 
 using System;
+using Xunit;
 
-namespace Microsoft.Health.Core
+namespace Microsoft.Health.Extensions.UnitTests
 {
-    public static class Clock
+    public class DateTimeExtensionsTests
     {
-        private static Func<DateTimeOffset> _utcNowFunc = () => DateTimeOffset.UtcNow;
-
-        public static DateTimeOffset UtcNow => _utcNowFunc();
-
-        public static Func<DateTimeOffset> UtcNowFunc
+        [Fact]
+        public void GivenADateTime_WhenTruncated_HasNoFractionalMilliseconds()
         {
-            get => _utcNowFunc;
-            set => _utcNowFunc = value;
+            var dateTime = new DateTime(2019, 1, 1);
+            Assert.Equal(dateTime, dateTime.AddTicks(1).TruncateToMillisecond());
         }
     }
 }

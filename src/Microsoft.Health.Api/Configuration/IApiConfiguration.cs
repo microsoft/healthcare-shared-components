@@ -3,20 +3,12 @@
 // Licensed under the MIT License (MIT). See LICENSE in the repo root for license information.
 // -------------------------------------------------------------------------------------------------
 
-using System;
+using Microsoft.Health.Api.Features.Cors;
 
-namespace Microsoft.Health.Core
+namespace Microsoft.Health.Api.Configuration
 {
-    public static class Clock
+    public interface IApiConfiguration
     {
-        private static Func<DateTimeOffset> _utcNowFunc = () => DateTimeOffset.UtcNow;
-
-        public static DateTimeOffset UtcNow => _utcNowFunc();
-
-        public static Func<DateTimeOffset> UtcNowFunc
-        {
-            get => _utcNowFunc;
-            set => _utcNowFunc = value;
-        }
+        CorsConfiguration Cors { get; }
     }
 }

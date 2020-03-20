@@ -8,6 +8,7 @@ using System.Linq;
 using EnsureThat;
 using Microsoft.AspNetCore.Cors.Infrastructure;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Health.Api.Configuration;
 using Microsoft.Health.Api.Features.Cors;
 using Microsoft.Health.Extensions.DependencyInjection;
 using Constants = Microsoft.Health.Api.Features.Cors.Constants;
@@ -18,10 +19,11 @@ namespace Microsoft.Health.Api.Modules
     {
         private readonly CorsConfiguration _corsConfiguration;
 
-        public CorsModule(CorsConfiguration corsConfiguration)
+        public CorsModule(IApiConfiguration apiConfiguration)
         {
-            EnsureArg.IsNotNull(corsConfiguration, nameof(corsConfiguration));
-            _corsConfiguration = corsConfiguration;
+            EnsureArg.IsNotNull(apiConfiguration.Cors, nameof(apiConfiguration));
+
+            _corsConfiguration = apiConfiguration.Cors;
         }
 
         internal CorsPolicy DefaultCorsPolicy { get; private set; }
