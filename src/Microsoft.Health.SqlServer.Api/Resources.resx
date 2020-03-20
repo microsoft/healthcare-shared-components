@@ -117,10 +117,16 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  <data name="RequestRateExceeded" xml:space="preserve">
-    <value>The request rate has exceeded the maximum API request rate and is being throttled. Please try again later.</value>
+  <data name="AvailableVersionsNotImplemented" xml:space="preserve">
+    <value>Available versions isn't currently implemented.</value>
   </data>
-  <data name="ServiceUnavailable" xml:space="preserve">
-    <value>The operation could not be completed, because the service was unable to accept new requests. It is safe to retry the operation. If the issue persists, please contact support.</value>
+  <data name="CompatibilityNotImplemented" xml:space="preserve">
+    <value>Compatibility isn't current implemented.</value>
+  </data>
+  <data name="CurrentVersionNotImplemented" xml:space="preserve">
+    <value>Current version isn't currently implemented.</value>
+  </data>
+  <data name="ScriptNotImplemented" xml:space="preserve">
+    <value>Script isn't current implemented.</value>
   </data>
 </root>

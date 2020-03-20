@@ -8,7 +8,7 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-namespace Microsoft.Health.Abstractions {
+namespace Microsoft.Health.SqlServer.Api {
     using System;
     
     
@@ -19,7 +19,7 @@ namespace Microsoft.Health.Abstractions {
     // class via a tool like ResGen or Visual Studio.
     // To add or remove a member, edit your .ResX file then rerun ResGen
     // with the /str option, or rebuild your VS project.
-    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "4.0.0.0")]
+    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "15.0.0.0")]
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
     internal class Resources {
@@ -39,7 +39,7 @@ namespace Microsoft.Health.Abstractions {
         internal static global::System.Resources.ResourceManager ResourceManager {
             get {
                 if (object.ReferenceEquals(resourceMan, null)) {
-                    global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("Microsoft.Health.Abstractions.Resources", typeof(Resources).Assembly);
+                    global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("Microsoft.Health.SqlServer.Api.Resources", typeof(Resources).Assembly);
                     resourceMan = temp;
                 }
                 return resourceMan;
@@ -61,20 +61,38 @@ namespace Microsoft.Health.Abstractions {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to The request rate has exceeded the maximum API request rate and is being throttled. Please try again later..
+        ///   Looks up a localized string similar to Available versions isn&apos;t currently implemented..
         /// </summary>
-        internal static string RequestRateExceeded {
+        internal static string AvailableVersionsNotImplemented {
             get {
-                return ResourceManager.GetString("RequestRateExceeded", resourceCulture);
+                return ResourceManager.GetString("AvailableVersionsNotImplemented", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to The operation could not be completed, because the service was unable to accept new requests. It is safe to retry the operation. If the issue persists, please contact support..
+        ///   Looks up a localized string similar to Compatibility isn&apos;t current implemented..
         /// </summary>
-        internal static string ServiceUnavailable {
+        internal static string CompatibilityNotImplemented {
             get {
-                return ResourceManager.GetString("ServiceUnavailable", resourceCulture);
+                return ResourceManager.GetString("CompatibilityNotImplemented", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Current version isn&apos;t currently implemented..
+        /// </summary>
+        internal static string CurrentVersionNotImplemented {
+            get {
+                return ResourceManager.GetString("CurrentVersionNotImplemented", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Script isn&apos;t current implemented..
+        /// </summary>
+        internal static string ScriptNotImplemented {
+            get {
+                return ResourceManager.GetString("ScriptNotImplemented", resourceCulture);
             }
         }
     }
