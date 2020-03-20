@@ -22,7 +22,7 @@ namespace Microsoft.Health.SqlServer.Features.Storage
         private readonly ILogger _logger;
         private readonly RetryableInitializationOperation _initializationOperation;
 
-        public SqlServerModelInitializer(SqlServerDataStoreConfiguration configuration, ISchemaInformation schemaInformation, ILogger logger)
+        public SqlServerModelInitializer(SqlServerDataStoreConfiguration configuration, SchemaInformation schemaInformation, ILogger logger)
         {
             EnsureArg.IsNotNull(configuration, nameof(configuration));
             EnsureArg.IsNotNull(schemaInformation, nameof(schemaInformation));
@@ -42,7 +42,7 @@ namespace Microsoft.Health.SqlServer.Features.Storage
 
         protected SqlServerDataStoreConfiguration SqlServerDataStoreConfiguration { get; }
 
-        protected ISchemaInformation SchemaInformation { get; }
+        protected SchemaInformation SchemaInformation { get; }
 
         public ValueTask EnsureInitialized() => _initializationOperation.EnsureInitialized();
 

@@ -17,6 +17,7 @@ using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Health.SqlServer.Api.Controllers;
 using Microsoft.Health.SqlServer.Api.Features.Filters;
+using Microsoft.Health.SqlServer.Api.UnitTests.Controllers;
 using Microsoft.Health.SqlServer.Features.Schema;
 using NSubstitute;
 using Xunit;
@@ -33,10 +34,9 @@ namespace Microsoft.Health.SqlServer.Api.UnitTests.Features.Filters
                 new ActionContext(new DefaultHttpContext(), new RouteData(), new ActionDescriptor()),
                 new List<IFilterMetadata>(),
                 new SchemaController(
-                    Substitute.For<ISchemaInformation>(),
+                    new SchemaInformation((int)TestSchemaVersion.Version1, (int)TestSchemaVersion.Version3),
                     Substitute.For<IScriptProvider>(),
                     Substitute.For<IUrlHelperFactory>(),
-                    Substitute.For<IActionContextAccessor>(),
                     NullLogger<SchemaController>.Instance));
         }
 

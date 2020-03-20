@@ -5,7 +5,7 @@
 
 namespace Microsoft.Health.SqlServer.Features.Schema
 {
-    public class SchemaInformation : ISchemaInformation
+    public class SchemaInformation
     {
         public SchemaInformation(int minimumSupportedVersion, int maximumSupportedVersion)
         {

@@ -8,7 +8,6 @@ using System.Collections.Generic;
 using EnsureThat;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.AspNetCore.Mvc.Routing;
 using Microsoft.Extensions.Logging;
 using Microsoft.Health.SqlServer.Api.Features.Filters;
@@ -21,22 +20,21 @@ namespace Microsoft.Health.SqlServer.Api.Controllers
     [Route(KnownRoutes.SchemaRoot)]
     public class SchemaController : Controller
     {
-        private readonly ISchemaInformation _schemaInformation;
+        private readonly SchemaInformation _schemaInformation;
         private readonly IScriptProvider _scriptProvider;
-        private readonly IUrlHelper _urlHelper;
+        private readonly IUrlHelperFactory _urlHelperFactory;
         private readonly ILogger<SchemaController> _logger;
 
-        public SchemaController(ISchemaInformation schemaInformation, IScriptProvider scriptProvider, IUrlHelperFactory urlHelperFactory, IActionContextAccessor actionContextAccessor, ILogger<SchemaController> logger)
+        public SchemaController(SchemaInformation schemaInformation, IScriptProvider scriptProvider, IUrlHelperFactory urlHelperFactoryFactory, ILogger<SchemaController> logger)
         {
             EnsureArg.IsNotNull(schemaInformation, nameof(schemaInformation));
             EnsureArg.IsNotNull(scriptProvider, nameof(scriptProvider));
-            EnsureArg.IsNotNull(urlHelperFactory, nameof(urlHelperFactory));
-            EnsureArg.IsNotNull(actionContextAccessor, nameof(actionContextAccessor));
+            EnsureArg.IsNotNull(urlHelperFactoryFactory, nameof(urlHelperFactoryFactory));
             EnsureArg.IsNotNull(logger, nameof(logger));
 
             _schemaInformation = schemaInformation;
             _scriptProvider = scriptProvider;
-            _urlHelper = urlHelperFactory.GetUrlHelper(actionContextAccessor.ActionContext);
+            _urlHelperFactory = urlHelperFactoryFactory;
             _logger = logger;
         }
 
@@ -46,13 +44,14 @@ namespace Microsoft.Health.SqlServer.Api.Controllers
         public ActionResult AvailableVersions()
         {
             _logger.LogInformation("Attempting to get available schemas");
+            var urlHelper = _urlHelperFactory.GetUrlHelper(ControllerContext);
 
             var availableSchemas = new List<object>();
             var currentVersion = _schemaInformation.Current ?? 1;
             for (var version = currentVersion; version <= _schemaInformation.MaximumSupportedVersion; version++)
             {
                 var routeValues = new Dictionary<string, object> { { "id", version } };
-                string scriptUri = _urlHelper.RouteUrl(RouteNames.Script, routeValues);
+                string scriptUri = urlHelper.RouteUrl(RouteNames.Script, routeValues);
                 availableSchemas.Add(new { id = version, script = scriptUri });
             }
 

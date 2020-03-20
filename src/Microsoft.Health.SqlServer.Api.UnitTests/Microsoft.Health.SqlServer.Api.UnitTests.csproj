@@ -19,7 +19,6 @@
 
   <ItemGroup>
     <None Remove="Controllers\Migrations\1.sql" />
-    <EmbeddedResource Include="Controllers\Migrations\1.sql" />
   </ItemGroup>
 
 </Project>
