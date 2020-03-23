@@ -3,6 +3,8 @@
 trigger:
 - master
 
+pr: none
+
 name: $(SourceBranchName)-$(Date:yyyyMMdd)$(Rev:-r)
 variables:
   buildConfiguration: 'Release'
