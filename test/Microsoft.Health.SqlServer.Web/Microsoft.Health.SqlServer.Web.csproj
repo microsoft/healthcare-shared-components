@@ -17,4 +17,8 @@
       <None Remove="Features\Schema\Migrations\1.sql" />
       <EmbeddedResource Include="Features\Schema\Migrations\1.sql" />
     </ItemGroup>
+    
+    <ItemGroup>
+      <Folder Include="Properties" />
+    </ItemGroup>
 </Project>

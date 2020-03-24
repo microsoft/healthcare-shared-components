@@ -14,10 +14,9 @@ using Microsoft.Health.SqlServer.Web;
 using Newtonsoft.Json.Linq;
 using Xunit;
 
-namespace Microsoft.Health.SqlServer.E2E
+namespace Microsoft.Health.SqlServer.Tests.E2E
 {
-    public class SchemaTests
-        : IClassFixture<WebApplicationFactory<Startup>>
+    public class SchemaTests : IClassFixture<WebApplicationFactory<Startup>>
     {
         private readonly WebApplicationFactory<Startup> _factory;
         private readonly HttpClient _client;
