@@ -5,7 +5,7 @@
 
 namespace Microsoft.Health.Api.Features.Cors
 {
-    public static class Constants
+    public static class CorsConstants
     {
         public const string DefaultCorsPolicy = "DefaultCorsPolicy";
     }

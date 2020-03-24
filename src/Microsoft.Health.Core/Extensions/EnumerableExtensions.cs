@@ -7,7 +7,7 @@ using System.Collections.Generic;
 using System.Linq;
 using EnsureThat;
 
-namespace Microsoft.Health.Extensions
+namespace Microsoft.Health.Core.Extensions
 {
     public static class EnumerableExtensions
     {

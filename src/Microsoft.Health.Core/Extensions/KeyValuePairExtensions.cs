@@ -7,7 +7,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace Microsoft.Health.Extensions
+namespace Microsoft.Health.Core.Extensions
 {
     public static class KeyValuePairExtensions
     {

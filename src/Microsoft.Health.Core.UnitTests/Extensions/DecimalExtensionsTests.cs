@@ -5,7 +5,7 @@
 
 using Xunit;
 
-namespace Microsoft.Health.Extensions.UnitTests
+namespace Microsoft.Health.Core.Extensions.UnitTests
 {
     public class DecimalExtensionsTests
     {

@@ -8,7 +8,7 @@ using System.Security.Cryptography;
 using System.Text;
 using EnsureThat;
 
-namespace Microsoft.Health.Extensions
+namespace Microsoft.Health.Core.Extensions
 {
     public static class StringExtensions
     {

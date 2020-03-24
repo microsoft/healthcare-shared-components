@@ -11,7 +11,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Health.Api.Configuration;
 using Microsoft.Health.Api.Features.Cors;
 using Microsoft.Health.Extensions.DependencyInjection;
-using Constants = Microsoft.Health.Api.Features.Cors.Constants;
+using CorsConstants = Microsoft.Health.Api.Features.Cors.CorsConstants;
 
 namespace Microsoft.Health.Api.Modules
 {
@@ -52,7 +52,7 @@ namespace Microsoft.Health.Api.Modules
             services.AddCors(options =>
             {
                 options.AddPolicy(
-                    Constants.DefaultCorsPolicy,
+                    CorsConstants.DefaultCorsPolicy,
                     DefaultCorsPolicy);
             });
         }

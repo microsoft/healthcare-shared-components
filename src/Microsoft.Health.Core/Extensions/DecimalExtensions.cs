@@ -5,7 +5,7 @@
 
 using System;
 
-namespace Microsoft.Health.Extensions
+namespace Microsoft.Health.Core.Extensions
 {
     public static class DecimalExtensions
     {

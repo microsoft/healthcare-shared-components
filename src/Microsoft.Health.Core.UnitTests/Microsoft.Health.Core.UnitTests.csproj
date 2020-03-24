@@ -2,6 +2,7 @@
 
     <PropertyGroup>
         <TargetFramework>netcoreapp3.1</TargetFramework>
+        <RootNamespace>Microsoft.Health.Extensions.UnitTests</RootNamespace>
     </PropertyGroup>
 
     <ItemGroup>
@@ -12,7 +13,7 @@
     </ItemGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\Microsoft.Health.Extensions\Microsoft.Health.Extensions.csproj" />
+      <ProjectReference Include="..\Microsoft.Health.Core\Microsoft.Health.Core.csproj" />
     </ItemGroup>
 
 </Project>

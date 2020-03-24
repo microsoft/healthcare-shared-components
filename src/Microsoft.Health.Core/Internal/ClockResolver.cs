@@ -5,18 +5,18 @@
 
 using System;
 
-namespace Microsoft.Health.Core
+namespace Microsoft.Health.Core.Internal
 {
-    public static class Clock
+    /// <summary>
+    /// Not the clock you're looking for.
+    /// Used to override the static Clock class's UtcNowFunc for use in testing.
+    /// </summary>
+    public static class ClockResolver
     {
-        private static Func<DateTimeOffset> _utcNowFunc = () => DateTimeOffset.UtcNow;
-
-        public static DateTimeOffset UtcNow => _utcNowFunc();
-
-        internal static Func<DateTimeOffset> UtcNowFunc
+        public static Func<DateTimeOffset> UtcNowFunc
         {
-            get => _utcNowFunc;
-            set => _utcNowFunc = value;
+            get => Clock.UtcNowFunc;
+            set => Clock.UtcNowFunc = value;
         }
     }
 }
