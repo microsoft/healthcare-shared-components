@@ -1,0 +1,20 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+    <PropertyGroup>
+        <TargetFramework>netcoreapp3.1</TargetFramework>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <PackageReference Include="Microsoft.AspNetCore.Mvc.NewtonsoftJson" Version="3.1.0" />    
+    </ItemGroup>
+    
+    <ItemGroup>
+        <ProjectReference Include="..\..\src\Microsoft.Health.SqlServer.Api\Microsoft.Health.SqlServer.Api.csproj" />
+        <ProjectReference Include="..\..\src\Microsoft.Health.SqlServer\Microsoft.Health.SqlServer.csproj" />
+    </ItemGroup>
+    
+    <ItemGroup>
+      <None Remove="Features\Schema\Migrations\1.sql" />
+      <EmbeddedResource Include="Features\Schema\Migrations\1.sql" />
+    </ItemGroup>
+</Project>

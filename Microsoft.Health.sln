@@ -29,6 +29,12 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.Health.SqlServer.
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.Health.SqlServer.UnitTests", "src\Microsoft.Health.SqlServer.UnitTests\Microsoft.Health.SqlServer.UnitTests.csproj", "{8FEF74DC-94A5-4E20-9BE2-095941935EC4}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.Health.SqlServer.Tests.E2E", "test\Microsoft.Health.SqlServer.Tests.E2E\Microsoft.Health.SqlServer.Tests.E2E.csproj", "{C74D5E00-8BE4-4C99-8A59-9D58D255C140}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{CCD9FF99-E177-446E-B9E5-9F570FD96A34}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.Health.SqlServer.Web", "test\Microsoft.Health.SqlServer.Web\Microsoft.Health.SqlServer.Web.csproj", "{85781F6A-28D8-4850-A991-51157E5DF46E}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -67,6 +73,14 @@ Global
 		{8FEF74DC-94A5-4E20-9BE2-095941935EC4}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{8FEF74DC-94A5-4E20-9BE2-095941935EC4}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{8FEF74DC-94A5-4E20-9BE2-095941935EC4}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C74D5E00-8BE4-4C99-8A59-9D58D255C140}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C74D5E00-8BE4-4C99-8A59-9D58D255C140}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C74D5E00-8BE4-4C99-8A59-9D58D255C140}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C74D5E00-8BE4-4C99-8A59-9D58D255C140}.Release|Any CPU.Build.0 = Release|Any CPU
+		{85781F6A-28D8-4850-A991-51157E5DF46E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{85781F6A-28D8-4850-A991-51157E5DF46E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{85781F6A-28D8-4850-A991-51157E5DF46E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{85781F6A-28D8-4850-A991-51157E5DF46E}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -80,6 +94,8 @@ Global
 		{561B1075-FA22-4D4E-881B-366230423B2D} = {8AD2A324-DAB5-4380-94A5-31F7D817C384}
 		{7650CF08-00B4-419B-8AF9-26E4079F08F2} = {8AD2A324-DAB5-4380-94A5-31F7D817C384}
 		{8FEF74DC-94A5-4E20-9BE2-095941935EC4} = {8AD2A324-DAB5-4380-94A5-31F7D817C384}
+		{C74D5E00-8BE4-4C99-8A59-9D58D255C140} = {CCD9FF99-E177-446E-B9E5-9F570FD96A34}
+		{85781F6A-28D8-4850-A991-51157E5DF46E} = {CCD9FF99-E177-446E-B9E5-9F570FD96A34}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		RESX_SortFileContentOnSave = True
