@@ -36,10 +36,10 @@ namespace Microsoft.Health.SqlServer.Features.Health
             try
             {
                 using (var connection = new SqlConnection(_configuration.ConnectionString))
+                using (SqlCommand command = connection.CreateCommand())
                 {
                     await connection.OpenAsync(cancellationToken);
 
-                    SqlCommand command = connection.CreateCommand();
                     command.CommandText = "select @@DBTS";
 
                     await command.ExecuteScalarAsync(cancellationToken);

@@ -65,12 +65,9 @@ namespace Microsoft.Health.SqlServer.Features.Schema
         private void UpsertSchemaVersion(int schemaVersion, string status)
         {
             using (var connection = new SqlConnection(_sqlServerDataStoreConfiguration.ConnectionString))
+            using (var upsertCommand = new SqlCommand("dbo.UpsertSchemaVersion", connection))
             {
-                var upsertCommand = new SqlCommand("dbo.UpsertSchemaVersion", connection)
-                {
-                    CommandType = CommandType.StoredProcedure,
-                };
-
+                upsertCommand.CommandType = CommandType.StoredProcedure;
                 upsertCommand.Parameters.AddWithValue("@version", schemaVersion);
                 upsertCommand.Parameters.AddWithValue("@status", status);
 
