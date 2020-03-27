@@ -32,7 +32,17 @@ namespace Microsoft.Health.SqlServer.Features.Storage
             SchemaInformation = schemaInformation;
             _logger = logger;
 
-            _initializationOperation = new RetryableInitializationOperation(Initialize);
+            _initializationOperation = new RetryableInitializationOperation(() =>
+            {
+                if (!SchemaInformation.Current.HasValue)
+                {
+                    _logger.LogError($"The current version of the database is not available. Unable in initialize {nameof(SqlServerModelInitializer)}.");
+                    throw new ServiceUnavailableException();
+                }
+
+                return Initialize();
+            });
+
             if (SchemaInformation.Current != null)
             {
                 // kick off initialization so that it can be ready for requests. Errors will be observed by requests when they call the method.
