@@ -27,34 +27,6 @@ $Global:InformationPreference = "continue"
 Set-Variable RepoRootPath -Option Constant -Value (Resolve-Path "$PSScriptRoot\..")
 Set-Variable LocalNuGetFeedPath -Option Constant -Value "$RepoRootPath\.nuget-local"
 
-function DownloadNuGetIfNeeded() {
-    Set-Variable NuGetDownloadUrl -Option Constant -Value "https://dist.nuget.org/win-x86-commandline/latest/NuGet.exe"
-
-    $toolsPath = Join-Path $RepoRootPath ".tools"
-    $nugetPath = Join-Path $toolsPath "nuget.exe"
-    
-    if (Test-Path $nugetPath) {
-        return
-    }
-
-    if (!(Test-Path $toolsPath)) {
-        New-Item -ItemType Directory $toolsPath | Out-Null
-    }
-
-    $tempPath = Join-Path $toolsPath ([Guid]::NewGuid())
-
-    try {
-        $response = Invoke-WebRequest -Uri $NuGetDownloadUrl -PassThru -OutFile $nugetPath -UseBasicParsing
-    }
-    catch [System.Net.WebException] {
-        $response = $_.Exception.Response
-    }
-
-    if ($response.StatusCode -ne 200) {
-        Write-Warning "Failed to download NuGet tool from $NuGetDownloadUrl"
-    }
-}
-
 function ConfigureLocalNuGetFeed() {
     # Add the local NuGet feed to nuget.config if needed.
     $nugetConfigFileName = "$RootPath\nuget.config"
@@ -116,8 +88,6 @@ if (!(Test-Path $RootPath)) {
 Push-Location $RepoRootPath
 
 try {
-    DownloadNuGetIfNeeded
-
     $branchName = &git rev-parse --abbrev-ref HEAD
     $branchNameParts = $branchName.Split("/")
     $versionSuffix = "$($branchNameParts[$branchNameParts.Length - 1])-$(Get-Date -Format yyyyMMdd-HHmmss)-preview"
@@ -143,7 +113,7 @@ try {
     }
 
     Get-ChildItem -Recurse -Include *.symbols.nupkg $tempPath | ForEach-Object {
-        &.\.tools\nuget add $_.FullName -Source $LocalNuGetFeedPath
+        &dotnet nuget push $_.FullName -s $LocalNuGetFeedPath
     }
 
     # Delete the temp
@@ -159,7 +129,7 @@ try {
     ConfigureLocalNuGetFeed
 
     if (!$DoNotUpdateProjectReferences) {
-        # Find all projects that has dependencies on FHIR projects.
+        # Find all projects that has dependencies on these components.
         $projectsWithDependencies = (Get-ChildItem -Recurse -Include *.csproj $RootPath).FullName
 
         CheckUnstagedProjects($projectsWithDependencies)
