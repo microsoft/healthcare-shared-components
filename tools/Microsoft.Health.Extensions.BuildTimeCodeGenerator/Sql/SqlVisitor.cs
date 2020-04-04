@@ -219,8 +219,22 @@ namespace Microsoft.Health.Extensions.BuildTimeCodeGenerator.Sql
         protected MemberDeclarationSyntax CreatePropertyForColumn(ColumnDefinition column)
         {
             string normalizedSqlDbType = null;
-            var sqlDbTypeToNormalize = column.DataType.Name.BaseIdentifier.Value;
 
+            // Handle computed columns
+            if (column.DataType == null && column.ComputedColumnExpression != null)
+            {
+                return FieldDeclaration(
+                    VariableDeclaration(SyntaxFactory.ParseTypeName("string"))
+                        .AddVariables(VariableDeclarator($"{column.ColumnIdentifier.Value}")
+                            .WithInitializer(
+                                EqualsValueClause(
+                                    LiteralExpression(
+                                        SyntaxKind.StringLiteralExpression,
+                                        Literal(column.ColumnIdentifier.Value))))))
+                    .AddModifiers(Token(SyntaxKind.InternalKeyword), Token(SyntaxKind.ConstKeyword));
+            }
+
+            var sqlDbTypeToNormalize = column.DataType.Name.BaseIdentifier.Value;
             if (Enum.TryParse(sqlDbTypeToNormalize, true, out SqlDbType sqlDbType))
             {
                 normalizedSqlDbType = sqlDbType.ToString();
