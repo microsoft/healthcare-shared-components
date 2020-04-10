@@ -5,6 +5,7 @@
 
 using System;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Health.Extensions.DependencyInjection.UnitTests.TestObjects;
 using NSubstitute;
 using Xunit;
 

@@ -51,6 +51,35 @@ namespace Microsoft.Health.Extensions.DependencyInjection
         }
 
         /// <summary>
+        /// Adds a service that allows a factory to be injected that resolves the specified type (MyType CustomDelegate()).
+        /// This is useful where the type being resolved should be as-needed, or multiple instances need to be created
+        /// </summary>
+        /// <typeparam name="TDelegate">Custom delegate that will resolve the service</typeparam>
+        /// <typeparam name="TImplementation">Type of service to be resolved</typeparam>
+        /// <param name="serviceCollection">The service collection.</param>
+        public static void AddDelegate<TDelegate, TImplementation>(this IServiceCollection serviceCollection)
+            where TDelegate : Delegate
+        {
+            EnsureArg.IsNotNull(serviceCollection, nameof(serviceCollection));
+
+            Type implementationType = typeof(TImplementation);
+            Type delegateType = typeof(TDelegate);
+            Type serviceType = delegateType.GetMethod("Invoke")?.ReturnType;
+            MethodInfo factoryMethod = typeof(TypeRegistrationExtensions).GetMethod(nameof(FactoryDelegate), BindingFlags.NonPublic | BindingFlags.Static);
+
+            Debug.Assert(factoryMethod != null, $"{nameof(Factory)} was not found.");
+
+            if (!serviceType.IsAssignableFrom(implementationType))
+            {
+                throw new InvalidOperationException($"Delegate '{serviceType.Name} {delegateType.Name}()' cannot be used for resolving implementation type '{implementationType.Name}'");
+            }
+
+            MethodInfo implFactoryMethod = factoryMethod.MakeGenericMethod(delegateType, implementationType, serviceType);
+            Delegate implDelegate = implFactoryMethod.CreateDelegate(typeof(Func<IServiceProvider, object>), null);
+            serviceCollection.AddTransient(delegateType, (Func<IServiceProvider, object>)implDelegate);
+        }
+
+        /// <summary>
         /// Adds a service that allows a factory to be injected that resolves the specified type (Func{T}).
         /// This is useful where the type being resolved should be as-needed, or multiple instances need to be created
         /// </summary>
@@ -97,8 +126,22 @@ namespace Microsoft.Health.Extensions.DependencyInjection
 
         private static object Factory<T>(IServiceProvider provider)
         {
+            EnsureArg.IsNotNull(provider, nameof(provider));
+
             Func<T> factory = provider.GetService<T>;
             return factory;
+        }
+
+        private static object FactoryDelegate<TDelegate, TImplementation, TService>(IServiceProvider provider)
+            where TDelegate : Delegate
+            where TImplementation : TService
+        {
+            EnsureArg.IsNotNull(provider, nameof(provider));
+
+            var delegateType = typeof(TDelegate);
+            Func<TService> factory = () => (TService)provider.GetService<TImplementation>();
+            var invokeMethod = factory.GetType().GetMethod(nameof(factory.Invoke));
+            return invokeMethod.CreateDelegate(delegateType, factory);
         }
 
         private static IEnumerable<T> Do<T>(this IEnumerable<T> registrations, Action<T> action)

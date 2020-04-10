@@ -16,6 +16,7 @@ namespace Microsoft.Health.Extensions.DependencyInjection
     public class TypeRegistrationBuilder
     {
         private readonly MethodInfo _factoryGenericMethod = typeof(TypeRegistrationExtensions).GetMethod(nameof(TypeRegistrationExtensions.AddFactory), BindingFlags.Public | BindingFlags.Static);
+        private readonly MethodInfo _factoryDelegateMethod = typeof(TypeRegistrationExtensions).GetMethod(nameof(TypeRegistrationExtensions.AddDelegate), BindingFlags.Public | BindingFlags.Static);
         private readonly IServiceCollection _serviceCollection;
         private readonly Type _type;
         private readonly Func<IServiceProvider, object> _delegateRegistration;
@@ -80,6 +81,21 @@ namespace Microsoft.Health.Extensions.DependencyInjection
         public TypeRegistrationBuilder AsFactory()
         {
             var factoryMethod = _factoryGenericMethod.MakeGenericMethod(_type);
+
+            factoryMethod.Invoke(null, new object[] { _serviceCollection });
+
+            return this;
+        }
+
+        /// <summary>
+        /// Creates a service registration for the specified interface that can be resolved with a custom delegate
+        /// </summary>
+        /// <typeparam name="TDelegate">Custom delegate that will resolve the service</typeparam>
+        /// <returns>The registration builder</returns>
+        public TypeRegistrationBuilder AsDelegate<TDelegate>()
+            where TDelegate : Delegate
+        {
+            var factoryMethod = _factoryDelegateMethod.MakeGenericMethod(typeof(TDelegate), _type);
 
             factoryMethod.Invoke(null, new object[] { _serviceCollection });
 
