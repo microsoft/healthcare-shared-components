@@ -8,6 +8,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Health.Extensions.DependencyInjection.UnitTests.TestObjects;
 using Xunit;
 
 namespace Microsoft.Health.Extensions.DependencyInjection.UnitTests
@@ -332,31 +333,56 @@ namespace Microsoft.Health.Extensions.DependencyInjection.UnitTests
             Assert.All(_collection, sd => Assert.Equal(typeof(List<string>), (sd as ServiceDescriptorWithMetadata)?.Metadata));
         }
 
-        private class TestScope : IScoped<IList<string>>
+        [Fact]
+        public void GivenADelegate_WhenResolvingComponent_ThenResolverReturnsRegisteredService()
         {
-            public TestScope(IList<string> value)
-            {
-                Value = value;
-            }
+            _collection.Add<ComponentA>()
+                .Transient()
+                .AsSelf()
+                .AsService<IComponent>();
 
-            public IList<string> Value { get; }
+            _collection.Add<ComponentB>()
+                .Transient()
+                .AsSelf();
 
-            public void Dispose()
-            {
-            }
+            _collection.AddDelegate<ComponentB.Factory, ComponentB>();
+
+            var provider = _collection.BuildServiceProvider();
+
+            var componentFactory = provider.GetService<ComponentB.Factory>();
+            IComponent instance = componentFactory.Invoke();
+
+            Assert.IsType<ComponentB>(instance);
         }
 
-        private class TestDisposableObjectWithInterface : IEquatable<string>, IDisposable
+        [Fact]
+        public void GivenADelegateFromTypeBuilder_WhenResolvingComponent_ThenResolverReturnsRegisteredService()
         {
-            public bool Equals(string other)
-            {
-                throw new NotImplementedException();
-            }
+            _collection.Add<ComponentA>()
+                .Transient()
+                .AsSelf()
+                .AsService<IComponent>();
 
-            public void Dispose()
-            {
-                throw new NotImplementedException();
-            }
+            _collection.Add<ComponentB>()
+                .Transient()
+                .AsSelf()
+                .AsService<IComponent>()
+                .AsDelegate<ComponentB.Factory>();
+
+            var provider = _collection.BuildServiceProvider();
+
+            // Using Func<IComponent> won't work here because there are 2 components that implement this interface.
+            // Using the delegate ComponentB.Factory works to resolve the desired instance while maintaining the interface
+            var componentFactory = provider.GetService<ComponentB.Factory>();
+            IComponent instance = componentFactory.Invoke();
+
+            Assert.IsType<ComponentB>(instance);
+        }
+
+        [Fact]
+        public void GivenADelegateWithIncompatibleType_WhenResolvingComponent_ThenExceptionIsThrown()
+        {
+            Assert.Throws<InvalidOperationException>(() => _collection.AddDelegate<ComponentB.Factory, int>());
         }
     }
 }

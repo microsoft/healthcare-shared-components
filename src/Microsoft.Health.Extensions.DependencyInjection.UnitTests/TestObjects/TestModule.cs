@@ -5,7 +5,7 @@
 
 using Microsoft.Extensions.DependencyInjection;
 
-namespace Microsoft.Health.Extensions.DependencyInjection.UnitTests
+namespace Microsoft.Health.Extensions.DependencyInjection.UnitTests.TestObjects
 {
     public class TestModule : IStartupModule
     {
