@@ -77,5 +77,14 @@ namespace Microsoft.Health.Abstractions {
                 return ResourceManager.GetString("ServiceUnavailable", resourceCulture);
             }
         }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to There was an error while processing the transaction..
+        /// </summary>
+        internal static string TransactionProcessingException {
+            get {
+                return ResourceManager.GetString("TransactionProcessingException", resourceCulture);
+            }
+        }
     }
 }
