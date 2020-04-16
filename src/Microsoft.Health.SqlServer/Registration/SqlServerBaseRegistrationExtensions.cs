@@ -8,7 +8,9 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Health.Extensions.DependencyInjection;
 using Microsoft.Health.SqlServer.Configs;
+using Microsoft.Health.SqlServer.Features.Client;
 using Microsoft.Health.SqlServer.Features.Schema;
+using Microsoft.Health.SqlServer.Features.Storage;
 
 namespace Microsoft.Health.SqlServer.Registration
 {
@@ -40,6 +42,16 @@ namespace Microsoft.Health.SqlServer.Registration
 
             services.Add<ScriptProvider<TSchemaVersionEnum>>()
                 .Singleton()
+                .AsSelf()
+                .AsImplementedInterfaces();
+
+            services.Add<SqlTransactionHandler>()
+                .Scoped()
+                .AsSelf()
+                .AsImplementedInterfaces();
+
+            services.Add<SqlConnectionWrapperFactory>()
+                .Scoped()
                 .AsSelf()
                 .AsImplementedInterfaces();
 
