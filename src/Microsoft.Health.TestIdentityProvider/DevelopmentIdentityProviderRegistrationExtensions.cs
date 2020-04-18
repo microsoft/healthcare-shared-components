@@ -100,12 +100,12 @@ namespace Microsoft.Health.DevelopmentIdentityProvider
         /// </summary>
         /// <param name="configurationBuilder">The configuration builder.</param>
         /// <param name="existingConfiguration">Configuration root</param>
-        /// <param name="healthServerName">Server name used in the appsettings.json. Ex: FhirServer, DicomServer</param>
+        /// <param name="healthServerKey">Server key used in the appsettings.json. Ex: FhirServer, DicomServer</param>
         /// <returns>The same configuration builder.</returns>
-        public static IConfigurationBuilder AddDevelopmentAuthEnvironmentIfConfigured(this IConfigurationBuilder configurationBuilder, IConfigurationRoot existingConfiguration, string healthServerName)
+        public static IConfigurationBuilder AddDevelopmentAuthEnvironmentIfConfigured(this IConfigurationBuilder configurationBuilder, IConfigurationRoot existingConfiguration, string healthServerKey)
         {
             EnsureArg.IsNotNull(existingConfiguration, nameof(existingConfiguration));
-            EnsureArg.IsNotNullOrWhiteSpace(healthServerName, nameof(healthServerName));
+            EnsureArg.IsNotNullOrWhiteSpace(healthServerKey, nameof(healthServerKey));
 
             string testEnvironmentFilePath = existingConfiguration["TestAuthEnvironment:FilePath"];
 
@@ -120,21 +120,21 @@ namespace Microsoft.Health.DevelopmentIdentityProvider
                 return configurationBuilder;
             }
 
-            return configurationBuilder.Add(new DevelopmentAuthEnvironmentConfigurationSource(testEnvironmentFilePath, existingConfiguration, healthServerName));
+            return configurationBuilder.Add(new DevelopmentAuthEnvironmentConfigurationSource(testEnvironmentFilePath, existingConfiguration, healthServerKey));
         }
 
         private class DevelopmentAuthEnvironmentConfigurationSource : IConfigurationSource
         {
             private readonly string _filePath;
             private readonly IConfigurationRoot _existingConfiguration;
-            private readonly string _healthServerName;
+            private readonly string _healthServerKey;
 
-            public DevelopmentAuthEnvironmentConfigurationSource(string filePath, IConfigurationRoot existingConfiguration, string healthServerName)
+            public DevelopmentAuthEnvironmentConfigurationSource(string filePath, IConfigurationRoot existingConfiguration, string healthServerKey)
             {
                 EnsureArg.IsNotNullOrWhiteSpace(filePath, nameof(filePath));
                 _filePath = filePath;
                 _existingConfiguration = existingConfiguration;
-                _healthServerName = healthServerName;
+                _healthServerKey = healthServerKey;
             }
 
             public IConfigurationProvider Build(IConfigurationBuilder builder)
@@ -146,7 +146,7 @@ namespace Microsoft.Health.DevelopmentIdentityProvider
                 };
 
                 jsonConfigurationSource.ResolveFileProvider();
-                return new Provider(jsonConfigurationSource, _existingConfiguration, _healthServerName);
+                return new Provider(jsonConfigurationSource, _existingConfiguration, _healthServerKey);
             }
 
             private class Provider : JsonConfigurationProvider
@@ -163,13 +163,13 @@ namespace Microsoft.Health.DevelopmentIdentityProvider
                     { "^clientApplications:", "DevelopmentIdentityProvider:ClientApplications:" },
                 };
 
-                public Provider(JsonConfigurationSource source, IConfigurationRoot existingConfiguration, string healthServerName)
+                public Provider(JsonConfigurationSource source, IConfigurationRoot existingConfiguration, string healthServerKey)
                     : base(source)
                 {
                     _existingConfiguration = existingConfiguration;
-                    _authorityKey = $"{healthServerName}:Security:Authentication:Authority";
-                    _audienceKey = $"{healthServerName}:Security:Authentication:Audience";
-                    _securityEnabledKey = $"{healthServerName}:Security:Enabled";
+                    _authorityKey = $"{healthServerKey}:Security:Authentication:Authority";
+                    _audienceKey = $"{healthServerKey}:Security:Authentication:Audience";
+                    _securityEnabledKey = $"{healthServerKey}:Security:Enabled";
                 }
 
                 public override void Load()
