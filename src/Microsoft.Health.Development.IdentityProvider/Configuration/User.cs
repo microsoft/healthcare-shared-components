@@ -5,9 +5,9 @@
 
 using System.Collections.Generic;
 
-namespace Microsoft.Health.DevelopmentIdentityProvider
+namespace Microsoft.Health.Development.IdentityProvider.Configuration
 {
-    public class DevelopmentIdentityProviderApplicationConfiguration
+    public class User
     {
         public string Id { get; set; }
 

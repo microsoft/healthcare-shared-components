@@ -5,9 +5,9 @@
 
 using System.Collections.Generic;
 
-namespace Microsoft.Health.DevelopmentIdentityProvider
+namespace Microsoft.Health.Development.IdentityProvider.Configuration
 {
-    public class DevelopmentIdentityProviderConfiguration
+    public class Provider
     {
         public const string Audience = "health-api";
         public const string LastModifiedClaim = "appid";
@@ -15,8 +15,8 @@ namespace Microsoft.Health.DevelopmentIdentityProvider
 
         public bool Enabled { get; set; }
 
-        public IList<DevelopmentIdentityProviderApplicationConfiguration> ClientApplications { get; } = new List<DevelopmentIdentityProviderApplicationConfiguration>();
+        public IList<Application> ClientApplications { get; } = new List<Application>();
 
-        public IList<DevelopmentIdentityProviderUserConfiguration> Users { get; } = new List<DevelopmentIdentityProviderUserConfiguration>();
+        public IList<User> Users { get; } = new List<User>();
     }
 }

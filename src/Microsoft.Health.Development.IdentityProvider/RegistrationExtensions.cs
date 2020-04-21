@@ -16,10 +16,11 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Configuration.Json;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
+using Config = Microsoft.Health.Development.IdentityProvider.Configuration;
 
-namespace Microsoft.Health.DevelopmentIdentityProvider
+namespace Microsoft.Health.Development.IdentityProvider
 {
-    public static class DevelopmentIdentityProviderRegistrationExtensions
+    public static class RegistrationExtensions
     {
         private const string WrongAudienceClient = "wrongAudienceClient";
 
@@ -34,7 +35,7 @@ namespace Microsoft.Health.DevelopmentIdentityProvider
             EnsureArg.IsNotNull(services, nameof(services));
             EnsureArg.IsNotNull(configuration, nameof(configuration));
 
-            var developmentIdentityProviderConfiguration = new DevelopmentIdentityProviderConfiguration();
+            var developmentIdentityProviderConfiguration = new Config.Provider();
             configuration.GetSection("DevelopmentIdentityProvider").Bind(developmentIdentityProviderConfiguration);
             services.AddSingleton(Options.Create(developmentIdentityProviderConfiguration));
 
@@ -44,7 +45,7 @@ namespace Microsoft.Health.DevelopmentIdentityProvider
                     .AddDeveloperSigningCredential()
                     .AddInMemoryApiResources(new[]
                     {
-                        new ApiResource(DevelopmentIdentityProviderConfiguration.Audience) { },
+                        new ApiResource(Config.Provider.Audience) { },
                         new ApiResource(WrongAudienceClient) { },
                     })
                     .AddTestUsers(developmentIdentityProviderConfiguration.Users?.Select(user =>
@@ -69,7 +70,7 @@ namespace Microsoft.Health.DevelopmentIdentityProvider
                                     ClientSecrets = { new Secret(applicationConfiguration.Id.Sha256()) },
 
                                     // scopes that client has access to
-                                    AllowedScopes = { DevelopmentIdentityProviderConfiguration.Audience, WrongAudienceClient },
+                                    AllowedScopes = { Config.Provider.Audience, WrongAudienceClient },
                                 }));
             }
 
@@ -84,7 +85,7 @@ namespace Microsoft.Health.DevelopmentIdentityProvider
         public static IApplicationBuilder UseDevelopmentIdentityProviderIfConfigured(this IApplicationBuilder app)
         {
             EnsureArg.IsNotNull(app, nameof(app));
-            if (app.ApplicationServices.GetService<IOptions<DevelopmentIdentityProviderConfiguration>>()?.Value?.Enabled == true)
+            if (app.ApplicationServices.GetService<IOptions<Config.Provider>>()?.Value?.Enabled == true)
             {
                 app.UseIdentityServer();
             }
@@ -191,7 +192,7 @@ namespace Microsoft.Health.DevelopmentIdentityProvider
 
                     if (string.IsNullOrWhiteSpace(_existingConfiguration[_audienceKey]))
                     {
-                        Data[_audienceKey] = DevelopmentIdentityProviderConfiguration.Audience;
+                        Data[_audienceKey] = Config.Provider.Audience;
                     }
 
                     if (string.IsNullOrWhiteSpace(_existingConfiguration[_authorityKey]))
