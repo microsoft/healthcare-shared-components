@@ -101,7 +101,7 @@ namespace Microsoft.Health.Development.IdentityProvider
         /// </summary>
         /// <param name="configurationBuilder">The configuration builder.</param>
         /// <param name="existingConfiguration">Configuration root</param>
-        /// <param name="healthServerKey">Server key used in the appsettings.json. Ex: FhirServer, DicomServer</param>
+        /// <param name="healthServerKey">Server key used in the appsettings.json.</param>
         /// <returns>The same configuration builder.</returns>
         public static IConfigurationBuilder AddDevelopmentAuthEnvironmentIfConfigured(this IConfigurationBuilder configurationBuilder, IConfigurationRoot existingConfiguration, string healthServerKey)
         {
