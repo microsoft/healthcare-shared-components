@@ -8,6 +8,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using EnsureThat;
 using Microsoft.Extensions.Logging;
+using Microsoft.Health.Core;
 using Microsoft.Health.Extensions.DependencyInjection;
 using Microsoft.Health.SqlServer.Configs;
 
@@ -40,7 +41,7 @@ namespace Microsoft.Health.SqlServer.Features.Schema
                 await store.Value.InsertInstanceSchemaInformation(instanceName, schemaInformation, cancellationToken);
             }
 
-            _logger.LogInformation($"Polling started at {DateTimeOffset.UtcNow}");
+            _logger.LogInformation($"Polling started at {Clock.UtcNow}");
 
             while (!cancellationToken.IsCancellationRequested)
             {

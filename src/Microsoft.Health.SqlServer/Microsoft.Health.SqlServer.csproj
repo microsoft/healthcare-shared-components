@@ -18,6 +18,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Microsoft.Health.Abstractions\Microsoft.Health.Abstractions.csproj" />
+    <ProjectReference Include="..\Microsoft.Health.Core\Microsoft.Health.Core.csproj" />
     <ProjectReference Include="..\Microsoft.Health.Extensions.DependencyInjection\Microsoft.Health.Extensions.DependencyInjection.csproj" />
   </ItemGroup>
 

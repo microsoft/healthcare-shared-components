@@ -28,9 +28,9 @@ namespace Microsoft.Health.SqlServer.Configs
         public bool AllowDatabaseCreation { get; set; }
 
         /// <summary>
-        /// If set, allows the automatic schema updates
+        /// If set, the automatic schema updates are turned off
         /// </summary>
-        public bool SchemaUpdatesEnabled { get; set; }
+        public bool SchemaUpdatesDisabled { get; set; }
 
         /// <summary>
         /// Allows the polling frequency for the schema updates

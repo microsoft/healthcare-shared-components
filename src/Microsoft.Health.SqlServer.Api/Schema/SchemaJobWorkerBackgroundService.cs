@@ -38,7 +38,7 @@ namespace Microsoft.Health.SqlServer.Api.Features.Schema
 
         protected override async Task ExecuteAsync(CancellationToken cancellationToken)
         {
-            if (!_sqlServerDataStoreConfiguration.SchemaUpdatesEnabled)
+            if (_sqlServerDataStoreConfiguration.SchemaUpdatesDisabled)
             {
                 await _schemaJobWorker.ExecuteAsync(_schemaInformation, _instanceName, cancellationToken);
             }
