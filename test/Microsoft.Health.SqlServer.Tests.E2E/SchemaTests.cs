@@ -10,7 +10,9 @@ using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc.Testing;
+using Microsoft.Health.SqlServer.Features.Schema.Model;
 using Microsoft.Health.SqlServer.Web;
+using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using Xunit;
 
@@ -56,11 +58,35 @@ namespace Microsoft.Health.SqlServer.Tests.E2E
             Assert.Equal(scriptUrl, firstResult["script"]);
         }
 
-        [Theory]
-        [MemberData(nameof(Data))]
-        public async Task GivenGetMethod_WhenRequestingSchema_TheServerShouldReturnNotImplemented(string path)
+        [Fact]
+        public async Task WhenRequestingSchema_GivenGetMethodAndCompatibilityPathAndInstanceSchemaTableIsEmpty_TheServerShouldReturnsNotFound()
         {
-            await SendAndVerifyStatusCode(HttpMethod.Get, path, HttpStatusCode.NotImplemented);
+            var request = new HttpRequestMessage
+            {
+                Method = HttpMethod.Get,
+                RequestUri = new Uri(_client.BaseAddress, "_schema/compatibility"),
+            };
+
+            HttpResponseMessage response = await _client.SendAsync(request);
+
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+
+            string responseBodyAsString = await response.Content.ReadAsStringAsync();
+
+            CompatibleVersions jsonList = JsonConvert.DeserializeObject<CompatibleVersions>(responseBodyAsString);
+            Assert.NotNull(jsonList);
+        }
+
+        [Fact]
+        public async Task WhenRequestingSchema_GivenGetMethodAndCurrentVersionPath_TheServerShouldReturnSuccess()
+        {
+            HttpResponseMessage response = await SendAndVerifyStatusCode(HttpMethod.Get, "_schema/versions/current", HttpStatusCode.OK);
+
+            string responseBodyAsString = await response.Content.ReadAsStringAsync();
+            var jsonList = JsonConvert.DeserializeObject<IList<CurrentVersionInformation>>(responseBodyAsString);
+            Assert.Equal(3, jsonList[0].Id);
+            Assert.Equal(1, jsonList[0].Servers.Count);
+            Assert.Equal("complete", jsonList[0].Status);
         }
 
         [Theory]
@@ -131,7 +157,7 @@ namespace Microsoft.Health.SqlServer.Tests.E2E
             await SendAndVerifyStatusCode(HttpMethod.Get, "_schema/versions/0/script", HttpStatusCode.NotFound);
         }
 
-        private async Task SendAndVerifyStatusCode(HttpMethod httpMethod, string path, HttpStatusCode httpStatusCode)
+        private async Task<HttpResponseMessage> SendAndVerifyStatusCode(HttpMethod httpMethod, string path, HttpStatusCode httpStatusCode)
         {
             var request = new HttpRequestMessage
             {
@@ -139,13 +165,17 @@ namespace Microsoft.Health.SqlServer.Tests.E2E
                 RequestUri = new Uri(_client.BaseAddress, path),
             };
 
+            HttpResponseMessage response = null;
+
             // Setting the contentType explicitly because POST/PUT/PATCH throws UnsupportedMediaType
             using (var content = new StringContent(" ", Encoding.UTF8, "application/json"))
             {
                 request.Content = content;
-                HttpResponseMessage response = await _client.SendAsync(request);
+                response = await _client.SendAsync(request);
                 Assert.Equal(httpStatusCode, response.StatusCode);
             }
+
+            return response;
         }
     }
 }

@@ -7,6 +7,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Net;
+using MediatR;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Abstractions;
@@ -36,6 +37,7 @@ namespace Microsoft.Health.SqlServer.Api.UnitTests.Features.Filters
                     new SchemaInformation((int)TestSchemaVersion.Version1, (int)TestSchemaVersion.Version3),
                     Substitute.For<IScriptProvider>(),
                     Substitute.For<IUrlHelperFactory>(),
+                    Substitute.For<IMediator>(),
                     NullLogger<SchemaController>.Instance));
         }
 

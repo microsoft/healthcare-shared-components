@@ -61,6 +61,33 @@ namespace Microsoft.Health.SqlServer {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to The compatibility information is not found..
+        /// </summary>
+        internal static string CompatibilityRecordNotFound {
+            get {
+                return ResourceManager.GetString("CompatibilityRecordNotFound", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The current version information is not found..
+        /// </summary>
+        internal static string CurrentRecordNotFound {
+            get {
+                return ResourceManager.GetString("CurrentRecordNotFound", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The sql operation is failed..
+        /// </summary>
+        internal static string OperationFailed {
+            get {
+                return ResourceManager.GetString("OperationFailed", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to The provided version is unknown..
         /// </summary>
         internal static string ScriptNotFound {

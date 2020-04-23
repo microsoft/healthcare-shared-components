@@ -4,8 +4,11 @@
 // -------------------------------------------------------------------------------------------------
 
 using EnsureThat;
+using MediatR;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Health.SqlServer.Api.Controllers;
+using Microsoft.Health.SqlServer.Api.Features;
+using Microsoft.Health.SqlServer.Api.Features.Schema;
 using Microsoft.Health.SqlServer.Features.Health;
 
 namespace Microsoft.Health.SqlServer.Api.Registration
@@ -22,6 +25,10 @@ namespace Microsoft.Health.SqlServer.Api.Registration
             services
                 .AddHealthChecks()
                 .AddCheck<SqlServerHealthCheck>(nameof(SqlServerHealthCheck));
+
+            services.AddMediatR(typeof(CompatibilityVersionHandler).Assembly, typeof(IndentedStringBuilder).Assembly);
+
+            services.AddHostedService<SchemaJobWorkerBackgroundService>();
 
             return services;
         }

@@ -13,5 +13,7 @@
 
     <ItemGroup>
       <ProjectReference Include="..\Microsoft.Health.Api\Microsoft.Health.Api.csproj" />
+      <ProjectReference Include="..\Microsoft.Health.SqlServer.Api\Microsoft.Health.SqlServer.Api.csproj" />
+      <ProjectReference Include="..\Microsoft.Health.SqlServer\Microsoft.Health.SqlServer.csproj" />
     </ItemGroup>
 </Project>
