@@ -23,13 +23,10 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Remove="Features\Schema\Migrations\SchemaScript.sql" />
-    <EmbeddedResource Include="Features\Schema\Migrations\SchemaScript.sql" />
-    <GenerateFilesInputs Include="Features\Schema\Migrations\SchemaScript.sql" />
     <Generated Include="Features\Schema\Model\SchemaShared.Generated.cs">
       <Generator>SqlModelGenerator</Generator>
       <Namespace>Microsoft.Health.SqlServer.Features.Schema.Model</Namespace>
-      <Args>$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)\Features\Schema\Migrations\SchemaScript.sql'))</Args>
+      <Args>$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)\Features\Schema\Migrations\BaseSchema.sql'))</Args>
     </Generated>
   </ItemGroup>
   

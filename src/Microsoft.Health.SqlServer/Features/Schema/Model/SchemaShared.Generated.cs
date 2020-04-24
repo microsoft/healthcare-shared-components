@@ -13,6 +13,7 @@ namespace Microsoft.Health.SqlServer.Features.Schema.Model
     internal class SchemaShared
     {
         internal readonly static InstanceSchemaTable InstanceSchema = new InstanceSchemaTable();
+        internal readonly static SchemaVersionTable SchemaVersion = new SchemaVersionTable();
         internal readonly static CreateInstanceSchemaProcedure CreateInstanceSchema = new CreateInstanceSchemaProcedure();
         internal readonly static DeleteInstanceSchemaProcedure DeleteInstanceSchema = new DeleteInstanceSchemaProcedure();
         internal readonly static GetInstanceSchemaByNameProcedure GetInstanceSchemaByName = new GetInstanceSchemaByNameProcedure();
@@ -30,6 +31,16 @@ namespace Microsoft.Health.SqlServer.Features.Schema.Model
             internal readonly IntColumn MaxVersion = new IntColumn("MaxVersion");
             internal readonly IntColumn MinVersion = new IntColumn("MinVersion");
             internal readonly DateTime2Column Timeout = new DateTime2Column("Timeout", 0);
+        }
+
+        internal class SchemaVersionTable : Table
+        {
+            internal SchemaVersionTable(): base("dbo.SchemaVersion")
+            {
+            }
+
+            internal readonly IntColumn Version = new IntColumn("Version");
+            internal readonly VarCharColumn Status = new VarCharColumn("Status", 10);
         }
 
         internal class CreateInstanceSchemaProcedure : StoredProcedure

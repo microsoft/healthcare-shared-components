@@ -7,9 +7,9 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 using EnsureThat;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Health.Core;
-using Microsoft.Health.Extensions.DependencyInjection;
 using Microsoft.Health.SqlServer.Configs;
 
 namespace Microsoft.Health.SqlServer.Features.Schema
@@ -19,26 +19,28 @@ namespace Microsoft.Health.SqlServer.Features.Schema
     /// </summary>
     public class SchemaJobWorker
     {
-        private readonly Func<IScoped<ISchemaDataStore>> _schemaDataStoreFactory;
+        private readonly IServiceProvider _serviceProvider;
         private readonly SqlServerDataStoreConfiguration _sqlServerDataStoreConfiguration;
         private readonly ILogger _logger;
 
-        public SchemaJobWorker(Func<IScoped<ISchemaDataStore>> schemaDataStoreFactory, SqlServerDataStoreConfiguration sqlServerDataStoreConfiguration, ILogger<SchemaJobWorker> logger)
+        public SchemaJobWorker(IServiceProvider services, SqlServerDataStoreConfiguration sqlServerDataStoreConfiguration, ILogger<SchemaJobWorker> logger)
         {
-            EnsureArg.IsNotNull(schemaDataStoreFactory, nameof(schemaDataStoreFactory));
+            EnsureArg.IsNotNull(services, nameof(services));
             EnsureArg.IsNotNull(sqlServerDataStoreConfiguration, nameof(sqlServerDataStoreConfiguration));
             EnsureArg.IsNotNull(logger, nameof(logger));
 
-            _schemaDataStoreFactory = schemaDataStoreFactory;
+            _serviceProvider = services;
             _sqlServerDataStoreConfiguration = sqlServerDataStoreConfiguration;
             _logger = logger;
         }
 
         public async Task ExecuteAsync(SchemaInformation schemaInformation, string instanceName, CancellationToken cancellationToken)
         {
-            using (IScoped<ISchemaDataStore> store = _schemaDataStoreFactory())
+            using (var scope = _serviceProvider.CreateScope())
             {
-                await store.Value.InsertInstanceSchemaInformation(instanceName, schemaInformation, cancellationToken);
+                var schemaDataStore = scope.ServiceProvider.GetRequiredService<ISchemaDataStore>();
+
+                await schemaDataStore.InsertInstanceSchemaInformation(instanceName, schemaInformation, cancellationToken);
             }
 
             _logger.LogInformation($"Polling started at {Clock.UtcNow}");
@@ -47,12 +49,14 @@ namespace Microsoft.Health.SqlServer.Features.Schema
             {
                 try
                 {
-                    using (IScoped<ISchemaDataStore> store = _schemaDataStoreFactory())
+                    using (var scope = _serviceProvider.CreateScope())
                     {
-                        // Ensure schemaInformation has the latest current version
-                        schemaInformation.Current = await store.Value.UpsertInstanceSchemaInformation(instanceName, schemaInformation, cancellationToken);
+                        var schemaDataStore = scope.ServiceProvider.GetRequiredService<ISchemaDataStore>();
 
-                        await store.Value.DeleteExpiredRecords();
+                        // Ensure schemaInformation has the latest current version
+                        schemaInformation.Current = await schemaDataStore.UpsertInstanceSchemaInformation(instanceName, schemaInformation, cancellationToken);
+
+                        await schemaDataStore.DeleteExpiredRecords();
                     }
                 }
                 catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)

@@ -6,7 +6,6 @@
 using System;
 using System.IO;
 using System.Reflection;
-using EnsureThat;
 
 namespace Microsoft.Health.SqlServer.Features.Schema
 {

@@ -36,7 +36,7 @@ namespace Microsoft.Health.SqlServer.Registration
                 .Singleton()
                 .AsSelf();
 
-            services.AddFactory<IScoped<ISchemaDataStore>>();
+            services.AddScoped<ISchemaDataStore, SqlServerSchemaDataStore>();
 
             services.Add<SchemaJobWorker>()
                 .Singleton()
@@ -57,11 +57,6 @@ namespace Microsoft.Health.SqlServer.Registration
                 .AsImplementedInterfaces();
 
             services.Add<SqlConnectionWrapperFactory>()
-                .Scoped()
-                .AsSelf()
-                .AsImplementedInterfaces();
-
-            services.Add<SqlServerSchemaDataStore>()
                 .Scoped()
                 .AsSelf()
                 .AsImplementedInterfaces();
