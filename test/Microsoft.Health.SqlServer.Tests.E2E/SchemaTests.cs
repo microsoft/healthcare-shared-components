@@ -56,7 +56,7 @@ namespace Microsoft.Health.SqlServer.Tests.E2E
             Assert.Equal(scriptUrl, firstResult["script"]);
         }
 
-        [Fact]
+        [Fact(Skip = "Deployment steps to refactor to include environmentUrl")]
         public async Task WhenRequestingSchema_GivenGetMethodAndCompatibilityPathAndInstanceSchemaTableIsEmpty_TheServerShouldReturnsNotFound()
         {
             var request = new HttpRequestMessage
@@ -75,7 +75,7 @@ namespace Microsoft.Health.SqlServer.Tests.E2E
             Assert.NotNull(jsonList);
         }
 
-        [Fact]
+        [Fact(Skip = "Deployment steps to refactor to include environmentUrl")]
         public async Task WhenRequestingSchema_GivenGetMethodAndCurrentVersionPath_TheServerShouldReturnSuccess()
         {
             HttpResponseMessage response = await SendAndVerifyStatusCode(HttpMethod.Get, "_schema/versions/current", HttpStatusCode.OK);

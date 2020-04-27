@@ -11,7 +11,7 @@
       "commandName": "Project",
       "environmentVariables": {
         "SqlServer:Initialize": "true",
-        "SqlServer:SchemaUpdatesDisabled": "true",
+        "SqlServer:SchemaUpdatesDisabled": "false",
         "SqlServer:AllowDatabaseCreation": "true",
         "SqlServer:ConnectionString": "server=(local);Initial Catalog=SHARED_HEALTHCARE;Integrated Security=true",
         "ASPNETCORE_ENVIRONMENT": "development"

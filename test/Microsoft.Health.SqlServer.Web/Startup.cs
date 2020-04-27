@@ -46,17 +46,6 @@ namespace Microsoft.Health.SqlServer.Web
         public virtual void Configure(IApplicationBuilder app)
         {
             app.UseMvc();
-
-            ILogger logger = app.ApplicationServices.GetRequiredService<ILoggerFactory>().CreateLogger<Startup>();
-
-            // start IStartable services.
-            foreach (var startable in app.ApplicationServices.GetService<IEnumerable<IStartable>>())
-            {
-                using (logger.BeginTimedScope($"Initializing {startable.GetType().Name}."))
-                {
-                    startable.Start();
-                }
-            }
         }
     }
 }
