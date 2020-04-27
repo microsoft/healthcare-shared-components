@@ -1,9 +1,20 @@
-﻿{
+{
   "profiles": {
     "Microsoft.Health.SqlServer.Web": {
       "commandName": "Project",
       "environmentVariables": {
-        "ASPNETCORE_ENVIRONMENT": "Development"
+        "ASPNETCORE_ENVIRONMENT": "development"
+      },
+      "applicationUrl": "https://localhost:63637/"
+    },
+    "SqlServer": {
+      "commandName": "Project",
+      "environmentVariables": {
+        "SqlServer:Initialize": "true",
+        "SqlServer:SchemaUpdatesDisabled": "true",
+        "SqlServer:AllowDatabaseCreation": "true",
+        "SqlServer:ConnectionString": "server=(local);Initial Catalog=SHARED_HEALTHCARE;Integrated Security=true",
+        "ASPNETCORE_ENVIRONMENT": "development"
       },
       "applicationUrl": "https://localhost:63637/"
     }

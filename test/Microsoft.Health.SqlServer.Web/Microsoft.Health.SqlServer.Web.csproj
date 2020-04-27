@@ -17,6 +17,8 @@
     <ItemGroup>
       <None Remove="Features\Schema\Migrations\1.sql" />
       <EmbeddedResource Include="Features\Schema\Migrations\1.sql" />
+      <None Remove="Features\Schema\Migrations\2.sql" />
+      <EmbeddedResource Include="Features\Schema\Migrations\2.sql" />
     </ItemGroup>
     
     <ItemGroup>

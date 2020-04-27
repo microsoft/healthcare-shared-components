@@ -9,8 +9,8 @@ using System.Net;
 using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.Health.SqlServer.Features.Schema.Model;
+using Microsoft.Health.SqlServer.Tests.E2E.Rest;
 using Microsoft.Health.SqlServer.Web;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
@@ -18,15 +18,13 @@ using Xunit;
 
 namespace Microsoft.Health.SqlServer.Tests.E2E
 {
-    public class SchemaTests : IClassFixture<WebApplicationFactory<Startup>>
+    public class SchemaTests : IClassFixture<HttpIntegrationTestFixture<Startup>>
     {
-        private readonly WebApplicationFactory<Startup> _factory;
         private readonly HttpClient _client;
 
-        public SchemaTests(WebApplicationFactory<Startup> factory)
+        public SchemaTests(HttpIntegrationTestFixture<Startup> fixture)
         {
-            _factory = factory;
-            _client = factory.CreateClient();
+            _client = fixture.HttpClient;
         }
 
         public static IEnumerable<object[]> Data =>
@@ -84,7 +82,7 @@ namespace Microsoft.Health.SqlServer.Tests.E2E
 
             string responseBodyAsString = await response.Content.ReadAsStringAsync();
             var jsonList = JsonConvert.DeserializeObject<IList<CurrentVersionInformation>>(responseBodyAsString);
-            Assert.Equal(3, jsonList[0].Id);
+            Assert.Equal(2, jsonList[0].Id);
             Assert.Equal(1, jsonList[0].Servers.Count);
             Assert.Equal("complete", jsonList[0].Status);
         }

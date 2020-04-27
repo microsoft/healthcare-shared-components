@@ -59,8 +59,44 @@ CREATE TABLE dbo.SchemaVersion
 
 INSERT INTO dbo.SchemaVersion
 VALUES
-    (1, 'started')
+    (2, 'started')
 
+GO
+
+--
+--  STORED PROCEDURE
+--      UpsertSchemaVersion
+--
+--  DESCRIPTION
+--      Creates or updates a new schema version entry
+--
+--  PARAMETERS
+--      @version
+--          * The version number
+--      @status
+--          * The status of the version
+--
+CREATE PROCEDURE dbo.UpsertSchemaVersion
+    @version int,
+    @status varchar(10)
+AS
+    SET NOCOUNT ON
+
+    IF EXISTS(SELECT *
+        FROM dbo.SchemaVersion
+        WHERE Version = @version)
+    BEGIN
+        UPDATE dbo.SchemaVersion
+        SET Status = @status
+        WHERE Version = @version
+    END
+    ELSE
+    BEGIN
+        INSERT INTO dbo.SchemaVersion
+            (Version, Status)
+        VALUES
+            (@version, @status)
+    END
 GO
 
 /*************************************************************
@@ -258,3 +294,4 @@ BEGIN
 END
 GO
 
+SELECT 1
