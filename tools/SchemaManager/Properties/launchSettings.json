@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "SchemaManager": {
+      "commandName": "Project",
+      "commandLineArgs": "SchemaManager apply --connection-string \"server=(local);Initial Catalog=FHIR_R4;Integrated Security=true\" --server https://localhost:44348 --version 3"
+    }
+  }
+}
