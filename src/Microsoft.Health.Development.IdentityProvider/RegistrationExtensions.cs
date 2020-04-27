@@ -184,20 +184,20 @@ namespace Microsoft.Health.Development.IdentityProvider
                         StringComparer.OrdinalIgnoreCase);
 
                     // add properties related to the development identity provider.
-                    if (bool.TryParse(_securityEnabledKey, out bool securityEnabledValue)
+                    if (bool.TryParse(_existingConfiguration[_securityEnabledKey], out bool securityEnabledValue)
                         && securityEnabledValue == true)
                     {
                         Data[DevelopmentIdpEnabledKey] = bool.TrueString;
-                    }
 
-                    if (string.IsNullOrWhiteSpace(_existingConfiguration[_audienceKey]))
-                    {
-                        Data[_audienceKey] = Config.Provider.Audience;
-                    }
+                        if (string.IsNullOrWhiteSpace(_existingConfiguration[_audienceKey]))
+                        {
+                            Data[_audienceKey] = Config.Provider.Audience;
+                        }
 
-                    if (string.IsNullOrWhiteSpace(_existingConfiguration[_authorityKey]))
-                    {
-                        Data[_authorityKey] = GetAuthority();
+                        if (string.IsNullOrWhiteSpace(_existingConfiguration[_authorityKey]))
+                        {
+                            Data[_authorityKey] = GetAuthority();
+                        }
                     }
                 }
 
