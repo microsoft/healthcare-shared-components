@@ -14,7 +14,7 @@ namespace SchemaManager
     {
         public const string DeleteQuery = "DELETE FROM dbo.SchemaVersion WHERE Version = @version AND Status = @status";
         public const string Failed = "failed";
-        public const string Complete = "complete";
+        public const string Completed = "completed";
 
         public static void ExecuteQuery(string connectionString, string queryString, int version)
         {

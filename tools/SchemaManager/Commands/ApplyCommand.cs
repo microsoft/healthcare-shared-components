@@ -66,7 +66,7 @@ namespace SchemaManager.Commands
 
                     SchemaDataStore.ExecuteQuery(connectionString, script, availableVersion.Id);
 
-                    SchemaDataStore.ExecuteUpsert(connectionString, availableVersion.Id, SchemaDataStore.Complete);
+                    SchemaDataStore.ExecuteUpsert(connectionString, availableVersion.Id, SchemaDataStore.Completed);
 
                     Console.WriteLine(string.Format(Resources.SchemaMigrationSuccessMessage, availableVersion.Id));
                 }
