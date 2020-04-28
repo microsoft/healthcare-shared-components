@@ -84,7 +84,7 @@ namespace Microsoft.Health.SqlServer.Tests.E2E
             var jsonList = JsonConvert.DeserializeObject<IList<CurrentVersionInformation>>(responseBodyAsString);
             Assert.Equal(2, jsonList[0].Id);
             Assert.Equal(1, jsonList[0].Servers.Count);
-            Assert.Equal("complete", jsonList[0].Status);
+            Assert.Equal("completed", jsonList[0].Status);
         }
 
         [Theory]

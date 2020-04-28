@@ -215,7 +215,7 @@ AS
     DECLARE @timeout datetime2(0) = DATEADD(minute, @addMinutesOnTimeout, SYSUTCDATETIME())
     DECLARE @currentVersion int = (SELECT COALESCE(MAX(Version), 0)
                                   FROM dbo.SchemaVersion
-                                  WHERE  Status = 'complete')
+                                  WHERE  Status = 'completed')
    IF EXISTS(SELECT *
         FROM dbo.InstanceSchema
         WHERE Name = @name)

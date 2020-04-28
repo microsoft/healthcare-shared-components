@@ -42,8 +42,8 @@ namespace Microsoft.Health.SqlServer.Api.UnitTests.Features
         {
             IList<CurrentVersionInformation> mockCurrentVersions = new List<CurrentVersionInformation>()
             {
-                new CurrentVersionInformation(1, "complete", new List<string>() { "server1", "server2" }),
-                new CurrentVersionInformation(1, "complete", new List<string>()),
+                new CurrentVersionInformation(1, "completed", new List<string>() { "server1", "server2" }),
+                new CurrentVersionInformation(1, "completed", new List<string>()),
             };
 
             _schemaDataStore.GetCurrentVersionAsync(Arg.Any<CancellationToken>())
