@@ -53,7 +53,8 @@ namespace Microsoft.Health.SqlServer.Features.Schema.Model
             private readonly ParameterDefinition<System.Int32> _currentVersion = new ParameterDefinition<System.Int32>("@currentVersion", global::System.Data.SqlDbType.Int, false);
             private readonly ParameterDefinition<System.Int32> _maxVersion = new ParameterDefinition<System.Int32>("@maxVersion", global::System.Data.SqlDbType.Int, false);
             private readonly ParameterDefinition<System.Int32> _minVersion = new ParameterDefinition<System.Int32>("@minVersion", global::System.Data.SqlDbType.Int, false);
-            public void PopulateCommand(global::System.Data.SqlClient.SqlCommand command, System.String name, System.Int32 currentVersion, System.Int32 maxVersion, System.Int32 minVersion)
+            private readonly ParameterDefinition<System.Int32> _addMinutesOnTimeout = new ParameterDefinition<System.Int32>("@addMinutesOnTimeout", global::System.Data.SqlDbType.Int, false);
+            public void PopulateCommand(global::System.Data.SqlClient.SqlCommand command, System.String name, System.Int32 currentVersion, System.Int32 maxVersion, System.Int32 minVersion, System.Int32 addMinutesOnTimeout)
             {
                 command.CommandType = global::System.Data.CommandType.StoredProcedure;
                 command.CommandText = "dbo.CreateInstanceSchema";
@@ -61,6 +62,7 @@ namespace Microsoft.Health.SqlServer.Features.Schema.Model
                 _currentVersion.AddParameter(command.Parameters, currentVersion);
                 _maxVersion.AddParameter(command.Parameters, maxVersion);
                 _minVersion.AddParameter(command.Parameters, minVersion);
+                _addMinutesOnTimeout.AddParameter(command.Parameters, addMinutesOnTimeout);
             }
         }
 
@@ -127,13 +129,15 @@ namespace Microsoft.Health.SqlServer.Features.Schema.Model
             private readonly ParameterDefinition<System.String> _name = new ParameterDefinition<System.String>("@name", global::System.Data.SqlDbType.VarChar, false, 64);
             private readonly ParameterDefinition<System.Int32> _maxVersion = new ParameterDefinition<System.Int32>("@maxVersion", global::System.Data.SqlDbType.Int, false);
             private readonly ParameterDefinition<System.Int32> _minVersion = new ParameterDefinition<System.Int32>("@minVersion", global::System.Data.SqlDbType.Int, false);
-            public void PopulateCommand(global::System.Data.SqlClient.SqlCommand command, System.String name, System.Int32 maxVersion, System.Int32 minVersion)
+            private readonly ParameterDefinition<System.Int32> _addMinutesOnTimeout = new ParameterDefinition<System.Int32>("@addMinutesOnTimeout", global::System.Data.SqlDbType.Int, false);
+            public void PopulateCommand(global::System.Data.SqlClient.SqlCommand command, System.String name, System.Int32 maxVersion, System.Int32 minVersion, System.Int32 addMinutesOnTimeout)
             {
                 command.CommandType = global::System.Data.CommandType.StoredProcedure;
                 command.CommandText = "dbo.UpsertInstanceSchema";
                 _name.AddParameter(command.Parameters, name);
                 _maxVersion.AddParameter(command.Parameters, maxVersion);
                 _minVersion.AddParameter(command.Parameters, minVersion);
+                _addMinutesOnTimeout.AddParameter(command.Parameters, addMinutesOnTimeout);
             }
         }
     }

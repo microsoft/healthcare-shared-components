@@ -137,18 +137,22 @@ GO
 --         * The maximum supported schema version for the given instance
 --     @minVersion
 --         * The minimum supported schema version for the given instance
+--     @addMinutesOnTimeout
+--         * The minutes to add
 --
 CREATE PROCEDURE dbo.CreateInstanceSchema
     @name varchar(64),
     @currentVersion int,
     @maxVersion int,
-    @minVersion int
+    @minVersion int,
+    @addMinutesOnTimeout int
+
 AS
     SET NOCOUNT ON
 
     BEGIN
 
-    DECLARE @timeout datetime2(0) = DATEADD(minute, 2, SYSUTCDATETIME())
+    DECLARE @timeout datetime2(0) = DATEADD(minute, @addMinutesOnTimeout, SYSUTCDATETIME())
 
     INSERT INTO dbo.InstanceSchema
         (Name, CurrentVersion, MaxVersion, MinVersion, Timeout)
@@ -196,16 +200,19 @@ GO
 --         * The maximum supported schema version for the given instance
 --     @minVersion
 --         * The minimum supported schema version for the given instance
+--     @addMinutesOnTimeout
+--         * The minutes to add
 --
 CREATE PROCEDURE dbo.UpsertInstanceSchema
     @name varchar(64),
     @maxVersion int,
-    @minVersion int
+    @minVersion int,
+    @addMinutesOnTimeout int
     
 AS
     SET NOCOUNT ON
 
-    DECLARE @timeout datetime2(0) = DATEADD(minute, 2, SYSUTCDATETIME())
+    DECLARE @timeout datetime2(0) = DATEADD(minute, @addMinutesOnTimeout, SYSUTCDATETIME())
     DECLARE @currentVersion int = (SELECT COALESCE(MAX(Version), 0)
                                   FROM dbo.SchemaVersion
                                   WHERE  Status = 'complete')

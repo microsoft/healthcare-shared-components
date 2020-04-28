@@ -49,6 +49,8 @@ namespace Microsoft.Health.SqlServer.Features.Schema
             {
                 try
                 {
+                    await Task.Delay(_sqlServerDataStoreConfiguration.SchemaUpdatesJobPollingFrequencyInSeconds, cancellationToken);
+
                     using (var scope = _serviceProvider.CreateScope())
                     {
                         var schemaDataStore = scope.ServiceProvider.GetRequiredService<ISchemaDataStore>();
@@ -62,15 +64,12 @@ namespace Microsoft.Health.SqlServer.Features.Schema
                 catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
                 {
                     // Cancel requested.
+                    break;
                 }
                 catch (Exception ex)
                 {
                     // The job failed.
                     _logger.LogError(ex, "Unhandled exception in the worker.");
-                }
-                finally
-                {
-                    await Task.Delay(_sqlServerDataStoreConfiguration.SchemaUpdatesJobPollingFrequency, cancellationToken);
                 }
             }
         }

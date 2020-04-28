@@ -3,12 +3,12 @@
 // Licensed under the MIT License (MIT). See LICENSE in the repo root for license information.
 // -------------------------------------------------------------------------------------------------
 
-using System;
 using EnsureThat;
+using Microsoft.Health.Abstractions.Exceptions;
 
 namespace Microsoft.Health.SqlServer.Features.Exceptions
 {
-    public class RecordNotFoundException : Exception
+    public class RecordNotFoundException : MicrosoftHealthException
     {
         public RecordNotFoundException(string message)
             : base(message)

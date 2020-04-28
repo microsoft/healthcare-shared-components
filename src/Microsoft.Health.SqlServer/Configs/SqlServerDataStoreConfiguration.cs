@@ -28,13 +28,18 @@ namespace Microsoft.Health.SqlServer.Configs
         public bool AllowDatabaseCreation { get; set; }
 
         /// <summary>
-        /// If set, the automatic schema updates are turned off
+        /// If set, the automatic schema updates are turned on
         /// </summary>
-        public bool SchemaUpdatesDisabled { get; set; }
+        public bool SchemaAutoUpdatesEnabled { get; set; }
 
         /// <summary>
         /// Allows the polling frequency for the schema updates
         /// </summary>
-        public TimeSpan SchemaUpdatesJobPollingFrequency { get; set; } = TimeSpan.FromMinutes(1);
+        public TimeSpan SchemaUpdatesJobPollingFrequencyInSeconds { get; set; } = TimeSpan.FromSeconds(60);
+
+        /// <summary>
+        /// Allows the expired instance record to delete
+        /// </summary>
+        public int InstanceRecordExpirationTimeInMinutes { get; set; } = 2;
     }
 }

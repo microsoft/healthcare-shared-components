@@ -66,7 +66,7 @@ namespace Microsoft.Health.SqlServer.Features.Schema
             }
 
             // If the current schema version needs to be upgraded
-            if (!_sqlServerDataStoreConfiguration.SchemaUpdatesDisabled && _schemaInformation.Current < _schemaInformation.MaximumSupportedVersion)
+            if (_sqlServerDataStoreConfiguration.SchemaAutoUpdatesEnabled && _schemaInformation.Current < _schemaInformation.MaximumSupportedVersion)
             {
                 // Apply each .diff.sql file one by one.
                 int current = _schemaInformation.Current ?? 0;

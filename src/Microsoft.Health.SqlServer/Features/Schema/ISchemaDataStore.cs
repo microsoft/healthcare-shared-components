@@ -32,7 +32,7 @@ namespace Microsoft.Health.SqlServer.Features.Schema
         Task DeleteExpiredRecords();
 
         /// <summary>
-        /// Upsert current version information.
+        /// Upsert current version information for the named instance.
         /// </summary>
         /// <param name="name">The instance name.</param>
         /// <param name="schemaInformation">The Schema information</param>

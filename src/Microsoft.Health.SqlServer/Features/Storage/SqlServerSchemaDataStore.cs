@@ -12,6 +12,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using EnsureThat;
 using Microsoft.Extensions.Logging;
+using Microsoft.Health.SqlServer.Configs;
 using Microsoft.Health.SqlServer.Features.Client;
 using Microsoft.Health.SqlServer.Features.Exceptions;
 using Microsoft.Health.SqlServer.Features.Schema;
@@ -23,16 +24,20 @@ namespace Microsoft.Health.SqlServer.Features.Storage
     internal class SqlServerSchemaDataStore : ISchemaDataStore
     {
         private readonly SqlConnectionWrapperFactory _sqlConnectionWrapperFactory;
+        private readonly SqlServerDataStoreConfiguration _configuration;
         private readonly ILogger<SqlServerSchemaDataStore> _logger;
 
         public SqlServerSchemaDataStore(
             SqlConnectionWrapperFactory sqlConnectionWrapperFactory,
+            SqlServerDataStoreConfiguration sqlServerDataStoreConfiguration,
             ILogger<SqlServerSchemaDataStore> logger)
         {
             EnsureArg.IsNotNull(sqlConnectionWrapperFactory, nameof(sqlConnectionWrapperFactory));
+            EnsureArg.IsNotNull(sqlServerDataStoreConfiguration, nameof(sqlServerDataStoreConfiguration));
             EnsureArg.IsNotNull(logger, nameof(logger));
 
             _sqlConnectionWrapperFactory = sqlConnectionWrapperFactory;
+            _configuration = sqlServerDataStoreConfiguration;
             _logger = logger;
         }
 
@@ -70,7 +75,8 @@ namespace Microsoft.Health.SqlServer.Features.Storage
                      name,
                      schemaInformation.Current.GetValueOrDefault(),
                      schemaInformation.MaximumSupportedVersion,
-                     schemaInformation.MinimumSupportedVersion);
+                     schemaInformation.MinimumSupportedVersion,
+                     _configuration.InstanceRecordExpirationTimeInMinutes);
                 try
                 {
                     await sqlCommand.ExecuteNonQueryAsync();
@@ -92,7 +98,8 @@ namespace Microsoft.Health.SqlServer.Features.Storage
                      sqlCommand,
                      name,
                      schemaInformation.MaximumSupportedVersion,
-                     schemaInformation.MinimumSupportedVersion);
+                     schemaInformation.MinimumSupportedVersion,
+                     _configuration.InstanceRecordExpirationTimeInMinutes);
                 try
                 {
                     return (int)await sqlCommand.ExecuteScalarAsync();

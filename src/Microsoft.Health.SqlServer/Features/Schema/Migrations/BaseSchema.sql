@@ -1,53 +1,6 @@
-﻿-- NOTE: This script DROPS AND RECREATES all database objects.
+﻿-- NOTE: This script is for reference and codegen only. In order to run the schema management, schema used by the service must have this in it.
 -- Style guide: please see: https://github.com/ktaranov/sqlserver-kit/blob/master/SQL%20Server%20Name%20Convention%20and%20T-SQL%20Programming%20Style.md
 
-
-/*************************************************************
-    Drop existing objects
-**************************************************************/
-
-DECLARE @sql nvarchar(max) =''
-
-SELECT @sql = @sql + 'DROP PROCEDURE ' + name + '; '
-FROM sys.procedures
-
-SELECT @sql = @sql + 'DROP TABLE ' + name + '; '
-FROM sys.tables
-
-SELECT @sql = @sql + 'DROP TYPE ' + name + '; '
-FROM sys.table_types
-
-SELECT @sql = @sql + 'DROP SEQUENCE ' + name + '; '
-FROM sys.sequences
-
-EXEC(@sql)
-
-GO
-
-/*************************************************************
-    Configure database
-**************************************************************/
-
--- Enable RCSI
-IF ((SELECT is_read_committed_snapshot_on FROM sys.databases WHERE database_id = DB_ID()) = 0) BEGIN
-    ALTER DATABASE CURRENT SET READ_COMMITTED_SNAPSHOT ON
-END
-
--- Avoid blocking queries when statistics need to be rebuilt
-IF ((SELECT is_auto_update_stats_async_on FROM sys.databases WHERE database_id = DB_ID()) = 0) BEGIN
-    ALTER DATABASE CURRENT SET AUTO_UPDATE_STATISTICS_ASYNC ON
-END
-
--- Use ANSI behavior for null values
-IF ((SELECT is_ansi_nulls_on FROM sys.databases WHERE database_id = DB_ID()) = 0) BEGIN
-    ALTER DATABASE CURRENT SET ANSI_NULLS ON
-END
-
-GO
-
-/*************************************************************
-    Schema bootstrap
-**************************************************************/
 /*************************************************************
     Schema Version
 **************************************************************/
@@ -101,18 +54,21 @@ GO
 --         * The maximum supported schema version for the given instance
 --     @minVersion
 --         * The minimum supported schema version for the given instance
+--     @addMinutesOnTimeout
+--         * The minutes to add
 --
 CREATE PROCEDURE dbo.CreateInstanceSchema
     @name varchar(64),
     @currentVersion int,
     @maxVersion int,
-    @minVersion int
+    @minVersion int,
+    @addMinutesOnTimeout int
 AS
     SET NOCOUNT ON
 
     BEGIN
 
-    DECLARE @timeout datetime2(0) = DATEADD(minute, 2, SYSUTCDATETIME())
+    DECLARE @timeout datetime2(0) = DATEADD(minute, @addMinutesOnTimeout, SYSUTCDATETIME())
 
     INSERT INTO dbo.InstanceSchema
         (Name, CurrentVersion, MaxVersion, MinVersion, Timeout)
@@ -160,22 +116,24 @@ GO
 --         * The maximum supported schema version for the given instance
 --     @minVersion
 --         * The minimum supported schema version for the given instance
+--     @addMinutesOnTimeout
+--         * The minutes to add
 --
 CREATE PROCEDURE dbo.UpsertInstanceSchema
     @name varchar(64),
     @maxVersion int,
-    @minVersion int
+    @minVersion int,
+    @addMinutesOnTimeout int
     
 AS
     SET NOCOUNT ON
 
-    DECLARE @timeout datetime2(0) = DATEADD(minute, 2, SYSUTCDATETIME())
+    DECLARE @timeout datetime2(0) = DATEADD(minute, @addMinutesOnTimeout, SYSUTCDATETIME())
     DECLARE @currentVersion int = (SELECT COALESCE(MAX(Version), 0)
                                   FROM dbo.SchemaVersion
                                   WHERE  Status = 'complete')
-   IF EXISTS(SELECT *
-        FROM dbo.InstanceSchema
-        WHERE Name = @name)
+   IF EXISTS(SELECT * FROM dbo.InstanceSchema
+             WHERE Name = @name)
     BEGIN
         UPDATE dbo.InstanceSchema
         SET CurrentVersion = @currentVersion, MaxVersion = @maxVersion, Timeout = @timeout
