@@ -24,5 +24,10 @@ namespace Microsoft.Health.SqlServer.Configs
         /// Allows the experimental schema initializer to attempt to create the database if not present.
         /// </summary>
         public bool AllowDatabaseCreation { get; set; }
+
+        /// <summary>
+        /// Configuration for transient fault retry policy.
+        /// </summary>
+        public SqlServerTransientFaultRetryPolicyConfiguration TransientFaultRetryPolicy { get; set; } = new SqlServerTransientFaultRetryPolicyConfiguration();
     }
 }

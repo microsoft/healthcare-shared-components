@@ -6,7 +6,6 @@
 using System;
 using System.Collections.Generic;
 using System.Data;
-using System.Data.SqlClient;
 using System.Linq;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
@@ -141,7 +140,7 @@ namespace Microsoft.Health.Extensions.BuildTimeCodeGenerator.Sql
                 .AddModifiers(Token(SyntaxKind.PublicKeyword))
 
                 // first parameter is the SqlCommand
-                .AddParameterListParameters(Parameter(Identifier(CommandParameterName)).WithType(typeof(SqlCommand).ToTypeSyntax(useGlobalAlias: true)))
+                .AddParameterListParameters(Parameter(Identifier(CommandParameterName)).WithType(ParseTypeName("SqlCommandWrapper")))
 
                 // Add a parameter for each stored procedure parameter
                 .AddParameterListParameters(node.Parameters.Select(selector: p =>
@@ -218,7 +217,7 @@ namespace Microsoft.Health.Extensions.BuildTimeCodeGenerator.Sql
                 .AddModifiers(Token(SyntaxKind.PublicKeyword))
 
                 // first parameter is the SqlCommand
-                .AddParameterListParameters(Parameter(Identifier(CommandParameterName)).WithType(typeof(SqlCommand).ToTypeSyntax(useGlobalAlias: true)))
+                .AddParameterListParameters(Parameter(Identifier(CommandParameterName)).WithType(ParseTypeName("SqlCommandWrapper")))
 
                 // Add a parameter for each non-TVP
                 .AddParameterListParameters(nonTableParameters.Select(selector: p =>

@@ -50,6 +50,16 @@ namespace Microsoft.Health.SqlServer.Registration
                 .AsSelf()
                 .AsImplementedInterfaces();
 
+            services.Add<RetrySqlCommandWrapperFactory>()
+                .Singleton()
+                .AsSelf()
+                .AsService<SqlCommandWrapperFactory>();
+
+            services.Add<PollyRetryLoggerFactory>()
+                .Singleton()
+                .AsSelf()
+                .AsImplementedInterfaces();
+
             services.Add<SqlConnectionWrapperFactory>()
                 .Scoped()
                 .AsSelf()

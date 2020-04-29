@@ -13,19 +13,25 @@ namespace Microsoft.Health.SqlServer.Features.Client
     {
         private readonly SqlServerDataStoreConfiguration _configuration;
         private readonly SqlTransactionHandler _sqlTransactionHandler;
+        private readonly SqlCommandWrapperFactory _sqlCommandFactory;
 
-        public SqlConnectionWrapperFactory(SqlServerDataStoreConfiguration configuration, SqlTransactionHandler sqlTransactionHandler)
+        public SqlConnectionWrapperFactory(
+            SqlServerDataStoreConfiguration configuration,
+            SqlTransactionHandler sqlTransactionHandler,
+            SqlCommandWrapperFactory sqlCommandFactory)
         {
             EnsureArg.IsNotNull(configuration, nameof(configuration));
             EnsureArg.IsNotNull(sqlTransactionHandler, nameof(sqlTransactionHandler));
+            EnsureArg.IsNotNull(sqlCommandFactory, nameof(sqlCommandFactory));
 
             _configuration = configuration;
             _sqlTransactionHandler = sqlTransactionHandler;
+            _sqlCommandFactory = sqlCommandFactory;
         }
 
         public SqlConnectionWrapper ObtainSqlConnectionWrapper(bool enlistInTransaction = false)
         {
-            return new SqlConnectionWrapper(_configuration, _sqlTransactionHandler, enlistInTransaction);
+            return new SqlConnectionWrapper(_configuration, _sqlTransactionHandler, _sqlCommandFactory, enlistInTransaction);
         }
     }
 }
