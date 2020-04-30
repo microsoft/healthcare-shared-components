@@ -26,7 +26,7 @@ namespace Microsoft.Health.SqlServer.UnitTests.Extensions
         [InlineData(64)]
         public void GivenATransientException_WhenCheckedIfExceptionIsTransient_ThenTrueShouldBeReturned(int number)
         {
-            SqlException sqlException = SqlExceptionFactory.CreateSqlException(number);
+            SqlException sqlException = SqlExceptionFactory.Create(number);
 
             Assert.True(sqlException.IsTransient());
         }
@@ -34,7 +34,7 @@ namespace Microsoft.Health.SqlServer.UnitTests.Extensions
         [Fact]
         public void GivenANonTransientException_WhenCheckedIfExceptionIsTransient_ThenFalseShouldBeReturned()
         {
-            SqlException sqlException = SqlExceptionFactory.CreateSqlException(10001);
+            SqlException sqlException = SqlExceptionFactory.Create(10001);
 
             Assert.False(sqlException.IsTransient());
         }

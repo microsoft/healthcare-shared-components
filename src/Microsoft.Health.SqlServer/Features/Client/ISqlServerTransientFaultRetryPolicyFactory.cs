@@ -3,20 +3,19 @@
 // Licensed under the MIT License (MIT). See LICENSE in the repo root for license information.
 // -------------------------------------------------------------------------------------------------
 
-using System;
 using Polly;
 
 namespace Microsoft.Health.SqlServer.Features.Client
 {
     /// <summary>
-    /// Provides functionality for creating a logger for the <see cref="Polly"/> retry policy.
+    /// Provides functionality to create retry policy for handling transient errors.
     /// </summary>
-    internal interface IPollyRetryLoggerFactory
+    public interface ISqlServerTransientFaultRetryPolicyFactory
     {
         /// <summary>
-        /// Creates a logger.
+        /// Creates a retry policy.
         /// </summary>
-        /// <returns>A logger delegate.</returns>
-        Action<Exception, TimeSpan, int, Context> Create();
+        /// <returns>A <see cref="IAsyncPolicy"/> object.</returns>
+        IAsyncPolicy Create();
     }
 }

@@ -15,6 +15,12 @@ namespace Microsoft.Health.SqlServer.Features.Client
     /// </summary>
     internal class PollyRetryLoggerFactory : IPollyRetryLoggerFactory
     {
+        private static readonly Action<ILogger, TimeSpan, int, Exception> LogRetryDelegate =
+            LoggerMessage.Define<TimeSpan, int>(
+                LogLevel.Warning,
+                default,
+                "The operation failed. Will retry in '{SleepDuration}'. Retried {RetryCount} of time(s) so far.");
+
         private readonly ILoggerFactory _loggerFactory;
 
         public PollyRetryLoggerFactory(ILoggerFactory loggerFactory)
@@ -25,13 +31,13 @@ namespace Microsoft.Health.SqlServer.Features.Client
         }
 
         /// <inheritdoc/>
-        public Action<Exception, TimeSpan, int, Context> Create<TCategoryName>()
+        public Action<Exception, TimeSpan, int, Context> Create()
         {
-            ILogger logger = _loggerFactory.CreateLogger<TCategoryName>();
+            ILogger logger = _loggerFactory.CreateLogger("PollyRetryLogger");
 
             return (exception, sleepDuration, retryCount, context) =>
             {
-                logger.LogWarning(exception, "The operation failed. Will retry in '{SleepDuration}'. Retried {RetryCount} of time(s) so far.");
+                LogRetryDelegate(logger, sleepDuration, retryCount, exception);
             };
         }
     }

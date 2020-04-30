@@ -16,7 +16,7 @@ namespace Microsoft.Health.SqlServer.Features.Client
     /// <summary>
     /// A wrapper around <see cref="SqlCommand"/> to allow extensibility.
     /// </summary>
-    public class SqlCommandWrapper : IDbCommand
+    public class SqlCommandWrapper : IDisposable
     {
         private readonly SqlCommand _sqlCommand;
 
@@ -27,21 +27,36 @@ namespace Microsoft.Health.SqlServer.Features.Client
             _sqlCommand = sqlCommand;
         }
 
-        /// <inheritdoc/>
+        protected SqlCommandWrapper(SqlCommandWrapper sqlCommandWrapper)
+        {
+            EnsureArg.IsNotNull(sqlCommandWrapper, nameof(sqlCommandWrapper));
+
+            _sqlCommand = sqlCommandWrapper._sqlCommand;
+        }
+
+        /// <summary>
+        /// <see cref="SqlCommand.CommandType"/>.
+        /// </summary>
+
         public CommandType CommandType
         {
             get => _sqlCommand.CommandType;
             set => _sqlCommand.CommandType = value;
         }
 
-        /// <inheritdoc/>
+        /// <summary>
+        /// <see cref="SqlCommand.CommandTimeout"/>.
+        /// </summary>
+
         public int CommandTimeout
         {
             get => _sqlCommand.CommandTimeout;
             set => _sqlCommand.CommandTimeout = value;
         }
 
-        /// <inheritdoc/>
+        /// <summary>
+        /// <see cref="SqlCommand.CommandText"/>.
+        /// </summary>
         public string CommandText
         {
             get => _sqlCommand.CommandText;
@@ -49,8 +64,9 @@ namespace Microsoft.Health.SqlServer.Features.Client
         }
 
         /// <summary>
-        /// Gets or sets the <see cref="SqlConnection"/> used by this instance of the <see cref="SqlCommandWrapper"/>.
+        /// <see cref="SqlCommand.Connection"/>.
         /// </summary>
+
         public SqlConnection Connection
         {
             get => _sqlCommand.Connection;
@@ -58,7 +74,7 @@ namespace Microsoft.Health.SqlServer.Features.Client
         }
 
         /// <summary>
-        /// Gets or sets a value that specifies the <see cref="SqlNotificationRequest"/> object bound to this command.
+        /// <see cref="SqlCommand.Notification"/>.
         /// </summary>
         public SqlNotificationRequest Notification
         {
@@ -67,12 +83,12 @@ namespace Microsoft.Health.SqlServer.Features.Client
         }
 
         /// <summary>
-        /// Gets the <see cref="SqlParameterCollection"/>.
+        /// <see cref="SqlCommand.Parameters"/>.
         /// </summary>
         public SqlParameterCollection Parameters => _sqlCommand.Parameters;
 
         /// <summary>
-        /// Gets or sets the <see cref="SqlTransaction"/> within which the <see cref="SqlCommand"/> executes.
+        /// <see cref="SqlCommand.Transaction"/>.
         /// </summary>
         public SqlTransaction Transaction
         {
@@ -80,46 +96,14 @@ namespace Microsoft.Health.SqlServer.Features.Client
             set => _sqlCommand.Transaction = value;
         }
 
-        /// <inheritdoc/>
-        IDbConnection IDbCommand.Connection
-        {
-            get => _sqlCommand.Connection;
-            set
-            {
-                EnsureArg.IsOfType(value, typeof(SqlConnection), nameof(value));
-
-                _sqlCommand.Connection = (SqlConnection)value;
-            }
-        }
-
-        /// <inheritdoc/>
-        IDataParameterCollection IDbCommand.Parameters => _sqlCommand.Parameters;
-
-        /// <inheritdoc/>
-        IDbTransaction IDbCommand.Transaction
-        {
-            get => _sqlCommand.Transaction;
-            set
-            {
-                EnsureArg.IsOfType(value, typeof(SqlTransaction), nameof(value));
-
-                _sqlCommand.Transaction = (SqlTransaction)value;
-            }
-        }
-
-        /// <inheritdoc/>
-        public UpdateRowSource UpdatedRowSource
-        {
-            get => _sqlCommand.UpdatedRowSource;
-            set => _sqlCommand.UpdatedRowSource = value;
-        }
-
-        /// <inheritdoc/>
+        /// <summary>
+        /// <see cref="SqlCommand.Cancel"/>.
+        /// </summary>
         public virtual void Cancel()
             => _sqlCommand.Cancel();
 
         /// <summary>
-        /// Creates a new instance of a <see cref="SqlParameter"/> object.
+        /// <see cref="SqlCommand.CreateParameter"/>.
         /// </summary>
         /// <returns>A <see cref="SqlParameter"/> object.</returns>
         public virtual SqlParameter CreateParameter()
@@ -132,10 +116,6 @@ namespace Microsoft.Health.SqlServer.Features.Client
             GC.SuppressFinalize(this);
         }
 
-        /// <inheritdoc/>
-        public virtual int ExecuteNonQuery()
-            => _sqlCommand.ExecuteNonQuery();
-
         /// <summary>
         /// <see cref="SqlCommand.ExecuteNonQueryAsync(CancellationToken)"/>.
         /// </summary>
@@ -143,10 +123,6 @@ namespace Microsoft.Health.SqlServer.Features.Client
         /// <returns>A task representing the asynchronous operation.</returns>
         public virtual Task<int> ExecuteNonQueryAsync(CancellationToken cancellationToken)
             => _sqlCommand.ExecuteNonQueryAsync(cancellationToken);
-
-        /// <inheritdoc/>
-        public virtual object ExecuteScalar()
-            => _sqlCommand.ExecuteScalar();
 
         /// <summary>
         /// <see cref="SqlCommand.ExecuteScalarAsync(CancellationToken)"/>.
@@ -156,7 +132,6 @@ namespace Microsoft.Health.SqlServer.Features.Client
         public virtual Task<object> ExecuteScalarAsync(CancellationToken cancellationToken)
             => _sqlCommand.ExecuteScalarAsync(cancellationToken);
 
-        /// <inheritdoc/>
         public virtual void Prepare()
             => _sqlCommand.Prepare();
 
@@ -184,27 +159,12 @@ namespace Microsoft.Health.SqlServer.Features.Client
             => _sqlCommand.ExecuteReader(behavior);
 
         /// <summary>
-        /// <see cref="SqlCommand.ExecuteReaderAsync"/>.
-        /// </summary>
-        /// <returns>A task representing the asynchronous operation.</returns>
-        public virtual Task<SqlDataReader> ExecuteReaderAsync()
-            => _sqlCommand.ExecuteReaderAsync();
-
-        /// <summary>
         /// <see cref="SqlCommand.ExecuteReaderAsync(CancellationToken)"/>.
         /// </summary>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>A task representing the asynchronous operation.</returns>
         public virtual Task<SqlDataReader> ExecuteReaderAsync(CancellationToken cancellationToken)
             => _sqlCommand.ExecuteReaderAsync(cancellationToken);
-
-        /// <summary>
-        /// <see cref="SqlCommand.ExecuteReaderAsync(CommandBehavior)"/>.
-        /// </summary>
-        /// <param name="behavior">One of the <see cref="CommandBehavior"/> values.</param>
-        /// <returns>A task representing the asynchronous operation.</returns>
-        public virtual Task<SqlDataReader> ExecuteReaderAsync(CommandBehavior behavior)
-            => _sqlCommand.ExecuteReaderAsync(behavior);
 
         /// <summary>
         /// <see cref="SqlCommand.ExecuteReaderAsync(CommandBehavior, CancellationToken)"/>.
@@ -220,18 +180,6 @@ namespace Microsoft.Health.SqlServer.Features.Client
         /// </summary>
         public virtual void ResetCommandTimeout()
             => _sqlCommand.ResetCommandTimeout();
-
-        /// <inheritdoc/>
-        IDbDataParameter IDbCommand.CreateParameter()
-            => CreateParameter();
-
-        /// <inheritdoc/>
-        IDataReader IDbCommand.ExecuteReader()
-            => ExecuteReader();
-
-        /// <inheritdoc/>
-        IDataReader IDbCommand.ExecuteReader(CommandBehavior behavior)
-            => ExecuteReader(behavior);
 
         protected virtual void Dispose(bool disposing)
         {

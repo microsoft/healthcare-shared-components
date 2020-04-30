@@ -101,7 +101,7 @@ namespace Microsoft.Health.SqlServer.UnitTests
         /// <param name="number">The info number.</param>
         /// <param name="errorMessage">The error message.</param>
         /// <returns>An instance of <see cref="SqlException"/>.</returns>
-        public static SqlException CreateSqlException(int number, string errorMessage = "Simulated exception.")
+        public static SqlException Create(int number, string errorMessage = "Simulated exception.")
         {
             SqlError sqlError = SqlErrorConstructorDelegate(number);
 
@@ -113,5 +113,11 @@ namespace Microsoft.Health.SqlServer.UnitTests
 
             return sqlException;
         }
+
+        public static SqlException CreateTransientException()
+            => Create(10060);
+
+        public static SqlException CreateNonTransientException()
+            => Create(50404);
     }
 }
