@@ -31,6 +31,8 @@ namespace SchemaManager
                 Resources.VersionOptionDescription,
                 new Argument<int> { Arity = ArgumentArity.ExactlyOne });
 
+            versionOption.AddAlias(OptionAliases.V);
+
             var nextOption = new Option(
                OptionAliases.Next,
                Resources.NextOptionDescritpion,

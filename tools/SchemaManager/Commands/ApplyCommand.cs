@@ -18,15 +18,22 @@ namespace SchemaManager.Commands
 {
     public static class ApplyCommand
     {
+        private const int DelayInMilliSeconds = 60000;
+
         public static async Task HandlerAsync(string connectionString, Uri server, MutuallyExclusiveType exclusiveType, bool force)
         {
             ISchemaClient schemaClient = new SchemaClient(server);
+
+            if (force && !EnsureForce())
+            {
+                return;
+            }
 
             try
             {
                 List<AvailableVersion> availableVersions = await schemaClient.GetAvailability();
 
-                if (availableVersions?.Any() != true || availableVersions.Count == 1)
+                if (availableVersions.Count <= 1)
                 {
                     CommandUtils.PrintError(Resources.AvailableVersionsDefaultErrorMessage);
                     return;
@@ -37,29 +44,18 @@ namespace SchemaManager.Commands
                     availableVersions.RemoveAt(0);
                 }
 
-                availableVersions = availableVersions.Where(availableVersion => availableVersion.Id <= (exclusiveType.Next == true ?
-                                                                                                        availableVersions.First().Id :
-                                                                                                        exclusiveType.Latest == true ?
-                                                                                                        availableVersions.Last().Id :
-                                                                                                        exclusiveType.Version))
+                var targetVersion = exclusiveType.Next == true ? availableVersions.First().Id :
+                                                                 exclusiveType.Latest == true ? availableVersions.Last().Id :
+                                                                                                        exclusiveType.Version;
+
+                availableVersions = availableVersions.Where(availableVersion => availableVersion.Id <= targetVersion)
                     .ToList();
 
                 foreach (AvailableVersion availableVersion in availableVersions)
                 {
                     string script = await schemaClient.GetScript(availableVersion.Script);
 
-                    if (force)
-                    {
-                        Console.WriteLine(Resources.ForceWarning);
-                        if (!string.Equals(Console.ReadLine(), "yes", StringComparison.OrdinalIgnoreCase))
-                        {
-                            return;
-                        }
-                    }
-                    else
-                    {
-                        await ValidateVersion(schemaClient, availableVersion.Id);
-                    }
+                    await ValidateVersion(schemaClient, availableVersion.Id);
 
                     // check if the record for given version exists in failed status
                     SchemaDataStore.ExecuteDelete(connectionString, availableVersion.Id, SchemaDataStore.Failed);
@@ -92,7 +88,7 @@ namespace SchemaManager.Commands
         {
             // to ensure server side polling is completed
             Console.WriteLine(Resources.WaitMessage);
-            await Task.Delay(60000);
+            await Task.Delay(TimeSpan.FromMilliseconds(DelayInMilliSeconds));
 
             CompatibleVersion compatibleVersion = await schemaClient.GetCompatibility();
 
@@ -109,6 +105,12 @@ namespace SchemaManager.Commands
             {
                 throw new SchemaManagerException(string.Format(Resources.InvalidVersionMessage, version));
             }
+        }
+
+        private static bool EnsureForce()
+        {
+            Console.WriteLine(Resources.ForceWarning);
+            return string.Equals(Console.ReadLine(), "yes", StringComparison.OrdinalIgnoreCase);
         }
     }
 }
