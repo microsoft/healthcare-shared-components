@@ -51,11 +51,23 @@ namespace SchemaManager.Commands
                 availableVersions = availableVersions.Where(availableVersion => availableVersion.Id <= targetVersion)
                     .ToList();
 
+                // to ensure server side polling is completed
+                Console.WriteLine(Resources.WaitMessage);
+                await Task.Delay(TimeSpan.FromMilliseconds(DelayInMilliSeconds));
+
+                if (!force)
+                {
+                    await ValidateCompatibleVersion(schemaClient, availableVersions.First().Id, availableVersions.Last().Id);
+                }
+
                 foreach (AvailableVersion availableVersion in availableVersions)
                 {
                     string script = await schemaClient.GetScript(availableVersion.Script);
 
-                    await ValidateVersion(schemaClient, availableVersion.Id);
+                    if (!force)
+                    {
+                        await ValidateInstancesVersion(schemaClient, availableVersion.Id);
+                    }
 
                     // check if the record for given version exists in failed status
                     SchemaDataStore.ExecuteDelete(connectionString, availableVersion.Id, SchemaDataStore.Failed);
@@ -84,20 +96,19 @@ namespace SchemaManager.Commands
             }
         }
 
-        private static async Task ValidateVersion(ISchemaClient schemaClient, int version)
+        private static async Task ValidateCompatibleVersion(ISchemaClient schemaClient, int minAvailableVersion, int maxAvailableVersion)
         {
-            // to ensure server side polling is completed
-            Console.WriteLine(Resources.WaitMessage);
-            await Task.Delay(TimeSpan.FromMilliseconds(DelayInMilliSeconds));
-
             CompatibleVersion compatibleVersion = await schemaClient.GetCompatibility();
 
-            // check if version doesn't lies in the compatibility range
-            if (version < compatibleVersion.Min || version > compatibleVersion.Max)
+            // check if min and max available versions are not in compatibile range
+            if (minAvailableVersion < compatibleVersion.Min || maxAvailableVersion > compatibleVersion.Max)
             {
-                throw new SchemaManagerException(string.Format(Resources.VersionIncompatibilityMessage, version));
+                throw new SchemaManagerException(string.Format(Resources.VersionIncompatibilityMessage, maxAvailableVersion));
             }
+        }
 
+        private static async Task ValidateInstancesVersion(ISchemaClient schemaClient, int version)
+        {
             List<CurrentVersion> currentVersions = await schemaClient.GetCurrentVersionInformation();
 
             // check if any instance is not running on the previous version

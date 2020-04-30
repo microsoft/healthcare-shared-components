@@ -8,10 +8,11 @@ using System.Collections.Generic;
 using System.CommandLine.Invocation;
 using System.CommandLine.Rendering;
 using System.CommandLine.Rendering.Views;
-using System.Linq;
 using System.Net.Http;
 using System.Threading.Tasks;
-using Newtonsoft.Json.Linq;
+using SchemaManager.Exceptions;
+using SchemaManager.Model;
+using SchemaManager.Utils;
 
 namespace SchemaManager.Commands
 {
@@ -26,26 +27,35 @@ namespace SchemaManager.Commands
                 Console.WindowHeight,
                 true);
 
-            var httpClient = new HttpClient
+            List<AvailableVersion> availableVersions = null;
+            ISchemaClient schemaClient = new SchemaClient(server);
+
+            try
             {
-                BaseAddress = server,
-            };
-
-            var jsonResult = await httpClient.GetStringAsync(new Uri("/_schema/versions", UriKind.Relative));
-
-            List<JToken> resultsJson = JArray.Parse(jsonResult).ToList();
-
-            var tableView = new TableView<JToken>
+                availableVersions = await schemaClient.GetAvailability();
+            }
+            catch (SchemaManagerException ex)
             {
-                Items = resultsJson,
+                CommandUtils.PrintError(ex.Message);
+                return;
+            }
+            catch (HttpRequestException)
+            {
+                CommandUtils.PrintError(string.Format(Resources.RequestFailedMessage, server));
+                return;
+            }
+
+            var tableView = new TableView<AvailableVersion>
+            {
+                Items = availableVersions,
             };
 
             tableView.AddColumn(
-                cellValue: f => f["id"],
-                header: new ContentView("Version"));
+              cellValue: availableVersion => availableVersion.Id,
+              header: new ContentView("Version"));
 
             tableView.AddColumn(
-                cellValue: f => f["script"],
+                cellValue: availableVersion => availableVersion.Script,
                 header: new ContentView("Script"));
 
             var consoleRenderer = new ConsoleRenderer(
@@ -53,8 +63,11 @@ namespace SchemaManager.Commands
                 mode: invocationContext.BindingContext.OutputMode(),
                 resetAfterRender: true);
 
-            var screen = new ScreenView(renderer: consoleRenderer) { Child = tableView };
-            screen.Render(region);
+            using (var screen = new ScreenView(renderer: consoleRenderer))
+            {
+                screen.Child = tableView;
+                screen.Render(region);
+            }
         }
     }
 }

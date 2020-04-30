@@ -21,15 +21,19 @@ namespace SchemaManager
             using (var connection = new SqlConnection(connectionString))
             {
                 connection.Open();
+                ServerConnection serverConnection = new ServerConnection(connection);
 
                 try
                 {
-                    var server = new Server(new ServerConnection(connection));
+                    var server = new Server(serverConnection);
 
+                    serverConnection.BeginTransaction();
                     server.ConnectionContext.ExecuteNonQuery(queryString);
+                    serverConnection.CommitTransaction();
                 }
                 catch (SqlException)
                 {
+                    serverConnection.RollBackTransaction();
                     ExecuteUpsert(connectionString, version, Failed);
                     throw;
                 }
