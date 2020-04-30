@@ -3,6 +3,7 @@
 // Licensed under the MIT License (MIT). See LICENSE in the repo root for license information.
 // -------------------------------------------------------------------------------------------------
 
+using System;
 using System.Data;
 using System.Data.SqlClient;
 using Microsoft.SqlServer.Management.Common;
@@ -31,7 +32,7 @@ namespace SchemaManager
                     server.ConnectionContext.ExecuteNonQuery(queryString);
                     serverConnection.CommitTransaction();
                 }
-                catch (SqlException)
+                catch (Exception e) when (e is SqlException || e is ExecutionFailureException)
                 {
                     serverConnection.RollBackTransaction();
                     ExecuteUpsert(connectionString, version, Failed);

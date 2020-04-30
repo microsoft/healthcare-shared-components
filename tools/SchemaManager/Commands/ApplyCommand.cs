@@ -10,6 +10,7 @@ using System.Data.SqlClient;
 using System.Linq;
 using System.Net.Http;
 using System.Threading.Tasks;
+using Microsoft.SqlServer.Management.Common;
 using SchemaManager.Exceptions;
 using SchemaManager.Model;
 using SchemaManager.Utils;
@@ -18,7 +19,7 @@ namespace SchemaManager.Commands
 {
     public static class ApplyCommand
     {
-        private const int DelayInMilliSeconds = 60000;
+        private static readonly TimeSpan MaxWaitTime = TimeSpan.FromMilliseconds(60000);
 
         public static async Task HandlerAsync(string connectionString, Uri server, MutuallyExclusiveType exclusiveType, bool force)
         {
@@ -53,7 +54,7 @@ namespace SchemaManager.Commands
 
                 // to ensure server side polling is completed
                 Console.WriteLine(Resources.WaitMessage);
-                await Task.Delay(TimeSpan.FromMilliseconds(DelayInMilliSeconds));
+                await Task.Delay(MaxWaitTime);
 
                 if (!force)
                 {
@@ -89,7 +90,7 @@ namespace SchemaManager.Commands
                 CommandUtils.PrintError(string.Format(Resources.RequestFailedMessage, server));
                 return;
             }
-            catch (SqlException ex)
+            catch (Exception ex) when (ex is SqlException || ex is ExecutionFailureException)
             {
                 CommandUtils.PrintError(string.Format(Resources.QueryExecutionErrorMessage, ex.Message));
                 return;
