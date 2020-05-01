@@ -10,7 +10,7 @@ namespace Microsoft.Health.SqlServer.Extensions
     public static class SqlExceptionExtensions
     {
         /// <summary>
-        /// Determins whether the exception is transient.
+        /// Determines whether the exception is transient.
         /// </summary>
         /// <param name="exception">The exception to check.</param>
         /// <returns><c>true</c> if the exception is transient; otherwise, <c>false</c>.</returns
