@@ -3,8 +3,6 @@
 // Licensed under the MIT License (MIT). See LICENSE in the repo root for license information.
 // -------------------------------------------------------------------------------------------------
 
-using System;
-
 namespace Microsoft.Health.SqlServer.Configs
 {
     public class SqlServerDataStoreConfiguration
@@ -28,18 +26,8 @@ namespace Microsoft.Health.SqlServer.Configs
         public bool AllowDatabaseCreation { get; set; }
 
         /// <summary>
-        /// If set, the automatic schema updates are turned on
+        /// Allows the experimental schema initializer to attempt to create the database if not present.
         /// </summary>
-        public bool SchemaAutoUpdatesEnabled { get; set; }
-
-        /// <summary>
-        /// Allows the polling frequency for the schema updates
-        /// </summary>
-        public TimeSpan SchemaUpdatesJobPollingFrequencyInSeconds { get; set; } = TimeSpan.FromSeconds(60);
-
-        /// <summary>
-        /// Allows the expired instance record to delete
-        /// </summary>
-        public int InstanceRecordExpirationTimeInMinutes { get; set; } = 2;
+        public SqlServerSchemaOptions SchemaOptions { get; } = new SqlServerSchemaOptions();
     }
 }

@@ -35,49 +35,6 @@ CREATE UNIQUE CLUSTERED INDEX IXC_InstanceSchema ON dbo.InstanceSchema
 
 GO
 
-/*************************************************************
-    Stored procedures for InstanceSchema
-**************************************************************/
---
--- STORED PROCEDURE
---     CreateInstanceSchema.
---
--- DESCRIPTION
---     Creates a new row to the InstanceSchema table.
---
--- PARAMETERS
---     @name
---         * The unique name for a particular instance
---     @currentVersion
---         * The current version of the schema that the given instance is using
---     @maxVersion
---         * The maximum supported schema version for the given instance
---     @minVersion
---         * The minimum supported schema version for the given instance
---     @addMinutesOnTimeout
---         * The minutes to add
---
-CREATE PROCEDURE dbo.CreateInstanceSchema
-    @name varchar(64),
-    @currentVersion int,
-    @maxVersion int,
-    @minVersion int,
-    @addMinutesOnTimeout int
-AS
-    SET NOCOUNT ON
-
-    BEGIN
-
-    DECLARE @timeout datetime2(0) = DATEADD(minute, @addMinutesOnTimeout, SYSUTCDATETIME())
-
-    INSERT INTO dbo.InstanceSchema
-        (Name, CurrentVersion, MaxVersion, MinVersion, Timeout)
-    VALUES
-        (@name, @currentVersion, @maxVersion, @minVersion, @timeout)
-
-    END
-GO
-
 --
 -- STORED PROCEDURE
 --     Gets schema information given its instance name.
@@ -131,8 +88,8 @@ AS
     DECLARE @timeout datetime2(0) = DATEADD(minute, @addMinutesOnTimeout, SYSUTCDATETIME())
     DECLARE @currentVersion int = (SELECT COALESCE(MAX(Version), 0)
                                   FROM dbo.SchemaVersion
-                                  WHERE  Status = 'completed')
-   IF EXISTS(SELECT * FROM dbo.InstanceSchema
+                                  WHERE  Status = 'completed' AND Version <= @maxVersion)
+    IF EXISTS(SELECT * FROM dbo.InstanceSchema
              WHERE Name = @name)
     BEGIN
         UPDATE dbo.InstanceSchema
@@ -185,7 +142,7 @@ AS
 BEGIN
     SET NOCOUNT ON
 
-    Select MAX(MinVersion), MIN(MaxVersion)
+    SELECT MAX(MinVersion), MIN(MaxVersion)
     FROM dbo.InstanceSchema
     WHERE Timeout > SYSUTCDATETIME()
 END
@@ -203,13 +160,13 @@ GO
 --
 CREATE PROCEDURE dbo.SelectCurrentVersionsInformation
 
+
 AS
 BEGIN
     SET NOCOUNT ON
 
     SELECT SV.Version, SV.Status, STRING_AGG(SCH.NAME, ',')
-    FROM
-    dbo.SchemaVersion AS SV LEFT OUTER JOIN dbo.InstanceSchema as SCH
+    FROM dbo.SchemaVersion AS SV LEFT OUTER JOIN dbo.InstanceSchema AS SCH
     ON SV.Version = SCH.CurrentVersion
     GROUP BY Version, Status
 

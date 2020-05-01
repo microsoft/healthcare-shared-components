@@ -39,8 +39,8 @@ namespace Microsoft.Health.SqlServer.Api.UnitTests.Features
         [Fact]
         public async Task GivenAMediator_WhenCompatibleRequest_ThenReturnsCompatibleVersions()
         {
-            _schemaMigrationDataStore.GetLatestCompatibleVersionAsync(Arg.Any<CancellationToken>())
-                    .Returns(new GetCompatibilityVersionResponse(new CompatibleVersions(1, 3)));
+            _schemaMigrationDataStore.GetLatestCompatibleVersionsAsync(Arg.Any<CancellationToken>())
+                    .Returns(new CompatibleVersions(1, 3));
             GetCompatibilityVersionResponse response = await _mediator.GetCompatibleVersionAsync(_cancellationToken);
 
             Assert.Equal(1, response.Versions.Min);

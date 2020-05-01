@@ -70,16 +70,7 @@ namespace Microsoft.Health.SqlServer {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to The current version information is not found..
-        /// </summary>
-        internal static string CurrentRecordNotFound {
-            get {
-                return ResourceManager.GetString("CurrentRecordNotFound", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to The sql operation is failed..
+        ///   Looks up a localized string similar to The SQL operation has failed..
         /// </summary>
         internal static string OperationFailed {
             get {

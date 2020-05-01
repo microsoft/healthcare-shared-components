@@ -3,9 +3,10 @@
 // Licensed under the MIT License (MIT). See LICENSE in the repo root for license information.
 // -------------------------------------------------------------------------------------------------
 
+using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.Health.SqlServer.Features.Schema.Messages.Get;
+using Microsoft.Health.SqlServer.Features.Schema.Model;
 
 namespace Microsoft.Health.SqlServer.Features.Schema
 {
@@ -16,20 +17,20 @@ namespace Microsoft.Health.SqlServer.Features.Schema
         /// </summary>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>The latest supported schema version from server.</returns>
-        Task<GetCompatibilityVersionResponse> GetLatestCompatibleVersionAsync(CancellationToken cancellationToken);
+        Task<CompatibleVersions> GetLatestCompatibleVersionsAsync(CancellationToken cancellationToken);
 
         /// <summary>
         /// Get current version information.
         /// </summary>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>The current schema versions information</returns>
-        Task<GetCurrentVersionResponse> GetCurrentVersionAsync(CancellationToken cancellationToken);
+        Task<List<CurrentVersionInformation>> GetCurrentVersionAsync(CancellationToken cancellationToken);
 
         /// <summary>
         /// Delete expired instance schema information.
         /// </summary>
         /// <returns>A task</returns>
-        Task DeleteExpiredRecords();
+        Task DeleteExpiredInstanceSchemaAsync();
 
         /// <summary>
         /// Upsert current version information for the named instance.
@@ -38,15 +39,6 @@ namespace Microsoft.Health.SqlServer.Features.Schema
         /// <param name="schemaInformation">The Schema information</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Returns current version</returns>
-        Task<int> UpsertInstanceSchemaInformation(string name, SchemaInformation schemaInformation, CancellationToken cancellationToken);
-
-        /// <summary>
-        /// Upsert current version information.
-        /// </summary>
-        /// <param name="name">The instance name.</param>
-        /// <param name="schemaInformation">The SchemaInformation.</param>
-        /// <param name="cancellationToken">The cancellation token.</param>
-        /// <returns>A Task</returns>
-        Task InsertInstanceSchemaInformation(string name, SchemaInformation schemaInformation, CancellationToken cancellationToken);
+        Task<int> UpsertInstanceSchemaInformationAsync(string name, SchemaInformation schemaInformation, CancellationToken cancellationToken);
     }
 }

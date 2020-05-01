@@ -36,7 +36,7 @@ namespace Microsoft.Health.SqlServer.Api.Features.Filters
                         context.ExceptionHandled = true;
                         break;
 
-                    case RecordNotFoundException _:
+                    case SqlRecordNotFoundException _:
                     case FileNotFoundException _:
                         context.Result = new JsonResult(resultJson) { StatusCode = (int)HttpStatusCode.NotFound };
                         context.ExceptionHandled = true;

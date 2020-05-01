@@ -16,7 +16,6 @@ using Microsoft.Health.SqlServer.Configs;
 using Microsoft.Health.SqlServer.Features.Client;
 using Microsoft.Health.SqlServer.Features.Exceptions;
 using Microsoft.Health.SqlServer.Features.Schema;
-using Microsoft.Health.SqlServer.Features.Schema.Messages.Get;
 using Microsoft.Health.SqlServer.Features.Schema.Model;
 
 namespace Microsoft.Health.SqlServer.Features.Storage
@@ -41,7 +40,7 @@ namespace Microsoft.Health.SqlServer.Features.Storage
             _logger = logger;
         }
 
-        public async Task<GetCompatibilityVersionResponse> GetLatestCompatibleVersionAsync(CancellationToken cancellationToken)
+        public async Task<CompatibleVersions> GetLatestCompatibleVersionsAsync(CancellationToken cancellationToken)
         {
             CompatibleVersions compatibleVersions;
             using (SqlConnectionWrapper sqlConnectionWrapper = _sqlConnectionWrapperFactory.ObtainSqlConnectionWrapper())
@@ -57,39 +56,15 @@ namespace Microsoft.Health.SqlServer.Features.Storage
                     }
                     else
                     {
-                        throw new RecordNotFoundException(Resources.CompatibilityRecordNotFound);
+                        throw new SqlRecordNotFoundException(Resources.CompatibilityRecordNotFound);
                     }
                 }
 
-                return new GetCompatibilityVersionResponse(compatibleVersions);
+                return compatibleVersions;
             }
         }
 
-        public async Task InsertInstanceSchemaInformation(string name, SchemaInformation schemaInformation, CancellationToken cancellationToken)
-        {
-            using (SqlConnectionWrapper sqlConnectionWrapper = _sqlConnectionWrapperFactory.ObtainSqlConnectionWrapper())
-            using (SqlCommand sqlCommand = sqlConnectionWrapper.CreateSqlCommand())
-            {
-                SchemaShared.CreateInstanceSchema.PopulateCommand(
-                     sqlCommand,
-                     name,
-                     schemaInformation.Current.GetValueOrDefault(),
-                     schemaInformation.MaximumSupportedVersion,
-                     schemaInformation.MinimumSupportedVersion,
-                     _configuration.InstanceRecordExpirationTimeInMinutes);
-                try
-                {
-                    await sqlCommand.ExecuteNonQueryAsync();
-                }
-                catch (SqlException e)
-                {
-                    _logger.LogError(e, "Error from SQL database on insert");
-                    throw;
-                }
-            }
-        }
-
-        public async Task<int> UpsertInstanceSchemaInformation(string name, SchemaInformation schemaInformation, CancellationToken cancellationToken)
+        public async Task<int> UpsertInstanceSchemaInformationAsync(string name, SchemaInformation schemaInformation, CancellationToken cancellationToken)
         {
             using (SqlConnectionWrapper sqlConnectionWrapper = _sqlConnectionWrapperFactory.ObtainSqlConnectionWrapper())
             using (SqlCommand sqlCommand = sqlConnectionWrapper.CreateSqlCommand())
@@ -99,7 +74,7 @@ namespace Microsoft.Health.SqlServer.Features.Storage
                      name,
                      schemaInformation.MaximumSupportedVersion,
                      schemaInformation.MinimumSupportedVersion,
-                     _configuration.InstanceRecordExpirationTimeInMinutes);
+                     _configuration.SchemaOptions.InstanceRecordExpirationTimeInMinutes);
                 try
                 {
                     return (int)await sqlCommand.ExecuteScalarAsync();
@@ -112,7 +87,7 @@ namespace Microsoft.Health.SqlServer.Features.Storage
             }
         }
 
-        public async Task DeleteExpiredRecords()
+        public async Task DeleteExpiredInstanceSchemaAsync()
         {
             using (SqlConnectionWrapper sqlConnectionWrapper = _sqlConnectionWrapperFactory.ObtainSqlConnectionWrapper())
             using (SqlCommand sqlCommand = sqlConnectionWrapper.CreateSqlCommand())
@@ -130,7 +105,7 @@ namespace Microsoft.Health.SqlServer.Features.Storage
             }
         }
 
-        public async Task<GetCurrentVersionResponse> GetCurrentVersionAsync(CancellationToken cancellationToken)
+        public async Task<List<CurrentVersionInformation>> GetCurrentVersionAsync(CancellationToken cancellationToken)
         {
             var currentVersions = new List<CurrentVersionInformation>();
             using (SqlConnectionWrapper sqlConnectionWrapper = _sqlConnectionWrapperFactory.ObtainSqlConnectionWrapper())
@@ -147,9 +122,9 @@ namespace Microsoft.Health.SqlServer.Features.Storage
                             while (await dataReader.ReadAsync())
                             {
                                 IList<string> instanceNames = new List<string>();
-                                if (dataReader.GetValue(2) != null && !Convert.IsDBNull(dataReader.GetValue(2)))
+                                if (!dataReader.IsDBNull(2))
                                 {
-                                    string names = (string)dataReader.GetValue(2);
+                                    string names = dataReader.GetString(2);
                                     instanceNames = names.Split(",").ToList();
                                 }
 
@@ -159,31 +134,25 @@ namespace Microsoft.Health.SqlServer.Features.Storage
                         }
                         else
                         {
-                            return new GetCurrentVersionResponse(currentVersions);
+                            return currentVersions;
                         }
                     }
                 }
                 catch (SqlException e)
                 {
-                    switch (e.Number)
-                    {
-                        case SqlErrorCodes.NotFound:
-                            throw new RecordNotFoundException(Resources.CurrentRecordNotFound);
-                        default:
-                            _logger.LogError(e, "Error from SQL database on Select");
-                            throw;
-                    }
+                    _logger.LogError(e, "Error from SQL database on Select");
+                    throw;
                 }
             }
 
-            return new GetCurrentVersionResponse(currentVersions);
+            return currentVersions;
         }
 
         private int ConvertToInt(object o)
         {
             if (o == DBNull.Value)
             {
-                throw new RecordNotFoundException(Resources.CompatibilityRecordNotFound);
+                throw new SqlRecordNotFoundException(Resources.CompatibilityRecordNotFound);
             }
             else
             {

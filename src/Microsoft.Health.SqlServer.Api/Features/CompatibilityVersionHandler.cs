@@ -9,6 +9,7 @@ using EnsureThat;
 using MediatR;
 using Microsoft.Health.SqlServer.Features.Schema;
 using Microsoft.Health.SqlServer.Features.Schema.Messages.Get;
+using Microsoft.Health.SqlServer.Features.Schema.Model;
 
 namespace Microsoft.Health.SqlServer.Api.Features
 {
@@ -26,7 +27,9 @@ namespace Microsoft.Health.SqlServer.Api.Features
         {
             EnsureArg.IsNotNull(request, nameof(request));
 
-            return await _schemaDataStore.GetLatestCompatibleVersionAsync(cancellationToken);
+            CompatibleVersions compatibleVersions = await _schemaDataStore.GetLatestCompatibleVersionsAsync(cancellationToken);
+
+            return new GetCompatibilityVersionResponse(compatibleVersions);
         }
     }
 }

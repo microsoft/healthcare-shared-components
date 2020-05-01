@@ -40,14 +40,14 @@ namespace Microsoft.Health.SqlServer.Api.UnitTests.Features
         [Fact]
         public async Task GivenACurrentMediator_WhenCurrentRequest_ThenReturnsCurrentVersionInformation()
         {
-            IList<CurrentVersionInformation> mockCurrentVersions = new List<CurrentVersionInformation>()
+            var mockCurrentVersions = new List<CurrentVersionInformation>()
             {
                 new CurrentVersionInformation(1, "completed", new List<string>() { "server1", "server2" }),
                 new CurrentVersionInformation(1, "completed", new List<string>()),
             };
 
             _schemaDataStore.GetCurrentVersionAsync(Arg.Any<CancellationToken>())
-                    .Returns(new GetCurrentVersionResponse(mockCurrentVersions));
+                    .Returns(mockCurrentVersions);
             GetCurrentVersionResponse response = await _mediator.GetCurrentVersionAsync(_cancellationToken);
 
             Assert.Equal(mockCurrentVersions.Count, response.CurrentVersions.Count);
@@ -56,10 +56,10 @@ namespace Microsoft.Health.SqlServer.Api.UnitTests.Features
         [Fact]
         public async Task GivenACurrentMediator_WhenCurrentRequestAndEmptySchemaVersionTable_ThenReturnsEmptyArray()
         {
-            IList<CurrentVersionInformation> mockCurrentVersions = new List<CurrentVersionInformation>();
+            var mockCurrentVersions = new List<CurrentVersionInformation>();
 
             _schemaDataStore.GetCurrentVersionAsync(Arg.Any<CancellationToken>())
-                    .Returns(new GetCurrentVersionResponse(mockCurrentVersions));
+                    .Returns(mockCurrentVersions);
 
             GetCurrentVersionResponse response = await _mediator.GetCurrentVersionAsync(_cancellationToken);
 

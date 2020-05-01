@@ -36,29 +36,22 @@ namespace Microsoft.Health.SqlServer.Features.Schema
 
         public async Task ExecuteAsync(SchemaInformation schemaInformation, string instanceName, CancellationToken cancellationToken)
         {
-            using (var scope = _serviceProvider.CreateScope())
-            {
-                var schemaDataStore = scope.ServiceProvider.GetRequiredService<ISchemaDataStore>();
-
-                await schemaDataStore.InsertInstanceSchemaInformation(instanceName, schemaInformation, cancellationToken);
-            }
-
             _logger.LogInformation($"Polling started at {Clock.UtcNow}");
 
             while (!cancellationToken.IsCancellationRequested)
             {
                 try
                 {
-                    await Task.Delay(_sqlServerDataStoreConfiguration.SchemaUpdatesJobPollingFrequencyInSeconds, cancellationToken);
-
                     using (var scope = _serviceProvider.CreateScope())
                     {
                         var schemaDataStore = scope.ServiceProvider.GetRequiredService<ISchemaDataStore>();
 
                         // Ensure schemaInformation has the latest current version
-                        schemaInformation.Current = await schemaDataStore.UpsertInstanceSchemaInformation(instanceName, schemaInformation, cancellationToken);
+                        schemaInformation.Current = await schemaDataStore.UpsertInstanceSchemaInformationAsync(instanceName, schemaInformation, cancellationToken);
 
-                        await schemaDataStore.DeleteExpiredRecords();
+                        await Task.Delay(TimeSpan.FromSeconds(_sqlServerDataStoreConfiguration.SchemaOptions.JobPollingFrequencyInSeconds), cancellationToken);
+
+                        await schemaDataStore.DeleteExpiredInstanceSchemaAsync();
                     }
                 }
                 catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)

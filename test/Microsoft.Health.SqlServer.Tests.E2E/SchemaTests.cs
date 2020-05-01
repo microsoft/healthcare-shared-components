@@ -155,7 +155,7 @@ namespace Microsoft.Health.SqlServer.Tests.E2E
             await SendAndVerifyStatusCode(HttpMethod.Get, "_schema/versions/0/script", HttpStatusCode.NotFound);
         }
 
-        private async Task<HttpResponseMessage> SendAndVerifyStatusCode(HttpMethod httpMethod, string path, HttpStatusCode httpStatusCode)
+        private async Task<HttpResponseMessage> SendAndVerifyStatusCode(HttpMethod httpMethod, string path, HttpStatusCode expectedStatusCode)
         {
             var request = new HttpRequestMessage
             {
@@ -170,7 +170,7 @@ namespace Microsoft.Health.SqlServer.Tests.E2E
             {
                 request.Content = content;
                 response = await _client.SendAsync(request);
-                Assert.Equal(httpStatusCode, response.StatusCode);
+                Assert.Equal(expectedStatusCode, response.StatusCode);
             }
 
             return response;

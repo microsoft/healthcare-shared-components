@@ -8,9 +8,9 @@ using Microsoft.Health.Abstractions.Exceptions;
 
 namespace Microsoft.Health.SqlServer.Features.Exceptions
 {
-    public class RecordNotFoundException : MicrosoftHealthException
+    public class SqlRecordNotFoundException : MicrosoftHealthException
     {
-        public RecordNotFoundException(string message)
+        public SqlRecordNotFoundException(string message)
             : base(message)
         {
             EnsureArg.IsNotNullOrWhiteSpace(message, nameof(message));
