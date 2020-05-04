@@ -62,6 +62,18 @@ namespace Microsoft.Health.SqlServer.Features.Storage
 
                 return compatibleVersions;
             }
+
+            int ConvertToInt(object o)
+            {
+                if (o == DBNull.Value)
+                {
+                    throw new SqlRecordNotFoundException(Resources.CompatibilityRecordNotFound);
+                }
+                else
+                {
+                    return Convert.ToInt32(o);
+                }
+            }
         }
 
         public async Task<int> UpsertInstanceSchemaInformationAsync(string name, SchemaInformation schemaInformation, CancellationToken cancellationToken)
@@ -146,18 +158,6 @@ namespace Microsoft.Health.SqlServer.Features.Storage
             }
 
             return currentVersions;
-        }
-
-        private int ConvertToInt(object o)
-        {
-            if (o == DBNull.Value)
-            {
-                throw new SqlRecordNotFoundException(Resources.CompatibilityRecordNotFound);
-            }
-            else
-            {
-                return Convert.ToInt32(o);
-            }
         }
     }
 }

@@ -14,7 +14,6 @@ namespace Microsoft.Health.SqlServer.Features.Schema.Model
     {
         internal readonly static InstanceSchemaTable InstanceSchema = new InstanceSchemaTable();
         internal readonly static SchemaVersionTable SchemaVersion = new SchemaVersionTable();
-        internal readonly static CreateInstanceSchemaProcedure CreateInstanceSchema = new CreateInstanceSchemaProcedure();
         internal readonly static DeleteInstanceSchemaProcedure DeleteInstanceSchema = new DeleteInstanceSchemaProcedure();
         internal readonly static GetInstanceSchemaByNameProcedure GetInstanceSchemaByName = new GetInstanceSchemaByNameProcedure();
         internal readonly static SelectCompatibleSchemaVersionsProcedure SelectCompatibleSchemaVersions = new SelectCompatibleSchemaVersionsProcedure();
@@ -41,29 +40,6 @@ namespace Microsoft.Health.SqlServer.Features.Schema.Model
 
             internal readonly IntColumn Version = new IntColumn("Version");
             internal readonly VarCharColumn Status = new VarCharColumn("Status", 10);
-        }
-
-        internal class CreateInstanceSchemaProcedure : StoredProcedure
-        {
-            internal CreateInstanceSchemaProcedure(): base("dbo.CreateInstanceSchema")
-            {
-            }
-
-            private readonly ParameterDefinition<System.String> _name = new ParameterDefinition<System.String>("@name", global::System.Data.SqlDbType.VarChar, false, 64);
-            private readonly ParameterDefinition<System.Int32> _currentVersion = new ParameterDefinition<System.Int32>("@currentVersion", global::System.Data.SqlDbType.Int, false);
-            private readonly ParameterDefinition<System.Int32> _maxVersion = new ParameterDefinition<System.Int32>("@maxVersion", global::System.Data.SqlDbType.Int, false);
-            private readonly ParameterDefinition<System.Int32> _minVersion = new ParameterDefinition<System.Int32>("@minVersion", global::System.Data.SqlDbType.Int, false);
-            private readonly ParameterDefinition<System.Int32> _addMinutesOnTimeout = new ParameterDefinition<System.Int32>("@addMinutesOnTimeout", global::System.Data.SqlDbType.Int, false);
-            public void PopulateCommand(global::System.Data.SqlClient.SqlCommand command, System.String name, System.Int32 currentVersion, System.Int32 maxVersion, System.Int32 minVersion, System.Int32 addMinutesOnTimeout)
-            {
-                command.CommandType = global::System.Data.CommandType.StoredProcedure;
-                command.CommandText = "dbo.CreateInstanceSchema";
-                _name.AddParameter(command.Parameters, name);
-                _currentVersion.AddParameter(command.Parameters, currentVersion);
-                _maxVersion.AddParameter(command.Parameters, maxVersion);
-                _minVersion.AddParameter(command.Parameters, minVersion);
-                _addMinutesOnTimeout.AddParameter(command.Parameters, addMinutesOnTimeout);
-            }
         }
 
         internal class DeleteInstanceSchemaProcedure : StoredProcedure
