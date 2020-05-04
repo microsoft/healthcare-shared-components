@@ -14,11 +14,11 @@ using Microsoft.Health.SqlServer.Features.Schema.Model;
 
 namespace Microsoft.Health.SqlServer.Api.Features
 {
-    public class CurrentVersionSchemaHandler : IRequestHandler<GetCurrentVersionRequest, GetCurrentVersionResponse>
+    public class CurrentVersionHandler : IRequestHandler<GetCurrentVersionRequest, GetCurrentVersionResponse>
     {
         private readonly ISchemaDataStore _schemaDataStore;
 
-        public CurrentVersionSchemaHandler(ISchemaDataStore schemaMigrationDataStore)
+        public CurrentVersionHandler(ISchemaDataStore schemaMigrationDataStore)
         {
             EnsureArg.IsNotNull(schemaMigrationDataStore, nameof(schemaMigrationDataStore));
             _schemaDataStore = schemaMigrationDataStore;

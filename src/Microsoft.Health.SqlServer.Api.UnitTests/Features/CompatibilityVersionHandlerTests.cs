@@ -43,8 +43,8 @@ namespace Microsoft.Health.SqlServer.Api.UnitTests.Features
                     .Returns(new CompatibleVersions(1, 3));
             GetCompatibilityVersionResponse response = await _mediator.GetCompatibleVersionAsync(_cancellationToken);
 
-            Assert.Equal(1, response.Versions.Min);
-            Assert.Equal(3, response.Versions.Max);
+            Assert.Equal(1, response.CompatibleVersions.Min);
+            Assert.Equal(3, response.CompatibleVersions.Max);
         }
     }
 }

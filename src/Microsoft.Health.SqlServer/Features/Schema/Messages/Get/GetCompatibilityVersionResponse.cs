@@ -14,9 +14,9 @@ namespace Microsoft.Health.SqlServer.Features.Schema.Messages.Get
         {
             EnsureArg.IsNotNull(versions, nameof(versions));
 
-            Versions = versions;
+            CompatibleVersions = versions;
         }
 
-        public CompatibleVersions Versions { get; }
+        public CompatibleVersions CompatibleVersions { get; }
     }
 }

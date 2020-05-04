@@ -16,6 +16,8 @@ namespace Microsoft.Health.SqlServer.Features.Schema
 {
     /// <summary>
     /// The worker responsible for running the schema job.
+    /// It inserts the instance schema information.
+    /// It polls the specified time to update the instance schema information and deletes the expired instance schema information, if any.
     /// </summary>
     public class SchemaJobWorker
     {

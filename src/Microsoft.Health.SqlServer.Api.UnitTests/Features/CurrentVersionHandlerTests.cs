@@ -20,17 +20,17 @@ using Xunit;
 
 namespace Microsoft.Health.SqlServer.Api.UnitTests.Features
 {
-    public class CurrentVersionSchemaHandlerTests
+    public class CurrentVersionHandlerTests
     {
         private readonly ISchemaDataStore _schemaDataStore;
         private readonly IMediator _mediator;
         private readonly CancellationToken _cancellationToken;
 
-        public CurrentVersionSchemaHandlerTests()
+        public CurrentVersionHandlerTests()
         {
             _schemaDataStore = Substitute.For<ISchemaDataStore>();
             var collection = new ServiceCollection();
-            collection.Add(sp => new CurrentVersionSchemaHandler(_schemaDataStore)).Singleton().AsSelf().AsImplementedInterfaces();
+            collection.Add(sp => new CurrentVersionHandler(_schemaDataStore)).Singleton().AsSelf().AsImplementedInterfaces();
 
             ServiceProvider provider = collection.BuildServiceProvider();
             _mediator = new Mediator(type => provider.GetService(type));

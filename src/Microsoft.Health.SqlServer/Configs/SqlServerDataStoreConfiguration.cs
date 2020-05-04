@@ -26,7 +26,7 @@ namespace Microsoft.Health.SqlServer.Configs
         public bool AllowDatabaseCreation { get; set; }
 
         /// <summary>
-        /// Allows the experimental schema initializer to attempt to create the database if not present.
+        /// Updates the schema migration options
         /// </summary>
         public SqlServerSchemaOptions SchemaOptions { get; } = new SqlServerSchemaOptions();
     }

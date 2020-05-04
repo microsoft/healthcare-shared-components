@@ -69,8 +69,8 @@ namespace Microsoft.Health.SqlServer.Api.Controllers
         public async Task<ActionResult> CurrentVersionAsync()
         {
             _logger.LogInformation("Attempting to get current schemas");
-            var compatibleResponse = await _mediator.GetCurrentVersionAsync(HttpContext.RequestAborted);
-            return new JsonResult(compatibleResponse.CurrentVersions);
+            var currentVersionResponse = await _mediator.GetCurrentVersionAsync(HttpContext.RequestAborted);
+            return new JsonResult(currentVersionResponse.CurrentVersions);
         }
 
         [HttpGet]
@@ -90,7 +90,7 @@ namespace Microsoft.Health.SqlServer.Api.Controllers
         {
             _logger.LogInformation("Attempting to get compatibility");
             var compatibleResponse = await _mediator.GetCompatibleVersionAsync(HttpContext.RequestAborted);
-            return new JsonResult(compatibleResponse.Versions);
+            return new JsonResult(compatibleResponse.CompatibleVersions);
         }
     }
 }
