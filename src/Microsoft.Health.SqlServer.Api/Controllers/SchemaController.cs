@@ -5,6 +5,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using EnsureThat;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -71,11 +72,13 @@ namespace Microsoft.Health.SqlServer.Api.Controllers
         [HttpGet]
         [AllowAnonymous]
         [Route(KnownRoutes.Script, Name = RouteNames.Script)]
-        public FileContentResult SqlScript(int id)
+        public async Task<FileContentResult> SqlScriptAsync(int id)
         {
             _logger.LogInformation($"Attempting to get script for schema version: {id}");
-            string fileName = $"{id}.sql";
-            return File(_scriptProvider.GetMigrationScriptAsBytes(id), "application/sql", fileName);
+            var currentVersion = _schemaInformation.Current ?? 0;
+            bool applyFullSchemaSnapshot = currentVersion < 1 ? true : false;
+            string fileName = applyFullSchemaSnapshot ? $"{id}.sql" : $"{id}.diff.sql";
+            return File(await _scriptProvider.GetMigrationScriptAsBytesAsync(id, applyFullSchemaSnapshot), "application/sql", fileName);
         }
 
         [HttpGet]

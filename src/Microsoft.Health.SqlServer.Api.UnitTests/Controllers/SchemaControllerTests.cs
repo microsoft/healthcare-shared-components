@@ -4,6 +4,7 @@
 // -------------------------------------------------------------------------------------------------
 
 using System;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Routing;
 using Microsoft.Extensions.Logging.Abstractions;
@@ -35,11 +36,23 @@ namespace Microsoft.Health.SqlServer.Api.UnitTests.Controllers
         }
 
         [Fact]
-        public void GivenAScriptRequest_WhenSchemaIdFound_ThenReturnScriptSuccess()
+        public async Task GivenAScriptRequest_WhenSchemaIdFoundAndCurrentVersionAsNull_ThenReturnsFullSchemaSnapshotScriptSuccessAsync()
         {
-            ActionResult result = _schemaController.SqlScript(1);
-            string script = result.ToString();
+            _schemaInformation.Current = null;
+            FileContentResult result = await _schemaController.SqlScriptAsync(1);
+            string script = result.FileContents.ToString();
             Assert.NotNull(script);
+            Assert.Equal("1.sql", result.FileDownloadName);
+        }
+
+        [Fact]
+        public async Task GivenAScriptRequest_WhenSchemaIdFoundAndCurrentVersionEqualsOne_ThenReturnDiffSchemaScriptSuccessAsync()
+        {
+            _schemaInformation.Current = 1;
+            FileContentResult result = await _schemaController.SqlScriptAsync(2);
+            string script = result.FileContents.ToString();
+            Assert.NotNull(script);
+            Assert.Equal("2.diff.sql", result.FileDownloadName);
         }
 
         [Fact]
