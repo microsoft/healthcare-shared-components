@@ -61,7 +61,7 @@ namespace Microsoft.Health.SqlServer {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to The compatibility information is not found..
+        ///   Looks up a localized string similar to The compatibility information was not found..
         /// </summary>
         internal static string CompatibilityRecordNotFound {
             get {

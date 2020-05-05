@@ -59,6 +59,15 @@ namespace Microsoft.Health.SqlServer.Api.UnitTests.Controllers
             JToken firstResult = jArrayResult.First;
             Assert.Equal(1, firstResult["id"]);
             Assert.Equal("https://localhost/script", firstResult["script"]);
+
+            // Ensure available versions are in the ascending order
+            jArrayResult.RemoveAt(0);
+            var previousId = (int)firstResult["id"];
+            foreach (JToken item in jArrayResult)
+            {
+                var currentId = (int)item["id"];
+                Assert.True(previousId < currentId, "The available versions are not in the ascending order");
+            }
         }
 
         [Fact]
