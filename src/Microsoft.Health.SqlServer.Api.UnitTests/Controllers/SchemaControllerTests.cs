@@ -39,7 +39,7 @@ namespace Microsoft.Health.SqlServer.Api.UnitTests.Controllers
         public async Task GivenAScriptRequest_WhenSchemaIdFoundAndCurrentVersionIsNull_ThenReturnsFullSchemaSnapshotScriptAsync()
         {
             _schemaInformation.Current = null;
-            FileContentResult result = await _schemaController.SqlScriptAsync(1);
+            FileContentResult result = await _schemaController.SqlScriptAsync(1, default);
             string script = result.FileContents.ToString();
             Assert.NotNull(script);
             Assert.Equal("1.sql", result.FileDownloadName);
@@ -49,7 +49,7 @@ namespace Microsoft.Health.SqlServer.Api.UnitTests.Controllers
         public async Task GivenAScriptRequest_WhenSchemaIdFoundAndCurrentVersionIsNotNull_ThenReturnsDiffSchemaScriptAsync()
         {
             _schemaInformation.Current = 1;
-            FileContentResult result = await _schemaController.SqlScriptAsync(2);
+            FileContentResult result = await _schemaController.SqlScriptAsync(2, default);
             string script = result.FileContents.ToString();
             Assert.NotNull(script);
             Assert.Equal("2.diff.sql", result.FileDownloadName);
