@@ -126,7 +126,7 @@ namespace Microsoft.Health.SqlServer.Tests.E2E.Rest
 
             var launchSettings = JObject.Parse(File.ReadAllText(Path.Combine(projectDir, "Properties", "launchSettings.json")));
 
-            var configuration = launchSettings["profiles"]["SqlServer"]["environmentVariables"].Cast<JProperty>().ToDictionary(p => p.Name, p => p.Value.ToString());
+            var configuration = launchSettings["profiles"]["Microsoft.Health.SqlServer.Web"]["environmentVariables"].Cast<JProperty>().ToDictionary(p => p.Name, p => p.Value.ToString());
 
             var builder = WebHost.CreateDefaultBuilder()
                 .UseContentRoot(contentRoot)
