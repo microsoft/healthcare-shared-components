@@ -36,7 +36,7 @@ namespace Microsoft.Health.SqlServer.Api.UnitTests.Controllers
         }
 
         [Fact]
-        public async Task GivenAScriptRequest_WhenSchemaIdFoundAndCurrentVersionAsNull_ThenReturnsFullSchemaSnapshotScriptSuccessAsync()
+        public async Task GivenAScriptRequest_WhenSchemaIdFoundAndCurrentVersionIsNull_ThenReturnsFullSchemaSnapshotScriptAsync()
         {
             _schemaInformation.Current = null;
             FileContentResult result = await _schemaController.SqlScriptAsync(1);
@@ -46,7 +46,7 @@ namespace Microsoft.Health.SqlServer.Api.UnitTests.Controllers
         }
 
         [Fact]
-        public async Task GivenAScriptRequest_WhenSchemaIdFoundAndCurrentVersionEqualsOne_ThenReturnDiffSchemaScriptSuccessAsync()
+        public async Task GivenAScriptRequest_WhenSchemaIdFoundAndCurrentVersionIsNotNull_ThenReturnsDiffSchemaScriptAsync()
         {
             _schemaInformation.Current = 1;
             FileContentResult result = await _schemaController.SqlScriptAsync(2);
