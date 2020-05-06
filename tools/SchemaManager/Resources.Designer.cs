@@ -124,7 +124,7 @@ namespace SchemaManager {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to The current version information is not available due to HttpStatusCode {0}..
+        ///   Looks up a localized string similar to The current version information is not available due to {0}..
         /// </summary>
         internal static string CurrentDefaultErrorDescription {
             get {
@@ -205,7 +205,7 @@ namespace SchemaManager {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Request has failed due to {0} is inactive..
+        ///   Looks up a localized string similar to Unable to connect to host {0}..
         /// </summary>
         internal static string RequestFailedMessage {
             get {

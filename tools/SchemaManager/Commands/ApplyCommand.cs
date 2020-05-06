@@ -19,7 +19,7 @@ namespace SchemaManager.Commands
 {
     public static class ApplyCommand
     {
-        private static readonly TimeSpan MaxWaitTime = TimeSpan.FromMilliseconds(60000);
+        private static readonly TimeSpan MaxWaitTime = TimeSpan.FromMinutes(1);
 
         public static async Task HandlerAsync(string connectionString, Uri server, MutuallyExclusiveType exclusiveType, bool force)
         {
@@ -41,6 +41,8 @@ namespace SchemaManager.Commands
                 }
                 else
                 {
+                    availableVersions.Sort((x, y) => x.Id.CompareTo(y.Id));
+
                     // Removing the current version
                     availableVersions.RemoveAt(0);
                 }

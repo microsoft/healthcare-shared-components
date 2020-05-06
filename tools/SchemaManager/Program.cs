@@ -20,33 +20,37 @@ namespace SchemaManager
                 OptionAliases.Server,
                 Resources.ServerOptionDescription,
                 new Argument<Uri> { Arity = ArgumentArity.ExactlyOne });
+            serverOption.AddAlias(OptionAliases.ShortServer);
 
             var connectionStringOption = new Option(
                 OptionAliases.ConnectionString,
                 Resources.ConnectionStringOptionDescription,
                 new Argument<string> { Arity = ArgumentArity.ExactlyOne });
+            connectionStringOption.AddAlias(OptionAliases.ShortConnectionString);
 
             var versionOption = new Option(
                 OptionAliases.Version,
                 Resources.VersionOptionDescription,
                 new Argument<int> { Arity = ArgumentArity.ExactlyOne });
-
-            versionOption.AddAlias(OptionAliases.V);
+            versionOption.AddAlias(OptionAliases.ShortVersion);
 
             var nextOption = new Option(
                OptionAliases.Next,
                Resources.NextOptionDescritpion,
                new Argument<bool> { Arity = ArgumentArity.ZeroOrOne });
+            nextOption.AddAlias(OptionAliases.ShortNext);
 
             var latestOption = new Option(
                OptionAliases.Latest,
                Resources.LatestOptionDescription,
                new Argument<bool> { Arity = ArgumentArity.ZeroOrOne });
+            latestOption.AddAlias(OptionAliases.ShortLatest);
 
             var forceOption = new Option(
                 OptionAliases.Force,
                 Resources.ForceOptionDescription,
                 new Argument<bool> { Arity = ArgumentArity.ZeroOrOne });
+            forceOption.AddAlias(OptionAliases.ShortForce);
 
             var rootCommand = new RootCommand();
 
