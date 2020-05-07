@@ -33,7 +33,7 @@ namespace Microsoft.Health.SqlServer.Features.Schema
             }
         }
 
-        public async Task<byte[]> GetMigrationScriptAsBytesAsync(int version, bool isDiff, CancellationToken cancellationToken)
+        public async Task<byte[]> GetMigrationScriptAsBytesAsync(int version, bool isDiff, CancellationToken cancellationToken = default)
         {
             var diffSegment = isDiff ? ".diff" : string.Empty;
             string resourceName = $"{typeof(TSchemaVersionEnum).Namespace}.Migrations.{version}{diffSegment}.sql";
