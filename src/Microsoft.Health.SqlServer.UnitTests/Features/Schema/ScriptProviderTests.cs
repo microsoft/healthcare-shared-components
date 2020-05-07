@@ -13,6 +13,7 @@ namespace Microsoft.Health.SqlServer.UnitTests.Features.Schema
     public class ScriptProviderTests
     {
         private readonly ScriptProvider<TestSchemaVersionEnum> _scriptProvider;
+        private const string DiffSegment = ".diff";
 
         public ScriptProviderTests()
         {
@@ -22,21 +23,21 @@ namespace Microsoft.Health.SqlServer.UnitTests.Features.Schema
         [Fact]
         public async Task GivenAScript_WhenDiffSegmentIsPresent_ThenReturnsDiffAsync()
         {
-            var diffSegment = ".diff";
-            Assert.NotNull(await _scriptProvider.GetMigrationScriptAsBytesAsync(2, diffSegment));
+            Assert.NotNull(await _scriptProvider.GetMigrationScriptAsBytesAsync(2, DiffSegment));
         }
 
         [Fact]
         public async Task GivenAScript_WhenDiffSegmentIsEmpty_ThenReturnsCompleteScriptAsync()
         {
-            var diffSegment = string.Empty;
-            Assert.NotNull(await _scriptProvider.GetMigrationScriptAsBytesAsync(1, diffSegment));
+            Assert.NotNull(await _scriptProvider.GetMigrationScriptAsBytesAsync(1, string.Empty));
         }
 
-        [Fact]
-        public async Task GivenAScriptIsNotPresent_WhenVersionIsNotKnown_ThenReturnsFileNotFoundException()
+        [InlineData("")]
+        [InlineData(DiffSegment)]
+        [Theory]
+        public async Task GivenAScriptIsNotPresent_WhenDiffIsNotPresent_ThenReturnsFileNotFoundException(string diffSegment)
         {
-            FileNotFoundException ex = await Assert.ThrowsAsync<FileNotFoundException>(() => _scriptProvider.GetMigrationScriptAsBytesAsync(3, string.Empty));
+            FileNotFoundException ex = await Assert.ThrowsAsync<FileNotFoundException>(() => _scriptProvider.GetMigrationScriptAsBytesAsync(3, diffSegment));
             Assert.Equal("The provided version is unknown.", ex.Message);
         }
     }
