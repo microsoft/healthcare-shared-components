@@ -34,6 +34,13 @@ namespace Microsoft.Health.SqlServer.Tests.E2E
                 new object[] { "_schema/versions/current" },
             };
 
+        public static IEnumerable<object[]> SqlData =>
+            new List<object[]>
+            {
+                new object[] { "_schema/versions/1/script" },
+                new object[] { "_schema/versions/1/diff" },
+            };
+
         [Fact]
         public async Task GivenAServerThatHasSchemas_WhenRequestingAvailable_JsonShouldBeReturned()
         {
@@ -84,28 +91,33 @@ namespace Microsoft.Health.SqlServer.Tests.E2E
             await SendAndVerifyStatusCode(HttpMethod.Delete, path, HttpStatusCode.NotFound);
         }
 
-        [Fact]
-        public async Task GivenNonIntegerVersion_WhenRequestingScript_TheServerShouldReturnNotFound()
+        [InlineData("_schema/versions/abc/script")]
+        [InlineData("_schema/versions/abc/diff")]
+        [Theory]
+        public async Task GivenNonIntegerVersion_WhenRequestingScript_TheServerShouldReturnNotFound(string path)
         {
-            await SendAndVerifyStatusCode(HttpMethod.Get, "_schema/versions/abc/script", HttpStatusCode.NotFound);
+            await SendAndVerifyStatusCode(HttpMethod.Get, path, HttpStatusCode.NotFound);
         }
 
-        [Fact]
-        public async Task GivenPostMethod_WhenRequestingScript_TheServerShouldReturnNotFound()
+        [Theory]
+        [MemberData(nameof(SqlData))]
+        public async Task GivenPostMethod_WhenRequestingScript_TheServerShouldReturnNotFound(string path)
         {
-            await SendAndVerifyStatusCode(HttpMethod.Post, "_schema/versions/1/script", HttpStatusCode.NotFound);
+            await SendAndVerifyStatusCode(HttpMethod.Post, path, HttpStatusCode.NotFound);
         }
 
-        [Fact]
-        public async Task GivenPutMethod_WhenRequestingScript_TheServerShouldReturnNotFound()
+        [Theory]
+        [MemberData(nameof(SqlData))]
+        public async Task GivenPutMethod_WhenRequestingScript_TheServerShouldReturnNotFound(string path)
         {
-            await SendAndVerifyStatusCode(HttpMethod.Put, "_schema/versions/1/script", HttpStatusCode.NotFound);
+            await SendAndVerifyStatusCode(HttpMethod.Put, path, HttpStatusCode.NotFound);
         }
 
-        [Fact]
-        public async Task GivenDeleteMethod_WhenRequestingScript_TheServerShouldReturnNotFound()
+        [Theory]
+        [MemberData(nameof(SqlData))]
+        public async Task GivenDeleteMethod_WhenRequestingScript_TheServerShouldReturnNotFound(string path)
         {
-            await SendAndVerifyStatusCode(HttpMethod.Delete, "_schema/versions/1/script", HttpStatusCode.NotFound);
+            await SendAndVerifyStatusCode(HttpMethod.Delete, path, HttpStatusCode.NotFound);
         }
 
         [Fact]
@@ -126,9 +138,28 @@ namespace Microsoft.Health.SqlServer.Tests.E2E
         }
 
         [Fact]
-        public async Task GivenSchemaIdNotFound_WhenRequestingScript_TheServerShouldReturnNotFoundException()
+        public async Task GivenSchemaIdFound_WhenRequestingDiff_TheServerShouldReturnDiff()
         {
-            await SendAndVerifyStatusCode(HttpMethod.Get, "_schema/versions/0/script", HttpStatusCode.NotFound);
+            var request = new HttpRequestMessage
+            {
+                Method = HttpMethod.Get,
+                RequestUri = new Uri(_client.BaseAddress, "_schema/versions/2/diff"),
+            };
+            HttpResponseMessage response = await _client.SendAsync(request);
+
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+
+            string diff = response.Content.ToString();
+
+            Assert.NotEmpty(diff);
+        }
+
+        [InlineData("_schema/versions/0/script")]
+        [InlineData("_schema/versions/0/diff")]
+        [Theory]
+        public async Task GivenSchemaIdNotFound_WhenRequestingScript_TheServerShouldReturnNotFoundException(string path)
+        {
+            await SendAndVerifyStatusCode(HttpMethod.Get, path, HttpStatusCode.NotFound);
         }
 
         private async Task SendAndVerifyStatusCode(HttpMethod httpMethod, string path, HttpStatusCode httpStatusCode)

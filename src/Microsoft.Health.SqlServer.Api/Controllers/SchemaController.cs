@@ -74,11 +74,20 @@ namespace Microsoft.Health.SqlServer.Api.Controllers
         [Route(KnownRoutes.Script, Name = RouteNames.Script)]
         public async Task<FileContentResult> SqlScriptAsync(int id)
         {
-            _logger.LogInformation($"Attempting to get script for schema version: {id}");
-            var currentVersion = _schemaInformation.Current ?? 0;
-            bool isDiff = currentVersion >= 1 ? true : false;
-            string fileName = isDiff ? $"{id}.diff.sql" : $"{id}.sql";
-            return File(await _scriptProvider.GetMigrationScriptAsBytesAsync(id, isDiff, HttpContext.RequestAborted), "application/sql", fileName);
+            _logger.LogInformation($"Attempting to get full script for schema version: {id}");
+            string fileName = $"{id}.sql";
+            return File(await _scriptProvider.GetMigrationScriptAsBytesAsync(id, string.Empty, HttpContext.RequestAborted), "application/sql", fileName);
+        }
+
+        [HttpGet]
+        [AllowAnonymous]
+        [Route(KnownRoutes.Diff, Name = RouteNames.Diff)]
+        public async Task<FileContentResult> SqlDiffScriptAsync(int id)
+        {
+            _logger.LogInformation($"Attempting to get diff script for schema version: {id}");
+            var diffSegment = ".diff";
+            string fileName = $"{id}{diffSegment}.sql";
+            return File(await _scriptProvider.GetMigrationScriptAsBytesAsync(id, diffSegment, HttpContext.RequestAborted), "application/sql", fileName);
         }
 
         [HttpGet]

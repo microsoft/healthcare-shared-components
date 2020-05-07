@@ -20,24 +20,23 @@ namespace Microsoft.Health.SqlServer.UnitTests.Features.Schema
         }
 
         [Fact]
-        public async Task GivenAScript_WhenDiffIsFalse_ThenReturnsCompleteScriptScriptAsync()
+        public async Task GivenAScript_WhenDiffSegmentIsPresent_ThenReturnsDiffAsync()
         {
-            bool isDiff = false;
-            Assert.NotNull(await _scriptProvider.GetMigrationScriptAsBytesAsync(1, isDiff));
+            var diffSegment = ".diff";
+            Assert.NotNull(await _scriptProvider.GetMigrationScriptAsBytesAsync(2, diffSegment));
         }
 
         [Fact]
-        public async Task GivenAScript_WhenDiffIsTrue_ThenReturnsDiffScriptScriptAsync()
+        public async Task GivenAScript_WhenDiffSegmentIsEmpty_ThenReturnsCompleteScriptAsync()
         {
-            bool isDiff = true;
-            Assert.NotNull(await _scriptProvider.GetMigrationScriptAsBytesAsync(2, isDiff));
+            var diffSegment = string.Empty;
+            Assert.NotNull(await _scriptProvider.GetMigrationScriptAsBytesAsync(1, diffSegment));
         }
 
         [Fact]
         public async Task GivenAScriptIsNotPresent_WhenVersionIsNotKnown_ThenReturnsFileNotFoundException()
         {
-            bool isDiff = true;
-            FileNotFoundException ex = await Assert.ThrowsAsync<FileNotFoundException>(() => _scriptProvider.GetMigrationScriptAsBytesAsync(3, isDiff));
+            FileNotFoundException ex = await Assert.ThrowsAsync<FileNotFoundException>(() => _scriptProvider.GetMigrationScriptAsBytesAsync(3, string.Empty));
             Assert.Equal("The provided version is unknown.", ex.Message);
         }
     }

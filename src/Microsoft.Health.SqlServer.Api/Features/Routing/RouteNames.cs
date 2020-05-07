@@ -8,5 +8,6 @@ namespace Microsoft.Health.SqlServer.Api.Features.Routing
     public static class RouteNames
     {
         public const string Script = "Script";
+        public const string Diff = "Diff";
     }
 }
