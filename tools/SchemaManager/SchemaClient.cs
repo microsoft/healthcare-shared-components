@@ -79,6 +79,19 @@ namespace SchemaManager
             }
         }
 
+        public async Task<string> GetDiffSql(int version)
+        {
+            var response = await _httpClient.GetAsync(RelativeUrl(string.Format(UrlConstants.Diff, version)));
+            if (response.IsSuccessStatusCode)
+            {
+                return await response.Content.ReadAsStringAsync();
+            }
+            else
+            {
+                throw new SchemaManagerException(string.Format(Resources.ScriptNotFound, response.StatusCode));
+            }
+        }
+
         private Uri RelativeUrl(string url)
         {
             return new Uri(url, UriKind.Relative);

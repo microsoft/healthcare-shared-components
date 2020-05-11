@@ -62,22 +62,24 @@ namespace SchemaManager.Commands
                 {
                     await ValidateCompatibleVersion(schemaClient, availableVersions.First().Id, availableVersions.Last().Id);
                 }
+                else if (availableVersions.First().Id == 1)
+                {
+                    string script = await schemaClient.GetScript(availableVersions.Last().Script);
+                    DoMigration(connectionString, availableVersions.Last().Id, script);
+                    return;
+                }
 
                 foreach (AvailableVersion availableVersion in availableVersions)
                 {
-                    string script = await schemaClient.GetScript(availableVersion.Script);
-
+                    int executingVersion = availableVersion.Id;
                     if (!force)
                     {
-                        await ValidateInstancesVersion(schemaClient, availableVersion.Id);
+                        await ValidateInstancesVersion(schemaClient, executingVersion);
                     }
 
-                    // check if the record for given version exists in failed status
-                    SchemaDataStore.DeleteSchemaVersion(connectionString, availableVersion.Id, SchemaDataStore.Failed);
+                    string script = await schemaClient.GetDiffSql(executingVersion);
 
-                    SchemaDataStore.ExecuteScript(connectionString, script, availableVersion.Id);
-
-                    Console.WriteLine(string.Format(Resources.SchemaMigrationSuccessMessage, availableVersion.Id));
+                    DoMigration(connectionString, executingVersion, script);
                 }
             }
             catch (SchemaManagerException ex)
@@ -95,6 +97,16 @@ namespace SchemaManager.Commands
                 CommandUtils.PrintError(string.Format(Resources.QueryExecutionErrorMessage, ex.Message));
                 return;
             }
+        }
+
+        private static void DoMigration(string connectionString, int version, string script)
+        {
+            // check if the record for given version exists in failed status
+            SchemaDataStore.DeleteSchemaVersion(connectionString, version, SchemaDataStore.Failed);
+
+            SchemaDataStore.ExecuteScript(connectionString, script, version);
+
+            Console.WriteLine(string.Format(Resources.SchemaMigrationSuccessMessage, version));
         }
 
         private static async Task ValidateCompatibleVersion(ISchemaClient schemaClient, int minAvailableVersion, int maxAvailableVersion)

@@ -7,8 +7,11 @@ namespace SchemaManager.Utils
 {
     public static class UrlConstants
     {
-        public const string Current = "/_schema/versions/current";
-        public const string Compatibility = "/_schema/compatibility";
-        public const string Availability = "/_schema/versions";
+        public const string Schema = "/_schema";
+        public const string Versions = "/versions";
+        public const string Current = Schema + Versions + "/current";
+        public const string Compatibility = Schema + "/compatibility";
+        public const string Availability = Schema + Versions;
+        public const string Diff = Schema + Versions + "/{0}/diff";
     }
 }

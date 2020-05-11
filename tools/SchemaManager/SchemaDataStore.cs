@@ -24,8 +24,10 @@ namespace SchemaManager
         {
             var sqlTransactionHandler = new SqlTransactionHandler();
             var sqlServerDataStoreConfiguration = new SqlServerDataStoreConfiguration();
+            var sqlCommandWrapperFactory = new SqlCommandWrapperFactory();
             sqlServerDataStoreConfiguration.ConnectionString = connectionString;
-            return new SqlConnectionWrapperFactory(sqlServerDataStoreConfiguration, sqlTransactionHandler);
+
+            return new SqlConnectionWrapperFactory(sqlServerDataStoreConfiguration, sqlTransactionHandler, sqlCommandWrapperFactory);
         }
 
         public static void ExecuteScript(string connectionString, string query, int version)
