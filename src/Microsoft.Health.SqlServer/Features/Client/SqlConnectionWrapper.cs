@@ -16,14 +16,21 @@ namespace Microsoft.Health.SqlServer.Features.Client
     {
         private readonly bool _enlistInTransactionIfPresent;
         private readonly SqlTransactionHandler _sqlTransactionHandler;
+        private readonly SqlCommandWrapperFactory _sqlCommandWrapperFactory;
 
-        public SqlConnectionWrapper(SqlServerDataStoreConfiguration configuration, SqlTransactionHandler sqlTransactionHandler, bool enlistInTransactionIfPresent)
+        public SqlConnectionWrapper(
+            SqlServerDataStoreConfiguration configuration,
+            SqlTransactionHandler sqlTransactionHandler,
+            SqlCommandWrapperFactory sqlCommandWrapperFactory,
+            bool enlistInTransactionIfPresent)
         {
             EnsureArg.IsNotNull(configuration, nameof(configuration));
             EnsureArg.IsNotNull(sqlTransactionHandler, nameof(sqlTransactionHandler));
+            EnsureArg.IsNotNull(sqlCommandWrapperFactory, nameof(sqlCommandWrapperFactory));
 
             _sqlTransactionHandler = sqlTransactionHandler;
             _enlistInTransactionIfPresent = enlistInTransactionIfPresent;
+            _sqlCommandWrapperFactory = sqlCommandWrapperFactory;
 
             if (_enlistInTransactionIfPresent && sqlTransactionHandler.SqlTransactionScope?.SqlConnection != null)
             {
@@ -59,12 +66,13 @@ namespace Microsoft.Health.SqlServer.Features.Client
 
         public SqlTransaction SqlTransaction { get; }
 
-        public SqlCommand CreateSqlCommand()
+        public SqlCommandWrapper CreateSqlCommand()
         {
             SqlCommand sqlCommand = SqlConnection.CreateCommand();
+
             sqlCommand.Transaction = SqlTransaction;
 
-            return sqlCommand;
+            return _sqlCommandWrapperFactory.Create(sqlCommand);
         }
 
         protected virtual void Dispose(bool disposing)
