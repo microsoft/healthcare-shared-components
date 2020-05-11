@@ -36,6 +36,15 @@ namespace Microsoft.Health.SqlServer.Registration
                 .Singleton()
                 .AsSelf();
 
+            services.Add<SqlServerSchemaDataStore>()
+                .Scoped()
+                .AsSelf()
+                .AsImplementedInterfaces();
+
+            services.Add<SchemaJobWorker>()
+                .Singleton()
+                .AsSelf();
+
             services.Add<SchemaInitializer>()
                 .Singleton()
                 .AsService<IStartable>();

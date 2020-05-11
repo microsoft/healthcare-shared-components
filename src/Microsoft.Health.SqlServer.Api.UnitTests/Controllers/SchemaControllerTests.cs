@@ -4,6 +4,7 @@
 // -------------------------------------------------------------------------------------------------
 
 using System;
+using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Routing;
 using Microsoft.Extensions.Logging.Abstractions;
@@ -19,10 +20,12 @@ namespace Microsoft.Health.SqlServer.Api.UnitTests.Controllers
     {
         private readonly SchemaController _schemaController;
         private readonly SchemaInformation _schemaInformation;
+        private readonly IMediator _mediator;
 
         public SchemaControllerTests()
         {
             _schemaInformation = new SchemaInformation((int)TestSchemaVersion.Version1, (int)TestSchemaVersion.Version3);
+            _mediator = Substitute.For<IMediator>();
 
             var urlHelperFactory = Substitute.For<IUrlHelperFactory>();
             var urlHelper = Substitute.For<IUrlHelper>();
@@ -31,7 +34,7 @@ namespace Microsoft.Health.SqlServer.Api.UnitTests.Controllers
 
             var scriptProvider = Substitute.For<IScriptProvider>();
 
-            _schemaController = new SchemaController(_schemaInformation, scriptProvider, urlHelperFactory, NullLogger<SchemaController>.Instance);
+            _schemaController = new SchemaController(_schemaInformation, scriptProvider, urlHelperFactory, _mediator, NullLogger<SchemaController>.Instance);
         }
 
         [Fact]
@@ -56,6 +59,15 @@ namespace Microsoft.Health.SqlServer.Api.UnitTests.Controllers
             JToken firstResult = jArrayResult.First;
             Assert.Equal(1, firstResult["id"]);
             Assert.Equal("https://localhost/script", firstResult["script"]);
+
+            // Ensure available versions are in the ascending order
+            jArrayResult.RemoveAt(0);
+            var previousId = (int)firstResult["id"];
+            foreach (JToken item in jArrayResult)
+            {
+                var currentId = (int)item["id"];
+                Assert.True(previousId < currentId, "The available versions are not in the ascending order");
+            }
         }
 
         [Fact]
@@ -73,18 +85,6 @@ namespace Microsoft.Health.SqlServer.Api.UnitTests.Controllers
             JToken firstResult = jArrayResult.First;
             Assert.Equal(2, firstResult["id"]);
             Assert.Equal("https://localhost/script", firstResult["script"]);
-        }
-
-        [Fact]
-        public void GivenACurrentVersionRequest_WhenNotImplemented_ThenNotImplementedShouldBeThrown()
-        {
-            Assert.Throws<NotImplementedException>(() => _schemaController.CurrentVersion());
-        }
-
-        [Fact]
-        public void GivenACompatibilityRequest_WhenNotImplemented_ThenNotImplementedShouldBeThrown()
-        {
-            Assert.Throws<NotImplementedException>(() => _schemaController.Compatibility());
         }
     }
 }
