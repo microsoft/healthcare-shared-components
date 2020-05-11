@@ -93,7 +93,7 @@ namespace Microsoft.Health.SqlServer.Features.Storage
                 }
                 catch (SqlException e)
                 {
-                    _logger.LogError(e, "Error from SQL database on Upsert");
+                    _logger.LogError(e, "Error from SQL database on upserting InstanceSchema information");
                     throw;
                 }
             }
@@ -111,7 +111,7 @@ namespace Microsoft.Health.SqlServer.Features.Storage
                 }
                 catch (SqlException e)
                 {
-                    _logger.LogError(e, "Error from SQL database on Delete");
+                    _logger.LogError(e, "Error from SQL database on deleting expired InstanceSchema records");
                     throw;
                 }
             }
@@ -140,7 +140,8 @@ namespace Microsoft.Health.SqlServer.Features.Storage
                                     instanceNames = names.Split(",").ToList();
                                 }
 
-                                var currentVersion = new CurrentVersionInformation((int)dataReader.GetValue(0), (string)dataReader.GetValue(1), instanceNames);
+                                var status = (SchemaVersionStatus)Enum.Parse(typeof(SchemaVersionStatus), (string)dataReader.GetValue(1), true);
+                                var currentVersion = new CurrentVersionInformation((int)dataReader.GetValue(0), status, instanceNames);
                                 currentVersions.Add(currentVersion);
                             }
                         }
@@ -152,7 +153,7 @@ namespace Microsoft.Health.SqlServer.Features.Storage
                 }
                 catch (SqlException e)
                 {
-                    _logger.LogError(e, "Error from SQL database on Select");
+                    _logger.LogError(e, "Error from SQL database on retrieving current version information");
                     throw;
                 }
             }

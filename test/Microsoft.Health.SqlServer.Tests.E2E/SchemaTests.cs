@@ -9,6 +9,7 @@ using System.Net;
 using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
+using Microsoft.Health.SqlServer.Features.Schema;
 using Microsoft.Health.SqlServer.Features.Schema.Model;
 using Microsoft.Health.SqlServer.Tests.E2E.Rest;
 using Microsoft.Health.SqlServer.Web;
@@ -84,7 +85,7 @@ namespace Microsoft.Health.SqlServer.Tests.E2E
             var jsonList = JsonConvert.DeserializeObject<IList<CurrentVersionInformation>>(responseBodyAsString);
             Assert.Equal(2, jsonList[0].Id);
             Assert.Equal(1, jsonList[0].Servers.Count);
-            Assert.Equal("completed", jsonList[0].Status);
+            Assert.Equal((SchemaVersionStatus)Enum.Parse(typeof(SchemaVersionStatus), "completed", true), jsonList[0].Status);
         }
 
         [Theory]

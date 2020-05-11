@@ -52,11 +52,11 @@ namespace Microsoft.Health.SqlServer.Features.Schema
             {
                 try
                 {
+                    await Task.Delay(TimeSpan.FromSeconds(_sqlServerDataStoreConfiguration.SchemaOptions.JobPollingFrequencyInSeconds), cancellationToken);
+
                     using (var scope = _serviceProvider.CreateScope())
                     {
                         var schemaDataStore = scope.ServiceProvider.GetRequiredService<ISchemaDataStore>();
-
-                        await Task.Delay(TimeSpan.FromSeconds(_sqlServerDataStoreConfiguration.SchemaOptions.JobPollingFrequencyInSeconds), cancellationToken);
 
                         schemaInformation.Current = await schemaDataStore.UpsertInstanceSchemaInformationAsync(instanceName, schemaInformation, cancellationToken);
 

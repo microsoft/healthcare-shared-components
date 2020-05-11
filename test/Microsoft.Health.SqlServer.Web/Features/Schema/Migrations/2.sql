@@ -111,14 +111,12 @@ CREATE TABLE dbo.InstanceSchema
     Timeout datetime2(0) NOT NULL
 )
 
-CREATE UNIQUE CLUSTERED INDEX IXC_InstanceSchema
-ON dbo.InstanceSchema
+CREATE UNIQUE CLUSTERED INDEX IXC_InstanceSchema ON dbo.InstanceSchema
 (
     Name
 )
 
-CREATE NONCLUSTERED INDEX IX_InstanceSchema_Timeout
-ON dbo.InstanceSchema
+CREATE NONCLUSTERED INDEX IX_InstanceSchema_Timeout ON dbo.InstanceSchema
 (
     Timeout
 )
@@ -262,5 +260,3 @@ BEGIN
 
 END
 GO
-
-SELECT 1

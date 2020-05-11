@@ -3,6 +3,7 @@
 // Licensed under the MIT License (MIT). See LICENSE in the repo root for license information.
 // -------------------------------------------------------------------------------------------------
 
+using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
@@ -40,17 +41,23 @@ namespace Microsoft.Health.SqlServer.Api.UnitTests.Features
         [Fact]
         public async Task GivenACurrentMediator_WhenCurrentRequest_ThenReturnsCurrentVersionInformation()
         {
+            string status = "completed";
+
             var mockCurrentVersions = new List<CurrentVersionInformation>()
             {
-                new CurrentVersionInformation(1, "completed", new List<string>() { "server1", "server2" }),
-                new CurrentVersionInformation(1, "completed", new List<string>()),
+                new CurrentVersionInformation(1, (SchemaVersionStatus)Enum.Parse(typeof(SchemaVersionStatus), status, true), new List<string>() { "server1", "server2" }),
+                new CurrentVersionInformation(2, (SchemaVersionStatus)Enum.Parse(typeof(SchemaVersionStatus), status, true), new List<string>()),
             };
 
             _schemaDataStore.GetCurrentVersionAsync(Arg.Any<CancellationToken>())
                     .Returns(mockCurrentVersions);
             GetCurrentVersionResponse response = await _mediator.GetCurrentVersionAsync(_cancellationToken);
+            var currentVersionsResponse = response.CurrentVersions;
 
-            Assert.Equal(mockCurrentVersions.Count, response.CurrentVersions.Count);
+            Assert.Equal(mockCurrentVersions.Count, currentVersionsResponse.Count);
+            Assert.Equal(1, currentVersionsResponse[0].Id);
+            Assert.Equal(SchemaVersionStatus.Completed, currentVersionsResponse[0].Status);
+            Assert.Equal(2, currentVersionsResponse[0].Servers.Count);
         }
 
         [Fact]
