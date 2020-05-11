@@ -6,6 +6,9 @@
 using System;
 using System.Data;
 using System.Data.SqlClient;
+using Microsoft.Health.SqlServer.Configs;
+using Microsoft.Health.SqlServer.Features.Client;
+using Microsoft.Health.SqlServer.Features.Storage;
 using Microsoft.SqlServer.Management.Common;
 using Microsoft.SqlServer.Management.Smo;
 
@@ -17,31 +20,48 @@ namespace SchemaManager
         public const string Failed = "failed";
         public const string Completed = "completed";
 
-        public static void ExecuteQuery(string connectionString, string queryString, int version)
+        private static SqlConnectionWrapperFactory ConnectionWrapperFactory(string connectionString)
         {
-            using (var connection = new SqlConnection(connectionString))
+            var sqlTransactionHandler = new SqlTransactionHandler();
+            var sqlServerDataStoreConfiguration = new SqlServerDataStoreConfiguration();
+            sqlServerDataStoreConfiguration.ConnectionString = connectionString;
+            return new SqlConnectionWrapperFactory(sqlServerDataStoreConfiguration, sqlTransactionHandler);
+        }
+
+        public static void ExecuteScript(string connectionString, string query, int version)
+        {
+            var sqlConnectionWrapperFactory = ConnectionWrapperFactory(connectionString);
+            using (SqlConnectionWrapper sqlConnectionWrapper = sqlConnectionWrapperFactory.ObtainSqlConnectionWrapper(true))
             {
-                connection.Open();
-                ServerConnection serverConnection = new ServerConnection(connection);
+                ServerConnection serverConnection = new ServerConnection(sqlConnectionWrapper.SqlConnection);
 
                 try
                 {
                     var server = new Server(serverConnection);
 
                     serverConnection.BeginTransaction();
-                    server.ConnectionContext.ExecuteNonQuery(queryString);
+                    server.ConnectionContext.ExecuteNonQuery(query);
                     serverConnection.CommitTransaction();
                 }
                 catch (Exception e) when (e is SqlException || e is ExecutionFailureException)
                 {
                     serverConnection.RollBackTransaction();
-                    ExecuteUpsert(connectionString, version, Failed);
+
+                    // Set SchemaVersion status to failed
+                    using (var connection = new SqlConnection(connectionString))
+                    {
+                        connection.Open();
+                        UpsertSchemaVersion(connection, version, Failed);
+                    }
+
                     throw;
                 }
+
+                UpsertSchemaVersion(sqlConnectionWrapper.SqlConnection, version, Completed);
             }
         }
 
-        public static void ExecuteDelete(string connectionString, int version, string status)
+        public static void DeleteSchemaVersion(string connectionString, int version, string status)
         {
             using (var connection = new SqlConnection(connectionString))
             {
@@ -57,20 +77,15 @@ namespace SchemaManager
             }
         }
 
-        public static void ExecuteUpsert(string connectionString, int version, string status)
+        public static void UpsertSchemaVersion(SqlConnection connection, int version, string status)
         {
-            using (var connection = new SqlConnection(connectionString))
+            using (var upsertCommand = new SqlCommand("dbo.UpsertSchemaVersion", connection))
             {
-                connection.Open();
+                upsertCommand.CommandType = CommandType.StoredProcedure;
+                upsertCommand.Parameters.AddWithValue("@version", version);
+                upsertCommand.Parameters.AddWithValue("@status", status);
 
-                using (var upsertCommand = new SqlCommand("dbo.UpsertSchemaVersion", connection))
-                {
-                    upsertCommand.CommandType = CommandType.StoredProcedure;
-                    upsertCommand.Parameters.AddWithValue("@version", version);
-                    upsertCommand.Parameters.AddWithValue("@status", status);
-
-                    upsertCommand.ExecuteNonQuery();
-                }
+                upsertCommand.ExecuteNonQuery();
             }
         }
     }

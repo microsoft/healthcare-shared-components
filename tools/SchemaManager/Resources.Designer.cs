@@ -124,7 +124,7 @@ namespace SchemaManager {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to The current version information is not available due to {0}..
+        ///   Looks up a localized string similar to The current version information is not available due to &quot;{0}&quot;..
         /// </summary>
         internal static string CurrentDefaultErrorDescription {
             get {
@@ -196,7 +196,7 @@ namespace SchemaManager {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Script execution has failed due to {0}..
+        ///   Looks up a localized string similar to Script execution has failed due to &quot;{0}&quot;..
         /// </summary>
         internal static string QueryExecutionErrorMessage {
             get {
@@ -205,7 +205,7 @@ namespace SchemaManager {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Unable to connect to host {0}..
+        ///   Looks up a localized string similar to Unable to connect to host &quot;{0}&quot;..
         /// </summary>
         internal static string RequestFailedMessage {
             get {
@@ -250,7 +250,7 @@ namespace SchemaManager {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to The schema version {0} is not compatbile..
+        ///   Looks up a localized string similar to The schema version {0} is not compatible..
         /// </summary>
         internal static string VersionIncompatibilityMessage {
             get {

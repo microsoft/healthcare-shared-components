@@ -73,11 +73,9 @@ namespace SchemaManager.Commands
                     }
 
                     // check if the record for given version exists in failed status
-                    SchemaDataStore.ExecuteDelete(connectionString, availableVersion.Id, SchemaDataStore.Failed);
+                    SchemaDataStore.DeleteSchemaVersion(connectionString, availableVersion.Id, SchemaDataStore.Failed);
 
-                    SchemaDataStore.ExecuteQuery(connectionString, script, availableVersion.Id);
-
-                    SchemaDataStore.ExecuteUpsert(connectionString, availableVersion.Id, SchemaDataStore.Completed);
+                    SchemaDataStore.ExecuteScript(connectionString, script, availableVersion.Id);
 
                     Console.WriteLine(string.Format(Resources.SchemaMigrationSuccessMessage, availableVersion.Id));
                 }
