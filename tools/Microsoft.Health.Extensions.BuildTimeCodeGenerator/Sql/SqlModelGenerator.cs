@@ -46,9 +46,13 @@ namespace Microsoft.Health.Extensions.BuildTimeCodeGenerator.Sql
                     .OrderBy(m => m, MemberSorting.Comparer)
                     .ToArray());
 
-            var usings = SyntaxFactory.UsingDirective(SyntaxFactory.ParseName("Microsoft.Health.SqlServer.Features.Schema.Model"));
-
-            return (classDeclaration, new[] { usings });
+            return (
+                classDeclaration,
+                new[]
+                {
+                    UsingDirective(ParseName("Microsoft.Health.SqlServer.Features.Client")),
+                    UsingDirective(ParseName("Microsoft.Health.SqlServer.Features.Schema.Model")),
+                });
         }
 
         private TSqlFragment ParseSqlFile()

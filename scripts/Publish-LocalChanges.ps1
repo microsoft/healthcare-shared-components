@@ -90,7 +90,7 @@ Push-Location $RepoRootPath
 try {
     $branchName = &git rev-parse --abbrev-ref HEAD
     $branchNameParts = $branchName.Split("/")
-    $versionSuffix = "$($branchNameParts[$branchNameParts.Length - 1])-$(Get-Date -Format yyyyMMdd-HHmmss)-preview"
+    $version = "1.0.0-$($branchNameParts[$branchNameParts.Length - 1])-$(Get-Date -Format yyyyMMdd-HHmmss)-preview"
 
     # Find all projects in the components.
     $projects = Get-ChildItem -Recurse -Include *.csproj -Exclude *Tests.csproj $RepoRootPath
@@ -100,10 +100,10 @@ try {
 
     $projects | ForEach-Object {
         if ($SkipBuild) {
-            &dotnet pack -o $tempPath --no-build --version-suffix $versionSuffix --include-symbols $_.FullName
+            &dotnet pack -o $tempPath --no-build --include-symbols $_.FullName /p:PackageVersion=$version
         }
         else {
-            &dotnet pack -o $tempPath --version-suffix $versionSuffix --include-symbols $_.FullName
+            &dotnet pack -o $tempPath --include-symbols $_.FullName /p:PackageVersion=$version
         }
     }
 
@@ -142,8 +142,8 @@ try {
             $project = [xml](Get-Content $_)
 
             $project.SelectNodes("Project/ItemGroup/PackageReference") |
-                Where-Object { $_.Include -match "Microsoft.Health.*" -and $_.Include -ne "Microsoft.Health.Extensions.BuildTimeCodeGenerator" } |
-                ForEach-Object { $_.Version = "1.0.0-$versionSuffix" }
+                Where-Object { $_.Include -match "Microsoft.Health.*" } |
+                ForEach-Object { $_.Version = $version }
 
             $writer = New-Object System.IO.StreamWriter($_, $false, $utf8WithBom)
 
