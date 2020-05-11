@@ -44,11 +44,11 @@ namespace Microsoft.Health.SqlServer.Features.Storage
         {
             CompatibleVersions compatibleVersions;
             using (SqlConnectionWrapper sqlConnectionWrapper = _sqlConnectionWrapperFactory.ObtainSqlConnectionWrapper())
-            using (SqlCommand sqlCommand = sqlConnectionWrapper.CreateSqlCommand())
+            using (SqlCommandWrapper sqlCommandWrapper = sqlConnectionWrapper.CreateSqlCommand())
             {
-                SchemaShared.SelectCompatibleSchemaVersions.PopulateCommand(sqlCommand);
+                SchemaShared.SelectCompatibleSchemaVersions.PopulateCommand(sqlCommandWrapper);
 
-                using (var dataReader = await sqlCommand.ExecuteReaderAsync(CommandBehavior.SequentialAccess))
+                using (var dataReader = await sqlCommandWrapper.ExecuteReaderAsync(cancellationToken))
                 {
                     if (dataReader.Read())
                     {
@@ -79,17 +79,17 @@ namespace Microsoft.Health.SqlServer.Features.Storage
         public async Task<int> UpsertInstanceSchemaInformationAsync(string name, SchemaInformation schemaInformation, CancellationToken cancellationToken)
         {
             using (SqlConnectionWrapper sqlConnectionWrapper = _sqlConnectionWrapperFactory.ObtainSqlConnectionWrapper())
-            using (SqlCommand sqlCommand = sqlConnectionWrapper.CreateSqlCommand())
+            using (SqlCommandWrapper sqlCommandWrapper = sqlConnectionWrapper.CreateSqlCommand())
             {
                 SchemaShared.UpsertInstanceSchema.PopulateCommand(
-                     sqlCommand,
+                     sqlCommandWrapper,
                      name,
                      schemaInformation.MaximumSupportedVersion,
                      schemaInformation.MinimumSupportedVersion,
                      _configuration.SchemaOptions.InstanceRecordExpirationTimeInMinutes);
                 try
                 {
-                    return (int)await sqlCommand.ExecuteScalarAsync();
+                    return (int)await sqlCommandWrapper.ExecuteScalarAsync(cancellationToken);
                 }
                 catch (SqlException e)
                 {
@@ -99,15 +99,15 @@ namespace Microsoft.Health.SqlServer.Features.Storage
             }
         }
 
-        public async Task DeleteExpiredInstanceSchemaAsync()
+        public async Task DeleteExpiredInstanceSchemaAsync(CancellationToken cancellationToken)
         {
             using (SqlConnectionWrapper sqlConnectionWrapper = _sqlConnectionWrapperFactory.ObtainSqlConnectionWrapper())
-            using (SqlCommand sqlCommand = sqlConnectionWrapper.CreateSqlCommand())
+            using (SqlCommandWrapper sqlCommandWrapper = sqlConnectionWrapper.CreateSqlCommand())
             {
-                SchemaShared.DeleteInstanceSchema.PopulateCommand(sqlCommand);
+                SchemaShared.DeleteInstanceSchema.PopulateCommand(sqlCommandWrapper);
                 try
                 {
-                    await sqlCommand.ExecuteNonQueryAsync();
+                    await sqlCommandWrapper.ExecuteNonQueryAsync(cancellationToken);
                 }
                 catch (SqlException e)
                 {
@@ -121,13 +121,13 @@ namespace Microsoft.Health.SqlServer.Features.Storage
         {
             var currentVersions = new List<CurrentVersionInformation>();
             using (SqlConnectionWrapper sqlConnectionWrapper = _sqlConnectionWrapperFactory.ObtainSqlConnectionWrapper())
-            using (SqlCommand sqlCommand = sqlConnectionWrapper.CreateSqlCommand())
+            using (SqlCommandWrapper sqlCommandWrapper = sqlConnectionWrapper.CreateSqlCommand())
             {
-                SchemaShared.SelectCurrentVersionsInformation.PopulateCommand(sqlCommand);
+                SchemaShared.SelectCurrentVersionsInformation.PopulateCommand(sqlCommandWrapper);
 
                 try
                 {
-                    using (var dataReader = await sqlCommand.ExecuteReaderAsync(CommandBehavior.Default))
+                    using (var dataReader = await sqlCommandWrapper.ExecuteReaderAsync(cancellationToken))
                     {
                         if (dataReader.HasRows)
                         {

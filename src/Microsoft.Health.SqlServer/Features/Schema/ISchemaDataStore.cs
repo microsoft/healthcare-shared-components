@@ -29,8 +29,9 @@ namespace Microsoft.Health.SqlServer.Features.Schema
         /// <summary>
         /// Delete expired instance schema information.
         /// </summary>
+        /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>A task</returns>
-        Task DeleteExpiredInstanceSchemaAsync();
+        Task DeleteExpiredInstanceSchemaAsync(CancellationToken cancellationToken);
 
         /// <summary>
         /// Upsert current version information for the named instance.

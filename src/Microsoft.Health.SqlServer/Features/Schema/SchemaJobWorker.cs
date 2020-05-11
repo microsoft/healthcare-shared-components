@@ -60,7 +60,7 @@ namespace Microsoft.Health.SqlServer.Features.Schema
 
                         schemaInformation.Current = await schemaDataStore.UpsertInstanceSchemaInformationAsync(instanceName, schemaInformation, cancellationToken);
 
-                        await schemaDataStore.DeleteExpiredInstanceSchemaAsync();
+                        await schemaDataStore.DeleteExpiredInstanceSchemaAsync(cancellationToken);
                     }
                 }
                 catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
