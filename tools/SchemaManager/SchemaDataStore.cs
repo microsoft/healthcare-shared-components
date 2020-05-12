@@ -6,9 +6,6 @@
 using System;
 using System.Data;
 using System.Data.SqlClient;
-using Microsoft.Health.SqlServer.Configs;
-using Microsoft.Health.SqlServer.Features.Client;
-using Microsoft.Health.SqlServer.Features.Storage;
 using Microsoft.SqlServer.Management.Common;
 using Microsoft.SqlServer.Management.Smo;
 
@@ -20,46 +17,30 @@ namespace SchemaManager
         public const string Failed = "failed";
         public const string Completed = "completed";
 
-        private static SqlConnectionWrapperFactory ConnectionWrapperFactory(string connectionString)
+        public static void ExecuteScript(string connectionString, string script, int version)
         {
-            var sqlTransactionHandler = new SqlTransactionHandler();
-            var sqlServerDataStoreConfiguration = new SqlServerDataStoreConfiguration();
-            var sqlCommandWrapperFactory = new SqlCommandWrapperFactory();
-            sqlServerDataStoreConfiguration.ConnectionString = connectionString;
-
-            return new SqlConnectionWrapperFactory(sqlServerDataStoreConfiguration, sqlTransactionHandler, sqlCommandWrapperFactory);
-        }
-
-        public static void ExecuteScript(string connectionString, string query, int version)
-        {
-            var sqlConnectionWrapperFactory = ConnectionWrapperFactory(connectionString);
-            using (SqlConnectionWrapper sqlConnectionWrapper = sqlConnectionWrapperFactory.ObtainSqlConnectionWrapper(true))
+            using (var connection = new SqlConnection(connectionString))
             {
-                ServerConnection serverConnection = new ServerConnection(sqlConnectionWrapper.SqlConnection);
+                connection.Open();
+                ServerConnection serverConnection = new ServerConnection(connection);
 
                 try
                 {
                     var server = new Server(serverConnection);
 
                     serverConnection.BeginTransaction();
-                    server.ConnectionContext.ExecuteNonQuery(query);
+                    server.ConnectionContext.ExecuteNonQuery(script);
+
+                    UpsertSchemaVersion(connection, version, Completed);
+
                     serverConnection.CommitTransaction();
                 }
                 catch (Exception e) when (e is SqlException || e is ExecutionFailureException)
                 {
                     serverConnection.RollBackTransaction();
-
-                    // Set SchemaVersion status to failed
-                    using (var connection = new SqlConnection(connectionString))
-                    {
-                        connection.Open();
-                        UpsertSchemaVersion(connection, version, Failed);
-                    }
-
+                    UpsertSchemaVersion(connection, version, Failed);
                     throw;
                 }
-
-                UpsertSchemaVersion(sqlConnectionWrapper.SqlConnection, version, Completed);
             }
         }
 
@@ -79,7 +60,23 @@ namespace SchemaManager
             }
         }
 
-        public static void UpsertSchemaVersion(SqlConnection connection, int version, string status)
+        public static int GetCurrentSchemaVersion(string connectionString)
+        {
+            using (var connection = new SqlConnection(connectionString))
+            {
+                connection.Open();
+
+                using (var selectCommand = new SqlCommand("dbo.SelectCurrentSchemaVersion", connection))
+                {
+                    selectCommand.CommandType = CommandType.StoredProcedure;
+
+                    object current = selectCommand.ExecuteScalar();
+                    return (current == null || Convert.IsDBNull(current)) ? 0 : (int)current;
+                }
+            }
+        }
+
+        private static void UpsertSchemaVersion(SqlConnection connection, int version, string status)
         {
             using (var upsertCommand = new SqlCommand("dbo.UpsertSchemaVersion", connection))
             {

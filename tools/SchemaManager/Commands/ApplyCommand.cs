@@ -39,11 +39,12 @@ namespace SchemaManager.Commands
                     CommandUtils.PrintError(Resources.AvailableVersionsDefaultErrorMessage);
                     return;
                 }
-                else
-                {
-                    availableVersions.Sort((x, y) => x.Id.CompareTo(y.Id));
 
-                    // Removing the current version
+                availableVersions.Sort((x, y) => x.Id.CompareTo(y.Id));
+
+                // Removing the current version
+                if (availableVersions.First().Id == SchemaDataStore.GetCurrentSchemaVersion(connectionString))
+                {
                     availableVersions.RemoveAt(0);
                 }
 
@@ -80,6 +81,13 @@ namespace SchemaManager.Commands
                     string script = await schemaClient.GetDiffSql(executingVersion);
 
                     DoMigration(connectionString, executingVersion, script);
+
+                    // to ensure server side polling is completed after each version migration
+                    if (executingVersion != availableVersions.Last().Id)
+                    {
+                        Console.WriteLine(Resources.WaitMessage);
+                        await Task.Delay(MaxWaitTime);
+                    }
                 }
             }
             catch (SchemaManagerException ex)
