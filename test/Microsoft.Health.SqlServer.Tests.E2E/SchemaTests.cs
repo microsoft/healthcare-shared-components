@@ -34,10 +34,10 @@ namespace Microsoft.Health.SqlServer.Tests.E2E
                 new object[] { "_schema/versions/current" },
             };
 
-        public static IEnumerable<object[]> SqlData =>
+        public static IEnumerable<object[]> ScriptData =>
             new List<object[]>
             {
-                new object[] { "_schema/versions/1/script" },
+                new object[] { "_schema/versions/1/snapshot" },
                 new object[] { "_schema/versions/1/diff" },
             };
 
@@ -59,7 +59,7 @@ namespace Microsoft.Health.SqlServer.Tests.E2E
             Assert.NotEmpty(jArrayResponse);
 
             JToken firstResult = jArrayResponse.First;
-            string scriptUrl = $"/_schema/versions/{firstResult["id"]}/script";
+            string scriptUrl = $"/_schema/versions/{firstResult["id"]}/snapshot";
             Assert.Equal(scriptUrl, firstResult["script"]);
         }
 
@@ -91,7 +91,7 @@ namespace Microsoft.Health.SqlServer.Tests.E2E
             await SendAndVerifyStatusCode(HttpMethod.Delete, path, HttpStatusCode.NotFound);
         }
 
-        [InlineData("_schema/versions/abc/script")]
+        [InlineData("_schema/versions/abc/snapshot")]
         [InlineData("_schema/versions/abc/diff")]
         [Theory]
         public async Task GivenNonIntegerVersion_WhenRequestingScript_TheServerShouldReturnNotFound(string path)
@@ -100,21 +100,21 @@ namespace Microsoft.Health.SqlServer.Tests.E2E
         }
 
         [Theory]
-        [MemberData(nameof(SqlData))]
+        [MemberData(nameof(ScriptData))]
         public async Task GivenPostMethod_WhenRequestingScript_TheServerShouldReturnNotFound(string path)
         {
             await SendAndVerifyStatusCode(HttpMethod.Post, path, HttpStatusCode.NotFound);
         }
 
         [Theory]
-        [MemberData(nameof(SqlData))]
+        [MemberData(nameof(ScriptData))]
         public async Task GivenPutMethod_WhenRequestingScript_TheServerShouldReturnNotFound(string path)
         {
             await SendAndVerifyStatusCode(HttpMethod.Put, path, HttpStatusCode.NotFound);
         }
 
         [Theory]
-        [MemberData(nameof(SqlData))]
+        [MemberData(nameof(ScriptData))]
         public async Task GivenDeleteMethod_WhenRequestingScript_TheServerShouldReturnNotFound(string path)
         {
             await SendAndVerifyStatusCode(HttpMethod.Delete, path, HttpStatusCode.NotFound);
@@ -126,7 +126,7 @@ namespace Microsoft.Health.SqlServer.Tests.E2E
             var request = new HttpRequestMessage
             {
                 Method = HttpMethod.Get,
-                RequestUri = new Uri(_client.BaseAddress, "_schema/versions/1/script"),
+                RequestUri = new Uri(_client.BaseAddress, "_schema/versions/1/snapshot"),
             };
             HttpResponseMessage response = await _client.SendAsync(request);
 
@@ -154,7 +154,7 @@ namespace Microsoft.Health.SqlServer.Tests.E2E
             Assert.NotEmpty(diff);
         }
 
-        [InlineData("_schema/versions/0/script")]
+        [InlineData("_schema/versions/0/snapshot")]
         [InlineData("_schema/versions/0/diff")]
         [Theory]
         public async Task GivenSchemaIdNotFound_WhenRequestingScript_TheServerShouldReturnNotFoundException(string path)

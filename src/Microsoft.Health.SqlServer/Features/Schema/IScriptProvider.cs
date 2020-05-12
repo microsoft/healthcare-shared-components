@@ -12,6 +12,8 @@ namespace Microsoft.Health.SqlServer.Features.Schema
     {
         string GetMigrationScript(int version, bool applyFullSchemaSnapshot);
 
-        Task<byte[]> GetMigrationScriptAsBytesAsync(int version, string diffSegment, CancellationToken cancellationToken);
+        Task<byte[]> GetSnapshotScriptAsBytesAsync(int version, CancellationToken cancellationToken);
+
+        Task<byte[]> GetDiffScriptAsBytesAsync(int version, CancellationToken cancellationToken);
     }
 }
