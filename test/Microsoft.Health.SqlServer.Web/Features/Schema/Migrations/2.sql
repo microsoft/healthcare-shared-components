@@ -59,7 +59,7 @@ CREATE TABLE dbo.SchemaVersion
 
 INSERT INTO dbo.SchemaVersion
 VALUES
-    (1, 'started')
+    (2, 'started')
 
 GO
 
@@ -111,14 +111,12 @@ CREATE TABLE dbo.InstanceSchema
     Timeout datetime2(0) NOT NULL
 )
 
-CREATE UNIQUE CLUSTERED INDEX IXC_InstanceSchema
-ON dbo.InstanceSchema
+CREATE UNIQUE CLUSTERED INDEX IXC_InstanceSchema ON dbo.InstanceSchema
 (
     Name
 )
 
-CREATE NONCLUSTERED INDEX IX_InstanceSchema_Timeout
-ON dbo.InstanceSchema
+CREATE NONCLUSTERED INDEX IX_InstanceSchema_Timeout ON dbo.InstanceSchema
 (
     Timeout
 )

@@ -29,5 +29,10 @@ namespace Microsoft.Health.SqlServer.Configs
         /// Configuration for transient fault retry policy.
         /// </summary>
         public SqlServerTransientFaultRetryPolicyConfiguration TransientFaultRetryPolicy { get; set; } = new SqlServerTransientFaultRetryPolicyConfiguration();
+
+        /// <summary>
+        /// Updates the schema migration options
+        /// </summary>
+        public SqlServerSchemaOptions SchemaOptions { get; } = new SqlServerSchemaOptions();
     }
 }

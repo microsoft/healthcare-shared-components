@@ -7,6 +7,8 @@
 
   <ItemGroup>
     <PackageReference Include="Ensure.That" Version="8.1.2" />
+    <PackageReference Include="MediatR" Version="8.0.0" />
+    <PackageReference Include="MediatR.Extensions.Microsoft.DependencyInjection" Version="8.0.0" />
     <PackageReference Include="Microsoft.Extensions.Diagnostics.HealthChecks.Abstractions" Version="3.1.3" />
     <PackageReference Include="Microsoft.Extensions.Logging" Version="3.1.3" />
     <PackageReference Include="Microsoft.IO.RecyclableMemoryStream" Version="1.3.2" />
@@ -18,7 +20,16 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Microsoft.Health.Abstractions\Microsoft.Health.Abstractions.csproj" />
+    <ProjectReference Include="..\Microsoft.Health.Core\Microsoft.Health.Core.csproj" />
     <ProjectReference Include="..\Microsoft.Health.Extensions.DependencyInjection\Microsoft.Health.Extensions.DependencyInjection.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Generated Include="Features\Schema\Model\SchemaShared.Generated.cs">
+      <Generator>SqlModelGenerator</Generator>
+      <Namespace>Microsoft.Health.SqlServer.Features.Schema.Model</Namespace>
+      <Args>$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)\Features\Schema\Migrations\BaseSchema.sql'))</Args>
+    </Generated>
   </ItemGroup>
   
   <ItemGroup>

@@ -5,7 +5,10 @@
 
 using EnsureThat;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Health.Extensions.DependencyInjection;
 using Microsoft.Health.SqlServer.Api.Controllers;
+using Microsoft.Health.SqlServer.Api.Features;
+using Microsoft.Health.SqlServer.Api.Features.Schema;
 using Microsoft.Health.SqlServer.Features.Health;
 
 namespace Microsoft.Health.SqlServer.Api.Registration
@@ -22,6 +25,16 @@ namespace Microsoft.Health.SqlServer.Api.Registration
             services
                 .AddHealthChecks()
                 .AddCheck<SqlServerHealthCheck>(nameof(SqlServerHealthCheck));
+
+            services.Add<CompatibilityVersionHandler>()
+                .Transient()
+                .AsImplementedInterfaces();
+
+            services.Add<CurrentVersionHandler>()
+                .Transient()
+                .AsImplementedInterfaces();
+
+            services.AddHostedService<SchemaJobWorkerBackgroundService>();
 
             return services;
         }
