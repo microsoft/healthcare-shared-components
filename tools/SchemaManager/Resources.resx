@@ -142,6 +142,9 @@
     <value>The current version information is not available due to "{0}".</value>
     <comment>{0} is the response statusCode.</comment>
   </data>
+  <data name="CurrentSchemaVersionStoredProcedureNotFound" xml:space="preserve">
+    <value>Could not find stored procedure 'dbo.SelectCurrentSchemaVersion'.</value>
+  </data>
   <data name="ForceOptionDescription" xml:space="preserve">
     <value>The schema migration is run without validating the schema verison.</value>
   </data>

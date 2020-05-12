@@ -133,6 +133,15 @@ namespace SchemaManager {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Could not find stored procedure &apos;dbo.SelectCurrentSchemaVersion&apos;..
+        /// </summary>
+        internal static string CurrentSchemaVersionStoredProcedureNotFound {
+            get {
+                return ResourceManager.GetString("CurrentSchemaVersionStoredProcedureNotFound", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to The schema migration is run without validating the schema verison..
         /// </summary>
         internal static string ForceOptionDescription {

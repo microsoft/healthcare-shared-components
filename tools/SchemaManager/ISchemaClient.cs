@@ -14,9 +14,9 @@ namespace SchemaManager
     {
         Task<List<CurrentVersion>> GetCurrentVersionInformation();
 
-        Task<string> GetScript(Uri scriptUri);
+        Task<string> GetSnapshotScript(Uri scriptUri);
 
-        Task<string> GetDiffSql(int version);
+        Task<string> GetDiffScript(int version);
 
         Task<CompatibleVersion> GetCompatibility();
 

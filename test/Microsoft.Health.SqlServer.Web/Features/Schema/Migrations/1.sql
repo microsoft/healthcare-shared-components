@@ -262,3 +262,24 @@ BEGIN
 
 END
 GO
+
+--
+--  STORED PROCEDURE
+--      SelectCurrentSchemaVersion
+--
+--  DESCRIPTION
+--      Selects the current completed schema version
+--
+--  RETURNS
+--      The current version as a result set
+--
+CREATE PROCEDURE dbo.SelectCurrentSchemaVersion
+AS
+BEGIN
+    SET NOCOUNT ON
+
+    SELECT MAX(Version)
+    FROM SchemaVersion
+    WHERE Status = 'completed'
+END
+GO

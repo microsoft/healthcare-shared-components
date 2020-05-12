@@ -32,7 +32,7 @@ namespace SchemaManager.Commands
 
             try
             {
-                List<AvailableVersion> availableVersions = await schemaClient.GetAvailability();
+                var availableVersions = await schemaClient.GetAvailability();
 
                 if (availableVersions.Count <= 1)
                 {
@@ -65,8 +65,8 @@ namespace SchemaManager.Commands
                 }
                 else if (availableVersions.First().Id == 1)
                 {
-                    string script = await schemaClient.GetScript(availableVersions.Last().Script);
-                    DoMigration(connectionString, availableVersions.Last().Id, script);
+                    string script = await GetScript(schemaClient, 1, availableVersions.Last().Script);
+                    UpgradeSchema(connectionString, availableVersions.Last().Id, script);
                     return;
                 }
 
@@ -78,9 +78,9 @@ namespace SchemaManager.Commands
                         await ValidateInstancesVersion(schemaClient, executingVersion);
                     }
 
-                    string script = await schemaClient.GetDiffSql(executingVersion);
+                    string script = await GetScript(schemaClient, executingVersion, availableVersion.Script);
 
-                    DoMigration(connectionString, executingVersion, script);
+                    UpgradeSchema(connectionString, executingVersion, script);
 
                     // to ensure server side polling is completed after each version migration
                     if (executingVersion != availableVersions.Last().Id)
@@ -107,14 +107,24 @@ namespace SchemaManager.Commands
             }
         }
 
-        private static void DoMigration(string connectionString, int version, string script)
+        private static void UpgradeSchema(string connectionString, int version, string script)
         {
             // check if the record for given version exists in failed status
             SchemaDataStore.DeleteSchemaVersion(connectionString, version, SchemaDataStore.Failed);
 
-            SchemaDataStore.ExecuteScript(connectionString, script, version);
+            SchemaDataStore.ExecuteScriptAndCompleteSchemaVersion(connectionString, script, version);
 
             Console.WriteLine(string.Format(Resources.SchemaMigrationSuccessMessage, version));
+        }
+
+        private static async Task<string> GetScript(ISchemaClient schemaClient, int version, Uri snapshotUri)
+        {
+            if (version == 1)
+            {
+                return await schemaClient.GetSnapshotScript(snapshotUri);
+            }
+
+            return await schemaClient.GetDiffScript(version);
         }
 
         private static async Task ValidateCompatibleVersion(ISchemaClient schemaClient, int minAvailableVersion, int maxAvailableVersion)

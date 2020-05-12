@@ -17,7 +17,7 @@ namespace SchemaManager
         public const string Failed = "failed";
         public const string Completed = "completed";
 
-        public static void ExecuteScript(string connectionString, string script, int version)
+        public static void ExecuteScriptAndCompleteSchemaVersion(string connectionString, string script, int version)
         {
             using (var connection = new SqlConnection(connectionString))
             {
@@ -66,12 +66,19 @@ namespace SchemaManager
             {
                 connection.Open();
 
-                using (var selectCommand = new SqlCommand("dbo.SelectCurrentSchemaVersion", connection))
+                try
                 {
-                    selectCommand.CommandType = CommandType.StoredProcedure;
+                    using (var selectCommand = new SqlCommand("dbo.SelectCurrentSchemaVersion", connection))
+                    {
+                        selectCommand.CommandType = CommandType.StoredProcedure;
 
-                    object current = selectCommand.ExecuteScalar();
-                    return (current == null || Convert.IsDBNull(current)) ? 0 : (int)current;
+                        object current = selectCommand.ExecuteScalar();
+                        return (current == null || Convert.IsDBNull(current)) ? 0 : (int)current;
+                    }
+                }
+                catch (SqlException e) when (string.Equals(e.Message, Resources.CurrentSchemaVersionStoredProcedureNotFound, StringComparison.OrdinalIgnoreCase))
+                {
+                    return 0;
                 }
             }
         }

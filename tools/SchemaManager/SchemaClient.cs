@@ -38,7 +38,7 @@ namespace SchemaManager
             }
         }
 
-        public async Task<string> GetScript(Uri scriptUri)
+        public async Task<string> GetSnapshotScript(Uri scriptUri)
         {
             var response = await _httpClient.GetAsync(scriptUri);
             if (response.IsSuccessStatusCode)
@@ -79,7 +79,7 @@ namespace SchemaManager
             }
         }
 
-        public async Task<string> GetDiffSql(int version)
+        public async Task<string> GetDiffScript(int version)
         {
             var response = await _httpClient.GetAsync(RelativeUrl(string.Format(UrlConstants.Diff, version)));
             if (response.IsSuccessStatusCode)
