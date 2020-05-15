@@ -38,8 +38,8 @@ namespace Microsoft.Health.SqlServer.Tests.E2E
         public static IEnumerable<object[]> ScriptData =>
             new List<object[]>
             {
-                new object[] { "_schema/versions/1/snapshot" },
-                new object[] { "_schema/versions/1/diff" },
+                new object[] { "_schema/versions/1/script" },
+                new object[] { "_schema/versions/2/script/diff" },
             };
 
         [Fact]
@@ -60,8 +60,19 @@ namespace Microsoft.Health.SqlServer.Tests.E2E
             Assert.NotEmpty(jArrayResponse);
 
             JToken firstResult = jArrayResponse.First;
-            string scriptUrl = $"/_schema/versions/{firstResult["id"]}/snapshot";
+            int version = (int)firstResult["id"];
+
+            string scriptUrl = $"/_schema/versions/{version}/script";
             Assert.Equal(scriptUrl, firstResult["script"]);
+            if (version == 1)
+            {
+                Assert.Equal(string.Empty, firstResult["diff"]);
+            }
+            else
+            {
+                string diffScriptUrl = $"/_schema/versions/{version}/script/diff";
+                Assert.Equal(diffScriptUrl, firstResult["diff"]);
+            }
         }
 
         [Fact(Skip = "Deployment steps to refactor to include environmentUrl")]
@@ -116,8 +127,8 @@ namespace Microsoft.Health.SqlServer.Tests.E2E
             await SendAndVerifyStatusCode(HttpMethod.Delete, path, HttpStatusCode.NotFound);
         }
 
-        [InlineData("_schema/versions/abc/snapshot")]
-        [InlineData("_schema/versions/abc/diff")]
+        [InlineData("_schema/versions/abc/script")]
+        [InlineData("_schema/versions/abc/script/diff")]
         [Theory]
         public async Task GivenNonIntegerVersion_WhenRequestingScript_TheServerShouldReturnNotFound(string path)
         {
@@ -145,13 +156,15 @@ namespace Microsoft.Health.SqlServer.Tests.E2E
             await SendAndVerifyStatusCode(HttpMethod.Delete, path, HttpStatusCode.NotFound);
         }
 
-        [Fact]
-        public async Task GivenSchemaIdFound_WhenRequestingScript_TheServerShouldReturnScript()
+        [InlineData("_schema/versions/1/script")]
+        [InlineData("_schema/versions/2/script/diff")]
+        [Theory]
+        public async Task GivenSchemaIdFound_WhenRequestingScript_TheServerShouldReturnScript(string path)
         {
             var request = new HttpRequestMessage
             {
                 Method = HttpMethod.Get,
-                RequestUri = new Uri(_client.BaseAddress, "_schema/versions/1/snapshot"),
+                RequestUri = new Uri(_client.BaseAddress, path),
             };
             HttpResponseMessage response = await _client.SendAsync(request);
 
@@ -162,25 +175,8 @@ namespace Microsoft.Health.SqlServer.Tests.E2E
             Assert.NotEmpty(script);
         }
 
-        [Fact]
-        public async Task GivenSchemaIdFound_WhenRequestingDiff_TheServerShouldReturnDiff()
-        {
-            var request = new HttpRequestMessage
-            {
-                Method = HttpMethod.Get,
-                RequestUri = new Uri(_client.BaseAddress, "_schema/versions/2/diff"),
-            };
-            HttpResponseMessage response = await _client.SendAsync(request);
-
-            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-
-            string diff = response.Content.ToString();
-
-            Assert.NotEmpty(diff);
-        }
-
-        [InlineData("_schema/versions/0/snapshot")]
-        [InlineData("_schema/versions/0/diff")]
+        [InlineData("_schema/versions/0/script")]
+        [InlineData("_schema/versions/0/script/diff")]
         [Theory]
         public async Task GivenSchemaIdNotFound_WhenRequestingScript_TheServerShouldReturnNotFoundException(string path)
         {

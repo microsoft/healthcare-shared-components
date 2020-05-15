@@ -33,14 +33,14 @@ namespace Microsoft.Health.SqlServer.Features.Schema
             }
         }
 
-        public async Task<byte[]> GetSnapshotScriptAsBytesAsync(int version, CancellationToken cancellationToken = default)
+        public async Task<byte[]> GetScriptAsBytesAsync(int version, CancellationToken cancellationToken)
         {
             string resourceName = $"{typeof(TSchemaVersionEnum).Namespace}.Migrations.{version}.sql";
 
             return await ScriptAsBytesAsync(resourceName, cancellationToken);
         }
 
-        public async Task<byte[]> GetDiffScriptAsBytesAsync(int version, CancellationToken cancellationToken = default)
+        public async Task<byte[]> GetDiffScriptAsBytesAsync(int version, CancellationToken cancellationToken)
         {
             string resourceName = $"{typeof(TSchemaVersionEnum).Namespace}.Migrations.{version}.diff.sql";
 
