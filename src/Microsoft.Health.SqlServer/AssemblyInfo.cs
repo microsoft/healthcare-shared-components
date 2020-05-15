@@ -7,5 +7,6 @@ using System.Resources;
 using System.Runtime.CompilerServices;
 
 [assembly: InternalsVisibleTo("Microsoft.Health.SqlServer.UnitTests")]
+[assembly: InternalsVisibleTo("DynamicProxyGenAssembly2")]
 
 [assembly: NeutralResourcesLanguage("en-us")]

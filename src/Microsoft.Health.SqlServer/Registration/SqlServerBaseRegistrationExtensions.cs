@@ -36,6 +36,15 @@ namespace Microsoft.Health.SqlServer.Registration
                 .Singleton()
                 .AsSelf();
 
+            services.Add<SqlServerSchemaDataStore>()
+                .Scoped()
+                .AsSelf()
+                .AsImplementedInterfaces();
+
+            services.Add<SchemaJobWorker>()
+                .Singleton()
+                .AsSelf();
+
             services.Add<SchemaInitializer>()
                 .Singleton()
                 .AsService<IStartable>();
@@ -49,6 +58,21 @@ namespace Microsoft.Health.SqlServer.Registration
                 .Scoped()
                 .AsSelf()
                 .AsImplementedInterfaces();
+
+            services.Add<PollyRetryLoggerFactory>()
+                .Singleton()
+                .AsSelf()
+                .AsImplementedInterfaces();
+
+            services.Add<SqlServerTransientFaultRetryPolicyFactory>()
+                .Singleton()
+                .AsSelf()
+                .AsImplementedInterfaces();
+
+            services.Add<RetrySqlCommandWrapperFactory>()
+                .Singleton()
+                .AsSelf()
+                .AsService<SqlCommandWrapperFactory>();
 
             services.Add<SqlConnectionWrapperFactory>()
                 .Scoped()

@@ -3,10 +3,10 @@
 // Licensed under the MIT License (MIT). See LICENSE in the repo root for license information.
 // -------------------------------------------------------------------------------------------------
 
-using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using EnsureThat;
+using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Routing;
@@ -14,6 +14,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Health.SqlServer.Api.Features.Filters;
 using Microsoft.Health.SqlServer.Api.Features.Routing;
 using Microsoft.Health.SqlServer.Features.Schema;
+using Microsoft.Health.SqlServer.Features.Schema.Extensions;
 
 namespace Microsoft.Health.SqlServer.Api.Controllers
 {
@@ -25,17 +26,20 @@ namespace Microsoft.Health.SqlServer.Api.Controllers
         private readonly IScriptProvider _scriptProvider;
         private readonly IUrlHelperFactory _urlHelperFactory;
         private readonly ILogger<SchemaController> _logger;
+        private readonly IMediator _mediator;
 
-        public SchemaController(SchemaInformation schemaInformation, IScriptProvider scriptProvider, IUrlHelperFactory urlHelperFactoryFactory, ILogger<SchemaController> logger)
+        public SchemaController(SchemaInformation schemaInformation, IScriptProvider scriptProvider, IUrlHelperFactory urlHelperFactoryFactory, IMediator mediator, ILogger<SchemaController> logger)
         {
             EnsureArg.IsNotNull(schemaInformation, nameof(schemaInformation));
             EnsureArg.IsNotNull(scriptProvider, nameof(scriptProvider));
             EnsureArg.IsNotNull(urlHelperFactoryFactory, nameof(urlHelperFactoryFactory));
+            EnsureArg.IsNotNull(mediator, nameof(mediator));
             EnsureArg.IsNotNull(logger, nameof(logger));
 
             _schemaInformation = schemaInformation;
             _scriptProvider = scriptProvider;
             _urlHelperFactory = urlHelperFactoryFactory;
+            _mediator = mediator;
             _logger = logger;
         }
 
@@ -62,11 +66,11 @@ namespace Microsoft.Health.SqlServer.Api.Controllers
         [HttpGet]
         [AllowAnonymous]
         [Route(KnownRoutes.Current)]
-        public ActionResult CurrentVersion()
+        public async Task<ActionResult> CurrentVersionAsync()
         {
             _logger.LogInformation("Attempting to get current schemas");
-
-            throw new NotImplementedException(Resources.CurrentVersionNotImplemented);
+            var currentVersionResponse = await _mediator.GetCurrentVersionAsync(HttpContext.RequestAborted);
+            return new JsonResult(currentVersionResponse.CurrentVersions);
         }
 
         [HttpGet]
@@ -92,11 +96,11 @@ namespace Microsoft.Health.SqlServer.Api.Controllers
         [HttpGet]
         [AllowAnonymous]
         [Route(KnownRoutes.Compatibility)]
-        public ActionResult Compatibility()
+        public async Task<ActionResult> CompatibilityAsync()
         {
             _logger.LogInformation("Attempting to get compatibility");
-
-            throw new NotImplementedException(Resources.CompatibilityNotImplemented);
+            var compatibleResponse = await _mediator.GetCompatibleVersionAsync(HttpContext.RequestAborted);
+            return new JsonResult(compatibleResponse.CompatibleVersions);
         }
     }
 }

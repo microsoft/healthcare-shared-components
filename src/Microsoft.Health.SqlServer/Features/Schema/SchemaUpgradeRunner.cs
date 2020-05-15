@@ -59,7 +59,7 @@ namespace Microsoft.Health.SqlServer.Features.Schema
 
         private void CompleteSchemaVersion(int schemaVersion)
         {
-            UpsertSchemaVersion(schemaVersion, "complete");
+            UpsertSchemaVersion(schemaVersion, "completed");
         }
 
         private void UpsertSchemaVersion(int schemaVersion, string status)
