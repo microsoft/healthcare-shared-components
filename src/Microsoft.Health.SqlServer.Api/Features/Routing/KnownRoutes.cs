@@ -14,5 +14,6 @@ namespace Microsoft.Health.SqlServer.Api.Features.Routing
 
         public const string Current = Versions + "/current";
         public const string Script = Versions + "/{id:int}/script";
+        public const string Diff = Script + "/diff";
     }
 }

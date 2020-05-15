@@ -38,14 +38,6 @@ namespace Microsoft.Health.SqlServer.Api.UnitTests.Controllers
         }
 
         [Fact]
-        public void GivenAScriptRequest_WhenSchemaIdFound_ThenReturnScriptSuccess()
-        {
-            ActionResult result = _schemaController.SqlScript(1);
-            string script = result.ToString();
-            Assert.NotNull(script);
-        }
-
-        [Fact]
         public void GivenAnAvailableVersionsRequest_WhenCurrentVersionIsNull_ThenAllVersionsReturned()
         {
             ActionResult result = _schemaController.AvailableVersions();
@@ -59,6 +51,7 @@ namespace Microsoft.Health.SqlServer.Api.UnitTests.Controllers
             JToken firstResult = jArrayResult.First;
             Assert.Equal(1, firstResult["id"]);
             Assert.Equal("https://localhost/script", firstResult["script"]);
+            Assert.Equal(string.Empty, firstResult["diff"]);
 
             // Ensure available versions are in the ascending order
             jArrayResult.RemoveAt(0);
@@ -85,6 +78,7 @@ namespace Microsoft.Health.SqlServer.Api.UnitTests.Controllers
             JToken firstResult = jArrayResult.First;
             Assert.Equal(2, firstResult["id"]);
             Assert.Equal("https://localhost/script", firstResult["script"]);
+            Assert.Equal("https://localhost/script", firstResult["diff"]);
         }
     }
 }

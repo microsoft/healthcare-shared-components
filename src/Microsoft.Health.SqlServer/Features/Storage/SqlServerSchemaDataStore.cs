@@ -5,7 +5,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Data;
 using System.Data.SqlClient;
 using System.Linq;
 using System.Threading;
@@ -140,8 +139,12 @@ namespace Microsoft.Health.SqlServer.Features.Storage
                                     instanceNames = names.Split(",").ToList();
                                 }
 
-                                var status = (SchemaVersionStatus)Enum.Parse(typeof(SchemaVersionStatus), (string)dataReader.GetValue(1), true);
-                                var currentVersion = new CurrentVersionInformation((int)dataReader.GetValue(0), status, instanceNames);
+                                var status = (string)dataReader.GetValue(1);
+
+                                // To combine the complete and completed version since earlier status was marked in 'complete' status and now the fix has made to mark the status in completed state
+                                status = string.Equals(status, "complete", StringComparison.OrdinalIgnoreCase) ? "completed" : status;
+                                var schemaVersionStatus = (SchemaVersionStatus)Enum.Parse(typeof(SchemaVersionStatus), status, true);
+                                var currentVersion = new CurrentVersionInformation((int)dataReader.GetValue(0), schemaVersionStatus, instanceNames);
                                 currentVersions.Add(currentVersion);
                             }
                         }

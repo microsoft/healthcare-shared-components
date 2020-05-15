@@ -57,7 +57,13 @@ namespace Microsoft.Health.SqlServer.Api.Controllers
             {
                 var routeValues = new Dictionary<string, object> { { "id", version } };
                 string scriptUri = urlHelper.RouteUrl(RouteNames.Script, routeValues);
-                availableSchemas.Add(new { id = version, script = scriptUri });
+                string diffScriptUri = string.Empty;
+                if (version > 1)
+                {
+                    diffScriptUri = urlHelper.RouteUrl(RouteNames.Diff, routeValues);
+                }
+
+                availableSchemas.Add(new { id = version, script = scriptUri, diff = diffScriptUri });
             }
 
             return new JsonResult(availableSchemas);
@@ -76,11 +82,21 @@ namespace Microsoft.Health.SqlServer.Api.Controllers
         [HttpGet]
         [AllowAnonymous]
         [Route(KnownRoutes.Script, Name = RouteNames.Script)]
-        public FileContentResult SqlScript(int id)
+        public async Task<FileContentResult> ScriptAsync(int id)
         {
             _logger.LogInformation($"Attempting to get script for schema version: {id}");
             string fileName = $"{id}.sql";
-            return File(_scriptProvider.GetMigrationScriptAsBytes(id), "application/sql", fileName);
+            return File(await _scriptProvider.GetScriptAsBytesAsync(id, HttpContext.RequestAborted), "application/sql", fileName);
+        }
+
+        [HttpGet]
+        [AllowAnonymous]
+        [Route(KnownRoutes.Diff, Name = RouteNames.Diff)]
+        public async Task<FileContentResult> DiffScriptAsync(int id)
+        {
+            _logger.LogInformation($"Attempting to get diff script for schema version: {id}");
+            string fileName = $"{id}.diff.sql";
+            return File(await _scriptProvider.GetDiffScriptAsBytesAsync(id, HttpContext.RequestAborted), "application/sql", fileName);
         }
 
         [HttpGet]

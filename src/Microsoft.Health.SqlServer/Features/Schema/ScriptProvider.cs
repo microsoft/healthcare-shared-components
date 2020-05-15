@@ -6,6 +6,8 @@
 using System;
 using System.IO;
 using System.Reflection;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace Microsoft.Health.SqlServer.Features.Schema
 {
@@ -31,9 +33,22 @@ namespace Microsoft.Health.SqlServer.Features.Schema
             }
         }
 
-        public byte[] GetMigrationScriptAsBytes(int version)
+        public async Task<byte[]> GetScriptAsBytesAsync(int version, CancellationToken cancellationToken)
         {
             string resourceName = $"{typeof(TSchemaVersionEnum).Namespace}.Migrations.{version}.sql";
+
+            return await ScriptAsBytesAsync(resourceName, cancellationToken);
+        }
+
+        public async Task<byte[]> GetDiffScriptAsBytesAsync(int version, CancellationToken cancellationToken)
+        {
+            string resourceName = $"{typeof(TSchemaVersionEnum).Namespace}.Migrations.{version}.diff.sql";
+
+            return await ScriptAsBytesAsync(resourceName, cancellationToken);
+        }
+
+        private async Task<byte[]> ScriptAsBytesAsync(string resourceName, CancellationToken cancellationToken)
+        {
             using (Stream fileStream = Assembly.GetAssembly(typeof(TSchemaVersionEnum)).GetManifestResourceStream(resourceName))
             {
                 if (fileStream == null)
@@ -42,7 +57,7 @@ namespace Microsoft.Health.SqlServer.Features.Schema
                 }
 
                 var scriptBytes = new byte[fileStream.Length];
-                fileStream.Read(scriptBytes, 0, scriptBytes.Length);
+                await fileStream.ReadAsync(scriptBytes, 0, scriptBytes.Length, cancellationToken);
                 return scriptBytes;
             }
         }
