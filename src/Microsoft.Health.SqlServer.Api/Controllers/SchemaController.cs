@@ -56,14 +56,14 @@ namespace Microsoft.Health.SqlServer.Api.Controllers
             for (var version = currentVersion; version <= _schemaInformation.MaximumSupportedVersion; version++)
             {
                 var routeValues = new Dictionary<string, object> { { "id", version } };
-                string snapshotScriptUri = urlHelper.RouteUrl(RouteNames.Script, routeValues);
+                string scriptUri = urlHelper.RouteUrl(RouteNames.Script, routeValues);
                 string diffScriptUri = string.Empty;
                 if (version > 1)
                 {
                     diffScriptUri = urlHelper.RouteUrl(RouteNames.Diff, routeValues);
                 }
 
-                availableSchemas.Add(new { id = version, script = snapshotScriptUri, diff = diffScriptUri });
+                availableSchemas.Add(new { id = version, script = scriptUri, diff = diffScriptUri });
             }
 
             return new JsonResult(availableSchemas);
@@ -81,7 +81,7 @@ namespace Microsoft.Health.SqlServer.Api.Controllers
 
         [HttpGet]
         [AllowAnonymous]
-        [Route(KnownRoutes.Snapshot, Name = RouteNames.Script)]
+        [Route(KnownRoutes.Script, Name = RouteNames.Script)]
         public async Task<FileContentResult> ScriptAsync(int id)
         {
             _logger.LogInformation($"Attempting to get script for schema version: {id}");

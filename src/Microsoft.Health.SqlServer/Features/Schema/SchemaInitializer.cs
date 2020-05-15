@@ -86,13 +86,13 @@ namespace Microsoft.Health.SqlServer.Features.Schema
 
                 string tableName = "dbo.SchemaVersion";
 
+                // since now the status is made consistent as 'completed', we might have to check for 'complete' as well for the previous version's status
                 using (var selectCommand = connection.CreateCommand())
                 {
                     selectCommand.CommandText = string.Format(
                         "SELECT MAX(Version) FROM {0} " +
                         "WHERE Status = 'complete' OR Status = 'completed'", tableName);
 
-                    selectCommand.Parameters.AddWithValue("@tableName", tableName);
                     try
                     {
                         _schemaInformation.Current = (int?)selectCommand.ExecuteScalar();
