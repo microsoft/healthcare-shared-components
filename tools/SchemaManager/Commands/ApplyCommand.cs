@@ -78,7 +78,7 @@ namespace SchemaManager.Commands
                         await ValidateInstancesVersion(schemaClient, executingVersion);
                     }
 
-                    string script = await GetScript(schemaClient, executingVersion, availableVersion.Script);
+                    string script = await GetScript(schemaClient, executingVersion, availableVersion.Script, availableVersion.DiffScript);
 
                     UpgradeSchema(connectionString, executingVersion, script);
 
@@ -117,14 +117,14 @@ namespace SchemaManager.Commands
             Console.WriteLine(string.Format(Resources.SchemaMigrationSuccessMessage, version));
         }
 
-        private static async Task<string> GetScript(ISchemaClient schemaClient, int version, Uri snapshotUri)
+        private static async Task<string> GetScript(ISchemaClient schemaClient, int version, Uri scriptUri, Uri diffScriptUri = null)
         {
             if (version == 1)
             {
-                return await schemaClient.GetSnapshotScript(snapshotUri);
+                return await schemaClient.GetScript(scriptUri);
             }
 
-            return await schemaClient.GetDiffScript(version);
+            return await schemaClient.GetDiffScript(diffScriptUri);
         }
 
         private static async Task ValidateCompatibleVersion(ISchemaClient schemaClient, int minAvailableVersion, int maxAvailableVersion)
