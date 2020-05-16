@@ -4,7 +4,6 @@
 // -------------------------------------------------------------------------------------------------
 
 using System;
-using System.Data;
 using System.Data.SqlClient;
 using EnsureThat;
 using Microsoft.Extensions.Logging;
@@ -85,35 +84,22 @@ namespace Microsoft.Health.SqlServer.Features.Schema
             {
                 connection.Open();
 
-                string procedureSchema = "dbo";
-                string procedureName = "SelectCurrentSchemaVersion";
+                string tableName = "dbo.SchemaVersion";
 
-                bool procedureExists;
-                using (var checkProcedureExistsCommand = connection.CreateCommand())
+                // since now the status is made consistent as 'completed', we might have to check for 'complete' as well for the previous version's status
+                using (var selectCommand = connection.CreateCommand())
                 {
-                    checkProcedureExistsCommand.CommandText = @"
-                        SELECT 1
-                        FROM sys.procedures p
-                        INNER JOIN sys.schemas s on p.schema_id = s.schema_id
-                        WHERE s.name = @schemaName AND p.name = @procedureName";
+                    selectCommand.CommandText = string.Format(
+                        "SELECT MAX(Version) FROM {0} " +
+                        "WHERE Status = 'complete' OR Status = 'completed'", tableName);
 
-                    checkProcedureExistsCommand.Parameters.AddWithValue("@schemaName", procedureSchema);
-                    checkProcedureExistsCommand.Parameters.AddWithValue("@procedureName", procedureName);
-                    procedureExists = checkProcedureExistsCommand.ExecuteScalar() != null;
-                }
-
-                if (!procedureExists)
-                {
-                    _logger.LogInformation("Procedure to select the schema version was not found. This must be a new database.");
-                }
-                else
-                {
-                    using (var command = connection.CreateCommand())
+                    try
                     {
-                        command.CommandText = $"{procedureSchema}.{procedureName}";
-                        command.CommandType = CommandType.StoredProcedure;
-
-                        _schemaInformation.Current = (int?)command.ExecuteScalar();
+                        _schemaInformation.Current = (int?)selectCommand.ExecuteScalar();
+                    }
+                    catch (SqlException e) when (e.Message is "Invalid object name 'dbo.SchemaVersion'.")
+                    {
+                        _logger.LogInformation($"The table {tableName} does not exists. It must be new database");
                     }
                 }
             }

@@ -3,11 +3,11 @@
 // Licensed under the MIT License (MIT). See LICENSE in the repo root for license information.
 // -------------------------------------------------------------------------------------------------
 
-namespace Microsoft.Health.SqlServer.Api.Features.Routing
+namespace Microsoft.Health.SqlServer.UnitTests.Features.Schema
 {
-    public static class RouteNames
+    public enum TestSchemaVersionEnum
     {
-        public const string Script = "Script";
-        public const string Diff = "Diff";
+        Version1 = 1,
+        Version2 = 2,
     }
 }

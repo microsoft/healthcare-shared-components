@@ -33,6 +33,6 @@ namespace Microsoft.Health.SqlServer.Configs
         /// <summary>
         /// Updates the schema migration options
         /// </summary>
-        public SqlServerSchemaOptions SchemaOptions { get; } = new SqlServerSchemaOptions();
+        public SqlServerSchemaOptions SchemaOptions { get; set; } = new SqlServerSchemaOptions();
     }
 }
