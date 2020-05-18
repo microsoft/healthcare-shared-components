@@ -59,7 +59,7 @@ namespace SchemaManager.Commands
                 header: new ContentView("Script"));
 
             tableView.AddColumn(
-                cellValue: availableVersion => availableVersion.DiffScript,
+                cellValue: availableVersion => availableVersion.Diff,
                 header: new ContentView("Diff"));
 
             var consoleRenderer = new ConsoleRenderer(

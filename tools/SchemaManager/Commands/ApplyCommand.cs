@@ -55,6 +55,12 @@ namespace SchemaManager.Commands
                 availableVersions = availableVersions.Where(availableVersion => availableVersion.Id <= targetVersion)
                     .ToList();
 
+                // Checking the specified version is not out of range of available versions
+                if (availableVersions.Count < 1 || targetVersion < availableVersions.First().Id || targetVersion > availableVersions.Last().Id)
+                {
+                    throw new SchemaManagerException(string.Format(Resources.SpecifiedVersionNotAvailable, targetVersion));
+                }
+
                 // to ensure server side polling is completed
                 Console.WriteLine(Resources.WaitMessage);
                 await Task.Delay(MaxWaitTime);
@@ -78,7 +84,7 @@ namespace SchemaManager.Commands
                         await ValidateInstancesVersion(schemaClient, executingVersion);
                     }
 
-                    string script = await GetScript(schemaClient, executingVersion, availableVersion.Script, availableVersion.DiffScript);
+                    string script = await GetScript(schemaClient, executingVersion, availableVersion.Script, availableVersion.Diff);
 
                     UpgradeSchema(connectionString, executingVersion, script);
 
@@ -117,14 +123,14 @@ namespace SchemaManager.Commands
             Console.WriteLine(string.Format(Resources.SchemaMigrationSuccessMessage, version));
         }
 
-        private static async Task<string> GetScript(ISchemaClient schemaClient, int version, Uri scriptUri, Uri diffScriptUri = null)
+        private static async Task<string> GetScript(ISchemaClient schemaClient, int version, Uri scriptUri, Uri diffUri = null)
         {
             if (version == 1)
             {
                 return await schemaClient.GetScript(scriptUri);
             }
 
-            return await schemaClient.GetDiffScript(diffScriptUri);
+            return await schemaClient.GetDiffScript(diffUri);
         }
 
         private static async Task ValidateCompatibleVersion(ISchemaClient schemaClient, int minAvailableVersion, int maxAvailableVersion)

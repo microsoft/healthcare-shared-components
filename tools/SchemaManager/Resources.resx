@@ -188,8 +188,12 @@
   <data name="ServerRequiredValidation" xml:space="preserve">
     <value>You must include a Server.</value>
   </data>
+  <data name="SpecifiedVersionNotAvailable" xml:space="preserve">
+    <value>The specified schema version "{0}" is not available.</value>
+    <comment>{0} is a version.</comment>
+  </data>
   <data name="VersionIncompatibilityMessage" xml:space="preserve">
-    <value>The schema version {0} is not compatible.</value>
+    <value>The schema version "{0}" is not compatible.</value>
     <comment>{0} is a version.</comment>
   </data>
   <data name="VersionOptionDescription" xml:space="preserve">

@@ -10,20 +10,19 @@ namespace SchemaManager.Model
 {
     public class AvailableVersion
     {
-        public AvailableVersion(int id, Uri script, Uri diffScript)
+        public AvailableVersion(int id, Uri script, Uri diff)
         {
             EnsureArg.IsNotNull(script, nameof(script));
-            EnsureArg.IsNotNull(diffScript, nameof(diffScript));
 
             Id = id;
             Script = script;
-            DiffScript = diffScript;
+            Diff = diff;
         }
 
         public int Id { get; }
 
         public Uri Script { get; }
 
-        public Uri DiffScript { get; }
+        public Uri Diff { get; }
     }
 }

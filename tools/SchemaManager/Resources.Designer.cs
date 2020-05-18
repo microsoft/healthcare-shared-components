@@ -259,7 +259,16 @@ namespace SchemaManager {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to The schema version {0} is not compatible..
+        ///   Looks up a localized string similar to The specified schema version &quot;{0}&quot; is not available..
+        /// </summary>
+        internal static string SpecifiedVersionNotAvailable {
+            get {
+                return ResourceManager.GetString("SpecifiedVersionNotAvailable", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The schema version &quot;{0}&quot; is not compatible..
         /// </summary>
         internal static string VersionIncompatibilityMessage {
             get {

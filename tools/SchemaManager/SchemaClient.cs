@@ -79,9 +79,9 @@ namespace SchemaManager
             }
         }
 
-        public async Task<string> GetDiffScript(Uri diffScriptUri)
+        public async Task<string> GetDiffScript(Uri diffUri)
         {
-            var response = await _httpClient.GetAsync(diffScriptUri);
+            var response = await _httpClient.GetAsync(diffUri);
             if (response.IsSuccessStatusCode)
             {
                 return await response.Content.ReadAsStringAsync();
