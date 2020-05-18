@@ -45,6 +45,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Health.SqlServer.
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Health.Development.IdentityProvider", "src\Microsoft.Health.Development.IdentityProvider\Microsoft.Health.Development.IdentityProvider.csproj", "{8DFE583A-60D6-4014-A95A-01AAE8D35A0E}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SchemaManager", "tools\SchemaManager\SchemaManager.csproj", "{4AB4CF95-DAE6-4B64-9DC5-5F0633FABD56}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -111,6 +113,10 @@ Global
 		{8DFE583A-60D6-4014-A95A-01AAE8D35A0E}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{8DFE583A-60D6-4014-A95A-01AAE8D35A0E}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{8DFE583A-60D6-4014-A95A-01AAE8D35A0E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{4AB4CF95-DAE6-4B64-9DC5-5F0633FABD56}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4AB4CF95-DAE6-4B64-9DC5-5F0633FABD56}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4AB4CF95-DAE6-4B64-9DC5-5F0633FABD56}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4AB4CF95-DAE6-4B64-9DC5-5F0633FABD56}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -131,6 +137,7 @@ Global
 		{C74D5E00-8BE4-4C99-8A59-9D58D255C140} = {CCD9FF99-E177-446E-B9E5-9F570FD96A34}
 		{85781F6A-28D8-4850-A991-51157E5DF46E} = {CCD9FF99-E177-446E-B9E5-9F570FD96A34}
 		{8DFE583A-60D6-4014-A95A-01AAE8D35A0E} = {8AD2A324-DAB5-4380-94A5-31F7D817C384}
+		{4AB4CF95-DAE6-4B64-9DC5-5F0633FABD56} = {B70945F4-01A6-4351-955B-C4A2943B5E3B}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		RESX_SortFileContentOnSave = True
