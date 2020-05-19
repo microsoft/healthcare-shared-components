@@ -176,10 +176,10 @@
     <comment>{0} is the server url.</comment>
   </data>
   <data name="RetryCurentVersions" xml:space="preserve">
-    <value>Retrying to verifiy if all the instances are running the previous version.</value>
+    <value>Retrying to verify if all the instances are running the previous version.</value>
   </data>
   <data name="RetryVersionCompatibility" xml:space="preserve">
-    <value>Retrying to verify the schema version compatibility.</value>
+    <value>Retrying to verify if the schema version is compatible.</value>
   </data>
   <data name="SchemaMigrationStartedMessage" xml:space="preserve">
     <value>Schema Migration is started for the version : {0}.</value>

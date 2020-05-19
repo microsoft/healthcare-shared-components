@@ -223,7 +223,7 @@ namespace SchemaManager {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Retrying to verifiy if all the instances are running the previous version..
+        ///   Looks up a localized string similar to Retrying to verify if all the instances are running the previous version..
         /// </summary>
         internal static string RetryCurentVersions {
             get {
@@ -232,7 +232,7 @@ namespace SchemaManager {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Retrying to verify the schema version compatibility..
+        ///   Looks up a localized string similar to Retrying to verify if the schema version is compatible..
         /// </summary>
         internal static string RetryVersionCompatibility {
             get {
