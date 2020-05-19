@@ -223,7 +223,34 @@ namespace SchemaManager {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Schema Migration is completed successfully for the version {0}..
+        ///   Looks up a localized string similar to Retrying to verifiy if all the instances are running the previous version..
+        /// </summary>
+        internal static string RetryCurentVersions {
+            get {
+                return ResourceManager.GetString("RetryCurentVersions", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Retrying to verify the schema version compatibility..
+        /// </summary>
+        internal static string RetryVersionCompatibility {
+            get {
+                return ResourceManager.GetString("RetryVersionCompatibility", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Schema Migration is started for the version : {0}..
+        /// </summary>
+        internal static string SchemaMigrationStartedMessage {
+            get {
+                return ResourceManager.GetString("SchemaMigrationStartedMessage", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Schema Migration is completed successfully for the version : {0}..
         /// </summary>
         internal static string SchemaMigrationSuccessMessage {
             get {

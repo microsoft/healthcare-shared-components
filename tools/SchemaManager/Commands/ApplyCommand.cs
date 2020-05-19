@@ -11,6 +11,7 @@ using System.Linq;
 using System.Net.Http;
 using System.Threading.Tasks;
 using Microsoft.SqlServer.Management.Common;
+using Polly;
 using SchemaManager.Exceptions;
 using SchemaManager.Model;
 using SchemaManager.Utils;
@@ -19,7 +20,8 @@ namespace SchemaManager.Commands
 {
     public static class ApplyCommand
     {
-        private static readonly TimeSpan MaxWaitTime = TimeSpan.FromMinutes(1);
+        private static readonly TimeSpan RetrySleepDuration = TimeSpan.FromSeconds(20);
+        private const int RetryAttempts = 3;
 
         public static async Task HandlerAsync(string connectionString, Uri server, MutuallyExclusiveType exclusiveType, bool force)
         {
@@ -61,13 +63,17 @@ namespace SchemaManager.Commands
                     throw new SchemaManagerException(string.Format(Resources.SpecifiedVersionNotAvailable, targetVersion));
                 }
 
-                // to ensure server side polling is completed
-                Console.WriteLine(Resources.WaitMessage);
-                await Task.Delay(MaxWaitTime);
-
                 if (!force)
                 {
-                    await ValidateCompatibleVersion(schemaClient, availableVersions.First().Id, availableVersions.Last().Id);
+                    await Policy.Handle<SchemaManagerException>()
+                    .WaitAndRetryAsync(
+                        retryCount: RetryAttempts,
+                        sleepDurationProvider: (retryCount) => RetrySleepDuration,
+                        onRetry: (exception, retryCount) =>
+                        {
+                            Console.WriteLine(Resources.RetryVersionCompatibility);
+                        })
+                    .ExecuteAsync(() => ValidateCompatibleVersion(schemaClient, availableVersions.First().Id, availableVersions.Last().Id));
                 }
                 else if (availableVersions.First().Id == 1)
                 {
@@ -81,19 +87,20 @@ namespace SchemaManager.Commands
                     int executingVersion = availableVersion.Id;
                     if (!force)
                     {
-                        await ValidateInstancesVersion(schemaClient, executingVersion);
+                        await Policy.Handle<SchemaManagerException>()
+                        .WaitAndRetryAsync(
+                            retryCount: RetryAttempts,
+                            sleepDurationProvider: (retryCount) => RetrySleepDuration,
+                            onRetry: (exception, retryCount) =>
+                            {
+                                Console.WriteLine(Resources.RetryCurentVersions);
+                            })
+                        .ExecuteAsync(() => ValidateInstancesVersion(schemaClient, executingVersion));
                     }
 
                     string script = await GetScript(schemaClient, executingVersion, availableVersion.Script, availableVersion.Diff);
 
                     UpgradeSchema(connectionString, executingVersion, script);
-
-                    // to ensure server side polling is completed after each version migration
-                    if (executingVersion != availableVersions.Last().Id)
-                    {
-                        Console.WriteLine(Resources.WaitMessage);
-                        await Task.Delay(MaxWaitTime);
-                    }
                 }
             }
             catch (SchemaManagerException ex)
@@ -117,6 +124,8 @@ namespace SchemaManager.Commands
         {
             // check if the record for given version exists in failed status
             SchemaDataStore.DeleteSchemaVersion(connectionString, version, SchemaDataStore.Failed);
+
+            Console.WriteLine(string.Format(Resources.SchemaMigrationStartedMessage, version));
 
             SchemaDataStore.ExecuteScriptAndCompleteSchemaVersion(connectionString, script, version);
 

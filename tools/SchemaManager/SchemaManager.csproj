@@ -9,6 +9,7 @@
     <PackageReference Include="Ensure.That" Version="8.1.2" />
     <PackageReference Include="Microsoft.SqlServer.SqlManagementObjects" Version="150.18208.0" />
     <PackageReference Include="Newtonsoft.Json" Version="12.0.3" />
+    <PackageReference Include="Polly" Version="7.2.1" />
     <PackageReference Include="System.CommandLine.Experimental" Version="0.2.0-alpha.19174.3" />
     <PackageReference Include="System.CommandLine.Rendering" Version="0.2.0-alpha.19174.3" />
     <PackageReference Include="System.Data.SqlClient" Version="4.8.0" />
