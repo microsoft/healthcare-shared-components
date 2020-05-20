@@ -65,13 +65,15 @@ namespace SchemaManager.Commands
 
                 if (!force)
                 {
+                    int attemptCount = 1;
+
                     await Policy.Handle<SchemaManagerException>()
                     .WaitAndRetryAsync(
                         retryCount: RetryAttempts,
                         sleepDurationProvider: (retryCount) => RetrySleepDuration,
                         onRetry: (exception, retryCount) =>
                         {
-                            Console.WriteLine(Resources.RetryVersionCompatibility);
+                            Console.WriteLine(string.Format(Resources.RetryVersionCompatibility), attemptCount++, RetryAttempts);
                         })
                     .ExecuteAsync(() => ValidateCompatibleVersion(schemaClient, availableVersions.First().Id, availableVersions.Last().Id));
                 }
@@ -87,13 +89,15 @@ namespace SchemaManager.Commands
                     int executingVersion = availableVersion.Id;
                     if (!force)
                     {
+                        int attemptCount = 1;
+
                         await Policy.Handle<SchemaManagerException>()
                         .WaitAndRetryAsync(
                             retryCount: RetryAttempts,
                             sleepDurationProvider: (retryCount) => RetrySleepDuration,
                             onRetry: (exception, retryCount) =>
                             {
-                                Console.WriteLine(Resources.RetryCurentVersions);
+                                Console.WriteLine(string.Format(Resources.RetryCurrentVersions, attemptCount++, RetryAttempts));
                             })
                         .ExecuteAsync(() => ValidateInstancesVersion(schemaClient, executingVersion));
                     }
