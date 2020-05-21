@@ -22,7 +22,8 @@ namespace Microsoft.Health.SqlServer.Features.Client
             SqlServerDataStoreConfiguration configuration,
             SqlTransactionHandler sqlTransactionHandler,
             SqlCommandWrapperFactory sqlCommandWrapperFactory,
-            bool enlistInTransactionIfPresent)
+            bool enlistInTransactionIfPresent,
+            IsolationLevel isolationLevel = IsolationLevel.ReadCommitted)
         {
             EnsureArg.IsNotNull(configuration, nameof(configuration));
             EnsureArg.IsNotNull(sqlTransactionHandler, nameof(sqlTransactionHandler));
@@ -53,7 +54,7 @@ namespace Microsoft.Health.SqlServer.Features.Client
 
             if (enlistInTransactionIfPresent && sqlTransactionHandler.SqlTransactionScope != null)
             {
-                SqlTransaction = sqlTransactionHandler.SqlTransactionScope.SqlTransaction ?? SqlConnection.BeginTransaction();
+                SqlTransaction = sqlTransactionHandler.SqlTransactionScope.SqlTransaction ?? SqlConnection.BeginTransaction(isolationLevel);
 
                 if (sqlTransactionHandler.SqlTransactionScope.SqlTransaction == null)
                 {
