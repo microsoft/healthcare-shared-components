@@ -175,8 +175,20 @@
     <value>Unable to connect to host "{0}".</value>
     <comment>{0} is the server url.</comment>
   </data>
+  <data name="RetryCurrentVersions" xml:space="preserve">
+    <value>Attempt {0} of {1} to verify if all the instances are running the previous version.</value>
+    <comment>(0) is retry attempt, {1} is total retries</comment>
+  </data>
+  <data name="RetryVersionCompatibility" xml:space="preserve">
+    <value>Attempt {0} of {1} to verify if the schema version is compatible.</value>
+    <comment>(0) is retry attempt, {1} is total retries</comment>
+  </data>
+  <data name="SchemaMigrationStartedMessage" xml:space="preserve">
+    <value>Schema migration is started for the version : {0}.</value>
+    <comment>{0} is a version.</comment>
+  </data>
   <data name="SchemaMigrationSuccessMessage" xml:space="preserve">
-    <value>Schema Migration is completed successfully for the version {0}.</value>
+    <value>Schema migration is completed successfully for the version : {0}.</value>
     <comment>{0} is a version.</comment>
   </data>
   <data name="ScriptNotFound" xml:space="preserve">
