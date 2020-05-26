@@ -16,23 +16,22 @@ namespace Microsoft.Health.Blob.Features.Storage
     public interface IBlobClientInitializer
     {
         /// <summary>
-        /// Creates an unopened <see cref="IDocumentClient"/> based on the given <see cref="BlobDataStoreConfiguration"/>.
+        /// Creates an unopened <see cref="CloudBlobClient"/> based on the given <see cref="BlobDataStoreConfiguration"/>.
         /// </summary>
         /// <param name="configuration">The connection string and requestion options.</param>
         /// <returns>A <see cref="CloudBlobClient"/> instance</returns>
         CloudBlobClient CreateBlobClient(BlobDataStoreConfiguration configuration);
 
         /// <summary>
-        /// Perform a trivial query to establish a connection.
-        /// DocumentClient.OpenAsync() is not supported when a token is used as the access key.
+        /// Open blob client
         /// </summary>
-        /// <param name="client">The document client</param>
+        /// <param name="client">The CloudBlob client</param>
         /// <param name="configuration">The data store config</param>
         /// <param name="blobContainerConfiguration">The container configuration to use for validating the blob client is open</param>
         Task OpenBlobClientAsync(CloudBlobClient client, BlobDataStoreConfiguration configuration, BlobContainerConfiguration blobContainerConfiguration);
 
         /// <summary>
-        /// Ensures that the necessary database and collection exist with the proper indexing policy and stored procedures
+        /// Initialize data store
         /// </summary>
         /// <param name="client">The <see cref="CloudBlobClient"/> instance to use for initialization.</param>
         /// <param name="configuration">The data store configuration.</param>
