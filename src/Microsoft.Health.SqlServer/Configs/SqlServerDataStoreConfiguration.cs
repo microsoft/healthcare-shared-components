@@ -15,12 +15,6 @@ namespace Microsoft.Health.SqlServer.Configs
         public bool Initialize { get; set; }
 
         /// <summary>
-        /// WARNING: THIS RESETS ALL DATA IN THE DATABASE
-        /// If set, this applies schema 1 which resets all the data in the database. This is temporary until the schema migration tool is complete.
-        /// </summary>
-        public bool DeleteAllDataOnStartup { get; set; }
-
-        /// <summary>
         /// Allows the experimental schema initializer to attempt to create the database if not present.
         /// </summary>
         public bool AllowDatabaseCreation { get; set; }
