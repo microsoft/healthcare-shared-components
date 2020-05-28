@@ -10,6 +10,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Health.Blob.Configs;
 using Microsoft.Health.Blob.Features.Storage;
 using Microsoft.Health.Extensions.DependencyInjection;
+using Microsoft.IO;
 
 namespace Microsoft.Extensions.DependencyInjection
 {
@@ -59,6 +60,8 @@ namespace Microsoft.Extensions.DependencyInjection
             services.Add<BlobClientInitializer>()
                 .Singleton()
                 .AsService<IBlobClientInitializer>();
+
+            services.AddSingleton<RecyclableMemoryStreamManager>();
 
             return services;
         }
