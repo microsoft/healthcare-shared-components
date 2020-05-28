@@ -7,6 +7,7 @@ using System;
 using System.Linq;
 using EnsureThat;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Health.Blob.Configs;
 using Microsoft.Health.Blob.Features.Storage;
 using Microsoft.Health.Extensions.DependencyInjection;
@@ -61,7 +62,7 @@ namespace Microsoft.Extensions.DependencyInjection
                 .Singleton()
                 .AsService<IBlobClientInitializer>();
 
-            services.AddSingleton<RecyclableMemoryStreamManager>();
+            services.TryAddSingleton<RecyclableMemoryStreamManager>();
 
             return services;
         }
