@@ -48,7 +48,7 @@ namespace Microsoft.Health.SqlServer.Features.Schema
             _logger.LogInformation("Schema version is {version}", _schemaInformation.Current?.ToString() ?? "NULL");
 
             // If the stored procedure to get the current schema version doesn't exist
-            if (_schemaInformation.Current == null || _sqlServerDataStoreConfiguration.DeleteAllDataOnStartup)
+            if (_schemaInformation.Current == null)
             {
                 if (forceIncrementalSchemaUpgrade)
                 {
