@@ -40,14 +40,8 @@ namespace Microsoft.Health.Blob.Features.Storage
             blobClientOptions.Retry.Mode = Azure.Core.RetryMode.Exponential;
             blobClientOptions.Retry.Delay = TimeSpan.FromSeconds(configuration.RequestOptions.ExponentialRetryBackoffDeltaInSeconds);
             blobClientOptions.Retry.NetworkTimeout = TimeSpan.FromMinutes(configuration.RequestOptions.ServerTimeoutInMinutes);
-            BlobServiceClient blobClient = new BlobServiceClient(configuration.ConnectionString, blobClientOptions);
 
-            // Todo these options are not available any more confirming with https://github.com/Azure/azure-sdk-for-net/issues/12445
-            // blobClient.DefaultRequestOptions.MaximumExecutionTime = TimeSpan.FromMinutes(configuration.RequestOptions.ServerTimeoutInMinutes);
-            // blobClient.DefaultRequestOptions.ServerTimeout = TimeSpan.FromMinutes(configuration.RequestOptions.ServerTimeoutInMinutes);
-            // blobClient.DefaultRequestOptions.ParallelOperationThreadCount = configuration.RequestOptions.ParallelOperationThreadCount;
-
-            return blobClient;
+            return new BlobServiceClient(configuration.ConnectionString, blobClientOptions);
         }
 
         /// <inheritdoc />
