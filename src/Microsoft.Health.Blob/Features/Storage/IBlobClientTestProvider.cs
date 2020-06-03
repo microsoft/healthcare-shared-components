@@ -5,13 +5,13 @@
 
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.Azure.Storage.Blob;
+using Azure.Storage.Blobs;
 using Microsoft.Health.Blob.Configs;
 
 namespace Microsoft.Health.Blob.Features.Storage
 {
     public interface IBlobClientTestProvider
     {
-        Task PerformTestAsync(CloudBlobClient blobClient, BlobDataStoreConfiguration configuration, BlobContainerConfiguration blobContainerConfiguration, CancellationToken cancellationToken = default);
+        Task PerformTestAsync(BlobServiceClient client, BlobDataStoreConfiguration configuration, BlobContainerConfiguration blobContainerConfiguration, CancellationToken cancellationToken = default);
     }
 }

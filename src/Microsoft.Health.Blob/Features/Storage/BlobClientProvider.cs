@@ -6,8 +6,8 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Azure.Storage.Blobs;
 using EnsureThat;
-using Microsoft.Azure.Storage.Blob;
 using Microsoft.Extensions.Logging;
 using Microsoft.Health.Blob.Configs;
 using Microsoft.Health.Core;
@@ -17,7 +17,7 @@ namespace Microsoft.Health.Blob.Features.Storage
 {
     public class BlobClientProvider : IStartable, IRequireInitializationOnFirstRequest, IDisposable
     {
-        private readonly CloudBlobClient _blobClient;
+        private readonly BlobServiceClient _blobServiceClient;
         private readonly RetryableInitializationOperation _initializationOperation;
 
         public BlobClientProvider(
@@ -31,10 +31,10 @@ namespace Microsoft.Health.Blob.Features.Storage
             EnsureArg.IsNotNull(logger, nameof(logger));
             EnsureArg.IsNotNull(collectionInitializers, nameof(collectionInitializers));
 
-            _blobClient = blobClientInitializer.CreateBlobClient(blobDataStoreConfiguration);
+            _blobServiceClient = blobClientInitializer.CreateBlobClient(blobDataStoreConfiguration);
 
             _initializationOperation = new RetryableInitializationOperation(
-                () => blobClientInitializer.InitializeDataStoreAsync(_blobClient, blobDataStoreConfiguration, collectionInitializers));
+                () => blobClientInitializer.InitializeDataStoreAsync(_blobServiceClient, blobDataStoreConfiguration, collectionInitializers));
         }
 
         /// <summary>
@@ -69,14 +69,14 @@ namespace Microsoft.Health.Blob.Features.Storage
             }
         }
 
-        public CloudBlobClient CreateBlobClient()
+        public BlobServiceClient CreateBlobClient()
         {
             if (!_initializationOperation.IsInitialized)
             {
                 _initializationOperation.EnsureInitialized().GetAwaiter().GetResult();
             }
 
-            return _blobClient;
+            return _blobServiceClient;
         }
     }
 }

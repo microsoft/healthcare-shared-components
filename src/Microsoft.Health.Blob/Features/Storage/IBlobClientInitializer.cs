@@ -5,38 +5,38 @@
 
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using Microsoft.Azure.Storage.Blob;
+using Azure.Storage.Blobs;
 using Microsoft.Health.Blob.Configs;
 
 namespace Microsoft.Health.Blob.Features.Storage
 {
     /// <summary>
-    /// Provides methods for creating a CloudBlobClient instance and initializing containers.
+    /// Provides methods for creating a BlobServiceClient instance and initializing containers.
     /// </summary>
     public interface IBlobClientInitializer
     {
         /// <summary>
-        /// Creates an unopened <see cref="CloudBlobClient"/> based on the given <see cref="BlobDataStoreConfiguration"/>.
+        /// Creates an unopened <see cref="BlobServiceClient"/> based on the given <see cref="BlobDataStoreConfiguration"/>.
         /// </summary>
         /// <param name="configuration">The connection string and requestion options.</param>
-        /// <returns>A <see cref="CloudBlobClient"/> instance</returns>
-        CloudBlobClient CreateBlobClient(BlobDataStoreConfiguration configuration);
+        /// <returns>A <see cref="BlobServiceClient"/> instance</returns>
+        BlobServiceClient CreateBlobClient(BlobDataStoreConfiguration configuration);
 
         /// <summary>
-        /// Open blob client
+        /// Open blobservice client
         /// </summary>
-        /// <param name="client">The CloudBlob client</param>
+        /// <param name="client">The BlobService client</param>
         /// <param name="configuration">The data store config</param>
         /// <param name="blobContainerConfiguration">The container configuration to use for validating the blob client is open</param>
-        Task OpenBlobClientAsync(CloudBlobClient client, BlobDataStoreConfiguration configuration, BlobContainerConfiguration blobContainerConfiguration);
+        Task OpenBlobClientAsync(BlobServiceClient client, BlobDataStoreConfiguration configuration, BlobContainerConfiguration blobContainerConfiguration);
 
         /// <summary>
         /// Initialize data store
         /// </summary>
-        /// <param name="client">The <see cref="CloudBlobClient"/> instance to use for initialization.</param>
+        /// <param name="client">The <see cref="BlobServiceClient"/> instance to use for initialization.</param>
         /// <param name="configuration">The data store configuration.</param>
         /// <param name="containerInitializers">The blob container initializers.</param>
         /// <returns>A <see cref="Task"/>.</returns>
-        Task InitializeDataStoreAsync(CloudBlobClient client, BlobDataStoreConfiguration configuration, IEnumerable<IBlobContainerInitializer> containerInitializers);
+        Task InitializeDataStoreAsync(BlobServiceClient client, BlobDataStoreConfiguration configuration, IEnumerable<IBlobContainerInitializer> containerInitializers);
     }
 }

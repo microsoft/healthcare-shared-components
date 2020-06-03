@@ -3,7 +3,7 @@
 // Licensed under the MIT License (MIT). See LICENSE in the repo root for license information.
 // -------------------------------------------------------------------------------------------------
 
-using Microsoft.Azure.Storage.Blob;
+using Azure.Storage.Blobs;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.Health.Blob.Configs;
@@ -17,7 +17,7 @@ namespace Microsoft.Health.Blob.UnitTests.Features.Health
         public const string TestBlobHealthCheckName = "TestBlobHealthCheck";
 
         public TestBlobHealthCheck(
-            CloudBlobClient client,
+            BlobServiceClient client,
             BlobDataStoreConfiguration configuration,
             IOptionsSnapshot<BlobContainerConfiguration> namedBlobContainerConfigurationAccessor,
             IBlobClientTestProvider testProvider,
