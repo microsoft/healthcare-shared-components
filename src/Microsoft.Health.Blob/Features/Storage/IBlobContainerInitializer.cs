@@ -4,12 +4,12 @@
 // -------------------------------------------------------------------------------------------------
 
 using System.Threading.Tasks;
-using Microsoft.Azure.Storage.Blob;
+using Azure.Storage.Blobs;
 
 namespace Microsoft.Health.Blob.Features.Storage
 {
     public interface IBlobContainerInitializer
     {
-        Task<CloudBlobContainer> InitializeContainerAsync(CloudBlobClient blobClient);
+        Task<BlobContainerClient> InitializeContainerAsync(BlobServiceClient client);
     }
 }

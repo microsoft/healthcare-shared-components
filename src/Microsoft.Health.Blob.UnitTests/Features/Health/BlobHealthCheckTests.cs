@@ -6,7 +6,7 @@
 using System;
 using System.Net.Http;
 using System.Threading.Tasks;
-using Microsoft.Azure.Storage.Blob;
+using Azure.Storage.Blobs;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
@@ -20,7 +20,7 @@ namespace Microsoft.Health.Blob.UnitTests.Features.Health
 {
     public class BlobHealthCheckTests
     {
-        private readonly CloudBlobClient _client = Substitute.For<CloudBlobClient>(new Uri("https://www.microsoft.com/"), null);
+        private readonly BlobServiceClient _client = Substitute.For<BlobServiceClient>(new Uri("https://www.microsoft.com/"), null);
         private readonly IBlobClientTestProvider _testProvider = Substitute.For<IBlobClientTestProvider>();
         private readonly BlobDataStoreConfiguration _configuration = new BlobDataStoreConfiguration { };
         private readonly BlobContainerConfiguration _containerConfiguration = new BlobContainerConfiguration { ContainerName = "mycont" };

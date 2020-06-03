@@ -4,9 +4,8 @@
 // -------------------------------------------------------------------------------------------------
 
 using System.Threading.Tasks;
+using Azure.Storage.Blobs;
 using EnsureThat;
-using Microsoft.Azure.Storage;
-using Microsoft.Azure.Storage.Blob;
 using Microsoft.Extensions.Logging;
 
 namespace Microsoft.Health.Blob.Features.Storage
@@ -21,20 +20,16 @@ namespace Microsoft.Health.Blob.Features.Storage
             EnsureArg.IsNotNullOrWhiteSpace(containerName, nameof(containerName));
             EnsureArg.IsNotNull(logger, nameof(logger));
 
-            // Use the Azure storage SDK to validate the container name; only specific values are allowed here (throws ArgumentException).
-            // Check here for more information: https://blogs.msdn.microsoft.com/jmstall/2014/06/12/azure-storage-naming-rules/
-            NameValidator.ValidateContainerName(containerName);
-
             _containerName = containerName;
             _logger = logger;
         }
 
         /// <inheritdoc />
-        public async Task<CloudBlobContainer> InitializeContainerAsync(CloudBlobClient blobClient)
+        public async Task<BlobContainerClient> InitializeContainerAsync(BlobServiceClient client)
         {
-            EnsureArg.IsNotNull(blobClient, nameof(blobClient));
+            EnsureArg.IsNotNull(client, nameof(client));
 
-            CloudBlobContainer container = blobClient.GetContainerReference(_containerName);
+            BlobContainerClient container = client.GetBlobContainerClient(_containerName);
 
             _logger.LogDebug("Creating blob container if not exits: {containerName}", _containerName);
             await container.CreateIfNotExistsAsync();

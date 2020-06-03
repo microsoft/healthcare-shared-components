@@ -6,8 +6,8 @@
 using System;
 using System.Threading;
 using System.Threading.Tasks;
+using Azure.Storage.Blobs;
 using EnsureThat;
-using Microsoft.Azure.Storage.Blob;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -18,7 +18,7 @@ namespace Microsoft.Health.Blob.Features.Health
 {
     public class BlobHealthCheck : IHealthCheck
     {
-        private readonly CloudBlobClient _client;
+        private readonly BlobServiceClient _client;
         private readonly BlobDataStoreConfiguration _configuration;
         private readonly BlobContainerConfiguration _blobContainerConfiguration;
         private readonly IBlobClientTestProvider _testProvider;
@@ -34,7 +34,7 @@ namespace Microsoft.Health.Blob.Features.Health
         /// <param name="testProvider">The test provider.</param>
         /// <param name="logger">The logger.</param>
         public BlobHealthCheck(
-            CloudBlobClient client,
+            BlobServiceClient client,
             BlobDataStoreConfiguration configuration,
             IOptionsSnapshot<BlobContainerConfiguration> namedBlobContainerConfigurationAccessor,
             string containerConfigurationName,

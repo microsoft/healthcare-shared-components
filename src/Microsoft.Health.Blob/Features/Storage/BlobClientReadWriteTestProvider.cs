@@ -4,11 +4,13 @@
 // -------------------------------------------------------------------------------------------------
 
 using System.IO;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using Azure.Storage.Blobs;
+using Azure.Storage.Blobs.Models;
+using Azure.Storage.Blobs.Specialized;
 using EnsureThat;
-using Microsoft.Azure.Storage;
-using Microsoft.Azure.Storage.Blob;
 using Microsoft.Health.Blob.Configs;
 using Microsoft.IO;
 
@@ -17,7 +19,7 @@ namespace Microsoft.Health.Blob.Features.Storage
     public class BlobClientReadWriteTestProvider : IBlobClientTestProvider
     {
         private const string TestBlobName = "_testblob_";
-        private static readonly byte[] TestBlobContent = new byte[] { 1 };
+        private const string TestBlobContent = "test-data";
         private readonly RecyclableMemoryStreamManager _recyclableMemoryStreamManager;
 
         public BlobClientReadWriteTestProvider(RecyclableMemoryStreamManager recyclableMemoryStreamManager)
@@ -27,24 +29,29 @@ namespace Microsoft.Health.Blob.Features.Storage
             _recyclableMemoryStreamManager = recyclableMemoryStreamManager;
         }
 
-        public async Task PerformTestAsync(CloudBlobClient blobClient, BlobDataStoreConfiguration configuration, BlobContainerConfiguration blobContainerConfiguration, CancellationToken cancellationToken = default)
+        public async Task PerformTestAsync(BlobServiceClient client, BlobDataStoreConfiguration configuration, BlobContainerConfiguration blobContainerConfiguration, CancellationToken cancellationToken = default)
         {
-            EnsureArg.IsNotNull(blobClient, nameof(blobClient));
+            EnsureArg.IsNotNull(client, nameof(client));
             EnsureArg.IsNotNull(configuration, nameof(configuration));
             EnsureArg.IsNotNull(blobContainerConfiguration, nameof(blobContainerConfiguration));
 
-            CloudBlobContainer blobContainer = blobClient.GetContainerReference(blobContainerConfiguration.ContainerName);
-            CloudBlockBlob blob = blobContainer.GetBlockBlobReference(TestBlobName);
+            BlobContainerClient blobContainer = client.GetBlobContainerClient(blobContainerConfiguration.ContainerName);
+            BlockBlobClient blob = blobContainer.GetBlockBlobClient(TestBlobName);
 
-            await blob.UploadFromByteArrayAsync(TestBlobContent, 0, TestBlobContent.Length, AccessCondition.GenerateEmptyCondition(), new BlobRequestOptions(), new OperationContext(), cancellationToken);
+            await blob.UploadAsync(
+                new MemoryStream(Encoding.UTF8.GetBytes(TestBlobContent)),
+                new BlobHttpHeaders()
+                {
+                    ContentType = "text/plain",
+                });
             await DownloadBlobContentAsync(blob, cancellationToken);
         }
 
-        private async Task<byte[]> DownloadBlobContentAsync(CloudBlockBlob blob, CancellationToken cancellationToken)
+        private async Task<byte[]> DownloadBlobContentAsync(BlockBlobClient blob, CancellationToken cancellationToken)
         {
             await using (MemoryStream stream = _recyclableMemoryStreamManager.GetStream())
             {
-                await blob.DownloadToStreamAsync(stream, cancellationToken);
+                await blob.DownloadToAsync(stream, cancellationToken);
                 return stream.ToArray();
             }
         }

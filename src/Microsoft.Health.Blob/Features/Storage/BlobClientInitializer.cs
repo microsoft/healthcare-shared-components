@@ -6,10 +6,8 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Azure.Storage.Blobs;
 using EnsureThat;
-using Microsoft.Azure.Storage;
-using Microsoft.Azure.Storage.Blob;
-using Microsoft.Azure.Storage.RetryPolicies;
 using Microsoft.Extensions.Logging;
 using Microsoft.Health.Blob.Configs;
 
@@ -30,28 +28,30 @@ namespace Microsoft.Health.Blob.Features.Storage
         }
 
         /// <inheritdoc />
-        public CloudBlobClient CreateBlobClient(BlobDataStoreConfiguration configuration)
+        public BlobServiceClient CreateBlobClient(BlobDataStoreConfiguration configuration)
         {
             EnsureArg.IsNotNull(configuration, nameof(configuration));
 
             _logger.LogInformation("Creating BlobClient instance for {connectionString}", configuration.ConnectionString);
 
-            var storageAccount = CloudStorageAccount.Parse(configuration.ConnectionString);
-            CloudBlobClient blobClient = storageAccount.CreateCloudBlobClient();
-
             // Configure the blob client default request options and retry logic
-            blobClient.DefaultRequestOptions.RetryPolicy = new ExponentialRetry(
-                deltaBackoff: TimeSpan.FromSeconds(configuration.RequestOptions.ExponentialRetryBackoffDeltaInSeconds),
-                maxAttempts: configuration.RequestOptions.ExponentialRetryMaxAttempts);
-            blobClient.DefaultRequestOptions.MaximumExecutionTime = TimeSpan.FromMinutes(configuration.RequestOptions.ServerTimeoutInMinutes);
-            blobClient.DefaultRequestOptions.ServerTimeout = TimeSpan.FromMinutes(configuration.RequestOptions.ServerTimeoutInMinutes);
-            blobClient.DefaultRequestOptions.ParallelOperationThreadCount = configuration.RequestOptions.ParallelOperationThreadCount;
+            var blobClientOptions = new BlobClientOptions();
+            blobClientOptions.Retry.MaxRetries = configuration.RequestOptions.ExponentialRetryMaxAttempts;
+            blobClientOptions.Retry.Mode = Azure.Core.RetryMode.Exponential;
+            blobClientOptions.Retry.Delay = TimeSpan.FromSeconds(configuration.RequestOptions.ExponentialRetryBackoffDeltaInSeconds);
+            blobClientOptions.Retry.NetworkTimeout = TimeSpan.FromMinutes(configuration.RequestOptions.ServerTimeoutInMinutes);
+            BlobServiceClient blobClient = new BlobServiceClient(configuration.ConnectionString, blobClientOptions);
+
+            // Todo these options are not available any more confirming with https://github.com/Azure/azure-sdk-for-net/issues/12445
+            // blobClient.DefaultRequestOptions.MaximumExecutionTime = TimeSpan.FromMinutes(configuration.RequestOptions.ServerTimeoutInMinutes);
+            // blobClient.DefaultRequestOptions.ServerTimeout = TimeSpan.FromMinutes(configuration.RequestOptions.ServerTimeoutInMinutes);
+            // blobClient.DefaultRequestOptions.ParallelOperationThreadCount = configuration.RequestOptions.ParallelOperationThreadCount;
 
             return blobClient;
         }
 
         /// <inheritdoc />
-        public async Task InitializeDataStoreAsync(CloudBlobClient client, BlobDataStoreConfiguration configuration, IEnumerable<IBlobContainerInitializer> containerInitializers)
+        public async Task InitializeDataStoreAsync(BlobServiceClient client, BlobDataStoreConfiguration configuration, IEnumerable<IBlobContainerInitializer> containerInitializers)
         {
             EnsureArg.IsNotNull(client, nameof(client));
             EnsureArg.IsNotNull(configuration, nameof(configuration));
@@ -76,7 +76,7 @@ namespace Microsoft.Health.Blob.Features.Storage
         }
 
         /// <inheritdoc />
-        public async Task OpenBlobClientAsync(CloudBlobClient client, BlobDataStoreConfiguration configuration, BlobContainerConfiguration blobContainerConfiguration)
+        public async Task OpenBlobClientAsync(BlobServiceClient client, BlobDataStoreConfiguration configuration, BlobContainerConfiguration blobContainerConfiguration)
         {
             EnsureArg.IsNotNull(client, nameof(client));
             EnsureArg.IsNotNull(configuration, nameof(configuration));
