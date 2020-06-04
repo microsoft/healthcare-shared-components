@@ -15,7 +15,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Microsoft.Health.Test.Common\Microsoft.Health.Test.Common.csproj" />
+    <ProjectReference Include="..\Microsoft.Health.Test.Common\Microsoft.Health.Test.Utilities.csproj" />
   </ItemGroup>
 
 </Project>

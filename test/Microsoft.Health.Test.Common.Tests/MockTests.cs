@@ -6,7 +6,7 @@
 using System;
 using Xunit;
 
-namespace Microsoft.Health.Test.Common.UnitTests
+namespace Microsoft.Health.Test.Utilities.UnitTests
 {
     public class MockTests
     {

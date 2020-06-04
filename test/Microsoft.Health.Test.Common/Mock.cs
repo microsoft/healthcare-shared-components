@@ -14,7 +14,7 @@ using EnsureThat;
 using NSubstitute;
 using NSubstitute.Core;
 
-namespace Microsoft.Health.Test.Common
+namespace Microsoft.Health.Test.Utilities
 {
     public class Mock
     {
