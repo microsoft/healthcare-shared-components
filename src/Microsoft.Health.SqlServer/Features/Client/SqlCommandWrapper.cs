@@ -37,7 +37,6 @@ namespace Microsoft.Health.SqlServer.Features.Client
         /// <summary>
         /// <see cref="SqlCommand.CommandType"/>.
         /// </summary>
-
         public CommandType CommandType
         {
             get => _sqlCommand.CommandType;
@@ -47,7 +46,6 @@ namespace Microsoft.Health.SqlServer.Features.Client
         /// <summary>
         /// <see cref="SqlCommand.CommandTimeout"/>.
         /// </summary>
-
         public int CommandTimeout
         {
             get => _sqlCommand.CommandTimeout;
@@ -66,7 +64,6 @@ namespace Microsoft.Health.SqlServer.Features.Client
         /// <summary>
         /// <see cref="SqlCommand.Connection"/>.
         /// </summary>
-
         public SqlConnection Connection
         {
             get => _sqlCommand.Connection;
