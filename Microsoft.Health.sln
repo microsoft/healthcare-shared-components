@@ -51,6 +51,10 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Health.Blob", "sr
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Health.Blob.UnitTests", "src\Microsoft.Health.Blob.UnitTests\Microsoft.Health.Blob.UnitTests.csproj", "{5C155AA9-614E-4419-8778-32A56593233A}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Health.Test.Common", "test\Microsoft.Health.Test.Common\Microsoft.Health.Test.Common.csproj", "{8F95C81A-A429-4ABE-987D-E850DCFC0B69}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Health.Test.Common.UnitTests", "test\Microsoft.Health.Test.Common.Tests\Microsoft.Health.Test.Common.UnitTests.csproj", "{83A62677-D82C-49A6-92E9-0D188C941A02}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -129,6 +133,14 @@ Global
 		{5C155AA9-614E-4419-8778-32A56593233A}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{5C155AA9-614E-4419-8778-32A56593233A}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{5C155AA9-614E-4419-8778-32A56593233A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{8F95C81A-A429-4ABE-987D-E850DCFC0B69}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8F95C81A-A429-4ABE-987D-E850DCFC0B69}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8F95C81A-A429-4ABE-987D-E850DCFC0B69}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8F95C81A-A429-4ABE-987D-E850DCFC0B69}.Release|Any CPU.Build.0 = Release|Any CPU
+		{83A62677-D82C-49A6-92E9-0D188C941A02}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{83A62677-D82C-49A6-92E9-0D188C941A02}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{83A62677-D82C-49A6-92E9-0D188C941A02}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{83A62677-D82C-49A6-92E9-0D188C941A02}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -152,6 +164,8 @@ Global
 		{4AB4CF95-DAE6-4B64-9DC5-5F0633FABD56} = {B70945F4-01A6-4351-955B-C4A2943B5E3B}
 		{B4F674D7-F073-4E21-ABE2-159C1CD86109} = {8AD2A324-DAB5-4380-94A5-31F7D817C384}
 		{5C155AA9-614E-4419-8778-32A56593233A} = {8AD2A324-DAB5-4380-94A5-31F7D817C384}
+		{8F95C81A-A429-4ABE-987D-E850DCFC0B69} = {CCD9FF99-E177-446E-B9E5-9F570FD96A34}
+		{83A62677-D82C-49A6-92E9-0D188C941A02} = {CCD9FF99-E177-446E-B9E5-9F570FD96A34}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {562bbd07-1817-4af5-ab66-8837cf849248}
