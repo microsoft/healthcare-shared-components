@@ -47,6 +47,7 @@ namespace Microsoft.Health.SqlServer.Registration
 
             services.Add<SchemaInitializer>()
                 .Singleton()
+                .AsSelf()
                 .AsService<IStartable>();
 
             services.Add<ScriptProvider<TSchemaVersionEnum>>()
