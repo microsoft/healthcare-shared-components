@@ -22,6 +22,7 @@ namespace Microsoft.Health.SqlServer.Features.Schema
         private readonly SchemaUpgradeRunner _schemaUpgradeRunner;
         private readonly SchemaInformation _schemaInformation;
         private readonly ILogger<SchemaInitializer> _logger;
+        private bool _started;
 
         public SchemaInitializer(SqlServerDataStoreConfiguration sqlServerDataStoreConfiguration, SchemaUpgradeRunner schemaUpgradeRunner, SchemaInformation schemaInformation, ILogger<SchemaInitializer> logger)
         {
@@ -190,13 +191,17 @@ namespace Microsoft.Health.SqlServer.Features.Schema
 
         public void Start()
         {
-            if (!string.IsNullOrWhiteSpace(_sqlServerDataStoreConfiguration.ConnectionString))
+            if (!_started)
             {
-                Initialize();
-            }
-            else
-            {
-                _logger.LogCritical("There was no connection string supplied. Schema initialization can not be completed.");
+                if (!string.IsNullOrWhiteSpace(_sqlServerDataStoreConfiguration.ConnectionString))
+                {
+                    Initialize();
+                    _started = true;
+                }
+                else
+                {
+                    _logger.LogCritical("There was no connection string supplied. Schema initialization can not be completed.");
+                }
             }
         }
     }
