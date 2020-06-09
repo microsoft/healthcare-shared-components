@@ -12,5 +12,7 @@ namespace Microsoft.Health.Blob.Configs
         public int ExponentialRetryMaxAttempts { get; set; } = 6;
 
         public int ServerTimeoutInMinutes { get; set; } = 2;
+
+        public int DownloadMaximumConcurrency { get; set; } = 1;
     }
 }
