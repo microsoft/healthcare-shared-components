@@ -18,8 +18,10 @@ namespace Microsoft.Health.SqlServer.Features.Schema.Model
         internal readonly static DeleteInstanceSchemaProcedure DeleteInstanceSchema = new DeleteInstanceSchemaProcedure();
         internal readonly static GetInstanceSchemaByNameProcedure GetInstanceSchemaByName = new GetInstanceSchemaByNameProcedure();
         internal readonly static SelectCompatibleSchemaVersionsProcedure SelectCompatibleSchemaVersions = new SelectCompatibleSchemaVersionsProcedure();
+        internal readonly static SelectCurrentSchemaVersionProcedure SelectCurrentSchemaVersion = new SelectCurrentSchemaVersionProcedure();
         internal readonly static SelectCurrentVersionsInformationProcedure SelectCurrentVersionsInformation = new SelectCurrentVersionsInformationProcedure();
         internal readonly static UpsertInstanceSchemaProcedure UpsertInstanceSchema = new UpsertInstanceSchemaProcedure();
+        internal readonly static UpsertSchemaVersionProcedure UpsertSchemaVersion = new UpsertSchemaVersionProcedure();
         internal class InstanceSchemaTable : Table
         {
             internal InstanceSchemaTable(): base("dbo.InstanceSchema")
@@ -84,6 +86,19 @@ namespace Microsoft.Health.SqlServer.Features.Schema.Model
             }
         }
 
+        internal class SelectCurrentSchemaVersionProcedure : StoredProcedure
+        {
+            internal SelectCurrentSchemaVersionProcedure(): base("dbo.SelectCurrentSchemaVersion")
+            {
+            }
+
+            public void PopulateCommand(SqlCommandWrapper command)
+            {
+                command.CommandType = global::System.Data.CommandType.StoredProcedure;
+                command.CommandText = "dbo.SelectCurrentSchemaVersion";
+            }
+        }
+
         internal class SelectCurrentVersionsInformationProcedure : StoredProcedure
         {
             internal SelectCurrentVersionsInformationProcedure(): base("dbo.SelectCurrentVersionsInformation")
@@ -115,6 +130,23 @@ namespace Microsoft.Health.SqlServer.Features.Schema.Model
                 _maxVersion.AddParameter(command.Parameters, maxVersion);
                 _minVersion.AddParameter(command.Parameters, minVersion);
                 _addMinutesOnTimeout.AddParameter(command.Parameters, addMinutesOnTimeout);
+            }
+        }
+
+        internal class UpsertSchemaVersionProcedure : StoredProcedure
+        {
+            internal UpsertSchemaVersionProcedure(): base("dbo.UpsertSchemaVersion")
+            {
+            }
+
+            private readonly ParameterDefinition<System.Int32> _version = new ParameterDefinition<System.Int32>("@version", global::System.Data.SqlDbType.Int, false);
+            private readonly ParameterDefinition<System.String> _status = new ParameterDefinition<System.String>("@status", global::System.Data.SqlDbType.VarChar, false, 10);
+            public void PopulateCommand(SqlCommandWrapper command, System.Int32 version, System.String status)
+            {
+                command.CommandType = global::System.Data.CommandType.StoredProcedure;
+                command.CommandText = "dbo.UpsertSchemaVersion";
+                _version.AddParameter(command.Parameters, version);
+                _status.AddParameter(command.Parameters, status);
             }
         }
     }
