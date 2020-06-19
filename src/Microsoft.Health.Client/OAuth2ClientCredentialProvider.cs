@@ -3,6 +3,7 @@
 // Licensed under the MIT License (MIT). See LICENSE in the repo root for license information.
 // -------------------------------------------------------------------------------------------------
 
+using System;
 using System.Collections.Generic;
 using System.Net.Http;
 using System.Threading;
@@ -17,6 +18,12 @@ namespace Microsoft.Health.Client
         private readonly OAuth2ClientCredentialConfiguration _oAuth2ClientCredentialConfiguration;
         private readonly HttpClient _httpClient;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="OAuth2ClientCredentialProvider"/> class.
+        /// This class is used to obtain a token for the configured resource via the OAuth2 token endpoint via client credentials.
+        /// </summary>
+        /// <param name="httpClient">The <see cref="HttpClient" /> to use when calling the token uri.</param>
+        /// <param name="oAuth2ClientCredentialConfiguration">The configuration to use when obtaining a token.</param>
         public OAuth2ClientCredentialProvider(HttpClient httpClient, OAuth2ClientCredentialConfiguration oAuth2ClientCredentialConfiguration)
         {
             EnsureArg.IsNotNull(httpClient, nameof(httpClient));
@@ -42,6 +49,16 @@ namespace Microsoft.Health.Client
 
             var openIdConnectMessage = new OpenIdConnectMessage(await tokenResponse.Content.ReadAsStringAsync());
             return openIdConnectMessage.AccessToken;
+        }
+
+        protected override void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                _httpClient?.Dispose();
+            }
+
+            base.Dispose(disposing);
         }
     }
 }

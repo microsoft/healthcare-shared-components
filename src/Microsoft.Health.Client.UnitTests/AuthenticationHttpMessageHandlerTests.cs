@@ -26,7 +26,7 @@ namespace Microsoft.Health.Client.UnitTests
         }
 
         [Fact]
-        public async Task GivenARequest_WhenSendAsyncCalled_HeaderBearerTokenIsAdded()
+        public async Task GivenARequest_WhenSendAsyncCalled_AuthorizationHeaderIsSet()
         {
             var invoker = new HttpMessageInvoker(_authenticationHttpMessageHandler);
             var result = await invoker.SendAsync(new HttpRequestMessage(), CancellationToken.None);

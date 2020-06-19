@@ -31,5 +31,16 @@ namespace Microsoft.Health.Client
         }
 
         protected abstract Task<string> BearerTokenFunction(CancellationToken cancellationToken);
+
+        /// <inheritdoc/>
+        public void Dispose()
+        {
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        protected virtual void Dispose(bool disposing)
+        {
+        }
     }
 }

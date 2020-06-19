@@ -3,6 +3,7 @@
 // Licensed under the MIT License (MIT). See LICENSE in the repo root for license information.
 // -------------------------------------------------------------------------------------------------
 
+using System;
 using System.Collections.Generic;
 using System.Net.Http;
 using System.Threading;
@@ -12,12 +13,18 @@ using Microsoft.IdentityModel.Protocols.OpenIdConnect;
 
 namespace Microsoft.Health.Client
 {
-    public class OAuth2UserCredentialProvider : CredentialProvider
+    public class OAuth2UserPasswordCredentialProvider : CredentialProvider
     {
         private readonly OAuth2UserCredentialConfiguration _oAuth2UserCredentialConfiguration;
         private readonly HttpClient _httpClient;
 
-        public OAuth2UserCredentialProvider(HttpClient httpClient, OAuth2UserCredentialConfiguration oAuth2UserCredentialConfiguration)
+        /// <summary>
+        /// Initializes a new instance of the <see cref="OAuth2UserPasswordCredentialProvider"/> class.
+        /// This class is used to obtain a token for the configured resource via the OAuth2 token endpoint via user password.
+        /// </summary>
+        /// <param name="httpClient">The <see cref="HttpClient" /> to use when calling the token uri.</param>
+        /// <param name="oAuth2UserCredentialConfiguration">The configuration to use when obtaining a token.</param>
+        public OAuth2UserPasswordCredentialProvider(HttpClient httpClient, OAuth2UserCredentialConfiguration oAuth2UserCredentialConfiguration)
         {
             EnsureArg.IsNotNull(httpClient, nameof(httpClient));
             EnsureArg.IsNotNull(oAuth2UserCredentialConfiguration, nameof(oAuth2UserCredentialConfiguration));
@@ -32,7 +39,7 @@ namespace Microsoft.Health.Client
             {
                 new KeyValuePair<string, string>(OpenIdConnectParameterNames.ClientId, _oAuth2UserCredentialConfiguration.ClientId),
                 new KeyValuePair<string, string>(OpenIdConnectParameterNames.ClientSecret, _oAuth2UserCredentialConfiguration.ClientSecret),
-                new KeyValuePair<string, string>(OpenIdConnectParameterNames.GrantType, OpenIdConnectGrantTypes.ClientCredentials),
+                new KeyValuePair<string, string>(OpenIdConnectParameterNames.GrantType, OpenIdConnectGrantTypes.Password),
                 new KeyValuePair<string, string>(OpenIdConnectParameterNames.Scope, _oAuth2UserCredentialConfiguration.Scope),
                 new KeyValuePair<string, string>(OpenIdConnectParameterNames.Resource, _oAuth2UserCredentialConfiguration.Resource),
                 new KeyValuePair<string, string>(OpenIdConnectParameterNames.Username, _oAuth2UserCredentialConfiguration.Username),
@@ -44,6 +51,16 @@ namespace Microsoft.Health.Client
 
             var openIdConnectMessage = new OpenIdConnectMessage(await tokenResponse.Content.ReadAsStringAsync());
             return openIdConnectMessage.AccessToken;
+        }
+
+        protected override void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                _httpClient?.Dispose();
+            }
+
+            base.Dispose(disposing);
         }
     }
 }
