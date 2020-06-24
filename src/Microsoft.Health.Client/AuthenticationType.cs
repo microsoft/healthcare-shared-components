@@ -3,13 +3,12 @@
 // Licensed under the MIT License (MIT). See LICENSE in the repo root for license information.
 // -------------------------------------------------------------------------------------------------
 
-using System.Threading;
-using System.Threading.Tasks;
-
 namespace Microsoft.Health.Client
 {
-    public interface ICredentialProvider
+    public enum AuthenticationType
     {
-        Task<string> GetBearerToken(CancellationToken cancellationToken = default);
+        ManagedIdentity = 1,
+        OAuth2ClientCredential = 2,
+        OAuth2UserPasswordCredential = 3,
     }
 }

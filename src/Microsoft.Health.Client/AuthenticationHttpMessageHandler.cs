@@ -3,7 +3,6 @@
 // Licensed under the MIT License (MIT). See LICENSE in the repo root for license information.
 // -------------------------------------------------------------------------------------------------
 
-using System;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Threading;
@@ -17,7 +16,6 @@ namespace Microsoft.Health.Client
         private readonly ICredentialProvider _credentialProvider;
 
         public AuthenticationHttpMessageHandler(ICredentialProvider credentialProvider)
-            : base(new HttpClientHandler())
         {
             EnsureArg.IsNotNull(credentialProvider, nameof(credentialProvider));
 
@@ -32,16 +30,6 @@ namespace Microsoft.Health.Client
                 new AuthenticationHeaderValue("Bearer", await _credentialProvider.GetBearerToken(cancellationToken));
 
             return await base.SendAsync(request, cancellationToken).ConfigureAwait(false);
-        }
-
-        protected override void Dispose(bool disposing)
-        {
-            if (disposing)
-            {
-                _credentialProvider?.Dispose();
-            }
-
-            base.Dispose(disposing);
         }
     }
 }

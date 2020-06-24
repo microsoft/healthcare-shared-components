@@ -9,6 +9,7 @@ using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using EnsureThat;
+using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Protocols.OpenIdConnect;
 
 namespace Microsoft.Health.Client
@@ -22,15 +23,15 @@ namespace Microsoft.Health.Client
         /// Initializes a new instance of the <see cref="OAuth2ClientCredentialProvider"/> class.
         /// This class is used to obtain a token for the configured resource via the OAuth2 token endpoint via client credentials.
         /// </summary>
-        /// <param name="httpClient">The <see cref="HttpClient" /> to use when calling the token uri.</param>
         /// <param name="oAuth2ClientCredentialConfiguration">The configuration to use when obtaining a token.</param>
-        public OAuth2ClientCredentialProvider(HttpClient httpClient, OAuth2ClientCredentialConfiguration oAuth2ClientCredentialConfiguration)
+        /// <param name="httpClient">The <see cref="HttpClient" /> to use when calling the token uri.</param>
+        public OAuth2ClientCredentialProvider(IOptions<OAuth2ClientCredentialConfiguration> oAuth2ClientCredentialConfiguration, HttpClient httpClient)
         {
+            EnsureArg.IsNotNull(oAuth2ClientCredentialConfiguration?.Value, nameof(oAuth2ClientCredentialConfiguration));
             EnsureArg.IsNotNull(httpClient, nameof(httpClient));
-            EnsureArg.IsNotNull(oAuth2ClientCredentialConfiguration, nameof(oAuth2ClientCredentialConfiguration));
 
             _httpClient = httpClient;
-            _oAuth2ClientCredentialConfiguration = oAuth2ClientCredentialConfiguration;
+            _oAuth2ClientCredentialConfiguration = oAuth2ClientCredentialConfiguration.Value;
         }
 
         protected override async Task<string> BearerTokenFunction(CancellationToken cancellationToken)
@@ -49,16 +50,6 @@ namespace Microsoft.Health.Client
 
             var openIdConnectMessage = new OpenIdConnectMessage(await tokenResponse.Content.ReadAsStringAsync());
             return openIdConnectMessage.AccessToken;
-        }
-
-        protected override void Dispose(bool disposing)
-        {
-            if (disposing)
-            {
-                _httpClient?.Dispose();
-            }
-
-            base.Dispose(disposing);
         }
     }
 }

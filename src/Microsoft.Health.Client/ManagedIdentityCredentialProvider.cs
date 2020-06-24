@@ -7,6 +7,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using EnsureThat;
 using Microsoft.Azure.Services.AppAuthentication;
+using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Clients.ActiveDirectory;
 
 namespace Microsoft.Health.Client
@@ -22,11 +23,11 @@ namespace Microsoft.Health.Client
         /// </summary>
         /// <param name="managedIdentityCredentialConfiguration">The configuration of the token to obtain.</param>
         /// <param name="httpClientFactory">An optional <see cref="IHttpClientFactory"/> for use within the <see cref="AzureServiceTokenProvider"/>.</param>
-        public ManagedIdentityCredentialProvider(ManagedIdentityCredentialConfiguration managedIdentityCredentialConfiguration, IHttpClientFactory httpClientFactory = null)
+        public ManagedIdentityCredentialProvider(IOptions<ManagedIdentityCredentialConfiguration> managedIdentityCredentialConfiguration, IHttpClientFactory httpClientFactory = null)
         {
-            EnsureArg.IsNotNull(managedIdentityCredentialConfiguration);
+            EnsureArg.IsNotNull(managedIdentityCredentialConfiguration?.Value, nameof(managedIdentityCredentialConfiguration));
 
-            _managedIdentityCredentialConfiguration = managedIdentityCredentialConfiguration;
+            _managedIdentityCredentialConfiguration = managedIdentityCredentialConfiguration.Value;
             _httpClientFactory = httpClientFactory;
         }
 
