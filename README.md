@@ -1,6 +1,6 @@
 
 # Healthcare Shared Components
-[![Build Status](https://microsofthealthoss.visualstudio.com/FhirServer/_apis/build/status/healthcare-components%20CI?branchName=master)](https://microsofthealthoss.visualstudio.com/FhirServer/_build/latest?definitionId=21&branchName=master)
+[![Build Status](https://dev.azure.com/microsofthealthoss/FhirServer/_apis/build/status/healthcare-shared-components%20CI?branchName=master)](https://dev.azure.com/microsofthealthoss/FhirServer/_build/latest?definitionId=25&branchName=master)
 
 This repository is a collection of components used within the Microsoft Healthcare team who develop the [FHIR Server for Azure](https://github.com/microsoft/fhir-server) and related
 projects.
