@@ -1,5 +1,5 @@
 
-# Healthcare Components
+# Healthcare Shared Components
 [![Build Status](https://microsofthealthoss.visualstudio.com/FhirServer/_apis/build/status/healthcare-components%20CI?branchName=master)](https://microsofthealthoss.visualstudio.com/FhirServer/_build/latest?definitionId=21&branchName=master)
 
 This repository is a collection of components used within the Microsoft Healthcare team who develop the [FHIR Server for Azure](https://github.com/microsoft/fhir-server) and related
@@ -18,3 +18,6 @@ provided by the bot. You will only need to do this once across all repos using o
 This project has adopted the [Microsoft Open Source Code of Conduct](https://opensource.microsoft.com/codeofconduct/).
 For more information see the [Code of Conduct FAQ](https://opensource.microsoft.com/codeofconduct/faq/) or
 contact [opencode@microsoft.com](mailto:opencode@microsoft.com) with any additional questions or comments.
+
+# Privacy
+Microsoft values your privacy. See the [Microsoft Privacy Statement](http://go.microsoft.com/fwlink/?LinkId=518021) for more information
