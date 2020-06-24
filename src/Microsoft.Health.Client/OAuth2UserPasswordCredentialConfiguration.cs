@@ -8,13 +8,13 @@ using EnsureThat;
 
 namespace Microsoft.Health.Client
 {
-    public class OAuth2UserCredentialConfiguration : OAuth2ClientCredentialConfiguration
+    public class OAuth2UserPasswordCredentialConfiguration : OAuth2ClientCredentialConfiguration
     {
-        public OAuth2UserCredentialConfiguration()
+        public OAuth2UserPasswordCredentialConfiguration()
         {
         }
 
-        public OAuth2UserCredentialConfiguration(Uri tokenUri, string resource, string scope, string clientId, string clientSecret, string username, string password)
+        public OAuth2UserPasswordCredentialConfiguration(Uri tokenUri, string resource, string scope, string clientId, string clientSecret, string username, string password)
             : base(tokenUri, resource, scope, clientId, clientSecret)
         {
             EnsureArg.IsNotNullOrWhiteSpace(username, nameof(username));
