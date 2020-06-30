@@ -79,6 +79,9 @@ namespace SchemaManager.Commands
                 }
                 else if (availableVersions.First().Id == 1)
                 {
+                    // Upgrade schema directly to the latest schema version
+                    Console.WriteLine(string.Format(Resources.SchemaMigrationStartedMessage, availableVersions.Last().Id));
+
                     string script = await GetScript(schemaClient, 1, availableVersions.Last().Script);
                     UpgradeSchema(connectionString, availableVersions.Last().Id, script);
                     return;
@@ -87,6 +90,9 @@ namespace SchemaManager.Commands
                 foreach (AvailableVersion availableVersion in availableVersions)
                 {
                     int executingVersion = availableVersion.Id;
+
+                    Console.WriteLine(string.Format(Resources.SchemaMigrationStartedMessage, executingVersion));
+
                     if (!force)
                     {
                         int attemptCount = 1;
@@ -128,8 +134,6 @@ namespace SchemaManager.Commands
         {
             // check if the record for given version exists in failed status
             SchemaDataStore.DeleteSchemaVersion(connectionString, version, SchemaDataStore.Failed);
-
-            Console.WriteLine(string.Format(Resources.SchemaMigrationStartedMessage, version));
 
             SchemaDataStore.ExecuteScriptAndCompleteSchemaVersion(connectionString, script, version);
 
