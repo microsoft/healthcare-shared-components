@@ -4,7 +4,8 @@
     <OutputType>Exe</OutputType>
     <TargetFramework>netcoreapp3.1</TargetFramework>
     <PackAsTool>true</PackAsTool>
-    <ToolCommandName>SqlSchemaManager</ToolCommandName>
+    <ToolCommandName>schema-manager</ToolCommandName>
+    <Description>A dotnet tool to upgrade the schema for sql server</Description>
   </PropertyGroup>
 
   <ItemGroup>
