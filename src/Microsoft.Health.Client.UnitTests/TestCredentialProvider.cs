@@ -17,7 +17,7 @@ namespace Microsoft.Health.Client.UnitTests
 
         public string EncodedToken { get; set; }
 
-        protected override Task<string> BearerTokenFunction(CancellationToken cancellationToken)
+        protected override Task<string> BearerTokenFunctionAsync(CancellationToken cancellationToken)
         {
             return Task.FromResult(EncodedToken);
         }

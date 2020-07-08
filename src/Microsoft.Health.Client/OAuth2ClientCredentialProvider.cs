@@ -3,7 +3,6 @@
 // Licensed under the MIT License (MIT). See LICENSE in the repo root for license information.
 // -------------------------------------------------------------------------------------------------
 
-using System;
 using System.Collections.Generic;
 using System.Net.Http;
 using System.Threading;
@@ -34,7 +33,7 @@ namespace Microsoft.Health.Client
             _oAuth2ClientCredentialConfiguration = oAuth2ClientCredentialConfiguration.Value;
         }
 
-        protected override async Task<string> BearerTokenFunction(CancellationToken cancellationToken)
+        protected override async Task<string> BearerTokenFunctionAsync(CancellationToken cancellationToken)
         {
             var formData = new List<KeyValuePair<string, string>>
             {

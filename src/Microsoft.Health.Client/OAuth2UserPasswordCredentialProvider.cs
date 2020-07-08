@@ -33,7 +33,7 @@ namespace Microsoft.Health.Client
             _oAuth2UserPasswordCredentialConfiguration = oAuth2UserCredentialConfiguration.Value;
         }
 
-        protected override async Task<string> BearerTokenFunction(CancellationToken cancellationToken)
+        protected override async Task<string> BearerTokenFunctionAsync(CancellationToken cancellationToken)
         {
             var formData = new List<KeyValuePair<string, string>>
             {
