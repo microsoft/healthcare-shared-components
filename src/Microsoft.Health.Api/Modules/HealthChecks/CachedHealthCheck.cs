@@ -14,7 +14,7 @@ using Microsoft.Health.Core;
 
 namespace Microsoft.Health.Api.Modules.HealthChecks
 {
-    internal sealed class CachedHealthCheck : IHealthCheck, IDisposable
+    public class CachedHealthCheck : IHealthCheck, IDisposable
     {
         private readonly IServiceProvider _provider;
         private readonly Func<IServiceProvider, IHealthCheck> _healthCheck;
@@ -86,6 +86,13 @@ namespace Microsoft.Health.Api.Modules.HealthChecks
         }
 
         public void Dispose()
+        {
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        // The bulk of the clean-up code is implemented in Dispose(bool)
+        protected virtual void Dispose(bool disposing)
         {
             _semaphore?.Dispose();
         }
