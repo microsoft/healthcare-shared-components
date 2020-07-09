@@ -14,14 +14,14 @@ using Newtonsoft.Json;
 
 namespace Microsoft.Health.Api.Registration
 {
-    public abstract class ApplicationBuilderExtensions
+    public static class ApplicationBuilderExtensions
     {
         /// <summary>
-        /// Use health checks. Register the response as json.
+        /// Use health checks (extension method). Register the response as json.
         /// </summary>
         /// <param name="app">Application builder instance.</param>
         /// <param name="healthCheckPathString">Health check path string.</param>
-        public static void UseHealthChecks(IApplicationBuilder app, string healthCheckPathString)
+        public static void UseHealthChecksExtension(this IApplicationBuilder app, string healthCheckPathString)
         {
             app.UseHealthChecks(new PathString(healthCheckPathString), new HealthCheckOptions
             {
