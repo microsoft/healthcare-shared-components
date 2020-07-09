@@ -10,9 +10,8 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using Microsoft.Health.Api.Modules.HealthChecks;
 
-namespace Microsoft.Health.Dicom.Api.Modules.HealthChecks
+namespace Microsoft.Health.Api.Modules.HealthChecks
 {
     public class HealthCheckConfiguration : IPostConfigureOptions<HealthCheckServiceOptions>
     {
