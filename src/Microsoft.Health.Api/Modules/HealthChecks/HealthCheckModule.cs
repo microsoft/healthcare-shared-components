@@ -7,10 +7,9 @@ using EnsureThat;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Options;
-using Microsoft.Health.Api.Modules.HealthChecks;
 using Microsoft.Health.Extensions.DependencyInjection;
 
-namespace Microsoft.Health.Dicom.Api.Modules.HealthChecks
+namespace Microsoft.Health.Api.Modules.HealthChecks
 {
     public class HealthCheckModule : IStartupModule
     {
