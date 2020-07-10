@@ -3,6 +3,10 @@
   <PropertyGroup>
     <OutputType>Exe</OutputType>
     <TargetFramework>netcoreapp3.1</TargetFramework>
+    <AssemblyName>Microsoft.Health.SchemaManager</AssemblyName>
+    <PackAsTool>true</PackAsTool>
+    <ToolCommandName>schema-manager</ToolCommandName>
+    <Description>A dotnet tool to upgrade the schema for sql server. The current schema should be in conformance to the BaseSchema as a prerequisite to run this tool.</Description>
   </PropertyGroup>
 
   <ItemGroup>
