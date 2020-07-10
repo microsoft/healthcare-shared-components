@@ -56,7 +56,7 @@ namespace Microsoft.Health.SqlServer.Registration
                 .AsImplementedInterfaces();
 
             services.Add<SqlTransactionHandler>()
-                .Scoped()
+                .Singleton()
                 .AsSelf()
                 .AsImplementedInterfaces();
 
@@ -76,7 +76,7 @@ namespace Microsoft.Health.SqlServer.Registration
                 .AsService<SqlCommandWrapperFactory>();
 
             services.Add<SqlConnectionWrapperFactory>()
-                .Scoped()
+                .Singleton()
                 .AsSelf()
                 .AsImplementedInterfaces();
 
