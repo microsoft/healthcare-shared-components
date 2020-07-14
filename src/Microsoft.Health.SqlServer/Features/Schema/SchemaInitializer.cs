@@ -77,6 +77,8 @@ namespace Microsoft.Health.SqlServer.Features.Schema
             }
 
             GetCurrentSchemaVersion();
+
+            _started = true;
         }
 
         private void GetCurrentSchemaVersion()
@@ -196,11 +198,11 @@ namespace Microsoft.Health.SqlServer.Features.Schema
                 if (!string.IsNullOrWhiteSpace(_sqlServerDataStoreConfiguration.ConnectionString))
                 {
                     Initialize();
-                    _started = true;
                 }
                 else
                 {
-                    _logger.LogCritical("There was no connection string supplied. Schema initialization can not be completed.");
+                    _logger.LogCritical(
+                        "There was no connection string supplied. Schema initialization can not be completed.");
                 }
             }
         }
