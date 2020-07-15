@@ -11,7 +11,7 @@ using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
-namespace Microsoft.Health.Api.Modules.HealthChecks
+namespace Microsoft.Health.Api.Features.HealthChecks
 {
     public class HealthCheckConfiguration : IPostConfigureOptions<HealthCheckServiceOptions>
     {
