@@ -12,7 +12,7 @@ using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Logging;
 using Microsoft.Health.Core;
 
-namespace Microsoft.Health.Api.Modules.HealthChecks
+namespace Microsoft.Health.Api.Features.HealthChecks
 {
     public class CachedHealthCheck : IHealthCheck, IDisposable
     {
