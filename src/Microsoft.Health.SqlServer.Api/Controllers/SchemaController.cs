@@ -58,7 +58,11 @@ namespace Microsoft.Health.SqlServer.Api.Controllers
                 var routeValues = new Dictionary<string, object> { { "id", version } };
                 string scriptUri = urlHelper.RouteUrl(RouteNames.Script, routeValues);
                 string diffScriptUri = string.Empty;
-                if (version > 1)
+                if (version == 0)
+                {
+                    scriptUri = string.Empty;
+                }
+                else if (version > 1)
                 {
                     diffScriptUri = urlHelper.RouteUrl(RouteNames.Diff, routeValues);
                 }
