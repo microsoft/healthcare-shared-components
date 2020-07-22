@@ -3,14 +3,13 @@
 // Licensed under the MIT License (MIT). See LICENSE in the repo root for license information.
 // -------------------------------------------------------------------------------------------------
 
-using System;
 using EnsureThat;
 
 namespace SchemaManager.Model
 {
     public class AvailableVersion
     {
-        public AvailableVersion(int id, Uri script, Uri diff)
+        public AvailableVersion(int id, string script, string diff)
         {
             EnsureArg.IsNotNull(script, nameof(script));
 
@@ -21,8 +20,8 @@ namespace SchemaManager.Model
 
         public int Id { get; }
 
-        public Uri Script { get; }
+        public string Script { get; }
 
-        public Uri Diff { get; }
+        public string Diff { get; }
     }
 }

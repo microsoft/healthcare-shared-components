@@ -8,7 +8,6 @@ using System.Collections.Generic;
 using System.CommandLine.Invocation;
 using System.CommandLine.Rendering;
 using System.CommandLine.Rendering.Views;
-using System.Linq;
 using System.Net.Http;
 using System.Threading.Tasks;
 using SchemaManager.Exceptions;
@@ -34,12 +33,6 @@ namespace SchemaManager.Commands
             try
             {
                 availableVersions = await schemaClient.GetAvailability();
-
-                // Removing 0 version entry
-                if (availableVersions.First().Id == 0)
-                {
-                    availableVersions.RemoveAt(0);
-                }
             }
             catch (SchemaManagerException ex)
             {
@@ -66,7 +59,7 @@ namespace SchemaManager.Commands
                 header: new ContentView("Script"));
 
             tableView.AddColumn(
-                cellValue: availableVersion => availableVersion.Diff == null ? new Uri("/", UriKind.Relative) : availableVersion.Diff,
+                cellValue: availableVersion => string.IsNullOrEmpty(availableVersion.Diff) ? "N/A" : availableVersion.Diff,
                 header: new ContentView("Diff"));
 
             var consoleRenderer = new ConsoleRenderer(

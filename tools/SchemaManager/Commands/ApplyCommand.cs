@@ -140,14 +140,14 @@ namespace SchemaManager.Commands
             Console.WriteLine(string.Format(Resources.SchemaMigrationSuccessMessage, version));
         }
 
-        private static async Task<string> GetScript(ISchemaClient schemaClient, int version, Uri scriptUri, Uri diffUri = null)
+        private static async Task<string> GetScript(ISchemaClient schemaClient, int version, string script, string diff = null)
         {
             if (version == 1)
             {
-                return await schemaClient.GetScript(scriptUri);
+                return await schemaClient.GetScript(new Uri(script));
             }
 
-            return await schemaClient.GetDiffScript(diffUri);
+            return await schemaClient.GetDiffScript(new Uri(diff));
         }
 
         private static async Task ValidateCompatibleVersion(ISchemaClient schemaClient, int minAvailableVersion, int maxAvailableVersion)
