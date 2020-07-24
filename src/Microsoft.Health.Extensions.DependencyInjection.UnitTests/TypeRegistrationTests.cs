@@ -5,11 +5,14 @@
 
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.IO;
 using System.Linq;
+using Castle.Core.Internal;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Health.Extensions.DependencyInjection.UnitTests.TestObjects;
 using Xunit;
+using IComponent = Microsoft.Health.Extensions.DependencyInjection.UnitTests.TestObjects.IComponent;
 
 namespace Microsoft.Health.Extensions.DependencyInjection.UnitTests
 {
@@ -29,7 +32,7 @@ namespace Microsoft.Health.Extensions.DependencyInjection.UnitTests
                 .Transient()
                 .AsSelf();
 
-            Assert.Equal(typeof(string), _collection.Single().ServiceType);
+            Assert.Equal(typeof(string), _collection.NonSystemTypes().Single().ServiceType);
         }
 
         [Fact]
@@ -52,8 +55,8 @@ namespace Microsoft.Health.Extensions.DependencyInjection.UnitTests
                 .AsSelf()
                 .AsService<TextReader>();
 
-            Assert.Equal(typeof(StreamReader), _collection.First().ServiceType);
-            Assert.Equal(typeof(TextReader), _collection.Skip(1).First().ServiceType);
+            Assert.Equal(typeof(StreamReader), _collection.NonSystemTypes().First().ServiceType);
+            Assert.Equal(typeof(TextReader), _collection.NonSystemTypes().Skip(1).First().ServiceType);
         }
 
         [Fact]
@@ -67,7 +70,7 @@ namespace Microsoft.Health.Extensions.DependencyInjection.UnitTests
                 .Transient()
                 .ReplaceService<TextReader>();
 
-            Assert.Collection(_collection, x =>
+            Assert.Collection(_collection.NonSystemTypes(), x =>
             {
                 Assert.Equal(typeof(StringReader), x.ImplementationType);
                 Assert.Equal(typeof(TextReader), x.ServiceType);
@@ -98,8 +101,8 @@ namespace Microsoft.Health.Extensions.DependencyInjection.UnitTests
                 .AsSelf()
                 .AsService<TextReader>();
 
-            Assert.Equal(typeof(StreamReader), _collection.First().ServiceType);
-            Assert.Equal(typeof(TextReader), _collection.Skip(1).First().ServiceType);
+            Assert.Equal(typeof(StreamReader), _collection.NonSystemTypes().First().ServiceType);
+            Assert.Equal(typeof(TextReader), _collection.NonSystemTypes().Skip(1).First().ServiceType);
         }
 
         [Fact]
@@ -119,7 +122,7 @@ namespace Microsoft.Health.Extensions.DependencyInjection.UnitTests
                 .Transient()
                 .AsImplementedInterfaces();
 
-            Assert.Equal(typeof(IEquatable<string>), _collection.Single().ServiceType);
+            Assert.Equal(typeof(IEquatable<string>), _collection.NonSystemTypes().Single().ServiceType);
         }
 
         [Fact]
@@ -129,7 +132,7 @@ namespace Microsoft.Health.Extensions.DependencyInjection.UnitTests
                 .Transient()
                 .AsImplementedInterfaces(x => typeof(IEquatable<string>).IsAssignableFrom(x));
 
-            Assert.Equal(typeof(IEquatable<string>), _collection.Single().ServiceType);
+            Assert.Equal(typeof(IEquatable<string>), _collection.NonSystemTypes().Single().ServiceType);
         }
 
         [Fact]
@@ -309,7 +312,7 @@ namespace Microsoft.Health.Extensions.DependencyInjection.UnitTests
                 .Transient()
                 .AsSelf();
 
-            Assert.Equal(typeof(List<string>), (_collection.Single() as ServiceDescriptorWithMetadata)?.Metadata);
+            Assert.Equal(typeof(List<string>), (_collection.NonSystemTypes().Single() as ServiceDescriptorWithMetadata)?.Metadata);
         }
 
         [Fact]
@@ -320,7 +323,7 @@ namespace Microsoft.Health.Extensions.DependencyInjection.UnitTests
                 .AsSelf()
                 .AsService<IList<string>>();
 
-            Assert.All(_collection, sd => Assert.Equal(typeof(List<string>), (sd as ServiceDescriptorWithMetadata)?.Metadata));
+            Assert.All(_collection.NonSystemTypes(), sd => Assert.Equal(typeof(List<string>), (sd as ServiceDescriptorWithMetadata)?.Metadata));
         }
 
         [Fact]
@@ -330,7 +333,7 @@ namespace Microsoft.Health.Extensions.DependencyInjection.UnitTests
                 .Transient()
                 .AsService<IList<string>>();
 
-            Assert.All(_collection, sd => Assert.Equal(typeof(List<string>), (sd as ServiceDescriptorWithMetadata)?.Metadata));
+            Assert.All(_collection.NonSystemTypes(), sd => Assert.Equal(typeof(List<string>), (sd as ServiceDescriptorWithMetadata)?.Metadata));
         }
 
         [Fact]
@@ -383,6 +386,106 @@ namespace Microsoft.Health.Extensions.DependencyInjection.UnitTests
         public void GivenADelegateWithIncompatibleType_WhenResolvingComponent_ThenExceptionIsThrown()
         {
             Assert.Throws<InvalidOperationException>(() => _collection.AddDelegate<ComponentB.Factory, int>());
+        }
+
+        [Fact]
+        public void GivenAServiceWithMetadata_WhenResolvingIndex_ThenCorrectServicesAreAvailable()
+        {
+            _collection.Add<ComponentA>()
+                .Transient()
+                .WithMetadata("A")
+                .AsSelf()
+                .AsImplementedInterfaces();
+
+            _collection.Add<ComponentB>()
+                .Transient()
+                .WithMetadata("B")
+                .AsSelf()
+                .AsImplementedInterfaces();
+
+            var container = _collection.BuildServiceProvider();
+
+            var index = container.GetService<IIndex<IComponent>>();
+
+            Assert.Collection(
+                index,
+                x => Assert.Equal("A", x.Key),
+                x => Assert.Equal("B", x.Key));
+        }
+
+        [Fact]
+        public void GivenAServiceWithMetadataFromAttribute_WhenResolvingIndex_ThenCorrectServicesAreAvailable()
+        {
+            _collection.TypesInSameAssemblyAs<IComponent>()
+                .AssignableTo<IComponent>()
+                .Transient()
+                .WithMetadata(type => type.GetAttribute<DisplayNameAttribute>()?.DisplayName)
+                .AsSelf()
+                .AsImplementedInterfaces();
+
+            var container = _collection.BuildServiceProvider();
+
+            var index = container.GetService<IIndex<IComponent>>();
+
+            // try looking them up by displayname
+            IComponent componentAObj = index["Component A"];
+            IComponent componentBObj = index["Component B"];
+
+            Assert.IsType<ComponentA>(componentAObj);
+            Assert.IsType<ComponentB>(componentBObj);
+        }
+
+        [Fact]
+        public void GivenAServiceWithMetadataFromAttribute_WhenResolvingScopedIndex_ThenCorrectServicesAreAvailable()
+        {
+            _collection.TypesInSameAssemblyAs<IComponent>()
+                .AssignableTo<IComponent>()
+                .Scoped()
+                .WithMetadata(type => type.GetAttribute<DisplayNameAttribute>()?.DisplayName)
+                .AsSelf()
+                .AsImplementedInterfaces();
+
+            var container = _collection.BuildServiceProvider();
+
+            var index = container.GetService<IIndex<IComponent>>();
+
+            // try looking them up by displayname
+            IComponent componentAObj = index["Component A"];
+            IComponent componentBObj = index["Component B"];
+
+            Assert.IsType<ComponentA>(componentAObj);
+            Assert.IsType<ComponentB>(componentBObj);
+        }
+
+        [Fact]
+        public void GivenAServiceWithDefaultMetadata_WhenResolvingIndex_ThenCorrectServicesAreAvailable()
+        {
+            _collection.TypesInSameAssemblyAs<IComponent>()
+                .AssignableTo<IComponent>()
+                .Transient()
+                .AsSelf()
+                .AsImplementedInterfaces();
+
+            var container = _collection.BuildServiceProvider();
+
+            var index = container.GetService<IIndex<IComponent>>();
+
+            IComponent componentAObj = index[typeof(ComponentA)];
+            IComponent componentBObj = index[typeof(ComponentB)];
+
+            Assert.IsType<ComponentA>(componentAObj);
+            Assert.IsType<ComponentB>(componentBObj);
+        }
+
+        [Fact]
+        public void GivenAServiceWithMetadata_WhenCallingWithMetadataTwice_ThenAnExceptionIsThrown()
+        {
+            Assert.Throws<InvalidOperationException>(() =>
+                _collection.Add<ComponentA>()
+                    .Transient()
+                    .WithMetadata("A")
+                    .AsSelf()
+                    .WithMetadata("B"));
         }
     }
 }

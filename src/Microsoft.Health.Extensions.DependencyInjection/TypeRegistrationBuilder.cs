@@ -24,6 +24,7 @@ namespace Microsoft.Health.Extensions.DependencyInjection
 
         private Func<IServiceProvider, object> _cachedResolver;
         private Type _firstRegisteredType;
+        private Func<Type, object> _withMetadata;
 
         internal TypeRegistrationBuilder(
             IServiceCollection serviceCollection,
@@ -169,6 +170,36 @@ namespace Microsoft.Health.Extensions.DependencyInjection
             return this;
         }
 
+        public TypeRegistrationBuilder WithMetadata(Func<Type, object> metadataResolver)
+        {
+            EnsureArg.IsNotNull(metadataResolver, nameof(metadataResolver));
+
+            Debug.Assert(_firstRegisteredType == null, $"The \"WithMetadata()\" registration for \"{_type.Name}\" should come first.");
+
+            if (_withMetadata != null)
+            {
+                throw new InvalidOperationException("Metadata has already been set.");
+            }
+
+            _withMetadata = metadataResolver;
+            return this;
+        }
+
+        public TypeRegistrationBuilder WithMetadata(object metadata)
+        {
+            EnsureArg.IsNotNull(metadata, nameof(metadata));
+
+            Debug.Assert(_firstRegisteredType == null, $"The \"WithMetadata()\" registration for \"{_type.Name}\" should come first.");
+
+            if (_withMetadata != null)
+            {
+                throw new InvalidOperationException("Metadata has already been set.");
+            }
+
+            _withMetadata = _ => metadata;
+            return this;
+        }
+
         private void RegisterType(Type serviceType, bool replace = false)
         {
             EnsureArg.IsNotNull(serviceType, nameof(serviceType));
@@ -210,7 +241,9 @@ namespace Microsoft.Health.Extensions.DependencyInjection
                     throw new NotSupportedException();
             }
 
-            serviceDescriptor = serviceDescriptor.WithMetadata(_type);
+            object metadata = _withMetadata?.Invoke(_firstRegisteredType ?? _type) ?? _type;
+            GetMetadataHelper().AddMetadataLookup(metadata, (serviceType, _type));
+            serviceDescriptor = serviceDescriptor.WithMetadata(metadata);
 
             if (replace)
             {
@@ -253,7 +286,9 @@ namespace Microsoft.Health.Extensions.DependencyInjection
 
             if (serviceDescriptor != null)
             {
-                serviceDescriptor = serviceDescriptor.WithMetadata(_type);
+                object metadata = _withMetadata?.Invoke(serviceType) ?? _type;
+                GetMetadataHelper().AddMetadataLookup(metadata, (serviceType, _type));
+                serviceDescriptor = serviceDescriptor.WithMetadata(metadata);
 
                 if (replace)
                 {
@@ -266,6 +301,20 @@ namespace Microsoft.Health.Extensions.DependencyInjection
             }
 
             _cachedResolver = provider => provider.GetService(_firstRegisteredType);
+        }
+
+        private MetadataHelper GetMetadataHelper()
+        {
+            var instance = _serviceCollection.SingleOrDefault(x => x.ImplementationInstance is MetadataHelper)?.ImplementationInstance as MetadataHelper;
+
+            if (instance == null)
+            {
+                instance = new MetadataHelper();
+                _serviceCollection.AddSingleton(instance);
+                _serviceCollection.AddTransient(typeof(IIndex<>), typeof(Index<>));
+            }
+
+            return instance;
         }
     }
 }
