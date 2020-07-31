@@ -33,6 +33,25 @@ namespace Microsoft.Health.SqlServer.Features.Schema
             }
         }
 
+        public string GetBaseScript()
+        {
+            string folder = $"{typeof(TSchemaVersionEnum).Namespace}.Migrations";
+            string resourceName = $"{folder}.BaseSchema.sql";
+
+            using (Stream stream = Assembly.GetAssembly(typeof(TSchemaVersionEnum)).GetManifestResourceStream(resourceName))
+            {
+                if (stream == null)
+                {
+                    throw new FileNotFoundException(Resources.BaseScriptNotFound);
+                }
+
+                using (var reader = new StreamReader(stream))
+                {
+                    return reader.ReadToEnd();
+                }
+            }
+        }
+
         public async Task<byte[]> GetScriptAsBytesAsync(int version, CancellationToken cancellationToken)
         {
             string resourceName = $"{typeof(TSchemaVersionEnum).Namespace}.Migrations.{version}.sql";

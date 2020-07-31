@@ -17,10 +17,12 @@
     <ItemGroup>
       <None Remove="Features\Schema\Migrations\1.sql" />
       <None Remove="Features\Schema\Migrations\2.diff.sql" />
+      <None Remove="Features\Schema\Migrations\BaseSchema.sql" />
       <EmbeddedResource Include="Features\Schema\Migrations\2.diff.sql" />
       <EmbeddedResource Include="Features\Schema\Migrations\1.sql" />
       <None Remove="Features\Schema\Migrations\2.sql" />
       <EmbeddedResource Include="Features\Schema\Migrations\2.sql" />
+      <EmbeddedResource Include="Features\Schema\Migrations\BaseSchema.sql" />
     </ItemGroup>
     
     <ItemGroup>

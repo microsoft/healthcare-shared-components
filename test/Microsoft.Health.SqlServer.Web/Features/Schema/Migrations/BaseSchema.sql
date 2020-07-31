@@ -1,53 +1,6 @@
-﻿-- NOTE: This script DROPS AND RECREATES all database objects.
+﻿-- NOTE: This script is to apply base schema to run the tool.
 -- Style guide: please see: https://github.com/ktaranov/sqlserver-kit/blob/master/SQL%20Server%20Name%20Convention%20and%20T-SQL%20Programming%20Style.md
 
-
-/*************************************************************
-    Drop existing objects
-**************************************************************/
-
-DECLARE @sql nvarchar(max) =''
-
-SELECT @sql = @sql + 'DROP PROCEDURE ' + name + '; '
-FROM sys.procedures
-
-SELECT @sql = @sql + 'DROP TABLE ' + name + '; '
-FROM sys.tables
-
-SELECT @sql = @sql + 'DROP TYPE ' + name + '; '
-FROM sys.table_types
-
-SELECT @sql = @sql + 'DROP SEQUENCE ' + name + '; '
-FROM sys.sequences
-
-EXEC(@sql)
-
-GO
-
-/*************************************************************
-    Configure database
-**************************************************************/
-
--- Enable RCSI
-IF ((SELECT is_read_committed_snapshot_on FROM sys.databases WHERE database_id = DB_ID()) = 0) BEGIN
-    ALTER DATABASE CURRENT SET READ_COMMITTED_SNAPSHOT ON
-END
-
--- Avoid blocking queries when statistics need to be rebuilt
-IF ((SELECT is_auto_update_stats_async_on FROM sys.databases WHERE database_id = DB_ID()) = 0) BEGIN
-    ALTER DATABASE CURRENT SET AUTO_UPDATE_STATISTICS_ASYNC ON
-END
-
--- Use ANSI behavior for null values
-IF ((SELECT is_ansi_nulls_on FROM sys.databases WHERE database_id = DB_ID()) = 0) BEGIN
-    ALTER DATABASE CURRENT SET ANSI_NULLS ON
-END
-
-GO
-
-/*************************************************************
-    Schema bootstrap
-**************************************************************/
 /*************************************************************
     Schema Version
 **************************************************************/
@@ -57,11 +10,32 @@ IF NOT EXISTS (SELECT * FROM sys.objects WHERE name = 'SchemaVersion' and type =
         Version int PRIMARY KEY,
         Status varchar(10)
     )
+GO
 
-INSERT INTO dbo.SchemaVersion
-VALUES
-    (2, 'started')
+--
+--  STORED PROCEDURE
+--      SelectCurrentSchemaVersion
+--
+--  DESCRIPTION
+--      Selects the current completed schema version
+--
+--  RETURNS
+--      The current version as a result set
+--
 
+IF EXISTS (SELECT * FROM sys.objects WHERE NAME='SelectCurrentSchemaVersion' and type = 'P')
+	DROP PROCEDURE SelectCurrentSchemaVersion
+GO
+
+CREATE PROCEDURE dbo.SelectCurrentSchemaVersion
+AS
+BEGIN
+	SET NOCOUNT ON
+
+	SELECT MAX(Version)
+	FROM SchemaVersion
+	WHERE Status = 'complete' OR Status = 'completed'
+END
 GO
 
 --
@@ -228,6 +202,7 @@ AS
 
     DELETE FROM dbo.InstanceSchema
     WHERE Timeout < SYSUTCDATETIME()
+
 GO
 
 --
@@ -281,27 +256,3 @@ BEGIN
 END
 GO
 
---
---  STORED PROCEDURE
---      SelectCurrentSchemaVersion
---
---  DESCRIPTION
---      Selects the current completed schema version
---
---  RETURNS
---      The current version as a result set
---
-IF EXISTS (SELECT * FROM sys.objects WHERE NAME='SelectCurrentSchemaVersion' and type = 'P')
-	DROP PROCEDURE SelectCurrentSchemaVersion
-GO
-
-CREATE PROCEDURE dbo.SelectCurrentSchemaVersion
-AS
-BEGIN
-    SET NOCOUNT ON
-
-	SELECT MAX(Version)
-	FROM SchemaVersion
-	WHERE Status = 'completed'
-END
-GO

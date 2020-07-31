@@ -52,6 +52,21 @@ namespace Microsoft.Health.SqlServer.Features.Schema
             _logger.LogInformation("Completed applying schema {version}", version);
         }
 
+        public void ApplyBaseSchema()
+        {
+            _logger.LogInformation("Applying Base Schema");
+
+            using (var connection = new SqlConnection(_sqlServerDataStoreConfiguration.ConnectionString))
+            {
+                connection.Open();
+                var server = new Server(new ServerConnection(connection));
+
+                server.ConnectionContext.ExecuteNonQuery(_scriptProvider.GetBaseScript());
+            }
+
+            _logger.LogInformation("Completed applying base schema");
+        }
+
         private void InsertSchemaVersion(int schemaVersion)
         {
             UpsertSchemaVersion(schemaVersion, "started");
