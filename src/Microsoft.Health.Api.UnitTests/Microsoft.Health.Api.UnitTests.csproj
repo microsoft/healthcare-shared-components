@@ -15,4 +15,8 @@
       <ProjectReference Include="..\..\test\Microsoft.Health.Test.Common\Microsoft.Health.Test.Utilities.csproj" />
       <ProjectReference Include="..\Microsoft.Health.Api\Microsoft.Health.Api.csproj" />
     </ItemGroup>
+
+    <ItemGroup>
+      <Folder Include="Features\Audit\" />
+    </ItemGroup>
 </Project>
