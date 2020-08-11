@@ -4,24 +4,28 @@
 // -------------------------------------------------------------------------------------------------
 
 using EnsureThat;
+using Newtonsoft.Json;
 
 namespace SchemaManager.Model
 {
     public class AvailableVersion
     {
-        public AvailableVersion(int id, string script, string diff)
+        public AvailableVersion(int id, [JsonProperty("script")] string scriptUri, [JsonProperty("diff")] string diffUri)
         {
-            EnsureArg.IsNotNull(script, nameof(script));
+            EnsureArg.IsNotNull(scriptUri, nameof(scriptUri));
 
             Id = id;
-            Script = script;
-            Diff = diff;
+            ScriptUri = scriptUri;
+            DiffUri = diffUri;
         }
 
         public int Id { get; }
 
-        public string Script { get; }
+        // When diffUri is null, then it has to render "N/A" on console.
+#pragma warning disable CA1056 // Uri properties should not be strings
+        public string ScriptUri { get; }
 
-        public string Diff { get; }
+        public string DiffUri { get; }
+#pragma warning restore CA1056 // Uri properties should not be strings
     }
 }

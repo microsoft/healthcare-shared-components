@@ -82,7 +82,7 @@ namespace SchemaManager.Commands
                     // Upgrade schema directly to the latest schema version
                     Console.WriteLine(string.Format(Resources.SchemaMigrationStartedMessage, availableVersions.Last().Id));
 
-                    string script = await GetScript(schemaClient, 1, availableVersions.Last().Script);
+                    string script = await GetScript(schemaClient, 1, availableVersions.Last().ScriptUri);
                     UpgradeSchema(connectionString, availableVersions.Last().Id, script);
                     return;
                 }
@@ -108,7 +108,7 @@ namespace SchemaManager.Commands
                         .ExecuteAsync(() => ValidateInstancesVersion(schemaClient, executingVersion));
                     }
 
-                    string script = await GetScript(schemaClient, executingVersion, availableVersion.Script, availableVersion.Diff);
+                    string script = await GetScript(schemaClient, executingVersion, availableVersion.ScriptUri, availableVersion.DiffUri);
 
                     UpgradeSchema(connectionString, executingVersion, script);
                 }
@@ -140,14 +140,14 @@ namespace SchemaManager.Commands
             Console.WriteLine(string.Format(Resources.SchemaMigrationSuccessMessage, version));
         }
 
-        private static async Task<string> GetScript(ISchemaClient schemaClient, int version, string script, string diff = null)
+        private static async Task<string> GetScript(ISchemaClient schemaClient, int version, string scriptUri, string diffUri = null)
         {
             if (version == 1)
             {
-                return await schemaClient.GetScript(new Uri(script));
+                return await schemaClient.GetScript(new Uri(scriptUri));
             }
 
-            return await schemaClient.GetDiffScript(new Uri(diff));
+            return await schemaClient.GetDiffScript(new Uri(diffUri));
         }
 
         private static async Task ValidateCompatibleVersion(ISchemaClient schemaClient, int minAvailableVersion, int maxAvailableVersion)

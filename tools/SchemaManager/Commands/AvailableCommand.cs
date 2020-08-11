@@ -55,11 +55,11 @@ namespace SchemaManager.Commands
               header: new ContentView("Version"));
 
             tableView.AddColumn(
-                cellValue: availableVersion => availableVersion.Script,
+                cellValue: availableVersion => availableVersion.ScriptUri,
                 header: new ContentView("Script"));
 
             tableView.AddColumn(
-                cellValue: availableVersion => string.IsNullOrEmpty(availableVersion.Diff) ? "N/A" : availableVersion.Diff,
+                cellValue: availableVersion => string.IsNullOrEmpty(availableVersion.DiffUri) ? "N/A" : availableVersion.DiffUri,
                 header: new ContentView("Diff"));
 
             var consoleRenderer = new ConsoleRenderer(
