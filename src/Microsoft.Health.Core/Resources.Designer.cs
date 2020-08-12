@@ -8,7 +8,7 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-namespace Microsoft.Health.Api {
+namespace Microsoft.Health.Core {
     using System;
     
     
@@ -39,7 +39,7 @@ namespace Microsoft.Health.Api {
         internal static global::System.Resources.ResourceManager ResourceManager {
             get {
                 if (object.ReferenceEquals(resourceMan, null)) {
-                    global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("Microsoft.Health.Api.Resources", typeof(Resources).Assembly);
+                    global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("Microsoft.Health.Core.Resources", typeof(Resources).Assembly);
                     resourceMan = temp;
                 }
                 return resourceMan;
@@ -61,38 +61,30 @@ namespace Microsoft.Health.Api {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to The maximum length of a custom audit header value is {0}. The supplied custom audit header &apos;{1}&apos; has length of {2}..
+        ///   Looks up a localized string similar to The prefix used to identify custom audit headers cannot be empty..
         /// </summary>
-        internal static string CustomAuditHeaderTooLarge {
+        internal static string CustomHeaderPrefixCannotBeEmpty {
             get {
-                return ResourceManager.GetString("CustomAuditHeaderTooLarge", resourceCulture);
+                return ResourceManager.GetString("CustomHeaderPrefixCannotBeEmpty", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Failed while running health check..
+        ///   Looks up a localized string similar to There are {0} roles with the name &apos;{1}&apos;.
         /// </summary>
-        internal static string FailedHealthCheckMessage {
+        internal static string DuplicateRoleNames {
             get {
-                return ResourceManager.GetString("FailedHealthCheckMessage", resourceCulture);
+                return ResourceManager.GetString("DuplicateRoleNames", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to The audit information is missing for Controller: {0} and Action: {1}. This usually means the action is not marked with appropriate attribute..
+        ///   Looks up a localized string similar to Error validating roles:
+        ///{0}.
         /// </summary>
-        internal static string MissingAuditInformation {
+        internal static string ErrorValidatingRoles {
             get {
-                return ResourceManager.GetString("MissingAuditInformation", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to The maximum number of custom audit headers allowed is {0}. The number of custom audit headers supplied is {1}..
-        /// </summary>
-        internal static string TooManyCustomAuditHeaders {
-            get {
-                return ResourceManager.GetString("TooManyCustomAuditHeaders", resourceCulture);
+                return ResourceManager.GetString("ErrorValidatingRoles", resourceCulture);
             }
         }
     }
