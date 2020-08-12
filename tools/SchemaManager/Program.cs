@@ -82,9 +82,17 @@ namespace SchemaManager
             availableCommand.Handler = CommandHandler.Create<InvocationContext, Uri>(AvailableCommand.Handler);
             availableCommand.Argument.AddValidator(symbol => Validators.RequiredOptionValidator.Validate(symbol, serverOption, Resources.ServerRequiredValidation));
 
+            var baseCommand = new Command(CommandNames.Base, Resources.BaseCommandDescription)
+            {
+                connectionStringOption,
+            };
+            baseCommand.Handler = CommandHandler.Create<string>(BaseCommand.Handler);
+            baseCommand.Argument.AddValidator(symbol => Validators.RequiredOptionValidator.Validate(symbol, connectionStringOption, Resources.ConnectionStringRequiredValidation));
+
             rootCommand.AddCommand(applyCommand);
             rootCommand.AddCommand(availableCommand);
             rootCommand.AddCommand(currentCommand);
+            rootCommand.AddCommand(baseCommand);
 
             rootCommand.InvokeAsync(args).Wait();
         }

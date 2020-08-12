@@ -1,53 +1,6 @@
-﻿-- NOTE: This script DROPS AND RECREATES all database objects.
+﻿-- NOTE: This script is to apply base schema required for the Schema migration tool
 -- Style guide: please see: https://github.com/ktaranov/sqlserver-kit/blob/master/SQL%20Server%20Name%20Convention%20and%20T-SQL%20Programming%20Style.md
 
-
-/*************************************************************
-    Drop existing objects
-**************************************************************/
-
-DECLARE @sql nvarchar(max) =''
-
-SELECT @sql = @sql + 'DROP PROCEDURE ' + name + '; '
-FROM sys.procedures
-
-SELECT @sql = @sql + 'DROP TABLE ' + name + '; '
-FROM sys.tables
-
-SELECT @sql = @sql + 'DROP TYPE ' + name + '; '
-FROM sys.table_types
-
-SELECT @sql = @sql + 'DROP SEQUENCE ' + name + '; '
-FROM sys.sequences
-
-EXEC(@sql)
-
-GO
-
-/*************************************************************
-    Configure database
-**************************************************************/
-
--- Enable RCSI
-IF ((SELECT is_read_committed_snapshot_on FROM sys.databases WHERE database_id = DB_ID()) = 0) BEGIN
-    ALTER DATABASE CURRENT SET READ_COMMITTED_SNAPSHOT ON
-END
-
--- Avoid blocking queries when statistics need to be rebuilt
-IF ((SELECT is_auto_update_stats_async_on FROM sys.databases WHERE database_id = DB_ID()) = 0) BEGIN
-    ALTER DATABASE CURRENT SET AUTO_UPDATE_STATISTICS_ASYNC ON
-END
-
--- Use ANSI behavior for null values
-IF ((SELECT is_ansi_nulls_on FROM sys.databases WHERE database_id = DB_ID()) = 0) BEGIN
-    ALTER DATABASE CURRENT SET ANSI_NULLS ON
-END
-
-GO
-
-/*************************************************************
-    Schema bootstrap
-**************************************************************/
 /*************************************************************
     Schema Version
 **************************************************************/
@@ -57,11 +10,32 @@ IF NOT EXISTS (SELECT * FROM sys.objects WHERE name = 'SchemaVersion' and type =
         Version int PRIMARY KEY,
         Status varchar(10)
     )
+GO
 
-INSERT INTO dbo.SchemaVersion
-VALUES
-    (2, 'started')
+--
+--  STORED PROCEDURE
+--      SelectCurrentSchemaVersion
+--
+--  DESCRIPTION
+--      Selects the current completed schema version
+--
+--  RETURNS
+--      The current version as a result set
+--
 
+IF EXISTS (SELECT * FROM sys.objects WHERE NAME='SelectCurrentSchemaVersion' and type = 'P')
+	DROP PROCEDURE SelectCurrentSchemaVersion
+GO
+
+CREATE PROCEDURE dbo.SelectCurrentSchemaVersion
+AS
+BEGIN
+	SET NOCOUNT ON
+
+	SELECT MAX(Version)
+	FROM SchemaVersion
+	WHERE Status = 'complete' OR Status = 'completed'
+END
 GO
 
 --
@@ -102,6 +76,106 @@ AS
         VALUES
             (@version, @status)
     END
+GO
+
+/*************************************************************
+    Model Tables
+**************************************************************/
+IF NOT EXISTS (SELECT * FROM sys.objects WHERE name = 'SearchParam' and type = 'U')
+BEGIN
+    CREATE TABLE dbo.SearchParam
+    (
+        SearchParamId smallint IDENTITY(1,1) NOT NULL,
+        Uri varchar(128) COLLATE Latin1_General_100_CS_AS NOT NULL
+    )
+
+    CREATE UNIQUE CLUSTERED INDEX IXC_SearchParam ON dbo.SearchParam
+    (
+        Uri
+    )
+END
+
+IF NOT EXISTS (SELECT * FROM sys.objects WHERE name = 'ResourceType' and type = 'U')
+BEGIN
+    CREATE TABLE dbo.ResourceType
+    (
+        ResourceTypeId smallint IDENTITY(1,1) NOT NULL,
+        Name nvarchar(50) COLLATE Latin1_General_100_CS_AS  NOT NULL
+    )
+
+    CREATE UNIQUE CLUSTERED INDEX IXC_ResourceType on dbo.ResourceType
+    (
+        Name
+    )
+END
+GO
+
+/*************************************************************
+    Capture claims on write
+**************************************************************/
+IF NOT EXISTS (SELECT * FROM sys.objects WHERE name = 'ClaimType' and type = 'U')
+BEGIN
+    CREATE TABLE dbo.ClaimType
+    (
+        ClaimTypeId tinyint IDENTITY(1,1) NOT NULL,
+        Name varchar(128) COLLATE Latin1_General_100_CS_AS NOT NULL
+    )
+
+    CREATE UNIQUE CLUSTERED INDEX IXC_Claim on dbo.ClaimType
+    (
+        Name
+    )
+END
+GO
+
+/*************************************************************
+    Compartments
+**************************************************************/
+IF NOT EXISTS (SELECT * FROM sys.objects WHERE name = 'CompartmentType' and type = 'U')
+BEGIN
+    CREATE TABLE dbo.CompartmentType
+    (
+        CompartmentTypeId tinyint IDENTITY(1,1) NOT NULL,
+        Name varchar(128) COLLATE Latin1_General_100_CS_AS NOT NULL
+    )
+
+    CREATE UNIQUE CLUSTERED INDEX IXC_CompartmentType on dbo.CompartmentType
+    (
+        Name
+    )
+END
+GO
+
+/*************************************************************
+    Create System and QuantityCode tables
+**************************************************************/
+IF NOT EXISTS (SELECT * FROM sys.objects WHERE name = 'System' and type = 'U')
+BEGIN
+    CREATE TABLE dbo.System
+    (
+        SystemId int IDENTITY(1,1) NOT NULL,
+        Value nvarchar(256) NOT NULL,
+    )
+
+    CREATE UNIQUE CLUSTERED INDEX IXC_System ON dbo.System
+    (
+        Value
+    )
+END
+
+IF NOT EXISTS (SELECT * FROM sys.objects WHERE name = 'QuantityCode' and type = 'U')
+BEGIN
+    CREATE TABLE dbo.QuantityCode
+    (
+        QuantityCodeId int IDENTITY(1,1) NOT NULL,
+        Value nvarchar(256) COLLATE Latin1_General_100_CS_AS NOT NULL
+    )
+
+    CREATE UNIQUE CLUSTERED INDEX IXC_QuantityCode on dbo.QuantityCode
+    (
+        Value
+    )
+END
 GO
 
 /*************************************************************
@@ -229,6 +303,7 @@ AS
 
     DELETE FROM dbo.InstanceSchema
     WHERE Timeout < SYSUTCDATETIME()
+
 GO
 
 --
@@ -279,30 +354,5 @@ BEGIN
     FROM dbo.SchemaVersion AS SV LEFT OUTER JOIN dbo.InstanceSchema AS SCH
     ON SV.Version = SCH.CurrentVersion
     GROUP BY Version, Status
-END
-GO
-
---
---  STORED PROCEDURE
---      SelectCurrentSchemaVersion
---
---  DESCRIPTION
---      Selects the current completed schema version
---
---  RETURNS
---      The current version as a result set
---
-IF EXISTS (SELECT * FROM sys.objects WHERE NAME='SelectCurrentSchemaVersion' and type = 'P')
-	DROP PROCEDURE SelectCurrentSchemaVersion
-GO
-
-CREATE PROCEDURE dbo.SelectCurrentSchemaVersion
-AS
-BEGIN
-    SET NOCOUNT ON
-
-	SELECT MAX(Version)
-	FROM SchemaVersion
-	WHERE Status = 'completed'
 END
 GO

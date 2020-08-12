@@ -2,7 +2,7 @@
   "profiles": {
     "SchemaManager": {
       "commandName": "Project",
-      "commandLineArgs": "SchemaManager apply --connection-string \"server=(local);Initial Catalog=SHARED_HEALTHCARE;Integrated Security=true\" --server https://localhost:63637 --version 3"
+      "commandLineArgs": "Microsoft.Health.SchemaManager base --connection-string \"server=(local);Initial Catalog=SHARED_HEALTHCARE;Integrated Security=true\""
     }
   }
 }

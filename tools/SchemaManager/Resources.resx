@@ -126,6 +126,21 @@
   <data name="AvailableVersionsDefaultErrorMessage" xml:space="preserve">
     <value>There are no available versions.</value>
   </data>
+  <data name="BaseCommandDescription" xml:space="preserve">
+    <value>Applies the base SQL schema required to upgrade the schema version by this tool.</value>
+  </data>
+  <data name="BaseSchemaAlreadyExists" xml:space="preserve">
+    <value>The base schema already exists.</value>
+  </data>
+  <data name="BaseSchemaExecuting" xml:space="preserve">
+    <value>The base schema execution is started.</value>
+  </data>
+  <data name="BaseSchemaSuccess" xml:space="preserve">
+    <value>The base schema is executed successfully.</value>
+  </data>
+  <data name="BaseScriptNotFound" xml:space="preserve">
+    <value>The base script is not found.</value>
+  </data>
   <data name="CompatibilityDefaultErrorMessage" xml:space="preserve">
     <value>The compatible versions information is not available.</value>
   </data>

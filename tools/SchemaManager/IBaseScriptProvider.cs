@@ -5,11 +5,8 @@
 
 namespace SchemaManager
 {
-    public static class CommandNames
+    internal interface IBaseScriptProvider
     {
-        public const string Apply = "apply";
-        public const string Available = "available";
-        public const string Current = "current";
-        public const string Base = "base";
+        string GetScript();
     }
 }

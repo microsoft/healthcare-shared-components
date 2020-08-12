@@ -73,7 +73,7 @@ namespace SchemaManager.Commands
                         sleepDurationProvider: (retryCount) => RetrySleepDuration,
                         onRetry: (exception, retryCount) =>
                         {
-                            Console.WriteLine(string.Format(Resources.RetryVersionCompatibility), attemptCount++, RetryAttempts);
+                            Console.WriteLine(string.Format(Resources.RetryVersionCompatibility, attemptCount++, RetryAttempts));
                         })
                     .ExecuteAsync(() => ValidateCompatibleVersion(schemaClient, availableVersions.First().Id, availableVersions.Last().Id));
                 }

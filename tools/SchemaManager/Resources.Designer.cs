@@ -88,6 +88,51 @@ namespace SchemaManager {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Applies the base SQL schema required to upgrade the schema version by this tool..
+        /// </summary>
+        internal static string BaseCommandDescription {
+            get {
+                return ResourceManager.GetString("BaseCommandDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The base schema already exists..
+        /// </summary>
+        internal static string BaseSchemaAlreadyExists {
+            get {
+                return ResourceManager.GetString("BaseSchemaAlreadyExists", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The base schema execution is started..
+        /// </summary>
+        internal static string BaseSchemaExecuting {
+            get {
+                return ResourceManager.GetString("BaseSchemaExecuting", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The base schema is executed successfully..
+        /// </summary>
+        internal static string BaseSchemaSuccess {
+            get {
+                return ResourceManager.GetString("BaseSchemaSuccess", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The base script is not found..
+        /// </summary>
+        internal static string BaseScriptNotFound {
+            get {
+                return ResourceManager.GetString("BaseScriptNotFound", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to The compatible versions information is not available..
         /// </summary>
         internal static string CompatibilityDefaultErrorMessage {
