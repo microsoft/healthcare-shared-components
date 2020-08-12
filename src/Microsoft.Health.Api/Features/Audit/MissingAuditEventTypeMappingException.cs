@@ -10,7 +10,7 @@ namespace Microsoft.Health.Api.Features.Audit
     public class MissingAuditEventTypeMappingException : Exception
     {
         public MissingAuditEventTypeMappingException(string controllerName, string actionName)
-        : base(string.Format(Resources.MissingAuditInformation, controllerName, actionName))
+            : base(string.Format(Resources.MissingAuditInformation, controllerName, actionName))
         {
         }
     }
