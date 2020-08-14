@@ -5,20 +5,33 @@
 
 using System.IO;
 using System.Reflection;
+using SchemaManager.Exceptions;
 
 namespace SchemaManager
 {
     internal class BaseScriptProvider : IBaseScriptProvider
     {
-        public string GetScript()
+        public string GetCommonScript()
         {
             string resourceName = $"{typeof(BaseScriptProvider).Namespace}.Schema.BaseScript.sql";
 
+            return Script(resourceName, string.Empty);
+        }
+
+        public string GetServiceScript(string serviceName)
+        {
+            string resourceName = $"{typeof(BaseScriptProvider).Namespace}.Schema.{serviceName}BaseScript.sql";
+
+            return Script(resourceName, serviceName);
+        }
+
+        private string Script(string resourceName, string serviceName)
+        {
             using (Stream stream = Assembly.GetExecutingAssembly().GetManifestResourceStream(resourceName))
             {
                 if (stream == null)
                 {
-                    throw new FileNotFoundException(Resources.BaseScriptNotFound);
+                    throw new SchemaManagerException(string.Format(Resources.BaseScriptNotFound, serviceName));
                 }
 
                 using (var reader = new StreamReader(stream))

@@ -130,16 +130,20 @@
     <value>Applies the base SQL schema required to upgrade the schema version by this tool.</value>
   </data>
   <data name="BaseSchemaAlreadyExists" xml:space="preserve">
-    <value>The base schema already exists.</value>
+    <value>The {0} base schema already exists.</value>
+    <comment>{0} is a service name.</comment>
   </data>
   <data name="BaseSchemaExecuting" xml:space="preserve">
-    <value>The base schema execution is started.</value>
+    <value>The {0} base schema execution is started.</value>
+    <comment>{0} is a service name.</comment>
   </data>
   <data name="BaseSchemaSuccess" xml:space="preserve">
-    <value>The base schema is executed successfully.</value>
+    <value>The {0} base schema is executed successfully.</value>
+    <comment>{0} is a service name.</comment>
   </data>
   <data name="BaseScriptNotFound" xml:space="preserve">
-    <value>The base script is not found.</value>
+    <value>The {0} base script is not found.</value>
+    <comment>{0} is a service name.</comment>
   </data>
   <data name="CompatibilityDefaultErrorMessage" xml:space="preserve">
     <value>The compatible versions information is not available.</value>
@@ -214,6 +218,9 @@
   </data>
   <data name="ServerRequiredValidation" xml:space="preserve">
     <value>You must include a Server.</value>
+  </data>
+  <data name="ServiceRequiredValidation" xml:space="preserve">
+    <value>You must include the name of the service e.g. Fhir or Dicom.</value>
   </data>
   <data name="SpecifiedVersionNotAvailable" xml:space="preserve">
     <value>The specified schema version "{0}" is not available.</value>

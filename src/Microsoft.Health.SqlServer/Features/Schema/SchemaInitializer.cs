@@ -101,15 +101,11 @@ namespace Microsoft.Health.SqlServer.Features.Schema
 
                     try
                     {
-                        _schemaInformation.Current = (int?)selectCommand.ExecuteScalar();
+                        _schemaInformation.Current = selectCommand.ExecuteScalar() as int?;
                     }
                     catch (SqlException e) when (e.Message is "Invalid object name 'dbo.SchemaVersion'.")
                     {
                         _logger.LogInformation($"The table {tableName} does not exists. It must be new database");
-                    }
-                    catch (InvalidCastException ex) when (ex.Message is "Unable to cast object of type 'System.DBNull' to type 'System.Nullable`1[System.Int32]'.")
-                    {
-                        _logger.LogError($"The table {tableName} exists with no rows. The table is created by BaseSchema");
                     }
                 }
             }

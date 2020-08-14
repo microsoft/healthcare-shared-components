@@ -97,7 +97,7 @@ namespace SchemaManager {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to The base schema already exists..
+        ///   Looks up a localized string similar to The {0} base schema already exists..
         /// </summary>
         internal static string BaseSchemaAlreadyExists {
             get {
@@ -106,7 +106,7 @@ namespace SchemaManager {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to The base schema execution is started..
+        ///   Looks up a localized string similar to The {0} base schema execution is started..
         /// </summary>
         internal static string BaseSchemaExecuting {
             get {
@@ -115,7 +115,7 @@ namespace SchemaManager {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to The base schema is executed successfully..
+        ///   Looks up a localized string similar to The {0} base schema is executed successfully..
         /// </summary>
         internal static string BaseSchemaSuccess {
             get {
@@ -124,7 +124,7 @@ namespace SchemaManager {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to The base script is not found..
+        ///   Looks up a localized string similar to The {0} base script is not found..
         /// </summary>
         internal static string BaseScriptNotFound {
             get {
@@ -327,6 +327,15 @@ namespace SchemaManager {
         internal static string ServerRequiredValidation {
             get {
                 return ResourceManager.GetString("ServerRequiredValidation", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to You must include the name of the service e.g. Fhir or Dicom..
+        /// </summary>
+        internal static string ServiceRequiredValidation {
+            get {
+                return ResourceManager.GetString("ServiceRequiredValidation", resourceCulture);
             }
         }
         

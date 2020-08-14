@@ -5,10 +5,10 @@
 
 namespace SchemaManager
 {
-    internal interface IBaseScriptProvider
+    public enum Service
     {
-        string GetCommonScript();
-
-        string GetServiceScript(string serviceName);
+        None,
+        Fhir,
+        Dicom,
     }
 }

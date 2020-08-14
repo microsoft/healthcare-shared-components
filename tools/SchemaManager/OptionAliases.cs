@@ -19,5 +19,7 @@ namespace SchemaManager
         public const string ShortLatest = "-l";
         public const string Force = "--force";
         public const string ShortForce = "-f";
+        public const string Service = "--service";
+        public const string ShortService = "-sc";
     }
 }

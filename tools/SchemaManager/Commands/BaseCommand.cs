@@ -4,29 +4,61 @@
 // -------------------------------------------------------------------------------------------------
 
 using System;
+using SchemaManager.Exceptions;
+using SchemaManager.Utils;
 
 namespace SchemaManager.Commands
 {
     public static class BaseCommand
     {
-        public static void Handler(string connectionString)
+        public static void Handler(string connectionString, Service service)
         {
             IBaseScriptProvider baseScriptProvider = new BaseScriptProvider();
 
-            if (!SchemaDataStore.PreMigrationSchemaExists(connectionString))
+            try
             {
-                var script = baseScriptProvider.GetScript();
+                // Execute common script
+                if (!SchemaDataStore.PreMigrationSchemaExists(connectionString))
+                {
+                    var script = baseScriptProvider.GetCommonScript();
 
-                Console.WriteLine(Resources.BaseSchemaExecuting);
+                    ExecuteScriptAndWriteMessage(connectionString, script, string.Empty);
+                }
+                else
+                {
+                    Console.WriteLine(string.Format(Resources.BaseSchemaAlreadyExists, string.Empty));
+                }
 
-                SchemaDataStore.ExecuteScript(connectionString, script);
+                string serviceScript = null;
 
-                Console.WriteLine(Resources.BaseSchemaSuccess);
+                switch (service)
+                {
+                    case Service.Fhir:
+                        var serviceName = Enum.GetName(typeof(Service), Service.Fhir);
+                        serviceScript = baseScriptProvider.GetServiceScript(serviceName);
+                        ExecuteScriptAndWriteMessage(connectionString, serviceScript, serviceName);
+                        break;
+                    case Service.Dicom:
+                        serviceName = Enum.GetName(typeof(Service), Service.Dicom);
+                        serviceScript = baseScriptProvider.GetServiceScript(serviceName);
+                        ExecuteScriptAndWriteMessage(connectionString, serviceScript, serviceName);
+                        break;
+                }
             }
-            else
+            catch (SchemaManagerException ex)
             {
-                Console.WriteLine(Resources.BaseSchemaAlreadyExists);
+                CommandUtils.PrintError(ex.Message);
+                return;
             }
+        }
+
+        private static void ExecuteScriptAndWriteMessage(string connectionString, string script, string subMessage)
+        {
+            Console.WriteLine(string.Format(Resources.BaseSchemaExecuting, subMessage));
+
+            SchemaDataStore.ExecuteScript(connectionString, script);
+
+            Console.WriteLine(string.Format(Resources.BaseSchemaSuccess, subMessage));
         }
     }
 }

@@ -11,6 +11,8 @@
 
   <ItemGroup>
     <None Remove="Schema\BaseScript.sql" />
+    <None Remove="Schema\FhirBaseScript.sql" />
+    <EmbeddedResource Include="Schema\FhirBaseScript.sql" />
     <EmbeddedResource Include="Schema\BaseScript.sql" />
   </ItemGroup>
 

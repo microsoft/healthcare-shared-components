@@ -1,29 +1,6 @@
 ﻿-- NOTE: This script DROPS AND RECREATES all database objects.
 -- Style guide: please see: https://github.com/ktaranov/sqlserver-kit/blob/master/SQL%20Server%20Name%20Convention%20and%20T-SQL%20Programming%20Style.md
 
-
-/*************************************************************
-    Drop existing objects
-**************************************************************/
-
-DECLARE @sql nvarchar(max) =''
-
-SELECT @sql = @sql + 'DROP PROCEDURE ' + name + '; '
-FROM sys.procedures
-
-SELECT @sql = @sql + 'DROP TABLE ' + name + '; '
-FROM sys.tables
-
-SELECT @sql = @sql + 'DROP TYPE ' + name + '; '
-FROM sys.table_types
-
-SELECT @sql = @sql + 'DROP SEQUENCE ' + name + '; '
-FROM sys.sequences
-
-EXEC(@sql)
-
-GO
-
 /*************************************************************
     Configure database
 **************************************************************/
