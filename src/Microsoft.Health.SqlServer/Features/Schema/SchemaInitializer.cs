@@ -48,35 +48,41 @@ namespace Microsoft.Health.SqlServer.Features.Schema
 
             _logger.LogInformation("Schema version is {version}", _schemaInformation.Current?.ToString() ?? "NULL");
 
-            // If the stored procedure to get the current schema version doesn't exist
-            if (_schemaInformation.Current == null)
+            if (_sqlServerDataStoreConfiguration.SchemaOptions.AutomaticUpdatesEnabled)
             {
-                if (forceIncrementalSchemaUpgrade)
+                // If the stored procedure to get the current schema version doesn't exist
+                if (_schemaInformation.Current == null)
                 {
-                    // Run version 1. We'll use this as a base schema and apply .diff.sql files to upgrade the schema version.
-                    _schemaUpgradeRunner.ApplySchema(version: 1, applyFullSchemaSnapshot: true);
+                    // Apply base schema
+                    _schemaUpgradeRunner.ApplyBaseSchema();
+
+                    if (forceIncrementalSchemaUpgrade)
+                    {
+                        // Run version 1. We'll use this as a base schema and apply .diff.sql files to upgrade the schema version.
+                        _schemaUpgradeRunner.ApplySchema(version: 1, applyFullSchemaSnapshot: true);
+                    }
+                    else
+                    {
+                        // Apply the maximum supported version. This won't consider the .diff.sql files.
+                        _schemaUpgradeRunner.ApplySchema(_schemaInformation.MaximumSupportedVersion, applyFullSchemaSnapshot: true);
+                    }
+
+                    GetCurrentSchemaVersion();
                 }
-                else
+
+                // If the current schema version needs to be upgraded
+                if (_schemaInformation.Current < _schemaInformation.MaximumSupportedVersion)
                 {
-                    // Apply the maximum supported version. This won't consider the .diff.sql files.
-                    _schemaUpgradeRunner.ApplySchema(_schemaInformation.MaximumSupportedVersion, applyFullSchemaSnapshot: true);
+                    // Apply each .diff.sql file one by one.
+                    int current = _schemaInformation.Current ?? 0;
+                    for (int i = current + 1; i <= _schemaInformation.MaximumSupportedVersion; i++)
+                    {
+                        _schemaUpgradeRunner.ApplySchema(version: i, applyFullSchemaSnapshot: false);
+                    }
                 }
 
                 GetCurrentSchemaVersion();
             }
-
-            // If the current schema version needs to be upgraded
-            if (_sqlServerDataStoreConfiguration.SchemaOptions.AutomaticUpdatesEnabled && _schemaInformation.Current < _schemaInformation.MaximumSupportedVersion)
-            {
-                // Apply each .diff.sql file one by one.
-                int current = _schemaInformation.Current ?? 0;
-                for (int i = current + 1; i <= _schemaInformation.MaximumSupportedVersion; i++)
-                {
-                    _schemaUpgradeRunner.ApplySchema(version: i, applyFullSchemaSnapshot: false);
-                }
-            }
-
-            GetCurrentSchemaVersion();
 
             _started = true;
         }
@@ -98,12 +104,80 @@ namespace Microsoft.Health.SqlServer.Features.Schema
 
                     try
                     {
-                        _schemaInformation.Current = (int?)selectCommand.ExecuteScalar();
+                        _schemaInformation.Current = selectCommand.ExecuteScalar() as int?;
                     }
                     catch (SqlException e) when (e.Message is "Invalid object name 'dbo.SchemaVersion'.")
                     {
                         _logger.LogInformation($"The table {tableName} does not exists. It must be new database");
                     }
+                }
+            }
+        }
+
+        public static void CheckConnectionString(string databaseName)
+        {
+            if (string.IsNullOrEmpty(databaseName))
+            {
+                throw new InvalidOperationException("The initial catalog must be specified in the connection string");
+            }
+
+            if (databaseName.Equals("master", StringComparison.OrdinalIgnoreCase) ||
+                databaseName.Equals("model", StringComparison.OrdinalIgnoreCase) ||
+                databaseName.Equals("msdb", StringComparison.OrdinalIgnoreCase) ||
+                databaseName.Equals("tempdb", StringComparison.OrdinalIgnoreCase))
+            {
+                throw new InvalidOperationException("The initial catalog in the connection string cannot be a system database");
+            }
+        }
+
+        public static SqlConnection GetConnectionIfDatabaseNotExists(string connectionString, string databaseName)
+        {
+            // connect to master database to evaluate if the requested database exists
+            var masterConnectionBuilder = new SqlConnectionStringBuilder(connectionString) { InitialCatalog = string.Empty };
+            var connection = new SqlConnection(masterConnectionBuilder.ToString());
+            connection.Open();
+
+            using (var checkDatabaseExistsCommand = connection.CreateCommand())
+            {
+                checkDatabaseExistsCommand.CommandText = "SELECT 1 FROM sys.databases where name = @databaseName";
+                checkDatabaseExistsCommand.Parameters.AddWithValue("@databaseName", databaseName);
+                if ((int?)checkDatabaseExistsCommand.ExecuteScalar() == 1)
+                {
+                    return null;
+                }
+            }
+
+            return connection;
+        }
+
+        public static bool CreateDatabase(SqlConnection connection, string databaseName)
+        {
+            using (var canCreateDatabaseCommand = new SqlCommand("SELECT count(*) FROM fn_my_permissions (NULL, 'DATABASE') WHERE permission_name = 'CREATE DATABASE'", connection))
+            {
+                if ((int)canCreateDatabaseCommand.ExecuteScalar() > 0)
+                {
+                    using (var createDatabaseCommand = new SqlCommand($"CREATE DATABASE {databaseName}", connection))
+                    {
+                        createDatabaseCommand.ExecuteNonQuery();
+                        return true;
+                    }
+                }
+                else
+                {
+                    return false;
+                }
+            }
+        }
+
+        public static bool CheckDatabasePermissions(string connectionString)
+        {
+            using (var connection = new SqlConnection(connectionString))
+            {
+                connection.Open();
+
+                using (var command = new SqlCommand("SELECT count(*) FROM fn_my_permissions (NULL, 'DATABASE') WHERE permission_name = 'CREATE TABLE'", connection))
+                {
+                    return (int)command.ExecuteScalar() > 0;
                 }
             }
         }
@@ -118,77 +192,42 @@ namespace Microsoft.Health.SqlServer.Features.Schema
             var configuredConnectionBuilder = new SqlConnectionStringBuilder(_sqlServerDataStoreConfiguration.ConnectionString);
             string databaseName = configuredConnectionBuilder.InitialCatalog;
 
-            if (string.IsNullOrEmpty(databaseName))
-            {
-                throw new InvalidOperationException("The initial catalog must be specified in the connection string");
-            }
-
-            if (databaseName.Equals("master", StringComparison.OrdinalIgnoreCase) ||
-                databaseName.Equals("model", StringComparison.OrdinalIgnoreCase) ||
-                databaseName.Equals("msdb", StringComparison.OrdinalIgnoreCase) ||
-                databaseName.Equals("tempdb", StringComparison.OrdinalIgnoreCase))
-            {
-                throw new InvalidOperationException("The initial catalog in the connection string cannot be a system database");
-            }
+            CheckConnectionString(databaseName);
 
             if (_sqlServerDataStoreConfiguration.AllowDatabaseCreation)
             {
-                // connect to master database to evaluate if the requested database exists
-                var masterConnectionBuilder = new SqlConnectionStringBuilder(_sqlServerDataStoreConfiguration.ConnectionString) { InitialCatalog = string.Empty };
-                using (var connection = new SqlConnection(masterConnectionBuilder.ToString()))
+                var connection = GetConnectionIfDatabaseNotExists(_sqlServerDataStoreConfiguration.ConnectionString, databaseName);
+
+                if (connection != null)
                 {
-                    connection.Open();
+                    _logger.LogInformation("Database does not exist");
 
-                    using (var checkDatabaseExistsCommand = connection.CreateCommand())
+                    bool created = CreateDatabase(connection, databaseName);
+
+                    if (created)
                     {
-                        checkDatabaseExistsCommand.CommandText = "SELECT 1 FROM sys.databases where name = @databaseName";
-                        checkDatabaseExistsCommand.Parameters.AddWithValue("@databaseName", databaseName);
-                        bool exists = (int?)checkDatabaseExistsCommand.ExecuteScalar() == 1;
-
-                        if (!exists)
-                        {
-                            _logger.LogInformation("Database does not exist");
-
-                            using (var canCreateDatabaseCommand = new SqlCommand("SELECT count(*) FROM fn_my_permissions (NULL, 'DATABASE') WHERE permission_name = 'CREATE DATABASE'", connection))
-                            {
-                                if ((int)canCreateDatabaseCommand.ExecuteScalar() > 0)
-                                {
-                                    using (var createDatabaseCommand = new SqlCommand($"CREATE DATABASE {databaseName}", connection))
-                                    {
-                                        createDatabaseCommand.ExecuteNonQuery();
-                                        _logger.LogInformation("Created database");
-                                    }
-                                }
-                                else
-                                {
-                                    _logger.LogWarning("Insufficient permissions to create the database");
-                                    return false;
-                                }
-                            }
-                        }
+                        _logger.LogInformation("Created database");
                     }
+                    else
+                    {
+                        _logger.LogWarning("Insufficient permissions to create the database");
+                        return false;
+                    }
+
+                    connection.Close();
                 }
             }
 
             // now switch to the target database
 
-            using (var connection = new SqlConnection(_sqlServerDataStoreConfiguration.ConnectionString))
+            bool canInitialize = CheckDatabasePermissions(_sqlServerDataStoreConfiguration.ConnectionString);
+
+            if (!canInitialize)
             {
-                connection.Open();
-
-                bool canInitialize;
-                using (var command = new SqlCommand("SELECT count(*) FROM fn_my_permissions (NULL, 'DATABASE') WHERE permission_name = 'CREATE TABLE'", connection))
-                {
-                    canInitialize = (int)command.ExecuteScalar() > 0;
-                }
-
-                if (!canInitialize)
-                {
-                    _logger.LogWarning("Insufficient permissions to create tables in the database");
-                }
-
-                return canInitialize;
+                _logger.LogWarning("Insufficient permissions to create tables in the database");
             }
+
+            return canInitialize;
         }
 
         public void Start()

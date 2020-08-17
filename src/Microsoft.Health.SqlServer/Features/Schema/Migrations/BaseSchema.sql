@@ -1,19 +1,15 @@
-﻿-- NOTE: This script is for reference and codegen only. In order to run the schema management, schema used by the service must have this in it.
+﻿-- NOTE: This script is to apply base schema required for the Schema migration tool
 -- Style guide: please see: https://github.com/ktaranov/sqlserver-kit/blob/master/SQL%20Server%20Name%20Convention%20and%20T-SQL%20Programming%20Style.md
 
 /*************************************************************
     Schema Version
 **************************************************************/
-CREATE TABLE dbo.SchemaVersion
-(
-    Version int PRIMARY KEY,
-    Status varchar(10)
-)
-
-INSERT INTO dbo.SchemaVersion
-VALUES
-    (1, 'started')
-
+IF NOT EXISTS (SELECT * FROM sys.objects WHERE name = 'SchemaVersion' and type = 'U')
+    CREATE TABLE dbo.SchemaVersion
+    (
+        Version int PRIMARY KEY,
+        Status varchar(10)
+    )
 GO
 
 --
@@ -26,14 +22,19 @@ GO
 --  RETURNS
 --      The current version as a result set
 --
+
+IF EXISTS (SELECT * FROM sys.objects WHERE NAME='SelectCurrentSchemaVersion' and type = 'P')
+	DROP PROCEDURE SelectCurrentSchemaVersion
+GO
+
 CREATE PROCEDURE dbo.SelectCurrentSchemaVersion
 AS
 BEGIN
-    SET NOCOUNT ON
+	SET NOCOUNT ON
 
-    SELECT MAX(Version)
-    FROM SchemaVersion
-    WHERE Status = 'completed'
+	SELECT MAX(Version)
+	FROM SchemaVersion
+	WHERE Status = 'complete' OR Status = 'completed'
 END
 GO
 
@@ -50,6 +51,10 @@ GO
 --      @status
 --          * The status of the version
 --
+IF EXISTS (SELECT * FROM sys.objects WHERE NAME='UpsertSchemaVersion' and type = 'P')
+	DROP PROCEDURE UpsertSchemaVersion
+GO
+
 CREATE PROCEDURE dbo.UpsertSchemaVersion
     @version int,
     @status varchar(10)
@@ -76,25 +81,27 @@ GO
 /*************************************************************
     Instance Schema
 **************************************************************/
-CREATE TABLE dbo.InstanceSchema
-(
-    Name varchar(64) COLLATE Latin1_General_100_CS_AS NOT NULL,
-    CurrentVersion int NOT NULL,
-    MaxVersion int NOT NULL,
-    MinVersion int NOT NULL,
-    Timeout datetime2(0) NOT NULL
-)
+IF NOT EXISTS (SELECT * FROM sys.objects WHERE name = 'InstanceSchema' and type = 'U')
+BEGIN
+    CREATE TABLE dbo.InstanceSchema
+    (
+        Name varchar(64) COLLATE Latin1_General_100_CS_AS NOT NULL,
+        CurrentVersion int NOT NULL,
+        MaxVersion int NOT NULL,
+        MinVersion int NOT NULL,
+        Timeout datetime2(0) NOT NULL
+    )
 
-CREATE UNIQUE CLUSTERED INDEX IXC_InstanceSchema ON dbo.InstanceSchema
-(
-    Name
-)
+    CREATE UNIQUE CLUSTERED INDEX IXC_InstanceSchema ON dbo.InstanceSchema
+    (
+        Name
+    )
 
-CREATE NONCLUSTERED INDEX IX_InstanceSchema_Timeout ON dbo.InstanceSchema
-(
-    Timeout
-)
-
+    CREATE NONCLUSTERED INDEX IX_InstanceSchema_Timeout ON dbo.InstanceSchema
+    (
+        Timeout
+    )
+END
 GO
 
 --
@@ -111,6 +118,10 @@ GO
 -- RETURN VALUE
 --     The matching record.
 --
+IF EXISTS (SELECT * FROM sys.objects WHERE NAME='GetInstanceSchemaByName' and type = 'P')
+	DROP PROCEDURE GetInstanceSchemaByName
+GO
+
 CREATE PROCEDURE dbo.GetInstanceSchemaByName
     @name varchar(64)
 AS
@@ -138,12 +149,15 @@ GO
 --     @addMinutesOnTimeout
 --         * The minutes to add
 --
+IF EXISTS (SELECT * FROM sys.objects WHERE NAME='UpsertInstanceSchema' and type = 'P')
+	DROP PROCEDURE UpsertInstanceSchema
+GO
+
 CREATE PROCEDURE dbo.UpsertInstanceSchema
     @name varchar(64),
     @maxVersion int,
     @minVersion int,
-    @addMinutesOnTimeout int
-    
+    @addMinutesOnTimeout int   
 AS
     SET NOCOUNT ON
 
@@ -151,8 +165,9 @@ AS
     DECLARE @currentVersion int = (SELECT COALESCE(MAX(Version), 0)
                                   FROM dbo.SchemaVersion
                                   WHERE  Status = 'completed' OR Status = 'complete' AND Version <= @maxVersion)
-    IF EXISTS(SELECT * FROM dbo.InstanceSchema
-             WHERE Name = @name)
+    IF EXISTS(SELECT * 
+        FROM dbo.InstanceSchema
+        WHERE Name = @name)
     BEGIN
         UPDATE dbo.InstanceSchema
         SET CurrentVersion = @currentVersion, MaxVersion = @maxVersion, Timeout = @timeout
@@ -178,8 +193,11 @@ GO
 -- DESCRIPTION
 --     Delete all the expired records in the InstanceSchema table.
 --
-CREATE PROCEDURE dbo.DeleteInstanceSchema
-    
+IF EXISTS (SELECT * FROM sys.objects WHERE NAME='DeleteInstanceSchema' and type = 'P')
+	DROP PROCEDURE DeleteInstanceSchema
+GO
+
+CREATE PROCEDURE dbo.DeleteInstanceSchema   
 AS
     SET NOCOUNT ON
 
@@ -198,8 +216,11 @@ GO
 --  RETURNS
 --      The maximum and minimum compatible versions
 --
-CREATE PROCEDURE dbo.SelectCompatibleSchemaVersions
+IF EXISTS (SELECT * FROM sys.objects WHERE NAME='SelectCompatibleSchemaVersions' and type = 'P')
+	DROP PROCEDURE SelectCompatibleSchemaVersions
+GO
 
+CREATE PROCEDURE dbo.SelectCompatibleSchemaVersions
 AS
 BEGIN
     SET NOCOUNT ON
@@ -220,8 +241,11 @@ GO
 --  RETURNS
 --      The current versions, status and server names using that version
 --
-CREATE PROCEDURE dbo.SelectCurrentVersionsInformation
+IF EXISTS (SELECT * FROM sys.objects WHERE NAME='SelectCurrentVersionsInformation' and type = 'P')
+	DROP PROCEDURE SelectCurrentVersionsInformation
+GO
 
+CREATE PROCEDURE dbo.SelectCurrentVersionsInformation
 AS
 BEGIN
     SET NOCOUNT ON
@@ -230,7 +254,5 @@ BEGIN
     FROM dbo.SchemaVersion AS SV LEFT OUTER JOIN dbo.InstanceSchema AS SCH
     ON SV.Version = SCH.CurrentVersion
     GROUP BY Version, Status
-
 END
 GO
-

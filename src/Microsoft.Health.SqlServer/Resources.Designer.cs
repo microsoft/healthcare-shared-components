@@ -61,6 +61,15 @@ namespace Microsoft.Health.SqlServer {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to The base script is not found..
+        /// </summary>
+        internal static string BaseScriptNotFound {
+            get {
+                return ResourceManager.GetString("BaseScriptNotFound", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to The compatibility information was not found..
         /// </summary>
         internal static string CompatibilityRecordNotFound {
