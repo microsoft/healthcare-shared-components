@@ -24,7 +24,7 @@ GO
 --
 
 IF EXISTS (SELECT * FROM sys.objects WHERE NAME='SelectCurrentSchemaVersion' and type = 'P')
-	DROP PROCEDURE SelectCurrentSchemaVersion
+    DROP PROCEDURE SelectCurrentSchemaVersion
 GO
 
 CREATE PROCEDURE dbo.SelectCurrentSchemaVersion
@@ -165,7 +165,7 @@ AS
     DECLARE @currentVersion int = (SELECT COALESCE(MAX(Version), 0)
                                   FROM dbo.SchemaVersion
                                   WHERE  Status = 'completed' OR Status = 'complete' AND Version <= @maxVersion)
-    IF EXISTS(SELECT * 
+    IF EXISTS(SELECT *
         FROM dbo.InstanceSchema
         WHERE Name = @name)
     BEGIN
