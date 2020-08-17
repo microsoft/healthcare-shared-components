@@ -114,7 +114,7 @@ namespace Microsoft.Health.SqlServer.Features.Schema
             }
         }
 
-        public static void CheckConnectionString(string databaseName)
+        public static void validateDatabaseName(string databaseName)
         {
             if (string.IsNullOrEmpty(databaseName))
             {
@@ -192,7 +192,7 @@ namespace Microsoft.Health.SqlServer.Features.Schema
             var configuredConnectionBuilder = new SqlConnectionStringBuilder(_sqlServerDataStoreConfiguration.ConnectionString);
             string databaseName = configuredConnectionBuilder.InitialCatalog;
 
-            CheckConnectionString(databaseName);
+            validateDatabaseName(databaseName);
 
             if (_sqlServerDataStoreConfiguration.AllowDatabaseCreation)
             {
