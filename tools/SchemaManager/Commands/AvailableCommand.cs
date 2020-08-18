@@ -8,6 +8,7 @@ using System.Collections.Generic;
 using System.CommandLine.Invocation;
 using System.CommandLine.Rendering;
 using System.CommandLine.Rendering.Views;
+using System.Linq;
 using System.Net.Http;
 using System.Threading.Tasks;
 using SchemaManager.Exceptions;
@@ -33,6 +34,12 @@ namespace SchemaManager.Commands
             try
             {
                 availableVersions = await schemaClient.GetAvailability();
+
+                // To ensure that schema version null/0 is not printed
+                if (availableVersions.First().Id == 0)
+                {
+                    availableVersions.RemoveAt(0);
+                }
             }
             catch (SchemaManagerException ex)
             {
