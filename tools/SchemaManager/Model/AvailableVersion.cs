@@ -3,26 +3,27 @@
 // Licensed under the MIT License (MIT). See LICENSE in the repo root for license information.
 // -------------------------------------------------------------------------------------------------
 
-using System;
 using EnsureThat;
+using Newtonsoft.Json;
 
 namespace SchemaManager.Model
 {
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1056:Uri properties should not be strings", Justification = "The Uri are written to console in string format")]
     public class AvailableVersion
     {
-        public AvailableVersion(int id, Uri script, Uri diff)
+        public AvailableVersion(int id, [JsonProperty("script")] string scriptUri, [JsonProperty("diff")] string diffUri)
         {
-            EnsureArg.IsNotNull(script, nameof(script));
+            EnsureArg.IsNotNull(scriptUri, nameof(scriptUri));
 
             Id = id;
-            Script = script;
-            Diff = diff;
+            ScriptUri = scriptUri;
+            DiffUri = diffUri;
         }
 
         public int Id { get; }
 
-        public Uri Script { get; }
+        public string ScriptUri { get; }
 
-        public Uri Diff { get; }
+        public string DiffUri { get; }
     }
 }
