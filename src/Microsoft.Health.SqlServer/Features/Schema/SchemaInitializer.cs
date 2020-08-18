@@ -53,21 +53,6 @@ namespace Microsoft.Health.SqlServer.Features.Schema
                 // If the stored procedure to get the current schema version doesn't exist
                 if (_schemaInformation.Current == null)
                 {
-                    if (forceIncrementalSchemaUpgrade)
-                    {
-                        // Run version 1. We'll use this as a base schema and apply .diff.sql files to upgrade the schema version.
-                        _schemaUpgradeRunner.ApplySchema(version: 1, applyFullSchemaSnapshot: true);
-                    }
-                    else
-                    {
-                        // Apply the maximum supported version. This won't consider the .diff.sql files.
-                        _schemaUpgradeRunner.ApplySchema(_schemaInformation.MaximumSupportedVersion, applyFullSchemaSnapshot: true);
-                    }
-            if (_sqlServerDataStoreConfiguration.SchemaOptions.AutomaticUpdatesEnabled)
-            {
-                // If the stored procedure to get the current schema version doesn't exist
-                if (_schemaInformation.Current == null)
-                {
                     // Apply base schema
                     _schemaUpgradeRunner.ApplyBaseSchema();
 
