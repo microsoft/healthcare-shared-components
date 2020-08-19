@@ -56,9 +56,10 @@ namespace Microsoft.Health.SqlServer.Features.Schema
                     // Apply base schema
                     _schemaUpgradeRunner.ApplyBaseSchema();
 
+                    // This is for tests purpose only
                     if (forceIncrementalSchemaUpgrade)
                     {
-                        // Run version 1. We'll use this as a base schema and apply .diff.sql files to upgrade the schema version.
+                        // Run version 1 and and apply .diff.sql files to upgrade the schema version.
                         _schemaUpgradeRunner.ApplySchema(version: 1, applyFullSchemaSnapshot: true);
                     }
                     else
@@ -95,7 +96,7 @@ namespace Microsoft.Health.SqlServer.Features.Schema
 
                 string tableName = "dbo.SchemaVersion";
 
-                // since now the status is made consistent as 'completed', we might have to check for 'complete' as well for the previous version's status
+                // Since now the status is made consistent as 'completed', we might have to check for 'complete' as well for the previous version's status
                 using (var selectCommand = connection.CreateCommand())
                 {
                     selectCommand.CommandText = string.Format(
@@ -132,7 +133,7 @@ namespace Microsoft.Health.SqlServer.Features.Schema
 
         public static SqlConnection GetConnectionIfDatabaseNotExists(string connectionString, string databaseName)
         {
-            // connect to master database to evaluate if the requested database exists
+            // Connect to master database to evaluate if the requested database exists
             var masterConnectionBuilder = new SqlConnectionStringBuilder(connectionString) { InitialCatalog = string.Empty };
             var connection = new SqlConnection(masterConnectionBuilder.ToString());
             connection.Open();

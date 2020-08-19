@@ -42,13 +42,7 @@ namespace Microsoft.Health.SqlServer.Features.Schema
                 InsertSchemaVersion(version);
             }
 
-            using (var connection = new SqlConnection(_sqlServerDataStoreConfiguration.ConnectionString))
-            {
-                connection.Open();
-                var server = new Server(new ServerConnection(connection));
-
-                server.ConnectionContext.ExecuteNonQuery(_scriptProvider.GetMigrationScript(version, applyFullSchemaSnapshot));
-            }
+            ExecuteSchema(_scriptProvider.GetMigrationScript(version, applyFullSchemaSnapshot));
 
             CompleteSchemaVersion(version);
 
@@ -59,15 +53,20 @@ namespace Microsoft.Health.SqlServer.Features.Schema
         {
             _logger.LogInformation("Applying base schema");
 
+            ExecuteSchema(_baseScriptProvider.GetScript());
+
+            _logger.LogInformation("Completed applying base schema");
+        }
+
+        private void ExecuteSchema(string script)
+        {
             using (var connection = new SqlConnection(_sqlServerDataStoreConfiguration.ConnectionString))
             {
                 connection.Open();
                 var server = new Server(new ServerConnection(connection));
 
-                server.ConnectionContext.ExecuteNonQuery(_baseScriptProvider.GetScript());
+                server.ConnectionContext.ExecuteNonQuery(script);
             }
-
-            _logger.LogInformation("Completed applying base schema");
         }
 
         private void InsertSchemaVersion(int schemaVersion)
