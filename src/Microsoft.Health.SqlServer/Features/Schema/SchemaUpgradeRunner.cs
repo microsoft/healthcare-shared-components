@@ -16,16 +16,19 @@ namespace Microsoft.Health.SqlServer.Features.Schema
     public class SchemaUpgradeRunner
     {
         private readonly IScriptProvider _scriptProvider;
+        private readonly IBaseScriptProvider _baseScriptProvider;
         private readonly SqlServerDataStoreConfiguration _sqlServerDataStoreConfiguration;
         private readonly ILogger<SchemaUpgradeRunner> _logger;
 
-        public SchemaUpgradeRunner(IScriptProvider scriptProvider, SqlServerDataStoreConfiguration sqlServerDataStoreConfiguration, ILogger<SchemaUpgradeRunner> logger)
+        public SchemaUpgradeRunner(IScriptProvider scriptProvider, IBaseScriptProvider baseScriptProvider, SqlServerDataStoreConfiguration sqlServerDataStoreConfiguration, ILogger<SchemaUpgradeRunner> logger)
         {
             EnsureArg.IsNotNull(scriptProvider, nameof(scriptProvider));
+            EnsureArg.IsNotNull(baseScriptProvider, nameof(baseScriptProvider));
             EnsureArg.IsNotNull(sqlServerDataStoreConfiguration, nameof(sqlServerDataStoreConfiguration));
             EnsureArg.IsNotNull(logger, nameof(logger));
 
             _scriptProvider = scriptProvider;
+            _baseScriptProvider = baseScriptProvider;
             _sqlServerDataStoreConfiguration = sqlServerDataStoreConfiguration;
             _logger = logger;
         }
@@ -39,17 +42,31 @@ namespace Microsoft.Health.SqlServer.Features.Schema
                 InsertSchemaVersion(version);
             }
 
+            ExecuteSchema(_scriptProvider.GetMigrationScript(version, applyFullSchemaSnapshot));
+
+            CompleteSchemaVersion(version);
+
+            _logger.LogInformation("Completed applying schema {version}", version);
+        }
+
+        public void ApplyBaseSchema()
+        {
+            _logger.LogInformation("Applying base schema");
+
+            ExecuteSchema(_baseScriptProvider.GetScript());
+
+            _logger.LogInformation("Completed applying base schema");
+        }
+
+        private void ExecuteSchema(string script)
+        {
             using (var connection = new SqlConnection(_sqlServerDataStoreConfiguration.ConnectionString))
             {
                 connection.Open();
                 var server = new Server(new ServerConnection(connection));
 
-                server.ConnectionContext.ExecuteNonQuery(_scriptProvider.GetMigrationScript(version, applyFullSchemaSnapshot));
+                server.ConnectionContext.ExecuteNonQuery(script);
             }
-
-            CompleteSchemaVersion(version);
-
-            _logger.LogInformation("Completed applying schema {version}", version);
         }
 
         private void InsertSchemaVersion(int schemaVersion)
