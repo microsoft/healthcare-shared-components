@@ -1,5 +1,26 @@
-﻿-- NOTE: This script is to apply base schema required for the Schema migration tool
+﻿-- NOTE: This script is to configure database and apply base schema required for the Schema migration tool
 -- Style guide: please see: https://github.com/ktaranov/sqlserver-kit/blob/master/SQL%20Server%20Name%20Convention%20and%20T-SQL%20Programming%20Style.md
+
+/*************************************************************
+    Configure database
+**************************************************************/
+
+-- Enable RCSI
+IF ((SELECT is_read_committed_snapshot_on FROM sys.databases WHERE database_id = DB_ID()) = 0) BEGIN
+    ALTER DATABASE CURRENT SET READ_COMMITTED_SNAPSHOT ON
+END
+
+-- Avoid blocking queries when statistics need to be rebuilt
+IF ((SELECT is_auto_update_stats_async_on FROM sys.databases WHERE database_id = DB_ID()) = 0) BEGIN
+    ALTER DATABASE CURRENT SET AUTO_UPDATE_STATISTICS_ASYNC ON
+END
+
+-- Use ANSI behavior for null values
+IF ((SELECT is_ansi_nulls_on FROM sys.databases WHERE database_id = DB_ID()) = 0) BEGIN
+    ALTER DATABASE CURRENT SET ANSI_NULLS ON
+END
+
+GO
 
 /*************************************************************
     Schema Version
