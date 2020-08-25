@@ -8,7 +8,7 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-namespace Microsoft.Health.SqlServer {
+namespace Microsoft.Health.Core {
     using System;
     
     
@@ -39,7 +39,7 @@ namespace Microsoft.Health.SqlServer {
         internal static global::System.Resources.ResourceManager ResourceManager {
             get {
                 if (object.ReferenceEquals(resourceMan, null)) {
-                    global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("Microsoft.Health.SqlServer.Resources", typeof(Resources).Assembly);
+                    global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("Microsoft.Health.Core.Resources", typeof(Resources).Assembly);
                     resourceMan = temp;
                 }
                 return resourceMan;
@@ -61,38 +61,30 @@ namespace Microsoft.Health.SqlServer {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to The base script is not found..
+        ///   Looks up a localized string similar to The prefix used to identify custom audit headers cannot be empty..
         /// </summary>
-        internal static string BaseScriptNotFound {
+        internal static string CustomHeaderPrefixCannotBeEmpty {
             get {
-                return ResourceManager.GetString("BaseScriptNotFound", resourceCulture);
+                return ResourceManager.GetString("CustomHeaderPrefixCannotBeEmpty", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to The compatibility information was not found..
+        ///   Looks up a localized string similar to There are {0} roles with the name &apos;{1}&apos;.
         /// </summary>
-        internal static string CompatibilityRecordNotFound {
+        internal static string DuplicateRoleNames {
             get {
-                return ResourceManager.GetString("CompatibilityRecordNotFound", resourceCulture);
+                return ResourceManager.GetString("DuplicateRoleNames", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to The SQL operation has failed..
+        ///   Looks up a localized string similar to Error validating roles:
+        ///{0}.
         /// </summary>
-        internal static string OperationFailed {
+        internal static string ErrorValidatingRoles {
             get {
-                return ResourceManager.GetString("OperationFailed", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to The provided version is unknown..
-        /// </summary>
-        internal static string ScriptNotFound {
-            get {
-                return ResourceManager.GetString("ScriptNotFound", resourceCulture);
+                return ResourceManager.GetString("ErrorValidatingRoles", resourceCulture);
             }
         }
     }

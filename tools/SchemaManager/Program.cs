@@ -55,7 +55,7 @@ namespace SchemaManager
             var serviceOption = new Option(
                 OptionAliases.Service,
                 Resources.ForceOptionDescription,
-                new Argument<Service> { Arity = ArgumentArity.ZeroOrMore });
+                new Argument<Service> { Arity = ArgumentArity.ZeroOrOne });
             serviceOption.AddAlias(OptionAliases.ShortService);
 
             var rootCommand = new RootCommand();
@@ -93,7 +93,7 @@ namespace SchemaManager
                 connectionStringOption,
                 serviceOption,
             };
-            baseCommand.Handler = CommandHandler.Create<string, Service>(BaseCommand.Handler);
+            baseCommand.Handler = CommandHandler.Create<string>(BaseCommand.Handler);
             baseCommand.Argument.AddValidator(symbol => Validators.RequiredOptionValidator.Validate(symbol, connectionStringOption, Resources.ConnectionStringRequiredValidation));
 
             rootCommand.AddCommand(applyCommand);

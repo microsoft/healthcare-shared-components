@@ -55,6 +55,11 @@ namespace Microsoft.Health.SqlServer.Registration
                 .AsSelf()
                 .AsImplementedInterfaces();
 
+            services.Add<BaseScriptProvider>()
+               .Singleton()
+               .AsSelf()
+               .AsImplementedInterfaces();
+
             services.Add<SqlTransactionHandler>()
                 .Scoped()
                 .AsSelf()

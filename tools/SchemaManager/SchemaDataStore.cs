@@ -95,24 +95,6 @@ namespace SchemaManager
             }
         }
 
-        public static bool PreMigrationSchemaExists(string connectionString)
-        {
-            var procedureQuery = "SELECT COUNT(*) FROM sys.objects WHERE name = @name and type = @type";
-
-            using (var connection = new SqlConnection(connectionString))
-            {
-                connection.Open();
-
-                using (var command = new SqlCommand(procedureQuery, connection))
-                {
-                    command.Parameters.AddWithValue("@name", "UpsertInstanceSchema");
-                    command.Parameters.AddWithValue("@type", 'P');
-
-                    return (int)command.ExecuteScalar() == 0 ? false : true;
-                }
-            }
-        }
-
         public static void ExecuteScript(string connectionString, string script)
         {
             using (var connection = new SqlConnection(connectionString))

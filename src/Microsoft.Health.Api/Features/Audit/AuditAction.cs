@@ -3,12 +3,18 @@
 // Licensed under the MIT License (MIT). See LICENSE in the repo root for license information.
 // -------------------------------------------------------------------------------------------------
 
-namespace SchemaManager
+namespace Microsoft.Health.Api.Features.Audit
 {
-    internal interface IBaseScriptProvider
+    public enum AuditAction
     {
-        string GetCommonScript();
+        /// <summary>
+        /// Executing
+        /// </summary>
+        Executing,
 
-        string GetServiceScript(string serviceName);
+        /// <summary>
+        /// Executed
+        /// </summary>
+        Executed,
     }
 }

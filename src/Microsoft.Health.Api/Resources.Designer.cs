@@ -61,11 +61,38 @@ namespace Microsoft.Health.Api {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to The maximum length of a custom audit header value is {0}. The supplied custom audit header &apos;{1}&apos; has length of {2}..
+        /// </summary>
+        internal static string CustomAuditHeaderTooLarge {
+            get {
+                return ResourceManager.GetString("CustomAuditHeaderTooLarge", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Failed while running health check..
         /// </summary>
         internal static string FailedHealthCheckMessage {
             get {
                 return ResourceManager.GetString("FailedHealthCheckMessage", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The audit information is missing for Controller: {0} and Action: {1}. This usually means the action is not marked with appropriate attribute..
+        /// </summary>
+        internal static string MissingAuditInformation {
+            get {
+                return ResourceManager.GetString("MissingAuditInformation", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The maximum number of custom audit headers allowed is {0}. The number of custom audit headers supplied is {1}..
+        /// </summary>
+        internal static string TooManyCustomAuditHeaders {
+            get {
+                return ResourceManager.GetString("TooManyCustomAuditHeaders", resourceCulture);
             }
         }
     }

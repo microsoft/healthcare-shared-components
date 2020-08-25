@@ -53,9 +53,13 @@ namespace Microsoft.Health.SqlServer.Features.Schema
                 // If the stored procedure to get the current schema version doesn't exist
                 if (_schemaInformation.Current == null)
                 {
+                    // Apply base schema
+                    _schemaUpgradeRunner.ApplyBaseSchema();
+
+                    // This is for tests purpose only
                     if (forceIncrementalSchemaUpgrade)
                     {
-                        // Run version 1. We'll use this as a base schema and apply .diff.sql files to upgrade the schema version.
+                        // Run version 1 and and apply .diff.sql files to upgrade the schema version.
                         _schemaUpgradeRunner.ApplySchema(version: 1, applyFullSchemaSnapshot: true);
                     }
                     else
@@ -92,7 +96,7 @@ namespace Microsoft.Health.SqlServer.Features.Schema
 
                 string tableName = "dbo.SchemaVersion";
 
-                // since now the status is made consistent as 'completed', we might have to check for 'complete' as well for the previous version's status
+                // Since now the status is made consistent as 'completed', we might have to check for 'complete' as well for the previous version's status
                 using (var selectCommand = connection.CreateCommand())
                 {
                     selectCommand.CommandText = string.Format(
@@ -111,16 +115,8 @@ namespace Microsoft.Health.SqlServer.Features.Schema
             }
         }
 
-        private bool CanInitialize()
+        public static void ValidateDatabaseName(string databaseName)
         {
-            if (!_sqlServerDataStoreConfiguration.Initialize)
-            {
-                return false;
-            }
-
-            var configuredConnectionBuilder = new SqlConnectionStringBuilder(_sqlServerDataStoreConfiguration.ConnectionString);
-            string databaseName = configuredConnectionBuilder.InitialCatalog;
-
             if (string.IsNullOrEmpty(databaseName))
             {
                 throw new InvalidOperationException("The initial catalog must be specified in the connection string");
@@ -133,65 +129,106 @@ namespace Microsoft.Health.SqlServer.Features.Schema
             {
                 throw new InvalidOperationException("The initial catalog in the connection string cannot be a system database");
             }
+        }
+
+        public static SqlConnection GetConnectionIfDatabaseNotExists(string connectionString, string databaseName)
+        {
+            // Connect to master database to evaluate if the requested database exists
+            var masterConnectionBuilder = new SqlConnectionStringBuilder(connectionString) { InitialCatalog = string.Empty };
+            var connection = new SqlConnection(masterConnectionBuilder.ToString());
+            connection.Open();
+
+            using (var checkDatabaseExistsCommand = connection.CreateCommand())
+            {
+                checkDatabaseExistsCommand.CommandText = "SELECT 1 FROM sys.databases where name = @databaseName";
+                checkDatabaseExistsCommand.Parameters.AddWithValue("@databaseName", databaseName);
+                if ((int?)checkDatabaseExistsCommand.ExecuteScalar() == 1)
+                {
+                    return null;
+                }
+            }
+
+            return connection;
+        }
+
+        public static bool CreateDatabase(SqlConnection connection, string databaseName)
+        {
+            using (var canCreateDatabaseCommand = new SqlCommand("SELECT count(*) FROM fn_my_permissions (NULL, 'DATABASE') WHERE permission_name = 'CREATE DATABASE'", connection))
+            {
+                if ((int)canCreateDatabaseCommand.ExecuteScalar() > 0)
+                {
+                    using (var createDatabaseCommand = new SqlCommand($"CREATE DATABASE {databaseName}", connection))
+                    {
+                        createDatabaseCommand.ExecuteNonQuery();
+                        return true;
+                    }
+                }
+                else
+                {
+                    return false;
+                }
+            }
+        }
+
+        public static bool CheckDatabasePermissions(string connectionString)
+        {
+            using (var connection = new SqlConnection(connectionString))
+            {
+                connection.Open();
+
+                using (var command = new SqlCommand("SELECT count(*) FROM fn_my_permissions (NULL, 'DATABASE') WHERE permission_name = 'CREATE TABLE'", connection))
+                {
+                    return (int)command.ExecuteScalar() > 0;
+                }
+            }
+        }
+
+        private bool CanInitialize()
+        {
+            if (!_sqlServerDataStoreConfiguration.Initialize)
+            {
+                return false;
+            }
+
+            var configuredConnectionBuilder = new SqlConnectionStringBuilder(_sqlServerDataStoreConfiguration.ConnectionString);
+            string databaseName = configuredConnectionBuilder.InitialCatalog;
+
+            ValidateDatabaseName(databaseName);
 
             if (_sqlServerDataStoreConfiguration.AllowDatabaseCreation)
             {
-                // connect to master database to evaluate if the requested database exists
-                var masterConnectionBuilder = new SqlConnectionStringBuilder(_sqlServerDataStoreConfiguration.ConnectionString) { InitialCatalog = string.Empty };
-                using (var connection = new SqlConnection(masterConnectionBuilder.ToString()))
+                var connection = GetConnectionIfDatabaseNotExists(_sqlServerDataStoreConfiguration.ConnectionString, databaseName);
+
+                if (connection != null)
                 {
-                    connection.Open();
+                    _logger.LogInformation("Database does not exist");
 
-                    using (var checkDatabaseExistsCommand = connection.CreateCommand())
+                    bool created = CreateDatabase(connection, databaseName);
+
+                    if (created)
                     {
-                        checkDatabaseExistsCommand.CommandText = "SELECT 1 FROM sys.databases where name = @databaseName";
-                        checkDatabaseExistsCommand.Parameters.AddWithValue("@databaseName", databaseName);
-                        bool exists = (int?)checkDatabaseExistsCommand.ExecuteScalar() == 1;
-
-                        if (!exists)
-                        {
-                            _logger.LogInformation("Database does not exist");
-
-                            using (var canCreateDatabaseCommand = new SqlCommand("SELECT count(*) FROM fn_my_permissions (NULL, 'DATABASE') WHERE permission_name = 'CREATE DATABASE'", connection))
-                            {
-                                if ((int)canCreateDatabaseCommand.ExecuteScalar() > 0)
-                                {
-                                    using (var createDatabaseCommand = new SqlCommand($"CREATE DATABASE {databaseName}", connection))
-                                    {
-                                        createDatabaseCommand.ExecuteNonQuery();
-                                        _logger.LogInformation("Created database");
-                                    }
-                                }
-                                else
-                                {
-                                    _logger.LogWarning("Insufficient permissions to create the database");
-                                    return false;
-                                }
-                            }
-                        }
+                        _logger.LogInformation("Created database");
                     }
+                    else
+                    {
+                        _logger.LogWarning("Insufficient permissions to create the database");
+                        return false;
+                    }
+
+                    connection.Close();
                 }
             }
 
             // now switch to the target database
 
-            using (var connection = new SqlConnection(_sqlServerDataStoreConfiguration.ConnectionString))
+            bool canInitialize = CheckDatabasePermissions(_sqlServerDataStoreConfiguration.ConnectionString);
+
+            if (!canInitialize)
             {
-                connection.Open();
-
-                bool canInitialize;
-                using (var command = new SqlCommand("SELECT count(*) FROM fn_my_permissions (NULL, 'DATABASE') WHERE permission_name = 'CREATE TABLE'", connection))
-                {
-                    canInitialize = (int)command.ExecuteScalar() > 0;
-                }
-
-                if (!canInitialize)
-                {
-                    _logger.LogWarning("Insufficient permissions to create tables in the database");
-                }
-
-                return canInitialize;
+                _logger.LogWarning("Insufficient permissions to create tables in the database");
             }
+
+            return canInitialize;
         }
 
         public void Start()

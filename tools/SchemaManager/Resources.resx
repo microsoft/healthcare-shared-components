@@ -130,20 +130,16 @@
     <value>Applies the base SQL schema required to upgrade the schema version by this tool.</value>
   </data>
   <data name="BaseSchemaAlreadyExists" xml:space="preserve">
-    <value>The {0} base schema already exists.</value>
-    <comment>{0} is a service name.</comment>
+    <value>The base schema already exists.</value>
   </data>
   <data name="BaseSchemaExecuting" xml:space="preserve">
-    <value>The {0} base schema execution is started.</value>
-    <comment>{0} is a service name.</comment>
+    <value>The base schema execution is started.</value>
   </data>
   <data name="BaseSchemaSuccess" xml:space="preserve">
-    <value>The {0} base schema is executed successfully.</value>
-    <comment>{0} is a service name.</comment>
+    <value>The base schema execution is completed.</value>
   </data>
   <data name="BaseScriptNotFound" xml:space="preserve">
-    <value>The {0} base script is not found.</value>
-    <comment>{0} is a service name.</comment>
+    <value>The base script is not found.</value>
   </data>
   <data name="CompatibilityDefaultErrorMessage" xml:space="preserve">
     <value>The compatible versions information is not available.</value>

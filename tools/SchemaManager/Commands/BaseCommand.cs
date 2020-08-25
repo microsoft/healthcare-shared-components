@@ -4,6 +4,8 @@
 // -------------------------------------------------------------------------------------------------
 
 using System;
+using System.Data.SqlClient;
+using Microsoft.Health.SqlServer.Features.Schema;
 using SchemaManager.Exceptions;
 using SchemaManager.Utils;
 
@@ -11,54 +13,82 @@ namespace SchemaManager.Commands
 {
     public static class BaseCommand
     {
-        public static void Handler(string connectionString, Service service)
+        public static void Handler(string connectionString)
         {
             IBaseScriptProvider baseScriptProvider = new BaseScriptProvider();
 
             try
             {
+                Initialize(connectionString);
+
                 // Execute common script
-                if (!SchemaDataStore.PreMigrationSchemaExists(connectionString))
-                {
-                    var script = baseScriptProvider.GetCommonScript();
+                var script = baseScriptProvider.GetScript();
 
-                    ExecuteScriptAndWriteMessage(connectionString, script, string.Empty);
-                }
-                else
-                {
-                    Console.WriteLine(string.Format(Resources.BaseSchemaAlreadyExists, string.Empty));
-                }
+                Console.WriteLine(Resources.BaseSchemaExecuting);
 
-                string serviceScript = null;
+                SchemaDataStore.ExecuteScript(connectionString, script);
 
-                switch (service)
-                {
-                    case Service.Fhir:
-                        var serviceName = Enum.GetName(typeof(Service), Service.Fhir);
-                        serviceScript = baseScriptProvider.GetServiceScript(serviceName);
-                        ExecuteScriptAndWriteMessage(connectionString, serviceScript, serviceName);
-                        break;
-                    case Service.Dicom:
-                        serviceName = Enum.GetName(typeof(Service), Service.Dicom);
-                        serviceScript = baseScriptProvider.GetServiceScript(serviceName);
-                        ExecuteScriptAndWriteMessage(connectionString, serviceScript, serviceName);
-                        break;
-                }
+                Console.WriteLine(Resources.BaseSchemaSuccess);
             }
             catch (SchemaManagerException ex)
             {
                 CommandUtils.PrintError(ex.Message);
                 return;
             }
+            catch (InvalidOperationException ex)
+            {
+                CommandUtils.PrintError(ex.Message);
+                return;
+            }
         }
 
-        private static void ExecuteScriptAndWriteMessage(string connectionString, string script, string subMessage)
+        private static void Initialize(string connectionString)
         {
-            Console.WriteLine(string.Format(Resources.BaseSchemaExecuting, subMessage));
+            if (!CanInitialize(connectionString))
+            {
+                return;
+            }
+        }
 
-            SchemaDataStore.ExecuteScript(connectionString, script);
+        private static bool CanInitialize(string connectionString)
+        {
+            var configuredConnectionBuilder = new SqlConnectionStringBuilder(connectionString);
+            string databaseName = configuredConnectionBuilder.InitialCatalog;
 
-            Console.WriteLine(string.Format(Resources.BaseSchemaSuccess, subMessage));
+            SchemaInitializer.ValidateDatabaseName(databaseName);
+
+            var connection = SchemaInitializer.GetConnectionIfDatabaseNotExists(connectionString, databaseName);
+
+            // database creation is allowed
+            if (connection != null)
+            {
+                Console.WriteLine("Database does not exists.");
+
+                bool created = SchemaInitializer.CreateDatabase(connection, databaseName);
+
+                if (created)
+                {
+                    Console.WriteLine("Created database");
+                }
+                else
+                {
+                    Console.WriteLine("Insufficient permissions to create the database");
+                    return false;
+                }
+
+                connection.Close();
+            }
+
+            // now switch to the target database
+
+            bool canInitialize = SchemaInitializer.CheckDatabasePermissions(connectionString);
+
+            if (!canInitialize)
+            {
+                Console.WriteLine("Insufficient permissions to create tables in the database");
+            }
+
+            return canInitialize;
         }
     }
 }

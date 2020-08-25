@@ -6,6 +6,14 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Remove="Features\Schema\Migrations\BaseSchema.sql" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="Features\Schema\Migrations\BaseSchema.sql" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="Ensure.That" Version="8.1.2" />
     <PackageReference Include="MediatR" Version="8.0.1" />
     <PackageReference Include="MediatR.Extensions.Microsoft.DependencyInjection" Version="8.0.0" />

@@ -5,9 +5,9 @@
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "development",
         "SqlServer:Initialize": "true",
-        "SqlServer:SchemaOptions:AutomaticUpdatesEnabled": "true",
+        "SqlServer:SchemaOptions:AutomaticUpdatesEnabled": "false",
         "SqlServer:AllowDatabaseCreation": "true",
-        "SqlServer:ConnectionString": "server=(local);Initial Catalog=SHARED_HEALTHCARE;Integrated Security=true"
+        "SqlServer:ConnectionString": "server=(local);Initial Catalog=TEST_R1123;Integrated Security=true"
       },
       "applicationUrl": "https://localhost:63637/"
     }
