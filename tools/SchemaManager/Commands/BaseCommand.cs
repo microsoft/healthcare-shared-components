@@ -15,7 +15,7 @@ namespace SchemaManager.Commands
         {
             try
             {
-                BaseSchemaUtils.EnsureEecuteBaseSchema(connectionString);
+                BaseSchemaUtils.EnsureBaseSchemaExists(connectionString);
             }
             catch (Exception ex) when (ex is SchemaManagerException || ex is InvalidOperationException)
             {

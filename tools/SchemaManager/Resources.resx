@@ -154,6 +154,9 @@
     <value>The current version information is not available due to "{0}".</value>
     <comment>{0} is the response statusCode.</comment>
   </data>
+  <data name="CurrentSchemaVersionException" xml:space="preserve">
+    <value>The current schema version on the server is not updated. Please retry after few seconds.</value>
+  </data>
   <data name="CurrentSchemaVersionStoredProcedureNotFound" xml:space="preserve">
     <value>Could not find stored procedure 'dbo.SelectCurrentSchemaVersion'.</value>
   </data>
@@ -166,7 +169,7 @@
   <data name="HttpRequestExceptionMessage" xml:space="preserve">
     <value>No connection could be made to the target machine.</value>
   </data>
-  <data name="InstanceSchemaRecordException" xml:space="preserve">
+  <data name="InstanceSchemaRecordErrorMessage" xml:space="preserve">
     <value>There is no record in the InstanceSchema table.</value>
   </data>
   <data name="InvalidVersionMessage" xml:space="preserve">
@@ -190,13 +193,17 @@
     <value>Unable to connect to host "{0}".</value>
     <comment>{0} is the server url.</comment>
   </data>
+  <data name="RetryCurrentSchemaVersion" xml:space="preserve">
+    <value>Attempt {0} of {1} to wait for the current version to be updated on the server.</value>
+    <comment>(0) is retry attempt, {1} is total number of retries.</comment>
+  </data>
   <data name="RetryCurrentVersions" xml:space="preserve">
     <value>Attempt {0} of {1} to verify if all the instances are running the previous version.</value>
     <comment>(0) is retry attempt, {1} is total retries</comment>
   </data>
   <data name="RetryInstanceSchemaRecord" xml:space="preserve">
     <value>Attempt {0} of {1} to verify if the record is created in the InstanceSchema table.</value>
-    <comment>(0) is retry attempt, {1} is total number of retries</comment>
+    <comment>(0) is retry attempt, {1} is total number of retries.</comment>
   </data>
   <data name="RetryVersionCompatibility" xml:space="preserve">
     <value>Attempt {0} of {1} to verify if the schema version is compatible.</value>
@@ -222,9 +229,6 @@
   <data name="SpecifiedVersionNotAvailable" xml:space="preserve">
     <value>The specified schema version "{0}" is not available.</value>
     <comment>{0} is a version.</comment>
-  </data>
-  <data name="String1" xml:space="preserve">
-    <value />
   </data>
   <data name="VersionIncompatibilityMessage" xml:space="preserve">
     <value>The schema version "{0}" is not compatible.</value>

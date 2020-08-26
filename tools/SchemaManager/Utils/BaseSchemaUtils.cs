@@ -11,7 +11,7 @@ namespace SchemaManager.Utils
 {
     public static class BaseSchemaUtils
     {
-        public static void EnsureEecuteBaseSchema(string connectionString)
+        public static void EnsureBaseSchemaExists(string connectionString)
         {
             IBaseScriptProvider baseScriptProvider = new BaseScriptProvider();
 

@@ -35,7 +35,7 @@ namespace SchemaManager.Commands
             try
             {
                 // Ensure that the baseSchema exists
-                BaseSchemaUtils.EnsureEecuteBaseSchema(connectionString);
+                BaseSchemaUtils.EnsureBaseSchemaExists(connectionString);
 
                 // Ensure that the current version record is inserted into InstanceSchema table
                 int attempts = 1;
@@ -48,7 +48,7 @@ namespace SchemaManager.Commands
                     {
                         Console.WriteLine(string.Format(Resources.RetryInstanceSchemaRecord, attempts++, RetryAttempts));
                     })
-                .Execute(() => EnsureInstanceSchemaRecord(connectionString));
+                .Execute(() => EnsureInstanceSchemaRecordCreated(connectionString));
 
                 var availableVersions = await schemaClient.GetAvailability();
 
@@ -61,10 +61,19 @@ namespace SchemaManager.Commands
                 availableVersions.Sort((x, y) => x.Id.CompareTo(y.Id));
 
                 // Removing the current version
-                if (availableVersions.First().Id == SchemaDataStore.GetCurrentSchemaVersion(connectionString))
-                {
-                    availableVersions.RemoveAt(0);
-                }
+
+                int attemptCount = 1;
+
+                Policy.Handle<SchemaManagerException>()
+                .WaitAndRetry(
+                    retryCount: RetryAttempts,
+                    sleepDurationProvider: (retryCount) => RetrySleepDuration,
+                    onRetry: (exception, retryCount) =>
+                    {
+                        Console.WriteLine(string.Format(Resources.RetryCurrentSchemaVersion, attemptCount++, RetryAttempts));
+                    })
+                .Execute(() => CheckFirstAvailableVersionIsCurrentVersion(availableVersions.First().Id, connectionString));
+                availableVersions.RemoveAt(0);
 
                 var targetVersion = exclusiveType.Next == true ? availableVersions.First().Id :
                                                                  exclusiveType.Latest == true ? availableVersions.Last().Id :
@@ -81,7 +90,7 @@ namespace SchemaManager.Commands
 
                 if (!force)
                 {
-                    int attemptCount = 1;
+                    attemptCount = 1;
 
                     await Policy.Handle<SchemaManagerException>()
                     .WaitAndRetryAsync(
@@ -111,7 +120,7 @@ namespace SchemaManager.Commands
 
                     if (!force)
                     {
-                        int attemptCount = 1;
+                        attemptCount = 1;
 
                         await Policy.Handle<SchemaManagerException>()
                         .WaitAndRetryAsync(
@@ -205,11 +214,19 @@ namespace SchemaManager.Commands
             return string.Equals(Console.ReadLine(), "yes", StringComparison.OrdinalIgnoreCase);
         }
 
-        private static void EnsureInstanceSchemaRecord(string connectionString)
+        private static void EnsureInstanceSchemaRecordCreated(string connectionString)
         {
             if (!SchemaDataStore.InstanceSchemaRecordExists(connectionString))
             {
-                throw new SchemaManagerException(Resources.InstanceSchemaRecordException);
+                throw new SchemaManagerException(Resources.InstanceSchemaRecordErrorMessage);
+            }
+        }
+
+        private static void CheckFirstAvailableVersionIsCurrentVersion(int firstAvailableVersion, string connectionString)
+        {
+            if (firstAvailableVersion != SchemaDataStore.GetCurrentSchemaVersion(connectionString))
+            {
+                throw new SchemaManagerException(Resources.CurrentSchemaVersionException);
             }
         }
     }

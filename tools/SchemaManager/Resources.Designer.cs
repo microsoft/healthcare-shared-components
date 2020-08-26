@@ -169,6 +169,15 @@ namespace SchemaManager {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to The current schema version on the server is not updated. Please retry after few seconds..
+        /// </summary>
+        internal static string CurrentSchemaVersionException {
+            get {
+                return ResourceManager.GetString("CurrentSchemaVersionException", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Could not find stored procedure &apos;dbo.SelectCurrentSchemaVersion&apos;..
         /// </summary>
         internal static string CurrentSchemaVersionStoredProcedureNotFound {
@@ -207,9 +216,9 @@ namespace SchemaManager {
         /// <summary>
         ///   Looks up a localized string similar to There is no record in the InstanceSchema table..
         /// </summary>
-        internal static string InstanceSchemaRecordException {
+        internal static string InstanceSchemaRecordErrorMessage {
             get {
-                return ResourceManager.GetString("InstanceSchemaRecordException", resourceCulture);
+                return ResourceManager.GetString("InstanceSchemaRecordErrorMessage", resourceCulture);
             }
         }
         
@@ -264,6 +273,15 @@ namespace SchemaManager {
         internal static string RequestFailedMessage {
             get {
                 return ResourceManager.GetString("RequestFailedMessage", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Attempt {0} of {1} to wait for the current version to be updated on the server..
+        /// </summary>
+        internal static string RetryCurrentSchemaVersion {
+            get {
+                return ResourceManager.GetString("RetryCurrentSchemaVersion", resourceCulture);
             }
         }
         
@@ -345,15 +363,6 @@ namespace SchemaManager {
         internal static string SpecifiedVersionNotAvailable {
             get {
                 return ResourceManager.GetString("SpecifiedVersionNotAvailable", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to .
-        /// </summary>
-        internal static string String1 {
-            get {
-                return ResourceManager.GetString("String1", resourceCulture);
             }
         }
         
