@@ -3,11 +3,11 @@
 // Licensed under the MIT License (MIT). See LICENSE in the repo root for license information.
 // -------------------------------------------------------------------------------------------------
 
-using Microsoft.Health.Core.Exceptions;
+using Microsoft.Health.Abstractions.Exceptions;
 
 namespace Microsoft.Health.Api.Features.Audit
 {
-    public class AuditHeaderException : HealthException
+    public class AuditHeaderException : MicrosoftHealthException
     {
         public AuditHeaderException(string message)
             : base(message)

@@ -15,5 +15,11 @@ namespace Microsoft.Health.Abstractions.Exceptions
         {
             Debug.Assert(!string.IsNullOrEmpty(message), "Message should not be empty");
         }
+
+        public MicrosoftHealthException(string message, Exception innerException)
+            : base(message, innerException)
+        {
+            Debug.Assert(!string.IsNullOrEmpty(message), "Message should not be empty");
+        }
     }
 }
