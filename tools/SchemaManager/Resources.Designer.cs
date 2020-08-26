@@ -124,15 +124,6 @@ namespace SchemaManager {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to The base script is not found..
-        /// </summary>
-        internal static string BaseScriptNotFound {
-            get {
-                return ResourceManager.GetString("BaseScriptNotFound", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to The compatible versions information is not available..
         /// </summary>
         internal static string CompatibilityDefaultErrorMessage {
@@ -214,6 +205,15 @@ namespace SchemaManager {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to There is no record in the InstanceSchema table..
+        /// </summary>
+        internal static string InstanceSchemaRecordException {
+            get {
+                return ResourceManager.GetString("InstanceSchemaRecordException", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to The schema version {0} cannot be applied because all the instances are not running the previous version..
         /// </summary>
         internal static string InvalidVersionMessage {
@@ -277,6 +277,15 @@ namespace SchemaManager {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Attempt {0} of {1} to verify if the record is created in the InstanceSchema table..
+        /// </summary>
+        internal static string RetryInstanceSchemaRecord {
+            get {
+                return ResourceManager.GetString("RetryInstanceSchemaRecord", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Attempt {0} of {1} to verify if the schema version is compatible..
         /// </summary>
         internal static string RetryVersionCompatibility {
@@ -331,20 +340,20 @@ namespace SchemaManager {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to You must include the name of the service e.g. Fhir or Dicom..
-        /// </summary>
-        internal static string ServiceRequiredValidation {
-            get {
-                return ResourceManager.GetString("ServiceRequiredValidation", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to The specified schema version &quot;{0}&quot; is not available..
         /// </summary>
         internal static string SpecifiedVersionNotAvailable {
             get {
                 return ResourceManager.GetString("SpecifiedVersionNotAvailable", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to .
+        /// </summary>
+        internal static string String1 {
+            get {
+                return ResourceManager.GetString("String1", resourceCulture);
             }
         }
         

@@ -52,12 +52,6 @@ namespace SchemaManager
                 new Argument<bool> { Arity = ArgumentArity.ZeroOrOne });
             forceOption.AddAlias(OptionAliases.ShortForce);
 
-            var serviceOption = new Option(
-                OptionAliases.Service,
-                Resources.ForceOptionDescription,
-                new Argument<Service> { Arity = ArgumentArity.ZeroOrOne });
-            serviceOption.AddAlias(OptionAliases.ShortService);
-
             var rootCommand = new RootCommand();
 
             var currentCommand = new Command(CommandNames.Current, Resources.CurrentCommandDescription)
@@ -91,7 +85,6 @@ namespace SchemaManager
             var baseCommand = new Command(CommandNames.Base, Resources.BaseCommandDescription)
             {
                 connectionStringOption,
-                serviceOption,
             };
             baseCommand.Handler = CommandHandler.Create<string>(BaseCommand.Handler);
             baseCommand.Argument.AddValidator(symbol => Validators.RequiredOptionValidator.Validate(symbol, connectionStringOption, Resources.ConnectionStringRequiredValidation));

@@ -3,13 +3,10 @@
 // Licensed under the MIT License (MIT). See LICENSE in the repo root for license information.
 // -------------------------------------------------------------------------------------------------
 
-using System.Collections.Generic;
 using MediatR;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
-using Microsoft.Health.Core;
 using Microsoft.Health.Extensions.DependencyInjection;
 using Microsoft.Health.SqlServer.Api.Features;
 using Microsoft.Health.SqlServer.Api.Registration;
@@ -50,17 +47,6 @@ namespace Microsoft.Health.SqlServer.Web
         public virtual void Configure(IApplicationBuilder app)
         {
             app.UseMvc();
-
-            ILogger logger = app.ApplicationServices.GetRequiredService<ILoggerFactory>().CreateLogger<Startup>();
-
-            // start IStartable services.
-            foreach (var startable in app.ApplicationServices.GetService<IEnumerable<IStartable>>())
-            {
-                using (logger.BeginTimedScope($"Initializing {startable.GetType().Name}."))
-                {
-                    startable.Start();
-                }
-            }
         }
     }
 }

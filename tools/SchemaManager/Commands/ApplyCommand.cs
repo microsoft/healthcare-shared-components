@@ -34,6 +34,22 @@ namespace SchemaManager.Commands
 
             try
             {
+                // Ensure that the baseSchema exists
+                BaseSchemaUtils.EnsureEecuteBaseSchema(connectionString);
+
+                // Ensure that the current version record is inserted into InstanceSchema table
+                int attempts = 1;
+
+                Policy.Handle<SchemaManagerException>()
+                .WaitAndRetry(
+                    retryCount: RetryAttempts,
+                    sleepDurationProvider: (retryCount) => RetrySleepDuration,
+                    onRetry: (exception, retryCount) =>
+                    {
+                        Console.WriteLine(string.Format(Resources.RetryInstanceSchemaRecord, attempts++, RetryAttempts));
+                    })
+                .Execute(() => EnsureInstanceSchemaRecord(connectionString));
+
                 var availableVersions = await schemaClient.GetAvailability();
 
                 if (availableVersions.Count <= 1)
@@ -113,7 +129,7 @@ namespace SchemaManager.Commands
                     UpgradeSchema(connectionString, executingVersion, script);
                 }
             }
-            catch (SchemaManagerException ex)
+            catch (Exception ex) when (ex is SchemaManagerException || ex is InvalidOperationException)
             {
                 CommandUtils.PrintError(ex.Message);
                 return;
@@ -123,10 +139,21 @@ namespace SchemaManager.Commands
                 CommandUtils.PrintError(string.Format(Resources.RequestFailedMessage, server));
                 return;
             }
-            catch (Exception ex) when (ex is SqlException || ex is ExecutionFailureException)
+            catch (Exception ex)
             {
-                CommandUtils.PrintError(string.Format(Resources.QueryExecutionErrorMessage, ex.Message));
-                return;
+                if (ex is SqlException || ex is ExecutionFailureException)
+                {
+                    CommandUtils.PrintError(string.Format(Resources.QueryExecutionErrorMessage, ex.Message));
+                    return;
+                }
+
+                if (ex is SchemaManagerException || ex is InvalidOperationException)
+                {
+                    CommandUtils.PrintError(ex.Message);
+                    return;
+                }
+
+                throw;
             }
         }
 
@@ -144,10 +171,10 @@ namespace SchemaManager.Commands
         {
             if (version == 1)
             {
-                return await schemaClient.GetScript(new Uri(scriptUri));
+                return await schemaClient.GetScript(new Uri(scriptUri, UriKind.Relative));
             }
 
-            return await schemaClient.GetDiffScript(new Uri(diffUri));
+            return await schemaClient.GetDiffScript(new Uri(diffUri, UriKind.Relative));
         }
 
         private static async Task ValidateCompatibleVersion(ISchemaClient schemaClient, int minAvailableVersion, int maxAvailableVersion)
@@ -176,6 +203,14 @@ namespace SchemaManager.Commands
         {
             Console.WriteLine(Resources.ForceWarning);
             return string.Equals(Console.ReadLine(), "yes", StringComparison.OrdinalIgnoreCase);
+        }
+
+        private static void EnsureInstanceSchemaRecord(string connectionString)
+        {
+            if (!SchemaDataStore.InstanceSchemaRecordExists(connectionString))
+            {
+                throw new SchemaManagerException(Resources.InstanceSchemaRecordException);
+            }
         }
     }
 }

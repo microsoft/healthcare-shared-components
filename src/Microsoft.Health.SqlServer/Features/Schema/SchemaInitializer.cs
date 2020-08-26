@@ -246,5 +246,23 @@ namespace Microsoft.Health.SqlServer.Features.Schema
                 }
             }
         }
+
+        public static bool ExistsBaseSchema(string connectionString)
+        {
+            var procedureQuery = "SELECT COUNT(*) FROM sys.objects WHERE name = @name and type = @type";
+
+            using (var connection = new SqlConnection(connectionString))
+            {
+                connection.Open();
+
+                using (var command = new SqlCommand(procedureQuery, connection))
+                {
+                    command.Parameters.AddWithValue("@name", "SelectCurrentVersionsInformation");
+                    command.Parameters.AddWithValue("@type", 'P');
+
+                    return (int)command.ExecuteScalar() == 0 ? false : true;
+                }
+            }
+        }
     }
 }

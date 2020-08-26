@@ -10,11 +10,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <None Remove="Schema\FhirBaseScript.sql" />
-    <EmbeddedResource Include="Schema\FhirBaseScript.sql" />
-  </ItemGroup>
-
-  <ItemGroup>
     <PackageReference Include="Ensure.That" Version="9.2.0" />
     <PackageReference Include="Microsoft.SqlServer.SqlManagementObjects" Version="150.18208.0" />
     <PackageReference Include="Newtonsoft.Json" Version="12.0.3" />
@@ -22,7 +17,7 @@
     <PackageReference Include="System.CommandLine.Experimental" Version="0.2.0-alpha.19174.3" />
     <PackageReference Include="System.CommandLine.Rendering" Version="0.2.0-alpha.19174.3" />
     <PackageReference Include="System.Data.SqlClient" Version="4.8.0" />
-    <PackageReference Include="Microsoft.Health.SqlServer" Version="1.0.0-master-20200824-1" />
+    <PackageReference Include="Microsoft.Health.SqlServer" Version="1.0.0-master-20200826-1" />
   </ItemGroup>
 
   <ItemGroup>
