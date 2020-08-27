@@ -4,7 +4,6 @@
 // -------------------------------------------------------------------------------------------------
 
 using System;
-using System.Diagnostics;
 
 namespace Microsoft.Health.Abstractions.Exceptions
 {
@@ -13,13 +12,11 @@ namespace Microsoft.Health.Abstractions.Exceptions
         public MicrosoftHealthException(string message)
             : base(message)
         {
-            Debug.Assert(!string.IsNullOrEmpty(message), "Message should not be empty");
         }
 
         public MicrosoftHealthException(string message, Exception innerException)
             : base(message, innerException)
         {
-            Debug.Assert(!string.IsNullOrEmpty(message), "Message should not be empty");
         }
     }
 }
