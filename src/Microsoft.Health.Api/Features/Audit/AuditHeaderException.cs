@@ -3,19 +3,14 @@
 // Licensed under the MIT License (MIT). See LICENSE in the repo root for license information.
 // -------------------------------------------------------------------------------------------------
 
-using System;
+using Microsoft.Health.Abstractions.Exceptions;
 
-namespace Microsoft.Health.Abstractions.Exceptions
+namespace Microsoft.Health.Api.Features.Audit
 {
-    public class MicrosoftHealthException : Exception
+    public class AuditHeaderException : MicrosoftHealthException
     {
-        public MicrosoftHealthException(string message)
+        public AuditHeaderException(string message)
             : base(message)
-        {
-        }
-
-        public MicrosoftHealthException(string message, Exception innerException)
-            : base(message, innerException)
         {
         }
     }
