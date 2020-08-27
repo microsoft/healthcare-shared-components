@@ -9,7 +9,7 @@ namespace Microsoft.Health.Core.Configs
 {
     public class AuditConfiguration
     {
-        private string _customAuditHeaderPrefix = "X-MS-AZUREHEALTH-AUDIT-";
+        private string _customAuditHeaderPrefix;
 
         public AuditConfiguration()
         {
