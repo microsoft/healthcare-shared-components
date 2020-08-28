@@ -3,19 +3,12 @@
 // Licensed under the MIT License (MIT). See LICENSE in the repo root for license information.
 // -------------------------------------------------------------------------------------------------
 
-using System;
-
-namespace Microsoft.Health.Abstractions.Exceptions
+namespace Microsoft.Health.Api.Features.Audit
 {
-    public class MicrosoftHealthException : Exception
+    public class AuditHeaderTooLargeException : AuditHeaderException
     {
-        public MicrosoftHealthException(string message)
-            : base(message)
-        {
-        }
-
-        public MicrosoftHealthException(string message, Exception innerException)
-            : base(message, innerException)
+        public AuditHeaderTooLargeException(string headerName, int size)
+            : base(string.Format(Resources.CustomAuditHeaderTooLarge, AuditConstants.MaximumLengthOfCustomHeader, headerName, size))
         {
         }
     }
