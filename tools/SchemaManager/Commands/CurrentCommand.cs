@@ -18,7 +18,7 @@ namespace SchemaManager.Commands
 {
     public static class CurrentCommand
     {
-        public static async Task HandlerAsync(InvocationContext invocationContext, Uri server)
+        public static async Task HandlerAsync(InvocationContext invocationContext, Uri server, string connectionString)
         {
             var region = new Region(
                           0,
@@ -31,6 +31,12 @@ namespace SchemaManager.Commands
 
             try
             {
+                // Ensure that the baseSchema exists
+                BaseSchemaRunner.EnsureBaseSchemaExists(connectionString);
+
+                // Ensure that the current version record is inserted into InstanceSchema table
+                BaseSchemaRunner.EnsureInstanceSchemaRecordExists(connectionString);
+
                 currentVersions = await schemaClient.GetCurrentVersionInformation();
             }
             catch (SchemaManagerException ex)

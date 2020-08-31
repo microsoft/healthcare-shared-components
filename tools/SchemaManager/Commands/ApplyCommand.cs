@@ -35,20 +35,10 @@ namespace SchemaManager.Commands
             try
             {
                 // Ensure that the baseSchema exists
-                BaseSchemaUtils.EnsureBaseSchemaExists(connectionString);
+                BaseSchemaRunner.EnsureBaseSchemaExists(connectionString);
 
                 // Ensure that the current version record is inserted into InstanceSchema table
-                int attempts = 1;
-
-                Policy.Handle<SchemaManagerException>()
-                .WaitAndRetry(
-                    retryCount: RetryAttempts,
-                    sleepDurationProvider: (retryCount) => RetrySleepDuration,
-                    onRetry: (exception, retryCount) =>
-                    {
-                        Console.WriteLine(string.Format(Resources.RetryInstanceSchemaRecord, attempts++, RetryAttempts));
-                    })
-                .Execute(() => EnsureInstanceSchemaRecordCreated(connectionString));
+                BaseSchemaRunner.EnsureInstanceSchemaRecordExists(connectionString);
 
                 var availableVersions = await schemaClient.GetAvailability();
 
@@ -212,14 +202,6 @@ namespace SchemaManager.Commands
         {
             Console.WriteLine(Resources.ForceWarning);
             return string.Equals(Console.ReadLine(), "yes", StringComparison.OrdinalIgnoreCase);
-        }
-
-        private static void EnsureInstanceSchemaRecordCreated(string connectionString)
-        {
-            if (!SchemaDataStore.InstanceSchemaRecordExists(connectionString))
-            {
-                throw new SchemaManagerException(Resources.InstanceSchemaRecordErrorMessage);
-            }
         }
 
         private static void CheckFirstAvailableVersionIsCurrentVersion(int firstAvailableVersion, string connectionString)

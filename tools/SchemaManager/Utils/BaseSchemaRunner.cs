@@ -6,11 +6,16 @@
 using System;
 using System.Data.SqlClient;
 using Microsoft.Health.SqlServer.Features.Schema;
+using Polly;
+using SchemaManager.Exceptions;
 
 namespace SchemaManager.Utils
 {
-    public static class BaseSchemaUtils
+    public static class BaseSchemaRunner
     {
+        private static readonly TimeSpan RetrySleepDuration = TimeSpan.FromSeconds(20);
+        private const int RetryAttempts = 3;
+
         public static void EnsureBaseSchemaExists(string connectionString)
         {
             IBaseScriptProvider baseScriptProvider = new BaseScriptProvider();
@@ -30,6 +35,30 @@ namespace SchemaManager.Utils
             else
             {
                 Console.WriteLine(Resources.BaseSchemaAlreadyExists);
+            }
+        }
+
+        public static void EnsureInstanceSchemaRecordExists(string connectionString)
+        {
+            // Ensure that the current version record is inserted into InstanceSchema table
+            int attempts = 1;
+
+            Policy.Handle<SchemaManagerException>()
+            .WaitAndRetry(
+                retryCount: RetryAttempts,
+                sleepDurationProvider: (retryCount) => RetrySleepDuration,
+                onRetry: (exception, retryCount) =>
+                {
+                    Console.WriteLine(string.Format(Resources.RetryInstanceSchemaRecord, attempts++, RetryAttempts));
+                })
+            .Execute(() => InstanceSchemaRecordCreated(connectionString));
+        }
+
+        private static void InstanceSchemaRecordCreated(string connectionString)
+        {
+            if (!SchemaDataStore.InstanceSchemaRecordExists(connectionString))
+            {
+                throw new SchemaManagerException(Resources.InstanceSchemaRecordErrorMessage);
             }
         }
 
