@@ -56,7 +56,7 @@ namespace Microsoft.Health.SqlServer.Features.Schema
 
             CompleteSchemaVersion(version);
 
-            _mediator.NotifySchemaUpgradedAsync(version).GetAwaiter().GetResult();
+            _mediator.NotifySchemaUpgradedAsync(version).Wait();
             _logger.LogInformation("Completed applying schema {version}", version);
         }
 
