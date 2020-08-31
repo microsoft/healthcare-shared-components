@@ -10,6 +10,5 @@ namespace SchemaManager
         public const string Apply = "apply";
         public const string Available = "available";
         public const string Current = "current";
-        public const string Base = "base";
     }
 }
