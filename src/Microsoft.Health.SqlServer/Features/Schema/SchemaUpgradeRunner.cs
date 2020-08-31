@@ -6,8 +6,10 @@
 using System.Data;
 using System.Data.SqlClient;
 using EnsureThat;
+using MediatR;
 using Microsoft.Extensions.Logging;
 using Microsoft.Health.SqlServer.Configs;
+using Microsoft.Health.SqlServer.Features.Schema.Extensions;
 using Microsoft.SqlServer.Management.Common;
 using Microsoft.SqlServer.Management.Smo;
 
@@ -18,18 +20,26 @@ namespace Microsoft.Health.SqlServer.Features.Schema
         private readonly IScriptProvider _scriptProvider;
         private readonly IBaseScriptProvider _baseScriptProvider;
         private readonly SqlServerDataStoreConfiguration _sqlServerDataStoreConfiguration;
+        private readonly IMediator _mediator;
         private readonly ILogger<SchemaUpgradeRunner> _logger;
 
-        public SchemaUpgradeRunner(IScriptProvider scriptProvider, IBaseScriptProvider baseScriptProvider, SqlServerDataStoreConfiguration sqlServerDataStoreConfiguration, ILogger<SchemaUpgradeRunner> logger)
+        public SchemaUpgradeRunner(
+            IScriptProvider scriptProvider,
+            IBaseScriptProvider baseScriptProvider,
+            SqlServerDataStoreConfiguration sqlServerDataStoreConfiguration,
+            IMediator mediator,
+            ILogger<SchemaUpgradeRunner> logger)
         {
             EnsureArg.IsNotNull(scriptProvider, nameof(scriptProvider));
             EnsureArg.IsNotNull(baseScriptProvider, nameof(baseScriptProvider));
             EnsureArg.IsNotNull(sqlServerDataStoreConfiguration, nameof(sqlServerDataStoreConfiguration));
+            EnsureArg.IsNotNull(mediator, nameof(mediator));
             EnsureArg.IsNotNull(logger, nameof(logger));
 
             _scriptProvider = scriptProvider;
             _baseScriptProvider = baseScriptProvider;
             _sqlServerDataStoreConfiguration = sqlServerDataStoreConfiguration;
+            _mediator = mediator;
             _logger = logger;
         }
 
@@ -46,6 +56,7 @@ namespace Microsoft.Health.SqlServer.Features.Schema
 
             CompleteSchemaVersion(version);
 
+            _mediator.NotifySchemaUpgradedAsync(version).GetAwaiter().GetResult();
             _logger.LogInformation("Completed applying schema {version}", version);
         }
 

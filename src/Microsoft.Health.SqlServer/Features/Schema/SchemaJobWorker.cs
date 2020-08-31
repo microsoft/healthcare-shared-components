@@ -7,10 +7,12 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 using EnsureThat;
+using MediatR;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Health.Core;
 using Microsoft.Health.SqlServer.Configs;
+using Microsoft.Health.SqlServer.Features.Schema.Extensions;
 
 namespace Microsoft.Health.SqlServer.Features.Schema
 {
@@ -23,16 +25,23 @@ namespace Microsoft.Health.SqlServer.Features.Schema
     {
         private readonly IServiceProvider _serviceProvider;
         private readonly SqlServerDataStoreConfiguration _sqlServerDataStoreConfiguration;
+        private readonly IMediator _mediator;
         private readonly ILogger _logger;
 
-        public SchemaJobWorker(IServiceProvider services, SqlServerDataStoreConfiguration sqlServerDataStoreConfiguration, ILogger<SchemaJobWorker> logger)
+        public SchemaJobWorker(
+            IServiceProvider services,
+            SqlServerDataStoreConfiguration sqlServerDataStoreConfiguration,
+            IMediator mediator,
+            ILogger<SchemaJobWorker> logger)
         {
             EnsureArg.IsNotNull(services, nameof(services));
             EnsureArg.IsNotNull(sqlServerDataStoreConfiguration, nameof(sqlServerDataStoreConfiguration));
+            EnsureArg.IsNotNull(mediator, nameof(mediator));
             EnsureArg.IsNotNull(logger, nameof(logger));
 
             _serviceProvider = services;
             _sqlServerDataStoreConfiguration = sqlServerDataStoreConfiguration;
+            _mediator = mediator;
             _logger = logger;
         }
 
@@ -58,7 +67,15 @@ namespace Microsoft.Health.SqlServer.Features.Schema
                     {
                         var schemaDataStore = scope.ServiceProvider.GetRequiredService<ISchemaDataStore>();
 
+                        int? previous = schemaInformation.Current;
                         schemaInformation.Current = await schemaDataStore.UpsertInstanceSchemaInformationAsync(instanceName, schemaInformation, cancellationToken);
+
+                        // If there was a change in the schema version
+                        if (previous != schemaInformation.Current)
+                        {
+                            // Fire a notification
+                            _mediator.NotifySchemaUpgradedAsync(schemaInformation.Current).GetAwaiter().GetResult();
+                        }
 
                         await schemaDataStore.DeleteExpiredInstanceSchemaAsync(cancellationToken);
                     }
