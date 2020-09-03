@@ -36,6 +36,18 @@ namespace Microsoft.Health.Api.Features.Audit
             base.OnActionExecuting(context);
         }
 
+        public override void OnActionExecuted(ActionExecutedContext context)
+        {
+            EnsureArg.IsNotNull(context, nameof(context));
+
+            if (context.Exception != null)
+            {
+                _auditHelper.LogExecuted(context.HttpContext, _claimsExtractor, context.Exception);
+            }
+
+            base.OnActionExecuted(context);
+        }
+
         public override void OnResultExecuted(ResultExecutedContext context)
         {
             EnsureArg.IsNotNull(context, nameof(context));

@@ -3,6 +3,7 @@
 // Licensed under the MIT License (MIT). See LICENSE in the repo root for license information.
 // -------------------------------------------------------------------------------------------------
 
+using System;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Health.Core.Features.Security;
 
@@ -25,6 +26,7 @@ namespace Microsoft.Health.Api.Features.Audit
         /// </summary>
         /// <param name="httpContext">The HTTP context.</param>
         /// <param name="claimsExtractor">The extractor used to extract claims.</param>
-        void LogExecuted(HttpContext httpContext, IClaimsExtractor claimsExtractor);
+        /// <param name="exception">Exception.</param>
+        void LogExecuted(HttpContext httpContext, IClaimsExtractor claimsExtractor, Exception exception = null);
     }
 }
