@@ -73,8 +73,14 @@ namespace Microsoft.Health.SqlServer.Features.Schema
                         // If there was a change in the schema version
                         if (previous != schemaInformation.Current)
                         {
+                            if (schemaInformation.Current == null)
+                            {
+                                _logger.LogError("Schema can not be upgraded to null.");
+                                break;
+                            }
+
                             // Fire a notification
-                            _mediator.NotifySchemaUpgradedAsync(schemaInformation.Current).GetAwaiter().GetResult();
+                            await _mediator.NotifySchemaUpgradedAsync((int)schemaInformation.Current);
                         }
 
                         await schemaDataStore.DeleteExpiredInstanceSchemaAsync(cancellationToken);

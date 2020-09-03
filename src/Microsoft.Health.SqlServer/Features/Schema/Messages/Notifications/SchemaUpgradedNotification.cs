@@ -7,13 +7,13 @@ using MediatR;
 
 namespace Microsoft.Health.SqlServer.Features.Schema.Messages.Notifications
 {
-    public class SchemaUpgraded : INotification
+    public class SchemaUpgradedNotification : INotification
     {
-        public SchemaUpgraded(int? version)
+        public SchemaUpgradedNotification(int version)
         {
             Version = version;
         }
 
-        public int? Version { get; }
+        public int Version { get; }
     }
 }
