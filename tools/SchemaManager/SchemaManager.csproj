@@ -35,8 +35,4 @@
     </EmbeddedResource>
   </ItemGroup>
 
-  <ItemGroup>
-    <ProjectReference Include="..\..\src\Microsoft.Health.SqlServer\Microsoft.Health.SqlServer.csproj" />
-  </ItemGroup>
-
 </Project>
