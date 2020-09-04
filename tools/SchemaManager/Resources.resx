@@ -126,6 +126,9 @@
   <data name="AvailableVersionsDefaultErrorMessage" xml:space="preserve">
     <value>There are no available versions.</value>
   </data>
+  <data name="AvailableVersionsErrorMessage" xml:space="preserve">
+    <value>The available versions are not up-to-date.</value>
+  </data>
   <data name="BaseCommandDescription" xml:space="preserve">
     <value>Applies the base SQL schema required to upgrade the schema version by this tool.</value>
   </data>
@@ -153,9 +156,6 @@
   <data name="CurrentDefaultErrorDescription" xml:space="preserve">
     <value>The current version information is not available due to "{0}".</value>
     <comment>{0} is the response statusCode.</comment>
-  </data>
-  <data name="CurrentSchemaVersionException" xml:space="preserve">
-    <value>The current schema version on the server is not updated. Please retry after few seconds.</value>
   </data>
   <data name="CurrentSchemaVersionStoredProcedureNotFound" xml:space="preserve">
     <value>Could not find stored procedure 'dbo.SelectCurrentSchemaVersion'.</value>
@@ -208,7 +208,7 @@
     <comment>(0) is retry attempt, {1} is total retries</comment>
   </data>
   <data name="RetryInstanceSchemaRecord" xml:space="preserve">
-    <value>Attempt {0} of {1} to verify if the record is created in the InstanceSchema table.</value>
+    <value>Attempt {0} of {1} to verify if the base schema is synced up with the service.</value>
     <comment>(0) is retry attempt, {1} is total number of retries.</comment>
   </data>
   <data name="RetryVersionCompatibility" xml:space="preserve">

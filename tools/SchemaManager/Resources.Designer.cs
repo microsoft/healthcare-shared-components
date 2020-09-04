@@ -88,6 +88,15 @@ namespace SchemaManager {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to The available versions are not up-to-date..
+        /// </summary>
+        internal static string AvailableVersionsErrorMessage {
+            get {
+                return ResourceManager.GetString("AvailableVersionsErrorMessage", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Applies the base SQL schema required to upgrade the schema version by this tool..
         /// </summary>
         internal static string BaseCommandDescription {
@@ -165,15 +174,6 @@ namespace SchemaManager {
         internal static string CurrentDefaultErrorDescription {
             get {
                 return ResourceManager.GetString("CurrentDefaultErrorDescription", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to The current schema version on the server is not updated. Please retry after few seconds..
-        /// </summary>
-        internal static string CurrentSchemaVersionException {
-            get {
-                return ResourceManager.GetString("CurrentSchemaVersionException", resourceCulture);
             }
         }
         
@@ -313,7 +313,7 @@ namespace SchemaManager {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Attempt {0} of {1} to verify if the record is created in the InstanceSchema table..
+        ///   Looks up a localized string similar to Attempt {0} of {1} to verify if the base schema is synced up with the service..
         /// </summary>
         internal static string RetryInstanceSchemaRecord {
             get {

@@ -22,6 +22,7 @@ namespace SchemaManager.Commands
     {
         private static readonly TimeSpan RetrySleepDuration = TimeSpan.FromSeconds(20);
         private const int RetryAttempts = 3;
+        private static List<AvailableVersion> availableVersions;
 
         public static async Task HandlerAsync(string connectionString, Uri server, MutuallyExclusiveType exclusiveType, bool force)
         {
@@ -42,30 +43,29 @@ namespace SchemaManager.Commands
                 // since the Schema job polls and upserts at the specified interval in the service.
                 BaseSchemaRunner.EnsureInstanceSchemaRecordExists(connectionString);
 
-                var availableVersions = await schemaClient.GetAvailability();
+                availableVersions = await schemaClient.GetAvailability();
 
-                if (availableVersions.Count <= 1)
-                {
-                    CommandUtils.PrintError(Resources.AvailableVersionsDefaultErrorMessage);
-                    return;
-                }
-
-                availableVersions.Sort((x, y) => x.Id.CompareTo(y.Id));
-
-                // Removes the current version since the first available version is always the current version which is already applied.
-                // If the apply command is run immediately after the first run, then the service schema job might not poll the updated version
-                // so there are retries to give it a fair amount of time to get the next available version.
+                // If the user hits apply command multiple times in a row, then the service schema job might not poll the updated available versions
+                // so there are retries to give it a fair amount of time.
                 int attemptCount = 1;
 
-                Policy.Handle<SchemaManagerException>()
-                .WaitAndRetry(
+                await Policy.Handle<SchemaManagerException>()
+                .WaitAndRetryAsync(
                     retryCount: RetryAttempts,
                     sleepDurationProvider: (retryCount) => RetrySleepDuration,
                     onRetry: (exception, retryCount) =>
                     {
                         Console.WriteLine(string.Format(Resources.RetryCurrentSchemaVersion, attemptCount++, RetryAttempts));
                     })
-                .Execute(() => CheckFirstAvailableVersionIsCurrentVersion(availableVersions.First().Id, connectionString));
+                .ExecuteAsync(() => FetchUpdatedAvailableVersions(schemaClient, connectionString));
+
+                if (availableVersions.Count == 1)
+                {
+                    CommandUtils.PrintError(Resources.AvailableVersionsDefaultErrorMessage);
+                    return;
+                }
+
+                // Removes the current version since the first available version is always the current version which is already applied.
                 availableVersions.RemoveAt(0);
 
                 var targetVersion = exclusiveType.Next == true ? availableVersions.First().Id :
@@ -207,11 +207,15 @@ namespace SchemaManager.Commands
             return string.Equals(Console.ReadLine(), "yes", StringComparison.OrdinalIgnoreCase);
         }
 
-        private static void CheckFirstAvailableVersionIsCurrentVersion(int firstAvailableVersion, string connectionString)
+        private static async Task FetchUpdatedAvailableVersions(ISchemaClient schemaClient, string connectionString)
         {
-            if (firstAvailableVersion != SchemaDataStore.GetCurrentSchemaVersion(connectionString))
+            availableVersions = await schemaClient.GetAvailability();
+
+            availableVersions.Sort((x, y) => x.Id.CompareTo(y.Id));
+
+            if (availableVersions.First().Id != SchemaDataStore.GetCurrentSchemaVersion(connectionString))
             {
-                throw new SchemaManagerException(Resources.CurrentSchemaVersionException);
+                throw new SchemaManagerException(Resources.AvailableVersionsErrorMessage);
             }
         }
     }
