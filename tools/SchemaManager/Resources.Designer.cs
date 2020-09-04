@@ -214,11 +214,29 @@ namespace SchemaManager {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to There is no record in the InstanceSchema table..
+        ///   Looks up a localized string similar to The current version information could not be fetched from the service. Please try again..
         /// </summary>
         internal static string InstanceSchemaRecordErrorMessage {
             get {
                 return ResourceManager.GetString("InstanceSchemaRecordErrorMessage", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Insufficient permissions to create the database..
+        /// </summary>
+        internal static string InsufficientDatabasePermissionsMessage {
+            get {
+                return ResourceManager.GetString("InsufficientDatabasePermissionsMessage", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Insufficient permissions to create tables in the database..
+        /// </summary>
+        internal static string InsufficientTablesPermissionsMessage {
+            get {
+                return ResourceManager.GetString("InsufficientTablesPermissionsMessage", resourceCulture);
             }
         }
         

@@ -170,7 +170,13 @@
     <value>No connection could be made to the target machine.</value>
   </data>
   <data name="InstanceSchemaRecordErrorMessage" xml:space="preserve">
-    <value>There is no record in the InstanceSchema table.</value>
+    <value>The current version information could not be fetched from the service. Please try again.</value>
+  </data>
+  <data name="InsufficientDatabasePermissionsMessage" xml:space="preserve">
+    <value>Insufficient permissions to create the database.</value>
+  </data>
+  <data name="InsufficientTablesPermissionsMessage" xml:space="preserve">
+    <value>Insufficient permissions to create tables in the database.</value>
   </data>
   <data name="InvalidVersionMessage" xml:space="preserve">
     <value>The schema version {0} cannot be applied because all the instances are not running the previous version.</value>

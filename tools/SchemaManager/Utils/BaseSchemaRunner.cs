@@ -64,14 +64,6 @@ namespace SchemaManager.Utils
 
         private static void Initialize(string connectionString)
         {
-            if (!CanInitialize(connectionString))
-            {
-                return;
-            }
-        }
-
-        private static bool CanInitialize(string connectionString)
-        {
             var configuredConnectionBuilder = new SqlConnectionStringBuilder(connectionString);
             string databaseName = configuredConnectionBuilder.InitialCatalog;
 
@@ -92,8 +84,7 @@ namespace SchemaManager.Utils
                 }
                 else
                 {
-                    Console.WriteLine("Insufficient permissions to create the database");
-                    return false;
+                    throw new SchemaManagerException(Resources.InsufficientDatabasePermissionsMessage);
                 }
 
                 connection.Close();
@@ -105,10 +96,8 @@ namespace SchemaManager.Utils
 
             if (!canInitialize)
             {
-                Console.WriteLine("Insufficient permissions to create tables in the database");
+                throw new SchemaManagerException(Resources.InsufficientTablesPermissionsMessage);
             }
-
-            return canInitialize;
         }
     }
 }

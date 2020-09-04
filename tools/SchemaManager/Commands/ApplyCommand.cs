@@ -34,10 +34,12 @@ namespace SchemaManager.Commands
 
             try
             {
-                // Ensure that the baseSchema exists
+                // Base schema is required to run the schema migration tool.
+                // This method also initializes the database if not initialized yet.
                 BaseSchemaRunner.EnsureBaseSchemaExists(connectionString);
 
-                // Ensure that the current version record is inserted into InstanceSchema table
+                // If InstanceSchema table is just created(as part of baseSchema), it takes a while to insert a version record
+                // since the Schema job polls and upserts at the specified interval in the service.
                 BaseSchemaRunner.EnsureInstanceSchemaRecordExists(connectionString);
 
                 var availableVersions = await schemaClient.GetAvailability();
@@ -50,8 +52,9 @@ namespace SchemaManager.Commands
 
                 availableVersions.Sort((x, y) => x.Id.CompareTo(y.Id));
 
-                // Removing the current version
-
+                // Removes the current version since the first available version is always the current version which is already applied.
+                // If the apply command is run immediately after the first run, then the service schema job might not poll the updated version
+                // so there are retries to give it a fair amount of time to get the next available version.
                 int attemptCount = 1;
 
                 Policy.Handle<SchemaManagerException>()
