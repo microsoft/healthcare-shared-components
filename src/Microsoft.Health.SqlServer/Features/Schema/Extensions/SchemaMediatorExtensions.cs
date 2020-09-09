@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using EnsureThat;
 using MediatR;
 using Microsoft.Health.SqlServer.Features.Schema.Messages.Get;
+using Microsoft.Health.SqlServer.Features.Schema.Messages.Notifications;
 
 namespace Microsoft.Health.SqlServer.Features.Schema.Extensions
 {
@@ -30,6 +31,13 @@ namespace Microsoft.Health.SqlServer.Features.Schema.Extensions
 
             GetCurrentVersionResponse response = await mediator.Send(request, cancellationToken);
             return response;
+        }
+
+        public static async Task NotifySchemaUpgradedAsync(this IMediator mediator, int version)
+        {
+            EnsureArg.IsNotNull(mediator, nameof(mediator));
+
+            await mediator.Publish(new SchemaUpgradedNotification(version));
         }
     }
 }

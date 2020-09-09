@@ -13,9 +13,6 @@ namespace Microsoft.Health.Api.Features.Audit
     [AttributeUsage(AttributeTargets.Class)]
     public class AuditLoggingFilterAttribute : ActionFilterAttribute
     {
-        private readonly IClaimsExtractor _claimsExtractor;
-        private readonly IAuditHelper _auditHelper;
-
         public AuditLoggingFilterAttribute(
             IClaimsExtractor claimsExtractor,
             IAuditHelper auditHelper)
@@ -23,15 +20,19 @@ namespace Microsoft.Health.Api.Features.Audit
             EnsureArg.IsNotNull(claimsExtractor, nameof(claimsExtractor));
             EnsureArg.IsNotNull(auditHelper, nameof(auditHelper));
 
-            _claimsExtractor = claimsExtractor;
-            _auditHelper = auditHelper;
+            ClaimsExtractor = claimsExtractor;
+            AuditHelper = auditHelper;
         }
+
+        protected IClaimsExtractor ClaimsExtractor { get; }
+
+        protected IAuditHelper AuditHelper { get; }
 
         public override void OnActionExecuting(ActionExecutingContext context)
         {
             EnsureArg.IsNotNull(context, nameof(context));
 
-            _auditHelper.LogExecuting(context.HttpContext, _claimsExtractor);
+            AuditHelper.LogExecuting(context.HttpContext, ClaimsExtractor);
 
             base.OnActionExecuting(context);
         }
@@ -40,7 +41,7 @@ namespace Microsoft.Health.Api.Features.Audit
         {
             EnsureArg.IsNotNull(context, nameof(context));
 
-            _auditHelper.LogExecuted(context.HttpContext, _claimsExtractor);
+            AuditHelper.LogExecuted(context.HttpContext, ClaimsExtractor);
 
             base.OnResultExecuted(context);
         }
