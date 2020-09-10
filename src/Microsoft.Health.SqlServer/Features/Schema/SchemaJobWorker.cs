@@ -49,20 +49,10 @@ namespace Microsoft.Health.SqlServer.Features.Schema
         {
             _logger.LogInformation($"Polling started at {Clock.UtcNow}");
 
-            using (var scope = _serviceProvider.CreateScope())
-            {
-                var schemaDataStore = scope.ServiceProvider.GetRequiredService<ISchemaDataStore>();
-
-                // Ensure schemaInformation has the latest current version
-                schemaInformation.Current = await schemaDataStore.UpsertInstanceSchemaInformationAsync(instanceName, schemaInformation, cancellationToken);
-            }
-
             while (!cancellationToken.IsCancellationRequested)
             {
                 try
                 {
-                    await Task.Delay(TimeSpan.FromSeconds(_sqlServerDataStoreConfiguration.SchemaOptions.JobPollingFrequencyInSeconds), cancellationToken);
-
                     using (var scope = _serviceProvider.CreateScope())
                     {
                         var schemaDataStore = scope.ServiceProvider.GetRequiredService<ISchemaDataStore>();
@@ -80,15 +70,20 @@ namespace Microsoft.Health.SqlServer.Features.Schema
                         await schemaDataStore.DeleteExpiredInstanceSchemaAsync(cancellationToken);
                     }
                 }
-                catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
-                {
-                    // Cancel requested.
-                    break;
-                }
                 catch (Exception ex)
                 {
                     // The job failed.
                     _logger.LogError(ex, "Unhandled exception in the worker.");
+                }
+
+                try
+                {
+                    await Task.Delay(TimeSpan.FromSeconds(_sqlServerDataStoreConfiguration.SchemaOptions.JobPollingFrequencyInSeconds), cancellationToken);
+                }
+                catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+                {
+                    // Cancel requested.
+                    break;
                 }
             }
         }

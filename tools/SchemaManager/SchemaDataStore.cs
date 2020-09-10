@@ -29,7 +29,12 @@ namespace SchemaManager
                     var server = new Server(serverConnection);
 
                     serverConnection.BeginTransaction();
-                    server.ConnectionContext.ExecuteNonQuery(script);
+
+                    // Since version 3 is just the base schema which must already be executed at the start of apply command and can be skipped
+                    if (version != 3)
+                    {
+                        server.ConnectionContext.ExecuteNonQuery(script);
+                    }
 
                     UpsertSchemaVersion(connection, version, Completed);
 
@@ -92,6 +97,50 @@ namespace SchemaManager
                 upsertCommand.Parameters.AddWithValue("@status", status);
 
                 upsertCommand.ExecuteNonQuery();
+            }
+        }
+
+        public static void ExecuteScript(string connectionString, string script)
+        {
+            using (var connection = new SqlConnection(connectionString))
+            {
+                connection.Open();
+                var server = new Server(new ServerConnection(connection));
+
+                server.ConnectionContext.ExecuteNonQuery(script);
+            }
+        }
+
+        public static bool BaseSchemaExists(string connectionString)
+        {
+            var procedureQuery = "SELECT COUNT(*) FROM sys.objects WHERE name = @name and type = @type";
+
+            using (var connection = new SqlConnection(connectionString))
+            {
+                connection.Open();
+
+                using (var command = new SqlCommand(procedureQuery, connection))
+                {
+                    command.Parameters.AddWithValue("@name", "SelectCurrentVersionsInformation");
+                    command.Parameters.AddWithValue("@type", 'P');
+
+                    return (int)command.ExecuteScalar() == 0 ? false : true;
+                }
+            }
+        }
+
+        public static bool InstanceSchemaRecordExists(string connectionString)
+        {
+            var procedureQuery = "SELECT COUNT(*) FROM dbo.InstanceSchema";
+
+            using (var connection = new SqlConnection(connectionString))
+            {
+                connection.Open();
+
+                using (var command = new SqlCommand(procedureQuery, connection))
+                {
+                    return (int)command.ExecuteScalar() == 0 ? false : true;
+                }
             }
         }
     }

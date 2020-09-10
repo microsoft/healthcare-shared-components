@@ -126,6 +126,21 @@
   <data name="AvailableVersionsDefaultErrorMessage" xml:space="preserve">
     <value>There are no available versions.</value>
   </data>
+  <data name="AvailableVersionsErrorMessage" xml:space="preserve">
+    <value>The available versions are not up-to-date.</value>
+  </data>
+  <data name="BaseCommandDescription" xml:space="preserve">
+    <value>Applies the base SQL schema required to upgrade the schema version by this tool.</value>
+  </data>
+  <data name="BaseSchemaAlreadyExists" xml:space="preserve">
+    <value>The base schema already exists.</value>
+  </data>
+  <data name="BaseSchemaExecuting" xml:space="preserve">
+    <value>The base schema execution is started.</value>
+  </data>
+  <data name="BaseSchemaSuccess" xml:space="preserve">
+    <value>The base schema execution is completed.</value>
+  </data>
   <data name="CompatibilityDefaultErrorMessage" xml:space="preserve">
     <value>The compatible versions information is not available.</value>
   </data>
@@ -154,6 +169,15 @@
   <data name="HttpRequestExceptionMessage" xml:space="preserve">
     <value>No connection could be made to the target machine.</value>
   </data>
+  <data name="InstanceSchemaRecordErrorMessage" xml:space="preserve">
+    <value>The current version information could not be fetched from the service. Please try again.</value>
+  </data>
+  <data name="InsufficientDatabasePermissionsMessage" xml:space="preserve">
+    <value>Insufficient permissions to create the database.</value>
+  </data>
+  <data name="InsufficientTablesPermissionsMessage" xml:space="preserve">
+    <value>Insufficient permissions to create tables in the database.</value>
+  </data>
   <data name="InvalidVersionMessage" xml:space="preserve">
     <value>The schema version {0} cannot be applied because all the instances are not running the previous version.</value>
     <comment>{0} is a version.</comment>
@@ -175,9 +199,17 @@
     <value>Unable to connect to host "{0}".</value>
     <comment>{0} is the server url.</comment>
   </data>
+  <data name="RetryCurrentSchemaVersion" xml:space="preserve">
+    <value>Attempt {0} of {1} to wait for the current version to be updated on the server.</value>
+    <comment>(0) is retry attempt, {1} is total number of retries.</comment>
+  </data>
   <data name="RetryCurrentVersions" xml:space="preserve">
     <value>Attempt {0} of {1} to verify if all the instances are running the previous version.</value>
     <comment>(0) is retry attempt, {1} is total retries</comment>
+  </data>
+  <data name="RetryInstanceSchemaRecord" xml:space="preserve">
+    <value>Attempt {0} of {1} to verify if the base schema is synced up with the service.</value>
+    <comment>(0) is retry attempt, {1} is total number of retries.</comment>
   </data>
   <data name="RetryVersionCompatibility" xml:space="preserve">
     <value>Attempt {0} of {1} to verify if the schema version is compatible.</value>

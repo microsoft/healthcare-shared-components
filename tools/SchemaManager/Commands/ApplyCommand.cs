@@ -22,6 +22,7 @@ namespace SchemaManager.Commands
     {
         private static readonly TimeSpan RetrySleepDuration = TimeSpan.FromSeconds(20);
         private const int RetryAttempts = 3;
+        private static List<AvailableVersion> availableVersions;
 
         public static async Task HandlerAsync(string connectionString, Uri server, MutuallyExclusiveType exclusiveType, bool force)
         {
@@ -34,21 +35,38 @@ namespace SchemaManager.Commands
 
             try
             {
-                var availableVersions = await schemaClient.GetAvailability();
+                // Base schema is required to run the schema migration tool.
+                // This method also initializes the database if not initialized yet.
+                BaseSchemaRunner.EnsureBaseSchemaExists(connectionString);
 
-                if (availableVersions.Count <= 1)
+                // If InstanceSchema table is just created(as part of baseSchema), it takes a while to insert a version record
+                // since the Schema job polls and upserts at the specified interval in the service.
+                BaseSchemaRunner.EnsureInstanceSchemaRecordExists(connectionString);
+
+                availableVersions = await schemaClient.GetAvailability();
+
+                // If the user hits apply command multiple times in a row, then the service schema job might not poll the updated available versions
+                // so there are retries to give it a fair amount of time.
+                int attemptCount = 1;
+
+                await Policy.Handle<SchemaManagerException>()
+                .WaitAndRetryAsync(
+                    retryCount: RetryAttempts,
+                    sleepDurationProvider: (retryCount) => RetrySleepDuration,
+                    onRetry: (exception, retryCount) =>
+                    {
+                        Console.WriteLine(string.Format(Resources.RetryCurrentSchemaVersion, attemptCount++, RetryAttempts));
+                    })
+                .ExecuteAsync(() => FetchUpdatedAvailableVersions(schemaClient, connectionString));
+
+                if (availableVersions.Count == 1)
                 {
                     CommandUtils.PrintError(Resources.AvailableVersionsDefaultErrorMessage);
                     return;
                 }
 
-                availableVersions.Sort((x, y) => x.Id.CompareTo(y.Id));
-
-                // Removing the current version
-                if (availableVersions.First().Id == SchemaDataStore.GetCurrentSchemaVersion(connectionString))
-                {
-                    availableVersions.RemoveAt(0);
-                }
+                // Removes the current version since the first available version is always the current version which is already applied.
+                availableVersions.RemoveAt(0);
 
                 var targetVersion = exclusiveType.Next == true ? availableVersions.First().Id :
                                                                  exclusiveType.Latest == true ? availableVersions.Last().Id :
@@ -65,7 +83,7 @@ namespace SchemaManager.Commands
 
                 if (!force)
                 {
-                    int attemptCount = 1;
+                    attemptCount = 1;
 
                     await Policy.Handle<SchemaManagerException>()
                     .WaitAndRetryAsync(
@@ -73,7 +91,7 @@ namespace SchemaManager.Commands
                         sleepDurationProvider: (retryCount) => RetrySleepDuration,
                         onRetry: (exception, retryCount) =>
                         {
-                            Console.WriteLine(string.Format(Resources.RetryVersionCompatibility), attemptCount++, RetryAttempts);
+                            Console.WriteLine(string.Format(Resources.RetryVersionCompatibility, attemptCount++, RetryAttempts));
                         })
                     .ExecuteAsync(() => ValidateCompatibleVersion(schemaClient, availableVersions.First().Id, availableVersions.Last().Id));
                 }
@@ -95,7 +113,7 @@ namespace SchemaManager.Commands
 
                     if (!force)
                     {
-                        int attemptCount = 1;
+                        attemptCount = 1;
 
                         await Policy.Handle<SchemaManagerException>()
                         .WaitAndRetryAsync(
@@ -113,7 +131,7 @@ namespace SchemaManager.Commands
                     UpgradeSchema(connectionString, executingVersion, script);
                 }
             }
-            catch (SchemaManagerException ex)
+            catch (Exception ex) when (ex is SchemaManagerException || ex is InvalidOperationException)
             {
                 CommandUtils.PrintError(ex.Message);
                 return;
@@ -123,10 +141,21 @@ namespace SchemaManager.Commands
                 CommandUtils.PrintError(string.Format(Resources.RequestFailedMessage, server));
                 return;
             }
-            catch (Exception ex) when (ex is SqlException || ex is ExecutionFailureException)
+            catch (Exception ex)
             {
-                CommandUtils.PrintError(string.Format(Resources.QueryExecutionErrorMessage, ex.Message));
-                return;
+                if (ex is SqlException || ex is ExecutionFailureException)
+                {
+                    CommandUtils.PrintError(string.Format(Resources.QueryExecutionErrorMessage, ex.Message));
+                    return;
+                }
+
+                if (ex is SchemaManagerException || ex is InvalidOperationException)
+                {
+                    CommandUtils.PrintError(ex.Message);
+                    return;
+                }
+
+                throw;
             }
         }
 
@@ -144,10 +173,10 @@ namespace SchemaManager.Commands
         {
             if (version == 1)
             {
-                return await schemaClient.GetScript(new Uri(scriptUri));
+                return await schemaClient.GetScript(new Uri(scriptUri, UriKind.Relative));
             }
 
-            return await schemaClient.GetDiffScript(new Uri(diffUri));
+            return await schemaClient.GetDiffScript(new Uri(diffUri, UriKind.Relative));
         }
 
         private static async Task ValidateCompatibleVersion(ISchemaClient schemaClient, int minAvailableVersion, int maxAvailableVersion)
@@ -176,6 +205,18 @@ namespace SchemaManager.Commands
         {
             Console.WriteLine(Resources.ForceWarning);
             return string.Equals(Console.ReadLine(), "yes", StringComparison.OrdinalIgnoreCase);
+        }
+
+        private static async Task FetchUpdatedAvailableVersions(ISchemaClient schemaClient, string connectionString)
+        {
+            availableVersions = await schemaClient.GetAvailability();
+
+            availableVersions.Sort((x, y) => x.Id.CompareTo(y.Id));
+
+            if (availableVersions.First().Id != SchemaDataStore.GetCurrentSchemaVersion(connectionString))
+            {
+                throw new SchemaManagerException(Resources.AvailableVersionsErrorMessage);
+            }
         }
     }
 }

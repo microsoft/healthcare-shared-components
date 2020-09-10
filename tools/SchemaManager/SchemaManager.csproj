@@ -17,6 +17,7 @@
     <PackageReference Include="System.CommandLine.Experimental" Version="0.2.0-alpha.19174.3" />
     <PackageReference Include="System.CommandLine.Rendering" Version="0.2.0-alpha.19174.3" />
     <PackageReference Include="System.Data.SqlClient" Version="4.8.0" />
+    <PackageReference Include="Microsoft.Health.SqlServer" Version="1.0.0-master-20200826-1" />
   </ItemGroup>
 
   <ItemGroup>

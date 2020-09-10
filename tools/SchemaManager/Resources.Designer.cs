@@ -88,6 +88,51 @@ namespace SchemaManager {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to The available versions are not up-to-date..
+        /// </summary>
+        internal static string AvailableVersionsErrorMessage {
+            get {
+                return ResourceManager.GetString("AvailableVersionsErrorMessage", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Applies the base SQL schema required to upgrade the schema version by this tool..
+        /// </summary>
+        internal static string BaseCommandDescription {
+            get {
+                return ResourceManager.GetString("BaseCommandDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The base schema already exists..
+        /// </summary>
+        internal static string BaseSchemaAlreadyExists {
+            get {
+                return ResourceManager.GetString("BaseSchemaAlreadyExists", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The base schema execution is started..
+        /// </summary>
+        internal static string BaseSchemaExecuting {
+            get {
+                return ResourceManager.GetString("BaseSchemaExecuting", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The base schema execution is completed..
+        /// </summary>
+        internal static string BaseSchemaSuccess {
+            get {
+                return ResourceManager.GetString("BaseSchemaSuccess", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to The compatible versions information is not available..
         /// </summary>
         internal static string CompatibilityDefaultErrorMessage {
@@ -169,6 +214,33 @@ namespace SchemaManager {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to The current version information could not be fetched from the service. Please try again..
+        /// </summary>
+        internal static string InstanceSchemaRecordErrorMessage {
+            get {
+                return ResourceManager.GetString("InstanceSchemaRecordErrorMessage", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Insufficient permissions to create the database..
+        /// </summary>
+        internal static string InsufficientDatabasePermissionsMessage {
+            get {
+                return ResourceManager.GetString("InsufficientDatabasePermissionsMessage", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Insufficient permissions to create tables in the database..
+        /// </summary>
+        internal static string InsufficientTablesPermissionsMessage {
+            get {
+                return ResourceManager.GetString("InsufficientTablesPermissionsMessage", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to The schema version {0} cannot be applied because all the instances are not running the previous version..
         /// </summary>
         internal static string InvalidVersionMessage {
@@ -223,11 +295,29 @@ namespace SchemaManager {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Attempt {0} of {1} to wait for the current version to be updated on the server..
+        /// </summary>
+        internal static string RetryCurrentSchemaVersion {
+            get {
+                return ResourceManager.GetString("RetryCurrentSchemaVersion", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Attempt {0} of {1} to verify if all the instances are running the previous version..
         /// </summary>
         internal static string RetryCurrentVersions {
             get {
                 return ResourceManager.GetString("RetryCurrentVersions", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Attempt {0} of {1} to verify if the base schema is synced up with the service..
+        /// </summary>
+        internal static string RetryInstanceSchemaRecord {
+            get {
+                return ResourceManager.GetString("RetryInstanceSchemaRecord", resourceCulture);
             }
         }
         
