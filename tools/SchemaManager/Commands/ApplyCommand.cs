@@ -83,17 +83,7 @@ namespace SchemaManager.Commands
 
                 if (!force)
                 {
-                    attemptCount = 1;
-
-                    await Policy.Handle<SchemaManagerException>()
-                    .WaitAndRetryAsync(
-                        retryCount: RetryAttempts,
-                        sleepDurationProvider: (retryCount) => RetrySleepDuration,
-                        onRetry: (exception, retryCount) =>
-                        {
-                            Console.WriteLine(string.Format(Resources.RetryVersionCompatibility, attemptCount++, RetryAttempts));
-                        })
-                    .ExecuteAsync(() => ValidateCompatibleVersion(schemaClient, availableVersions.First().Id, availableVersions.Last().Id));
+                    await ValidateVersionCompatibility(schemaClient, availableVersions.Last().Id);
                 }
                 else if (availableVersions.First().Id == 1)
                 {
@@ -179,12 +169,11 @@ namespace SchemaManager.Commands
             return await schemaClient.GetDiffScript(new Uri(diffUri, UriKind.Relative));
         }
 
-        private static async Task ValidateCompatibleVersion(ISchemaClient schemaClient, int minAvailableVersion, int maxAvailableVersion)
+        private static async Task ValidateVersionCompatibility(ISchemaClient schemaClient, int maxAvailableVersion)
         {
             CompatibleVersion compatibleVersion = await schemaClient.GetCompatibility();
 
-            // check if min and max available versions are not in compatibile range
-            if (minAvailableVersion < compatibleVersion.Min || maxAvailableVersion > compatibleVersion.Max)
+            if (maxAvailableVersion > compatibleVersion.Max)
             {
                 throw new SchemaManagerException(string.Format(Resources.VersionIncompatibilityMessage, maxAvailableVersion));
             }

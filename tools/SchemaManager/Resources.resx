@@ -211,10 +211,6 @@
     <value>Attempt {0} of {1} to verify if the base schema is synced up with the service.</value>
     <comment>(0) is retry attempt, {1} is total number of retries.</comment>
   </data>
-  <data name="RetryVersionCompatibility" xml:space="preserve">
-    <value>Attempt {0} of {1} to verify if the schema version is compatible.</value>
-    <comment>(0) is retry attempt, {1} is total retries</comment>
-  </data>
   <data name="SchemaMigrationStartedMessage" xml:space="preserve">
     <value>Schema migration is started for the version : {0}.</value>
     <comment>{0} is a version.</comment>
