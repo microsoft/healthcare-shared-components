@@ -71,10 +71,12 @@ namespace Microsoft.Health.SqlServer.Features.Schema
                         schemaInformation.Current = await schemaDataStore.UpsertInstanceSchemaInformationAsync(instanceName, schemaInformation, cancellationToken);
 
                         // If there was a change in the schema version
-                        if (previous != schemaInformation.Current)
+                        if (schemaInformation.Current != previous)
                         {
+                            var isFullSchemaSnapshot = previous == null;
+
                             // Fire a notification
-                            await _mediator.NotifySchemaUpgradedAsync((int)schemaInformation.Current);
+                            await _mediator.NotifySchemaUpgradedAsync((int)schemaInformation.Current, isFullSchemaSnapshot);
                         }
 
                         await schemaDataStore.DeleteExpiredInstanceSchemaAsync(cancellationToken);
