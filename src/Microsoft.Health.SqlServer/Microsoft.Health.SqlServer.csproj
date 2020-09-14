@@ -23,7 +23,7 @@
     <PackageReference Include="Microsoft.SqlServer.SqlManagementObjects" Version="150.18208.0" />
     <PackageReference Include="Polly" Version="7.2.0" />
     <PackageReference Include="Polly.Contrib.WaitAndRetry" Version="1.1.0" />
-    <PackageReference Include="System.Data.SqlClient" Version="4.8.0" />
+    <PackageReference Include="System.Data.SqlClient" Version="4.8.2" />
   </ItemGroup>
 
   <ItemGroup>
