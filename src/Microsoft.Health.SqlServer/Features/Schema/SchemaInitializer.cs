@@ -60,7 +60,7 @@ namespace Microsoft.Health.SqlServer.Features.Schema
                     if (forceIncrementalSchemaUpgrade)
                     {
                         // Run version 1 and and apply .diff.sql files to upgrade the schema version.
-                        _schemaUpgradeRunner.ApplySchema(version: 1, applyFullSchemaSnapshot: true);
+                        _schemaUpgradeRunner.ApplySchema(_schemaInformation.MinimumSupportedVersion, applyFullSchemaSnapshot: true);
                     }
                     else
                     {
