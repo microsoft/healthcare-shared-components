@@ -322,15 +322,6 @@ namespace SchemaManager {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Attempt {0} of {1} to verify if the schema version is compatible..
-        /// </summary>
-        internal static string RetryVersionCompatibility {
-            get {
-                return ResourceManager.GetString("RetryVersionCompatibility", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to Schema migration is started for the version : {0}..
         /// </summary>
         internal static string SchemaMigrationStartedMessage {
