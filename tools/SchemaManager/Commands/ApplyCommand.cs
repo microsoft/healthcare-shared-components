@@ -85,7 +85,8 @@ namespace SchemaManager.Commands
                 {
                     await ValidateVersionCompatibility(schemaClient, availableVersions.Last().Id);
                 }
-                else if (availableVersions.First().Id == 1)
+
+                if (availableVersions.First().Id == 1)
                 {
                     // Upgrade schema directly to the latest schema version
                     Console.WriteLine(string.Format(Resources.SchemaMigrationStartedMessage, availableVersions.Last().Id));
