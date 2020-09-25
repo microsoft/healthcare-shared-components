@@ -15,7 +15,7 @@ namespace Microsoft.Health.Api.Features.Audit
         {
             EnsureArg.IsNotNull(builder, nameof(builder));
 
-            return builder.UseMiddleware<AuditMiddleware>();
+            return builder.UseMiddleware<AuditEgressMiddleware>();
         }
     }
 }

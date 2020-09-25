@@ -14,13 +14,13 @@ namespace Microsoft.Health.Api.Features.Audit
     /// <summary>
     /// A middleware that logs executed audit events.
     /// </summary>
-    public class AuditMiddleware
+    public class AuditEgressMiddleware
     {
         private readonly RequestDelegate _next;
         private readonly IClaimsExtractor _claimsExtractor;
         private readonly IAuditHelper _auditHelper;
 
-        public AuditMiddleware(
+        public AuditEgressMiddleware(
             RequestDelegate next,
             IClaimsExtractor claimsExtractor,
             IAuditHelper auditHelper)
@@ -43,14 +43,7 @@ namespace Microsoft.Health.Api.Features.Audit
             finally
             {
                 var statusCode = (HttpStatusCode)context.Response.StatusCode;
-
-                // Since authorization filters runs first before any other filters, if the authorization fails,
-                // the AuditLoggingFilterAttribute, which is where the audit logging would normally happen, will not be executed.
-                // This middleware will log any Unauthorized request if it hasn't been logged yet.
-                if (statusCode == HttpStatusCode.Unauthorized)
-                {
-                    _auditHelper.LogExecuted(context, _claimsExtractor);
-                }
+                _auditHelper.LogExecuted(context, _claimsExtractor);
             }
         }
     }
