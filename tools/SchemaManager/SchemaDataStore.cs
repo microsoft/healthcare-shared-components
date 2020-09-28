@@ -30,11 +30,7 @@ namespace SchemaManager
 
                     serverConnection.BeginTransaction();
 
-                    // Since version 3 is just the base schema which must already be executed at the start of apply command and can be skipped
-                    if (version != 3)
-                    {
-                        server.ConnectionContext.ExecuteNonQuery(script);
-                    }
+                    server.ConnectionContext.ExecuteNonQuery(script);
 
                     UpsertSchemaVersion(connection, version, Completed);
 
