@@ -6,6 +6,7 @@
 using System;
 using System.Data;
 using System.Data.SqlClient;
+using Microsoft.Health.SqlServer;
 using Microsoft.SqlServer.Management.Common;
 using Microsoft.SqlServer.Management.Smo;
 
@@ -17,9 +18,9 @@ namespace SchemaManager
         public const string Failed = "failed";
         public const string Completed = "completed";
 
-        public static void ExecuteScriptAndCompleteSchemaVersion(string connectionString, string script, int version)
+        public static void ExecuteScriptAndCompleteSchemaVersion(string connectionString, string script, int version, bool useManagedIdentity)
         {
-            using (var connection = new SqlConnection(connectionString))
+            using (var connection = SqlConnectionHelper.GetSqlConnection(connectionString, useManagedIdentity))
             {
                 connection.Open();
                 ServerConnection serverConnection = new ServerConnection(connection);
@@ -45,9 +46,9 @@ namespace SchemaManager
             }
         }
 
-        public static void DeleteSchemaVersion(string connectionString, int version, string status)
+        public static void DeleteSchemaVersion(string connectionString, int version, string status, bool useManagedIdentity)
         {
-            using (var connection = new SqlConnection(connectionString))
+            using (var connection = SqlConnectionHelper.GetSqlConnection(connectionString, useManagedIdentity))
             {
                 connection.Open();
 
@@ -61,9 +62,9 @@ namespace SchemaManager
             }
         }
 
-        public static int GetCurrentSchemaVersion(string connectionString)
+        public static int GetCurrentSchemaVersion(string connectionString, bool useManagedIdentity)
         {
-            using (var connection = new SqlConnection(connectionString))
+            using (var connection = SqlConnectionHelper.GetSqlConnection(connectionString, useManagedIdentity))
             {
                 connection.Open();
 
@@ -96,9 +97,9 @@ namespace SchemaManager
             }
         }
 
-        public static void ExecuteScript(string connectionString, string script)
+        public static void ExecuteScript(string connectionString, string script, bool useManagedIdentity)
         {
-            using (var connection = new SqlConnection(connectionString))
+            using (var connection = SqlConnectionHelper.GetSqlConnection(connectionString, useManagedIdentity))
             {
                 connection.Open();
                 var server = new Server(new ServerConnection(connection));
@@ -107,11 +108,11 @@ namespace SchemaManager
             }
         }
 
-        public static bool BaseSchemaExists(string connectionString)
+        public static bool BaseSchemaExists(string connectionString, bool useManagedIdentity)
         {
             var procedureQuery = "SELECT COUNT(*) FROM sys.objects WHERE name = @name and type = @type";
 
-            using (var connection = new SqlConnection(connectionString))
+            using (var connection = SqlConnectionHelper.GetSqlConnection(connectionString, useManagedIdentity))
             {
                 connection.Open();
 
@@ -125,11 +126,11 @@ namespace SchemaManager
             }
         }
 
-        public static bool InstanceSchemaRecordExists(string connectionString)
+        public static bool InstanceSchemaRecordExists(string connectionString, bool useManagedIdentity)
         {
             var procedureQuery = "SELECT COUNT(*) FROM dbo.InstanceSchema";
 
-            using (var connection = new SqlConnection(connectionString))
+            using (var connection = SqlConnectionHelper.GetSqlConnection(connectionString, useManagedIdentity))
             {
                 connection.Open();
 

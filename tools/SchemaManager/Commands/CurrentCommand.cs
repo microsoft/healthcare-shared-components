@@ -18,7 +18,7 @@ namespace SchemaManager.Commands
 {
     public static class CurrentCommand
     {
-        public static async Task HandlerAsync(InvocationContext invocationContext, Uri server, string connectionString)
+        public static async Task HandlerAsync(InvocationContext invocationContext, Uri server, string connectionString, bool useManagedIdentity)
         {
             var region = new Region(
                           0,
@@ -33,11 +33,11 @@ namespace SchemaManager.Commands
             {
                 // Base schema is required to run the schema migration tool.
                 // This method also initializes the database if not initialized yet.
-                BaseSchemaRunner.EnsureBaseSchemaExists(connectionString);
+                BaseSchemaRunner.EnsureBaseSchemaExists(connectionString, useManagedIdentity);
 
                 // If InstanceSchema table is just created(as part of baseSchema), it takes a while to insert a version record
                 // since the Schema job polls and upserts at the specified interval in the service.
-                BaseSchemaRunner.EnsureInstanceSchemaRecordExists(connectionString);
+                BaseSchemaRunner.EnsureInstanceSchemaRecordExists(connectionString, useManagedIdentity);
 
                 currentVersions = await schemaClient.GetCurrentVersionInformation();
             }

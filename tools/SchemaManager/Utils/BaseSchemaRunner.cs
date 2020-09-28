@@ -16,19 +16,19 @@ namespace SchemaManager.Utils
         private static readonly TimeSpan RetrySleepDuration = TimeSpan.FromSeconds(20);
         private const int RetryAttempts = 3;
 
-        public static void EnsureBaseSchemaExists(string connectionString)
+        public static void EnsureBaseSchemaExists(string connectionString, bool useManagedIdentity)
         {
             IBaseScriptProvider baseScriptProvider = new BaseScriptProvider();
 
-            Initialize(connectionString);
+            Initialize(connectionString, useManagedIdentity);
 
-            if (!SchemaDataStore.BaseSchemaExists(connectionString))
+            if (!SchemaDataStore.BaseSchemaExists(connectionString, useManagedIdentity))
             {
                 var script = baseScriptProvider.GetScript();
 
                 Console.WriteLine(Resources.BaseSchemaExecuting);
 
-                SchemaDataStore.ExecuteScript(connectionString, script);
+                SchemaDataStore.ExecuteScript(connectionString, script, useManagedIdentity);
 
                 Console.WriteLine(Resources.BaseSchemaSuccess);
             }
@@ -38,7 +38,7 @@ namespace SchemaManager.Utils
             }
         }
 
-        public static void EnsureInstanceSchemaRecordExists(string connectionString)
+        public static void EnsureInstanceSchemaRecordExists(string connectionString, bool useManagedIdentity)
         {
             // Ensure that the current version record is inserted into InstanceSchema table
             int attempts = 1;
@@ -51,25 +51,25 @@ namespace SchemaManager.Utils
                 {
                     Console.WriteLine(string.Format(Resources.RetryInstanceSchemaRecord, attempts++, RetryAttempts));
                 })
-            .Execute(() => InstanceSchemaRecordCreated(connectionString));
+            .Execute(() => InstanceSchemaRecordCreated(connectionString, useManagedIdentity));
         }
 
-        private static void InstanceSchemaRecordCreated(string connectionString)
+        private static void InstanceSchemaRecordCreated(string connectionString, bool useManagedIdentity)
         {
-            if (!SchemaDataStore.InstanceSchemaRecordExists(connectionString))
+            if (!SchemaDataStore.InstanceSchemaRecordExists(connectionString, useManagedIdentity))
             {
                 throw new SchemaManagerException(Resources.InstanceSchemaRecordErrorMessage);
             }
         }
 
-        private static void Initialize(string connectionString)
+        private static void Initialize(string connectionString, bool useManagedIdentity)
         {
             var configuredConnectionBuilder = new SqlConnectionStringBuilder(connectionString);
             string databaseName = configuredConnectionBuilder.InitialCatalog;
 
             SchemaInitializer.ValidateDatabaseName(databaseName);
 
-            var connection = SchemaInitializer.GetConnectionIfDatabaseNotExists(connectionString, databaseName);
+            var connection = SchemaInitializer.GetConnectionIfDatabaseNotExists(connectionString, databaseName, useManagedIdentity);
 
             // database creation is allowed
             if (connection != null)
@@ -92,7 +92,7 @@ namespace SchemaManager.Utils
 
             // now switch to the target database
 
-            bool canInitialize = SchemaInitializer.CheckDatabasePermissions(connectionString);
+            bool canInitialize = SchemaInitializer.CheckDatabasePermissions(connectionString, useManagedIdentity);
 
             if (!canInitialize)
             {

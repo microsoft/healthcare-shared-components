@@ -38,7 +38,7 @@ namespace Microsoft.Health.SqlServer.Features.Client
             }
             else
             {
-                SqlConnection = new SqlConnection(configuration.ConnectionString);
+                SqlConnection = SqlConnectionHelper.GetSqlConnection(configuration.ConnectionString, configuration.UseManagedIdentity);
             }
 
             if (_enlistInTransactionIfPresent && sqlTransactionHandler.SqlTransactionScope != null && sqlTransactionHandler.SqlTransactionScope.SqlConnection == null)

@@ -90,7 +90,7 @@ namespace Microsoft.Health.SqlServer.Features.Schema
 
         private void GetCurrentSchemaVersion()
         {
-            using (var connection = new SqlConnection(_sqlServerDataStoreConfiguration.ConnectionString))
+            using (var connection = SqlConnectionHelper.GetSqlConnection(_sqlServerDataStoreConfiguration.ConnectionString, _sqlServerDataStoreConfiguration.UseManagedIdentity))
             {
                 connection.Open();
 
@@ -131,11 +131,11 @@ namespace Microsoft.Health.SqlServer.Features.Schema
             }
         }
 
-        public static SqlConnection GetConnectionIfDatabaseNotExists(string connectionString, string databaseName)
+        public static SqlConnection GetConnectionIfDatabaseNotExists(string connectionString, string databaseName, bool useManagedIdentity)
         {
             // Connect to master database to evaluate if the requested database exists
             var masterConnectionBuilder = new SqlConnectionStringBuilder(connectionString) { InitialCatalog = string.Empty };
-            var connection = new SqlConnection(masterConnectionBuilder.ToString());
+            var connection = SqlConnectionHelper.GetSqlConnection(masterConnectionBuilder.ToString(), useManagedIdentity);
             connection.Open();
 
             using (var checkDatabaseExistsCommand = connection.CreateCommand())
@@ -170,9 +170,9 @@ namespace Microsoft.Health.SqlServer.Features.Schema
             }
         }
 
-        public static bool CheckDatabasePermissions(string connectionString)
+        public static bool CheckDatabasePermissions(string connectionString, bool useManagedIdentity)
         {
-            using (var connection = new SqlConnection(connectionString))
+            using (var connection = SqlConnectionHelper.GetSqlConnection(connectionString, useManagedIdentity))
             {
                 connection.Open();
 
@@ -197,7 +197,10 @@ namespace Microsoft.Health.SqlServer.Features.Schema
 
             if (_sqlServerDataStoreConfiguration.AllowDatabaseCreation)
             {
-                var connection = GetConnectionIfDatabaseNotExists(_sqlServerDataStoreConfiguration.ConnectionString, databaseName);
+                var connection = GetConnectionIfDatabaseNotExists(
+                    _sqlServerDataStoreConfiguration.ConnectionString,
+                    databaseName,
+                    _sqlServerDataStoreConfiguration.UseManagedIdentity);
 
                 if (connection != null)
                 {
@@ -221,7 +224,7 @@ namespace Microsoft.Health.SqlServer.Features.Schema
 
             // now switch to the target database
 
-            bool canInitialize = CheckDatabasePermissions(_sqlServerDataStoreConfiguration.ConnectionString);
+            bool canInitialize = CheckDatabasePermissions(_sqlServerDataStoreConfiguration.ConnectionString, _sqlServerDataStoreConfiguration.UseManagedIdentity);
 
             if (!canInitialize)
             {

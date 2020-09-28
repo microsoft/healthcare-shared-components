@@ -20,6 +20,11 @@ namespace Microsoft.Health.SqlServer.Configs
         public bool AllowDatabaseCreation { get; set; }
 
         /// <summary>
+        /// Use managed identity to connect to SQL Server and SQL DB.
+        /// </summary>
+        public bool UseManagedIdentity { get; set; } = false;
+
+        /// <summary>
         /// Configuration for transient fault retry policy.
         /// </summary>
         public SqlServerTransientFaultRetryPolicyConfiguration TransientFaultRetryPolicy { get; set; } = new SqlServerTransientFaultRetryPolicyConfiguration();
