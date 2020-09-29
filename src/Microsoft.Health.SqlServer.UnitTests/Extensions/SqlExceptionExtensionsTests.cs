@@ -3,7 +3,7 @@
 // Licensed under the MIT License (MIT). See LICENSE in the repo root for license information.
 // -------------------------------------------------------------------------------------------------
 
-using System.Data.SqlClient;
+using Microsoft.Data.SqlClient;
 using Microsoft.Health.SqlServer.Extensions;
 using Xunit;
 

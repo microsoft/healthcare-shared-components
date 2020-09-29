@@ -4,8 +4,8 @@
 // -------------------------------------------------------------------------------------------------
 
 using System.Data;
+using Microsoft.Data.SqlClient.Server;
 using Microsoft.Health.SqlServer.Features.Schema.Model;
-using Microsoft.SqlServer.Server;
 using Xunit;
 
 namespace Microsoft.Health.SqlServer.UnitTests

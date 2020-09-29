@@ -4,9 +4,9 @@
 // -------------------------------------------------------------------------------------------------
 
 using System;
-using System.Data.SqlClient;
 using System.Diagnostics;
 using System.IO;
+using Microsoft.Data.SqlClient;
 
 namespace Microsoft.Health.SqlServer.Features.Storage
 {

@@ -4,8 +4,8 @@
 // -------------------------------------------------------------------------------------------------
 
 using System.Data;
-using System.Data.SqlClient;
 using EnsureThat;
+using Microsoft.Data.SqlClient;
 
 namespace Microsoft.Health.SqlServer.Features.Schema.Model
 {
