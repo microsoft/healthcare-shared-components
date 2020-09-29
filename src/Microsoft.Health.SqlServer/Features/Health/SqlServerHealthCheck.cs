@@ -35,7 +35,7 @@ namespace Microsoft.Health.SqlServer.Features.Health
         {
             try
             {
-                using (var connection = new SqlConnection(_configuration.ConnectionString))
+                using (var connection = SqlConnectionHelper.GetSqlConnectionAsync(_configuration.ConnectionString))
                 using (SqlCommand command = connection.CreateCommand())
                 {
                     await connection.OpenAsync(cancellationToken);

@@ -90,7 +90,7 @@ namespace Microsoft.Health.SqlServer.Features.Schema
 
         private void GetCurrentSchemaVersion()
         {
-            using (var connection = new SqlConnection(_sqlServerDataStoreConfiguration.ConnectionString))
+            using (var connection = SqlConnectionHelper.GetSqlConnectionAsync(_sqlServerDataStoreConfiguration.ConnectionString))
             {
                 connection.Open();
 
@@ -135,7 +135,7 @@ namespace Microsoft.Health.SqlServer.Features.Schema
         {
             // Connect to master database to evaluate if the requested database exists
             var masterConnectionBuilder = new SqlConnectionStringBuilder(connectionString) { InitialCatalog = string.Empty };
-            var connection = new SqlConnection(masterConnectionBuilder.ToString());
+            var connection = SqlConnectionHelper.GetSqlConnectionAsync(masterConnectionBuilder.ToString());
             connection.Open();
 
             using (var checkDatabaseExistsCommand = connection.CreateCommand())
@@ -172,7 +172,7 @@ namespace Microsoft.Health.SqlServer.Features.Schema
 
         public static bool CheckDatabasePermissions(string connectionString)
         {
-            using (var connection = new SqlConnection(connectionString))
+            using (var connection = SqlConnectionHelper.GetSqlConnectionAsync(connectionString))
             {
                 connection.Open();
 

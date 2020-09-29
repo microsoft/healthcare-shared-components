@@ -6,6 +6,7 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Azure.Identity;
 using Azure.Storage.Blobs;
 using EnsureThat;
 using Microsoft.Extensions.Logging;
@@ -41,7 +42,8 @@ namespace Microsoft.Health.Blob.Features.Storage
             blobClientOptions.Retry.Delay = TimeSpan.FromSeconds(configuration.RequestOptions.ExponentialRetryBackoffDeltaInSeconds);
             blobClientOptions.Retry.NetworkTimeout = TimeSpan.FromMinutes(configuration.RequestOptions.ServerTimeoutInMinutes);
 
-            return new BlobServiceClient(configuration.ConnectionString, blobClientOptions);
+            var defaultCred = new DefaultAzureCredential();
+            return new BlobServiceClient(new Uri(configuration.ConnectionString), defaultCred, blobClientOptions);
         }
 
         /// <inheritdoc />
