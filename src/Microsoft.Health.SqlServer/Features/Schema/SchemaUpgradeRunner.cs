@@ -71,7 +71,7 @@ namespace Microsoft.Health.SqlServer.Features.Schema
 
         private void ExecuteSchema(string script)
         {
-            using (var connection = new SqlConnection(_sqlServerDataStoreConfiguration.ConnectionString))
+            using (var connection = SqlConnectionHelper.GetSqlConnectionAsync(_sqlServerDataStoreConfiguration.ConnectionString))
             {
                 connection.Open();
                 var server = new Server(new ServerConnection(connection));
@@ -92,7 +92,7 @@ namespace Microsoft.Health.SqlServer.Features.Schema
 
         private void UpsertSchemaVersion(int schemaVersion, string status)
         {
-            using (var connection = new SqlConnection(_sqlServerDataStoreConfiguration.ConnectionString))
+            using (var connection = SqlConnectionHelper.GetSqlConnectionAsync(_sqlServerDataStoreConfiguration.ConnectionString))
             using (var upsertCommand = new SqlCommand("dbo.UpsertSchemaVersion", connection))
             {
                 upsertCommand.CommandType = CommandType.StoredProcedure;
