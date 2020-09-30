@@ -4,34 +4,33 @@
 // -------------------------------------------------------------------------------------------------
 
 using EnsureThat;
-using Microsoft.Health.SqlServer.Configs;
 using Microsoft.Health.SqlServer.Features.Storage;
 
 namespace Microsoft.Health.SqlServer.Features.Client
 {
     public class SqlConnectionWrapperFactory
     {
-        private readonly SqlServerDataStoreConfiguration _configuration;
         private readonly SqlTransactionHandler _sqlTransactionHandler;
         private readonly SqlCommandWrapperFactory _sqlCommandWrapperFactory;
+        private readonly ISqlConnectionFactory _sqlConnectionFactory;
 
         public SqlConnectionWrapperFactory(
-            SqlServerDataStoreConfiguration configuration,
             SqlTransactionHandler sqlTransactionHandler,
-            SqlCommandWrapperFactory sqlCommandWrapperFactory)
+            SqlCommandWrapperFactory sqlCommandWrapperFactory,
+            ISqlConnectionFactory sqlConnectionFactory)
         {
-            EnsureArg.IsNotNull(configuration, nameof(configuration));
             EnsureArg.IsNotNull(sqlTransactionHandler, nameof(sqlTransactionHandler));
             EnsureArg.IsNotNull(sqlCommandWrapperFactory, nameof(sqlCommandWrapperFactory));
+            EnsureArg.IsNotNull(sqlConnectionFactory, nameof(sqlConnectionFactory));
 
-            _configuration = configuration;
             _sqlTransactionHandler = sqlTransactionHandler;
             _sqlCommandWrapperFactory = sqlCommandWrapperFactory;
+            _sqlConnectionFactory = sqlConnectionFactory;
         }
 
         public SqlConnectionWrapper ObtainSqlConnectionWrapper(bool enlistInTransaction = false)
         {
-            return new SqlConnectionWrapper(_configuration, _sqlTransactionHandler, _sqlCommandWrapperFactory, enlistInTransaction);
+            return new SqlConnectionWrapper(_sqlTransactionHandler, _sqlCommandWrapperFactory, _sqlConnectionFactory, enlistInTransaction);
         }
     }
 }

@@ -85,6 +85,8 @@ namespace Microsoft.Health.SqlServer.Registration
                 .AsSelf()
                 .AsImplementedInterfaces();
 
+            services.AddSingleton<ISqlConnectionFactory, DefaultSqlConnectionFactory>();
+
             return services;
         }
     }

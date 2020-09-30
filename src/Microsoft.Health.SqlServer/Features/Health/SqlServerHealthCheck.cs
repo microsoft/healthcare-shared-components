@@ -21,21 +21,24 @@ namespace Microsoft.Health.SqlServer.Features.Health
     {
         private readonly SqlServerDataStoreConfiguration _configuration;
         private readonly ILogger<SqlServerHealthCheck> _logger;
+        private readonly ISqlConnectionFactory _sqlConnectionFactory;
 
-        public SqlServerHealthCheck(SqlServerDataStoreConfiguration configuration, ILogger<SqlServerHealthCheck> logger)
+        public SqlServerHealthCheck(SqlServerDataStoreConfiguration configuration, ILogger<SqlServerHealthCheck> logger, ISqlConnectionFactory sqlConnectionFactory)
         {
             EnsureArg.IsNotNull(configuration, nameof(configuration));
             EnsureArg.IsNotNull(logger, nameof(logger));
+            EnsureArg.IsNotNull(sqlConnectionFactory, nameof(sqlConnectionFactory));
 
             _configuration = configuration;
             _logger = logger;
+            _sqlConnectionFactory = sqlConnectionFactory;
         }
 
         public async Task<HealthCheckResult> CheckHealthAsync(HealthCheckContext context, CancellationToken cancellationToken)
         {
             try
             {
-                using (var connection = SqlConnectionHelper.GetSqlConnection(_configuration.ConnectionString, _configuration.UseManagedIdentity))
+                using (var connection = _sqlConnectionFactory.GetSqlConnection())
                 using (SqlCommand command = connection.CreateCommand())
                 {
                     await connection.OpenAsync(cancellationToken);

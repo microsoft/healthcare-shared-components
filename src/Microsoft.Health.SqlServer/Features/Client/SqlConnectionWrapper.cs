@@ -7,7 +7,6 @@ using System;
 using System.Data;
 using System.Data.SqlClient;
 using EnsureThat;
-using Microsoft.Health.SqlServer.Configs;
 using Microsoft.Health.SqlServer.Features.Storage;
 
 namespace Microsoft.Health.SqlServer.Features.Client
@@ -17,20 +16,22 @@ namespace Microsoft.Health.SqlServer.Features.Client
         private readonly bool _enlistInTransactionIfPresent;
         private readonly SqlTransactionHandler _sqlTransactionHandler;
         private readonly SqlCommandWrapperFactory _sqlCommandWrapperFactory;
+        private readonly ISqlConnectionFactory _sqlConnectionFactory;
 
         public SqlConnectionWrapper(
-            SqlServerDataStoreConfiguration configuration,
             SqlTransactionHandler sqlTransactionHandler,
             SqlCommandWrapperFactory sqlCommandWrapperFactory,
+            ISqlConnectionFactory sqlConnectionFactory,
             bool enlistInTransactionIfPresent)
         {
-            EnsureArg.IsNotNull(configuration, nameof(configuration));
             EnsureArg.IsNotNull(sqlTransactionHandler, nameof(sqlTransactionHandler));
             EnsureArg.IsNotNull(sqlCommandWrapperFactory, nameof(sqlCommandWrapperFactory));
+            EnsureArg.IsNotNull(sqlConnectionFactory, nameof(sqlConnectionFactory));
 
             _sqlTransactionHandler = sqlTransactionHandler;
             _enlistInTransactionIfPresent = enlistInTransactionIfPresent;
             _sqlCommandWrapperFactory = sqlCommandWrapperFactory;
+            _sqlConnectionFactory = sqlConnectionFactory;
 
             if (_enlistInTransactionIfPresent && sqlTransactionHandler.SqlTransactionScope?.SqlConnection != null)
             {
@@ -38,7 +39,7 @@ namespace Microsoft.Health.SqlServer.Features.Client
             }
             else
             {
-                SqlConnection = SqlConnectionHelper.GetSqlConnection(configuration.ConnectionString, configuration.UseManagedIdentity);
+                SqlConnection = _sqlConnectionFactory.GetSqlConnection();
             }
 
             if (_enlistInTransactionIfPresent && sqlTransactionHandler.SqlTransactionScope != null && sqlTransactionHandler.SqlTransactionScope.SqlConnection == null)

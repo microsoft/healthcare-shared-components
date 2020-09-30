@@ -22,19 +22,22 @@ namespace Microsoft.Health.SqlServer.Features.Schema
         private readonly SchemaUpgradeRunner _schemaUpgradeRunner;
         private readonly SchemaInformation _schemaInformation;
         private readonly ILogger<SchemaInitializer> _logger;
+        private readonly ISqlConnectionFactory _sqlConnectionFactory;
         private bool _started;
 
-        public SchemaInitializer(SqlServerDataStoreConfiguration sqlServerDataStoreConfiguration, SchemaUpgradeRunner schemaUpgradeRunner, SchemaInformation schemaInformation, ILogger<SchemaInitializer> logger)
+        public SchemaInitializer(SqlServerDataStoreConfiguration sqlServerDataStoreConfiguration, SchemaUpgradeRunner schemaUpgradeRunner, SchemaInformation schemaInformation, ILogger<SchemaInitializer> logger, ISqlConnectionFactory sqlConnectionFactory)
         {
             EnsureArg.IsNotNull(sqlServerDataStoreConfiguration, nameof(sqlServerDataStoreConfiguration));
             EnsureArg.IsNotNull(schemaUpgradeRunner, nameof(schemaUpgradeRunner));
             EnsureArg.IsNotNull(schemaInformation, nameof(schemaInformation));
             EnsureArg.IsNotNull(logger, nameof(logger));
+            EnsureArg.IsNotNull(sqlConnectionFactory, nameof(sqlConnectionFactory));
 
             _sqlServerDataStoreConfiguration = sqlServerDataStoreConfiguration;
             _schemaUpgradeRunner = schemaUpgradeRunner;
             _schemaInformation = schemaInformation;
             _logger = logger;
+            _sqlConnectionFactory = sqlConnectionFactory;
         }
 
         public void Initialize(bool forceIncrementalSchemaUpgrade = false)
@@ -90,7 +93,7 @@ namespace Microsoft.Health.SqlServer.Features.Schema
 
         private void GetCurrentSchemaVersion()
         {
-            using (var connection = SqlConnectionHelper.GetSqlConnection(_sqlServerDataStoreConfiguration.ConnectionString, _sqlServerDataStoreConfiguration.UseManagedIdentity))
+            using (var connection = _sqlConnectionFactory.GetSqlConnection())
             {
                 connection.Open();
 
@@ -131,24 +134,23 @@ namespace Microsoft.Health.SqlServer.Features.Schema
             }
         }
 
-        public static SqlConnection GetConnectionIfDatabaseNotExists(string connectionString, string databaseName, bool useManagedIdentity)
+        public static bool DoesDatabaseExist(SqlConnection masterDbConnection, string databaseName)
         {
-            // Connect to master database to evaluate if the requested database exists
-            var masterConnectionBuilder = new SqlConnectionStringBuilder(connectionString) { InitialCatalog = string.Empty };
-            var connection = SqlConnectionHelper.GetSqlConnection(masterConnectionBuilder.ToString(), useManagedIdentity);
-            connection.Open();
+            EnsureArg.IsNotNull(masterDbConnection, nameof(masterDbConnection));
 
-            using (var checkDatabaseExistsCommand = connection.CreateCommand())
+            masterDbConnection.Open();
+
+            using (var checkDatabaseExistsCommand = masterDbConnection.CreateCommand())
             {
                 checkDatabaseExistsCommand.CommandText = "SELECT 1 FROM sys.databases where name = @databaseName";
                 checkDatabaseExistsCommand.Parameters.AddWithValue("@databaseName", databaseName);
                 if ((int?)checkDatabaseExistsCommand.ExecuteScalar() == 1)
                 {
-                    return null;
+                    return true;
                 }
             }
 
-            return connection;
+            return false;
         }
 
         public static bool CreateDatabase(SqlConnection connection, string databaseName)
@@ -170,16 +172,15 @@ namespace Microsoft.Health.SqlServer.Features.Schema
             }
         }
 
-        public static bool CheckDatabasePermissions(string connectionString, bool useManagedIdentity)
+        public static bool CheckDatabasePermissions(SqlConnection connection)
         {
-            using (var connection = SqlConnectionHelper.GetSqlConnection(connectionString, useManagedIdentity))
-            {
-                connection.Open();
+            EnsureArg.IsNotNull(connection, nameof(connection));
 
-                using (var command = new SqlCommand("SELECT count(*) FROM fn_my_permissions (NULL, 'DATABASE') WHERE permission_name = 'CREATE TABLE'", connection))
-                {
-                    return (int)command.ExecuteScalar() > 0;
-                }
+            connection.Open();
+
+            using (var command = new SqlCommand("SELECT count(*) FROM fn_my_permissions (NULL, 'DATABASE') WHERE permission_name = 'CREATE TABLE'", connection))
+            {
+                return (int)command.ExecuteScalar() > 0;
             }
         }
 
@@ -197,34 +198,38 @@ namespace Microsoft.Health.SqlServer.Features.Schema
 
             if (_sqlServerDataStoreConfiguration.AllowDatabaseCreation)
             {
-                var connection = GetConnectionIfDatabaseNotExists(
-                    _sqlServerDataStoreConfiguration.ConnectionString,
-                    databaseName,
-                    _sqlServerDataStoreConfiguration.UseManagedIdentity);
-
-                if (connection != null)
+                using (var connection = _sqlConnectionFactory.GetSqlConnection(connectToMaster: true))
                 {
-                    _logger.LogInformation("Database does not exist");
+                    bool doesDatabaseExist = DoesDatabaseExist(connection, databaseName);
 
-                    bool created = CreateDatabase(connection, databaseName);
-
-                    if (created)
+                    if (!doesDatabaseExist)
                     {
-                        _logger.LogInformation("Created database");
-                    }
-                    else
-                    {
-                        _logger.LogWarning("Insufficient permissions to create the database");
-                        return false;
-                    }
+                        _logger.LogInformation("Database does not exist");
 
-                    connection.Close();
+                        bool created = CreateDatabase(connection, databaseName);
+
+                        if (created)
+                        {
+                            _logger.LogInformation("Created database");
+                        }
+                        else
+                        {
+                            _logger.LogWarning("Insufficient permissions to create the database");
+                            return false;
+                        }
+
+                        connection.Close();
+                    }
                 }
             }
 
-            // now switch to the target database
+            bool canInitialize = false;
 
-            bool canInitialize = CheckDatabasePermissions(_sqlServerDataStoreConfiguration.ConnectionString, _sqlServerDataStoreConfiguration.UseManagedIdentity);
+            // now switch to the target database
+            using (var connection = _sqlConnectionFactory.GetSqlConnection())
+            {
+                canInitialize = CheckDatabasePermissions(connection);
+            }
 
             if (!canInitialize)
             {
