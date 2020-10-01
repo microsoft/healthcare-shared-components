@@ -4,28 +4,30 @@
 // -------------------------------------------------------------------------------------------------
 
 using System.Data.SqlClient;
+using System.Threading.Tasks;
 using EnsureThat;
+using Microsoft.Azure.Services.AppAuthentication;
 using Microsoft.Health.SqlServer.Configs;
 
 namespace Microsoft.Health.SqlServer
 {
-    /// <summary>
-    /// Default Sql Connection Factory is responsible to handle Sql connections that can be made purely based on connection string.
-    /// Connection string containing user name and password, or integrated auth are perfect examples for this.
-    /// </summary>
-    public class DefaultSqlConnectionFactory : ISqlConnectionFactory
+    public class ManagedIdentitySqlConnection : ISqlConnection
     {
         private readonly SqlServerDataStoreConfiguration _sqlServerDataStoreConfiguration;
 
-        public DefaultSqlConnectionFactory(SqlServerDataStoreConfiguration sqlServerDataStoreConfiguration)
+        public ManagedIdentitySqlConnection(SqlServerDataStoreConfiguration sqlServerDataStoreConfiguration)
         {
             EnsureArg.IsNotNull(sqlServerDataStoreConfiguration, nameof(sqlServerDataStoreConfiguration));
 
             _sqlServerDataStoreConfiguration = sqlServerDataStoreConfiguration;
         }
 
-        /// <inheritdoc />
-        public SqlConnection GetSqlConnection(bool connectToMaster = false)
+        /// <summary>
+        /// Get sql connection after getting access token.
+        /// </summary>
+        /// <param name="connectToMaster">Should connect to master?</param>
+        /// <returns>Sql connection task.</returns>
+        public async Task<SqlConnection> GetSqlConnectionAsync(bool connectToMaster = false)
         {
             EnsureArg.IsNotNullOrEmpty(_sqlServerDataStoreConfiguration.ConnectionString);
 
@@ -34,7 +36,18 @@ namespace Microsoft.Health.SqlServer
                 new SqlConnectionStringBuilder(_sqlServerDataStoreConfiguration.ConnectionString);
 
             SqlConnection sqlConnection = new SqlConnection(connectionBuilder.ToString());
+
+            AzureServiceTokenProvider azureServiceTokenProvider = new Microsoft.Azure.Services.AppAuthentication.AzureServiceTokenProvider();
+            var result = await azureServiceTokenProvider.GetAccessTokenAsync("https://database.windows.net/");
+            sqlConnection.AccessToken = result;
+
             return sqlConnection;
+        }
+
+        /// <inheritdoc />
+        public SqlConnection GetSqlConnection(bool connectToMaster = false)
+        {
+            return GetSqlConnectionAsync(connectToMaster).Result;
         }
     }
 }

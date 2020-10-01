@@ -22,22 +22,22 @@ namespace Microsoft.Health.SqlServer.Features.Schema
         private readonly SchemaUpgradeRunner _schemaUpgradeRunner;
         private readonly SchemaInformation _schemaInformation;
         private readonly ILogger<SchemaInitializer> _logger;
-        private readonly ISqlConnectionFactory _sqlConnectionFactory;
+        private readonly ISqlConnection _sqlConnection;
         private bool _started;
 
-        public SchemaInitializer(SqlServerDataStoreConfiguration sqlServerDataStoreConfiguration, SchemaUpgradeRunner schemaUpgradeRunner, SchemaInformation schemaInformation, ILogger<SchemaInitializer> logger, ISqlConnectionFactory sqlConnectionFactory)
+        public SchemaInitializer(SqlServerDataStoreConfiguration sqlServerDataStoreConfiguration, SchemaUpgradeRunner schemaUpgradeRunner, SchemaInformation schemaInformation, ILogger<SchemaInitializer> logger, ISqlConnection sqlConnection)
         {
             EnsureArg.IsNotNull(sqlServerDataStoreConfiguration, nameof(sqlServerDataStoreConfiguration));
             EnsureArg.IsNotNull(schemaUpgradeRunner, nameof(schemaUpgradeRunner));
             EnsureArg.IsNotNull(schemaInformation, nameof(schemaInformation));
             EnsureArg.IsNotNull(logger, nameof(logger));
-            EnsureArg.IsNotNull(sqlConnectionFactory, nameof(sqlConnectionFactory));
+            EnsureArg.IsNotNull(sqlConnection, nameof(sqlConnection));
 
             _sqlServerDataStoreConfiguration = sqlServerDataStoreConfiguration;
             _schemaUpgradeRunner = schemaUpgradeRunner;
             _schemaInformation = schemaInformation;
             _logger = logger;
-            _sqlConnectionFactory = sqlConnectionFactory;
+            _sqlConnection = sqlConnection;
         }
 
         public void Initialize(bool forceIncrementalSchemaUpgrade = false)
@@ -93,7 +93,7 @@ namespace Microsoft.Health.SqlServer.Features.Schema
 
         private void GetCurrentSchemaVersion()
         {
-            using (var connection = _sqlConnectionFactory.GetSqlConnection())
+            using (var connection = _sqlConnection.GetSqlConnection())
             {
                 connection.Open();
 
@@ -198,7 +198,7 @@ namespace Microsoft.Health.SqlServer.Features.Schema
 
             if (_sqlServerDataStoreConfiguration.AllowDatabaseCreation)
             {
-                using (var connection = _sqlConnectionFactory.GetSqlConnection(connectToMaster: true))
+                using (var connection = _sqlConnection.GetSqlConnection(connectToMaster: true))
                 {
                     bool doesDatabaseExist = DoesDatabaseExist(connection, databaseName);
 
@@ -226,7 +226,7 @@ namespace Microsoft.Health.SqlServer.Features.Schema
             bool canInitialize = false;
 
             // now switch to the target database
-            using (var connection = _sqlConnectionFactory.GetSqlConnection())
+            using (var connection = _sqlConnection.GetSqlConnection())
             {
                 canInitialize = CheckDatabasePermissions(connection);
             }

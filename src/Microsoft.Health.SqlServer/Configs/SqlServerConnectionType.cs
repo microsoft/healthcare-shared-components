@@ -9,6 +9,6 @@ namespace Microsoft.Health.SqlServer.Configs
     {
         ManagedIdentity,
         WindowsIntegratedAuth,
-        Default,
+        SqlUserNameAndPassword,
     }
 }

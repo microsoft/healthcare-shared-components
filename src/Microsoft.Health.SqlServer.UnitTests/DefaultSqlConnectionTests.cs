@@ -9,25 +9,25 @@ using Xunit;
 
 namespace Microsoft.Health.SqlServer.UnitTests.Features
 {
-    public class DefaultSqlConnectionFactoryTests
+    public class DefaultSqlConnectionTests
     {
         private const string DatabaseName = "Dicom";
         private const string ServerName = "(local)";
 
         private readonly SqlServerDataStoreConfiguration _sqlServerDataStoreConfiguration;
-        private readonly DefaultSqlConnectionFactory _sqlConnectionFactory;
+        private readonly DefaultSqlConnection _sqlConnection;
 
-        public DefaultSqlConnectionFactoryTests()
+        public DefaultSqlConnectionTests()
         {
             _sqlServerDataStoreConfiguration = new SqlServerDataStoreConfiguration();
             _sqlServerDataStoreConfiguration.ConnectionString = $"server={ServerName};Initial Catalog={DatabaseName};Integrated Security=true";
-            _sqlConnectionFactory = new DefaultSqlConnectionFactory(_sqlServerDataStoreConfiguration);
+            _sqlConnection = new DefaultSqlConnection(_sqlServerDataStoreConfiguration);
         }
 
         [Fact]
         public void GivenDefaultConnectionType_WhenSqlConnectionRequested_AccessTokenIsNotSet()
         {
-            SqlConnection sqlConnection = _sqlConnectionFactory.GetSqlConnection();
+            SqlConnection sqlConnection = _sqlConnection.GetSqlConnection();
 
             Assert.Null(sqlConnection.AccessToken);
         }
@@ -35,7 +35,7 @@ namespace Microsoft.Health.SqlServer.UnitTests.Features
         [Fact]
         public void GivenDefaultConnectionType_WhenSqlConnectionRequested_DatabaseIsSet()
         {
-            SqlConnection sqlConnection = _sqlConnectionFactory.GetSqlConnection();
+            SqlConnection sqlConnection = _sqlConnection.GetSqlConnection();
 
             Assert.Equal(DatabaseName, sqlConnection.Database);
         }
@@ -43,7 +43,7 @@ namespace Microsoft.Health.SqlServer.UnitTests.Features
         [Fact]
         public void GivenDefaultConnectionType_WhenSqlConnectionToMasterRequested_MasterDatabaseIsSet()
         {
-            SqlConnection sqlConnection = _sqlConnectionFactory.GetSqlConnection(connectToMaster: true);
+            SqlConnection sqlConnection = _sqlConnection.GetSqlConnection(connectToMaster: true);
 
             Assert.Empty(sqlConnection.Database);
         }

@@ -18,13 +18,15 @@ namespace Microsoft.Health.SqlServer.Registration
     {
         public static IServiceCollection AddSqlServerBase<TSchemaVersionEnum>(
             this IServiceCollection services,
+            IConfiguration configurationRoot,
             Action<SqlServerDataStoreConfiguration> configureAction = null)
             where TSchemaVersionEnum : Enum
         {
+            var config = new SqlServerDataStoreConfiguration();
+            configurationRoot?.GetSection("SqlServer").Bind(config);
+
             services.Add(provider =>
                 {
-                    var config = new SqlServerDataStoreConfiguration();
-                    provider.GetService<IConfiguration>().GetSection("SqlServer").Bind(config);
                     configureAction?.Invoke(config);
 
                     return config;
@@ -85,7 +87,17 @@ namespace Microsoft.Health.SqlServer.Registration
                 .AsSelf()
                 .AsImplementedInterfaces();
 
-            services.AddSingleton<ISqlConnectionFactory, DefaultSqlConnectionFactory>();
+            switch (config.ConnectionType)
+            {
+                case SqlServerConnectionType.ManagedIdentity:
+                    services.AddSingleton<ISqlConnection, ManagedIdentitySqlConnection>();
+                    break;
+                case SqlServerConnectionType.WindowsIntegratedAuth:
+                case SqlServerConnectionType.SqlUserNameAndPassword:
+                default:
+                    services.AddSingleton<ISqlConnection, DefaultSqlConnection>();
+                    break;
+            }
 
             return services;
         }

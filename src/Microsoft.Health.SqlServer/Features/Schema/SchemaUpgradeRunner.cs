@@ -20,26 +20,26 @@ namespace Microsoft.Health.SqlServer.Features.Schema
         private readonly IBaseScriptProvider _baseScriptProvider;
         private readonly IMediator _mediator;
         private readonly ILogger<SchemaUpgradeRunner> _logger;
-        private readonly ISqlConnectionFactory _sqlConnectionFactory;
+        private readonly ISqlConnection _sqlConnection;
 
         public SchemaUpgradeRunner(
             IScriptProvider scriptProvider,
             IBaseScriptProvider baseScriptProvider,
             IMediator mediator,
             ILogger<SchemaUpgradeRunner> logger,
-            ISqlConnectionFactory sqlConnectionFactory)
+            ISqlConnection sqlConnection)
         {
             EnsureArg.IsNotNull(scriptProvider, nameof(scriptProvider));
             EnsureArg.IsNotNull(baseScriptProvider, nameof(baseScriptProvider));
             EnsureArg.IsNotNull(mediator, nameof(mediator));
             EnsureArg.IsNotNull(logger, nameof(logger));
-            EnsureArg.IsNotNull(sqlConnectionFactory, nameof(sqlConnectionFactory));
+            EnsureArg.IsNotNull(sqlConnection, nameof(sqlConnection));
 
             _scriptProvider = scriptProvider;
             _baseScriptProvider = baseScriptProvider;
             _mediator = mediator;
             _logger = logger;
-            _sqlConnectionFactory = sqlConnectionFactory;
+            _sqlConnection = sqlConnection;
         }
 
         public void ApplySchema(int version, bool applyFullSchemaSnapshot)
@@ -70,7 +70,7 @@ namespace Microsoft.Health.SqlServer.Features.Schema
 
         private void ExecuteSchema(string script)
         {
-            using (var connection = _sqlConnectionFactory.GetSqlConnection())
+            using (var connection = _sqlConnection.GetSqlConnection())
             {
                 connection.Open();
                 var server = new Server(new ServerConnection(connection));
@@ -91,7 +91,7 @@ namespace Microsoft.Health.SqlServer.Features.Schema
 
         private void UpsertSchemaVersion(int schemaVersion, string status)
         {
-            using (var connection = _sqlConnectionFactory.GetSqlConnection())
+            using (var connection = _sqlConnection.GetSqlConnection())
             using (var upsertCommand = new SqlCommand("dbo.UpsertSchemaVersion", connection))
             {
                 upsertCommand.CommandType = CommandType.StoredProcedure;

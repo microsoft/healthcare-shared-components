@@ -16,22 +16,22 @@ namespace Microsoft.Health.SqlServer.Features.Client
         private readonly bool _enlistInTransactionIfPresent;
         private readonly SqlTransactionHandler _sqlTransactionHandler;
         private readonly SqlCommandWrapperFactory _sqlCommandWrapperFactory;
-        private readonly ISqlConnectionFactory _sqlConnectionFactory;
+        private readonly ISqlConnection _sqlConnection;
 
         public SqlConnectionWrapper(
             SqlTransactionHandler sqlTransactionHandler,
             SqlCommandWrapperFactory sqlCommandWrapperFactory,
-            ISqlConnectionFactory sqlConnectionFactory,
+            ISqlConnection sqlConnection,
             bool enlistInTransactionIfPresent)
         {
             EnsureArg.IsNotNull(sqlTransactionHandler, nameof(sqlTransactionHandler));
             EnsureArg.IsNotNull(sqlCommandWrapperFactory, nameof(sqlCommandWrapperFactory));
-            EnsureArg.IsNotNull(sqlConnectionFactory, nameof(sqlConnectionFactory));
+            EnsureArg.IsNotNull(sqlConnection, nameof(sqlConnection));
 
             _sqlTransactionHandler = sqlTransactionHandler;
             _enlistInTransactionIfPresent = enlistInTransactionIfPresent;
             _sqlCommandWrapperFactory = sqlCommandWrapperFactory;
-            _sqlConnectionFactory = sqlConnectionFactory;
+            _sqlConnection = sqlConnection;
 
             if (_enlistInTransactionIfPresent && sqlTransactionHandler.SqlTransactionScope?.SqlConnection != null)
             {
@@ -39,7 +39,7 @@ namespace Microsoft.Health.SqlServer.Features.Client
             }
             else
             {
-                SqlConnection = _sqlConnectionFactory.GetSqlConnection();
+                SqlConnection = _sqlConnection.GetSqlConnection();
             }
 
             if (_enlistInTransactionIfPresent && sqlTransactionHandler.SqlTransactionScope != null && sqlTransactionHandler.SqlTransactionScope.SqlConnection == null)
