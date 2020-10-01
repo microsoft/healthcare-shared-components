@@ -5,11 +5,11 @@
 
 using System;
 using System.Collections.Generic;
-using System.Data.SqlClient;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using EnsureThat;
+using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.Logging;
 using Microsoft.Health.SqlServer.Configs;
 using Microsoft.Health.SqlServer.Features.Client;

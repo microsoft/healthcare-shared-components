@@ -5,8 +5,8 @@
 
 using System;
 using System.Collections.Generic;
-using System.Data.SqlClient;
 using EnsureThat;
+using Microsoft.Data.SqlClient;
 using Microsoft.Health.SqlServer.Configs;
 using Microsoft.Health.SqlServer.Extensions;
 using Polly;

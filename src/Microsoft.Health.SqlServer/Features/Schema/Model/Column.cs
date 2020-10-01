@@ -6,10 +6,10 @@
 using System;
 using System.Buffers;
 using System.Data;
-using System.Data.SqlClient;
 using System.IO;
+using Microsoft.Data.SqlClient;
+using Microsoft.Data.SqlClient.Server;
 using Microsoft.Health.SqlServer.Features.Storage;
-using Microsoft.SqlServer.Server;
 
 namespace Microsoft.Health.SqlServer.Features.Schema.Model
 {
