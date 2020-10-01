@@ -19,19 +19,23 @@ namespace Microsoft.Health.Api.Features.Audit
         private readonly RequestDelegate _next;
         private readonly IClaimsExtractor _claimsExtractor;
         private readonly IAuditHelper _auditHelper;
+        private readonly IAuditEgressLogger _auditEgressLogger;
 
         public AuditMiddleware(
             RequestDelegate next,
             IClaimsExtractor claimsExtractor,
-            IAuditHelper auditHelper)
+            IAuditHelper auditHelper,
+            IAuditEgressLogger auditEgressLogger)
         {
             EnsureArg.IsNotNull(next, nameof(next));
             EnsureArg.IsNotNull(claimsExtractor, nameof(claimsExtractor));
             EnsureArg.IsNotNull(auditHelper, nameof(auditHelper));
+            EnsureArg.IsNotNull(auditEgressLogger, nameof(auditEgressLogger));
 
             _next = next;
             _claimsExtractor = claimsExtractor;
             _auditHelper = auditHelper;
+            _auditEgressLogger = auditEgressLogger;
         }
 
         public async Task Invoke(HttpContext context)
@@ -44,13 +48,7 @@ namespace Microsoft.Health.Api.Features.Audit
             {
                 var statusCode = (HttpStatusCode)context.Response.StatusCode;
 
-                // Since authorization filters runs first before any other filters, if the authorization fails,
-                // the AuditLoggingFilterAttribute, which is where the audit logging would normally happen, will not be executed.
-                // This middleware will log any Unauthorized request if it hasn't been logged yet.
-                if (statusCode == HttpStatusCode.Unauthorized)
-                {
-                    _auditHelper.LogExecuted(context, _claimsExtractor);
-                }
+                _auditEgressLogger.LogExecuted(context, _claimsExtractor, _auditHelper);
             }
         }
     }
