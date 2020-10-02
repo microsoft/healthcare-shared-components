@@ -4,9 +4,7 @@
 // -------------------------------------------------------------------------------------------------
 
 using System;
-using System.IdentityModel.Tokens.Jwt;
 using System.Threading.Tasks;
-using Microsoft.IdentityModel.Tokens;
 using Xunit;
 
 namespace Microsoft.Health.Client.UnitTests

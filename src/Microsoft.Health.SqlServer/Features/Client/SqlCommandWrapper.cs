@@ -5,11 +5,11 @@
 
 using System;
 using System.Data;
-using System.Data.Sql;
-using System.Data.SqlClient;
 using System.Threading;
 using System.Threading.Tasks;
 using EnsureThat;
+using Microsoft.Data.Sql;
+using Microsoft.Data.SqlClient;
 
 namespace Microsoft.Health.SqlServer.Features.Client
 {

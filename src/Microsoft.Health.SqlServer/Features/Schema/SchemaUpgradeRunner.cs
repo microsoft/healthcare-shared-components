@@ -4,9 +4,9 @@
 // -------------------------------------------------------------------------------------------------
 
 using System.Data;
-using System.Data.SqlClient;
 using EnsureThat;
 using MediatR;
+using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.Logging;
 using Microsoft.Health.SqlServer.Features.Schema.Extensions;
 using Microsoft.SqlServer.Management.Common;

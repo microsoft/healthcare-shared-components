@@ -32,7 +32,7 @@ namespace Microsoft.Health.Blob.Features.Storage
         {
             EnsureArg.IsNotNull(configuration, nameof(configuration));
 
-            _logger.LogInformation("Creating BlobClient instance for {connectionString}", configuration.ConnectionString);
+            _logger.LogInformation("Creating BlobClient instance");
 
             // Configure the blob client default request options and retry logic
             var blobClientOptions = new BlobClientOptions();
@@ -53,7 +53,7 @@ namespace Microsoft.Health.Blob.Features.Storage
 
             try
             {
-                _logger.LogInformation("Initializing Blob Storage {connectionString} and containers", configuration.ConnectionString);
+                _logger.LogInformation("Initializing Blob Storage and containers");
 
                 foreach (IBlobContainerInitializer collectionInitializer in containerInitializers)
                 {

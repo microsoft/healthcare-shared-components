@@ -4,9 +4,9 @@
 // -------------------------------------------------------------------------------------------------
 
 using System;
-using System.Data.SqlClient;
 using System.Linq.Expressions;
 using System.Reflection;
+using Microsoft.Data.SqlClient;
 
 namespace Microsoft.Health.SqlServer.UnitTests
 {

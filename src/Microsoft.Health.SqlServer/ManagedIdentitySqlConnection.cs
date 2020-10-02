@@ -3,10 +3,10 @@
 // Licensed under the MIT License (MIT). See LICENSE in the repo root for license information.
 // -------------------------------------------------------------------------------------------------
 
-using System.Data.SqlClient;
 using System.Threading.Tasks;
 using EnsureThat;
 using Microsoft.Azure.Services.AppAuthentication;
+using Microsoft.Data.SqlClient;
 using Microsoft.Health.SqlServer.Configs;
 
 namespace Microsoft.Health.SqlServer

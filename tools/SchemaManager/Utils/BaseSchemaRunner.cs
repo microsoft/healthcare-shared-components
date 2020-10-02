@@ -4,7 +4,7 @@
 // -------------------------------------------------------------------------------------------------
 
 using System;
-using System.Data.SqlClient;
+using Microsoft.Data.SqlClient;
 using Microsoft.Health.SqlServer.Features.Schema;
 using Polly;
 using SchemaManager.Exceptions;

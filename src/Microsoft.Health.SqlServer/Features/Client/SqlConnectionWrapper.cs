@@ -5,8 +5,8 @@
 
 using System;
 using System.Data;
-using System.Data.SqlClient;
 using EnsureThat;
+using Microsoft.Data.SqlClient;
 using Microsoft.Health.SqlServer.Features.Storage;
 
 namespace Microsoft.Health.SqlServer.Features.Client
