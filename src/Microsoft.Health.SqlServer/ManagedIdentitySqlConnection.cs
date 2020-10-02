@@ -14,12 +14,14 @@ namespace Microsoft.Health.SqlServer
     public class ManagedIdentitySqlConnection : ISqlConnection
     {
         private readonly SqlServerDataStoreConfiguration _sqlServerDataStoreConfiguration;
+        private readonly AzureServiceTokenProvider _azureServiceTokenProvider;
 
         public ManagedIdentitySqlConnection(SqlServerDataStoreConfiguration sqlServerDataStoreConfiguration)
         {
             EnsureArg.IsNotNull(sqlServerDataStoreConfiguration, nameof(sqlServerDataStoreConfiguration));
 
             _sqlServerDataStoreConfiguration = sqlServerDataStoreConfiguration;
+            _azureServiceTokenProvider = new Microsoft.Azure.Services.AppAuthentication.AzureServiceTokenProvider();
         }
 
         /// <summary>
@@ -37,8 +39,7 @@ namespace Microsoft.Health.SqlServer
 
             SqlConnection sqlConnection = new SqlConnection(connectionBuilder.ToString());
 
-            AzureServiceTokenProvider azureServiceTokenProvider = new Microsoft.Azure.Services.AppAuthentication.AzureServiceTokenProvider();
-            var result = await azureServiceTokenProvider.GetAccessTokenAsync("https://database.windows.net/");
+            var result = await _azureServiceTokenProvider.GetAccessTokenAsync("https://database.windows.net/");
             sqlConnection.AccessToken = result;
 
             return sqlConnection;
