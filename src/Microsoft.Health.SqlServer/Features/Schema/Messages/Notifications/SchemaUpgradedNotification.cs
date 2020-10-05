@@ -11,16 +11,16 @@ namespace Microsoft.Health.SqlServer.Features.Schema.Messages.Notifications
 {
     public class SchemaUpgradedNotification : INotification
     {
-        public SchemaUpgradedNotification(int version, bool isFullSchemaSnapshotUpgrade)
+        public SchemaUpgradedNotification(int version, bool isFullSchemaSnapshot)
         {
             EnsureArg.IsGte(version, 1);
 
             Version = version;
-            IsFullSchemaSnapshotUpgrade = isFullSchemaSnapshotUpgrade;
+            IsFullSchemaSnapshot = isFullSchemaSnapshot;
         }
 
         public int Version { get; }
 
-        public bool IsFullSchemaSnapshotUpgrade { get; }
+        public bool IsFullSchemaSnapshot { get; }
     }
 }
