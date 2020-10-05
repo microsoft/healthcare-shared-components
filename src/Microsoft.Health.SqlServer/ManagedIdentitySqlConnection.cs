@@ -5,7 +5,6 @@
 
 using System.Threading.Tasks;
 using EnsureThat;
-using Microsoft.Azure.Services.AppAuthentication;
 using Microsoft.Data.SqlClient;
 using Microsoft.Health.SqlServer.Configs;
 
@@ -14,14 +13,15 @@ namespace Microsoft.Health.SqlServer
     public class ManagedIdentitySqlConnection : ISqlConnection
     {
         private readonly SqlServerDataStoreConfiguration _sqlServerDataStoreConfiguration;
-        private readonly AzureServiceTokenProvider _azureServiceTokenProvider;
+        private readonly IAccessTokenHandler _accessTokenHandler;
 
-        public ManagedIdentitySqlConnection(SqlServerDataStoreConfiguration sqlServerDataStoreConfiguration)
+        public ManagedIdentitySqlConnection(SqlServerDataStoreConfiguration sqlServerDataStoreConfiguration, IAccessTokenHandler accessTokenHandler)
         {
             EnsureArg.IsNotNull(sqlServerDataStoreConfiguration, nameof(sqlServerDataStoreConfiguration));
+            EnsureArg.IsNotNull(accessTokenHandler, nameof(accessTokenHandler));
 
             _sqlServerDataStoreConfiguration = sqlServerDataStoreConfiguration;
-            _azureServiceTokenProvider = new Microsoft.Azure.Services.AppAuthentication.AzureServiceTokenProvider();
+            _accessTokenHandler = accessTokenHandler;
         }
 
         /// <summary>
@@ -39,7 +39,7 @@ namespace Microsoft.Health.SqlServer
 
             SqlConnection sqlConnection = new SqlConnection(connectionBuilder.ToString());
 
-            var result = await _azureServiceTokenProvider.GetAccessTokenAsync("https://database.windows.net/");
+            var result = await _accessTokenHandler.GetAccessTokenAsync();
             sqlConnection.AccessToken = result;
 
             return sqlConnection;

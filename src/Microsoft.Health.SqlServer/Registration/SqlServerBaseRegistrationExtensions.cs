@@ -91,6 +91,7 @@ namespace Microsoft.Health.SqlServer.Registration
             {
                 case SqlServerConnectionType.ManagedIdentity:
                     services.AddSingleton<ISqlConnection, ManagedIdentitySqlConnection>();
+                    services.AddSingleton<IAccessTokenHandler, ManagedIdentityAccessTokenHandler>();
                     break;
                 case SqlServerConnectionType.WindowsIntegratedAuth:
                 case SqlServerConnectionType.SqlUserNameAndPassword:

@@ -3,8 +3,10 @@
 // Licensed under the MIT License (MIT). See LICENSE in the repo root for license information.
 // -------------------------------------------------------------------------------------------------
 
+using System.Threading.Tasks;
 using Microsoft.Data.SqlClient;
 using Microsoft.Health.SqlServer.Configs;
+using NSubstitute;
 using Xunit;
 
 namespace Microsoft.Health.SqlServer.UnitTests
@@ -13,16 +15,19 @@ namespace Microsoft.Health.SqlServer.UnitTests
     {
         private const string DatabaseName = "Dicom";
         private const string ServerName = "(local)";
+        private const string TestAccessToken = "test token";
 
-        private readonly SqlServerDataStoreConfiguration _sqlServerDataStoreConfiguration;
         private readonly ManagedIdentitySqlConnection _sqlConnection;
 
         public ManagedIdentitySqlConnectionTests()
         {
-            _sqlServerDataStoreConfiguration = new SqlServerDataStoreConfiguration();
-            _sqlServerDataStoreConfiguration.ConnectionString = $"Server={ServerName};Database={DatabaseName};";
-            _sqlServerDataStoreConfiguration.ConnectionType = SqlServerConnectionType.ManagedIdentity;
-            _sqlConnection = new ManagedIdentitySqlConnection(_sqlServerDataStoreConfiguration);
+            var accessTokenHandler = Substitute.For<IAccessTokenHandler>();
+            accessTokenHandler.GetAccessTokenAsync().Returns(Task.FromResult(TestAccessToken));
+
+            SqlServerDataStoreConfiguration sqlServerDataStoreConfiguration = new SqlServerDataStoreConfiguration();
+            sqlServerDataStoreConfiguration.ConnectionString = $"Server={ServerName};Database={DatabaseName};";
+            sqlServerDataStoreConfiguration.ConnectionType = SqlServerConnectionType.ManagedIdentity;
+            _sqlConnection = new ManagedIdentitySqlConnection(sqlServerDataStoreConfiguration, accessTokenHandler);
         }
 
         [Fact]
