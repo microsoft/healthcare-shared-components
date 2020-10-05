@@ -15,6 +15,7 @@ namespace Microsoft.Health.SqlServer.UnitTests
     {
         private const string DatabaseName = "Dicom";
         private const string ServerName = "(local)";
+        private const string MasterDatabase = "master";
         private const string TestAccessToken = "test token";
 
         private readonly ManagedIdentitySqlConnection _sqlConnection;
@@ -22,11 +23,11 @@ namespace Microsoft.Health.SqlServer.UnitTests
         public ManagedIdentitySqlConnectionTests()
         {
             var accessTokenHandler = Substitute.For<IAccessTokenHandler>();
-            accessTokenHandler.GetAccessTokenAsync().Returns(Task.FromResult(TestAccessToken));
+            accessTokenHandler.GetAccessTokenAsync(string.Empty).Returns(Task.FromResult(TestAccessToken));
 
             SqlServerDataStoreConfiguration sqlServerDataStoreConfiguration = new SqlServerDataStoreConfiguration();
             sqlServerDataStoreConfiguration.ConnectionString = $"Server={ServerName};Database={DatabaseName};";
-            sqlServerDataStoreConfiguration.ConnectionType = SqlServerConnectionType.ManagedIdentity;
+            sqlServerDataStoreConfiguration.ConnectionType = SqlServerAuthenticationType.ManagedIdentity;
             _sqlConnection = new ManagedIdentitySqlConnection(sqlServerDataStoreConfiguration, accessTokenHandler);
         }
 
@@ -49,9 +50,9 @@ namespace Microsoft.Health.SqlServer.UnitTests
         [Fact]
         public void GivenDefaultConnectionType_WhenSqlConnectionToMasterRequested_MasterDatabaseIsSet()
         {
-            SqlConnection sqlConnection = _sqlConnection.GetSqlConnection(connectToMaster: true);
+            SqlConnection sqlConnection = _sqlConnection.GetSqlConnection(MasterDatabase);
 
-            Assert.Empty(sqlConnection.Database);
+            Assert.Equal(MasterDatabase, sqlConnection.Database);
         }
     }
 }

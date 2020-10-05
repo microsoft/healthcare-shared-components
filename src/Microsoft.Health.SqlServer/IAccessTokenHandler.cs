@@ -9,6 +9,11 @@ namespace Microsoft.Health.SqlServer
 {
     public interface IAccessTokenHandler
     {
-        Task<string> GetAccessTokenAsync();
+        /// <summary>
+        /// Get access token for the resource.
+        /// </summary>
+        /// <param name="resource">Resource.</param>
+        /// <returns>Task returning token.</returns>
+        Task<string> GetAccessTokenAsync(string resource);
     }
 }

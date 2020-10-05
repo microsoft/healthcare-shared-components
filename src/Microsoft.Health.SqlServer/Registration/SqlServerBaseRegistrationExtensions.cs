@@ -4,6 +4,7 @@
 // -------------------------------------------------------------------------------------------------
 
 using System;
+using Microsoft.Azure.Services.AppAuthentication;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Health.Extensions.DependencyInjection;
@@ -89,12 +90,12 @@ namespace Microsoft.Health.SqlServer.Registration
 
             switch (config.ConnectionType)
             {
-                case SqlServerConnectionType.ManagedIdentity:
+                case SqlServerAuthenticationType.ManagedIdentity:
                     services.AddSingleton<ISqlConnection, ManagedIdentitySqlConnection>();
                     services.AddSingleton<IAccessTokenHandler, ManagedIdentityAccessTokenHandler>();
+                    services.AddSingleton<AzureServiceTokenProvider>();
                     break;
-                case SqlServerConnectionType.WindowsIntegratedAuth:
-                case SqlServerConnectionType.SqlUserNameAndPassword:
+                case SqlServerAuthenticationType.ConnectionString:
                 default:
                     services.AddSingleton<ISqlConnection, DefaultSqlConnection>();
                     break;

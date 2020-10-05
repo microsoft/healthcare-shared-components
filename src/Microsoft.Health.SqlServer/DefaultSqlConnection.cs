@@ -25,13 +25,19 @@ namespace Microsoft.Health.SqlServer
         }
 
         /// <inheritdoc />
-        public SqlConnection GetSqlConnection(bool connectToMaster = false)
+        public SqlConnection GetSqlConnection()
+        {
+            return GetSqlConnection(null);
+        }
+
+        /// <inheritdoc />
+        public SqlConnection GetSqlConnection(string initialCatalog)
         {
             EnsureArg.IsNotNullOrEmpty(_sqlServerDataStoreConfiguration.ConnectionString);
 
-            SqlConnectionStringBuilder connectionBuilder = connectToMaster ?
-                new SqlConnectionStringBuilder(_sqlServerDataStoreConfiguration.ConnectionString) { InitialCatalog = string.Empty } :
-                new SqlConnectionStringBuilder(_sqlServerDataStoreConfiguration.ConnectionString);
+            SqlConnectionStringBuilder connectionBuilder = initialCatalog == null ?
+                new SqlConnectionStringBuilder(_sqlServerDataStoreConfiguration.ConnectionString) :
+                new SqlConnectionStringBuilder(_sqlServerDataStoreConfiguration.ConnectionString) { InitialCatalog = initialCatalog };
 
             SqlConnection sqlConnection = new SqlConnection(connectionBuilder.ToString());
             return sqlConnection;

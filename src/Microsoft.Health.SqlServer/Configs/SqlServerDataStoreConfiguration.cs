@@ -22,7 +22,7 @@ namespace Microsoft.Health.SqlServer.Configs
         /// <summary>
         /// Connection type to connect to Sql Server and Sql DB.
         /// </summary>
-        public SqlServerConnectionType ConnectionType { get; set; } = SqlServerConnectionType.SqlUserNameAndPassword;
+        public SqlServerAuthenticationType ConnectionType { get; set; } = SqlServerAuthenticationType.ConnectionString;
 
         /// <summary>
         /// Configuration for transient fault retry policy.

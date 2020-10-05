@@ -5,10 +5,16 @@
 
 namespace Microsoft.Health.SqlServer.Configs
 {
-    public enum SqlServerConnectionType
+    public enum SqlServerAuthenticationType
     {
         ManagedIdentity,
-        WindowsIntegratedAuth,
-        SqlUserNameAndPassword,
+
+        /// <summary>
+        /// Works for
+        /// 1. Windows Integrated Authentication
+        /// 2. Sql User name and Password
+        /// as they both completely rely on the connection string.
+        /// </summary>
+        ConnectionString,
     }
 }

@@ -13,6 +13,7 @@ namespace Microsoft.Health.SqlServer.UnitTests.Features
     {
         private const string DatabaseName = "Dicom";
         private const string ServerName = "(local)";
+        private const string MasterDatabase = "master";
 
         private readonly SqlServerDataStoreConfiguration _sqlServerDataStoreConfiguration;
         private readonly DefaultSqlConnection _sqlConnection;
@@ -43,9 +44,9 @@ namespace Microsoft.Health.SqlServer.UnitTests.Features
         [Fact]
         public void GivenDefaultConnectionType_WhenSqlConnectionToMasterRequested_MasterDatabaseIsSet()
         {
-            SqlConnection sqlConnection = _sqlConnection.GetSqlConnection(connectToMaster: true);
+            SqlConnection sqlConnection = _sqlConnection.GetSqlConnection(MasterDatabase);
 
-            Assert.Empty(sqlConnection.Database);
+            Assert.Equal(MasterDatabase, sqlConnection.Database);
         }
     }
 }

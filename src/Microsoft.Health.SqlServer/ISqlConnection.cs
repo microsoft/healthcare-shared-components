@@ -11,8 +11,16 @@ namespace Microsoft.Health.SqlServer
     {
         /// <summary>
         /// Get unopened SqlConnection object.
+        /// Initial catalog is determined from the connection string.
         /// </summary>
-        /// <param name="connectToMaster">Should connect to master database?</param>
-        public SqlConnection GetSqlConnection(bool connectToMaster = false);
+        /// <returns>SqlConnection object.</returns>
+        public SqlConnection GetSqlConnection();
+
+        /// <summary>
+        /// Get unopened SqlConnection object.
+        /// Initial catalog is set based on the passed in parameter.
+        /// </summary>
+        /// <param name="initialCatalog">Initial catalog to connect to.</param>
+        public SqlConnection GetSqlConnection(string initialCatalog);
     }
 }

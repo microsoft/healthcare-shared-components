@@ -4,6 +4,7 @@
 // -------------------------------------------------------------------------------------------------
 
 using System.Threading.Tasks;
+using EnsureThat;
 using Microsoft.Azure.Services.AppAuthentication;
 
 namespace Microsoft.Health.SqlServer
@@ -12,14 +13,17 @@ namespace Microsoft.Health.SqlServer
     {
         private readonly AzureServiceTokenProvider _azureServiceTokenProvider;
 
-        public ManagedIdentityAccessTokenHandler()
+        public ManagedIdentityAccessTokenHandler(AzureServiceTokenProvider azureServiceTokenProvider)
         {
-            _azureServiceTokenProvider = new AzureServiceTokenProvider();
+            EnsureArg.IsNotNull(azureServiceTokenProvider, nameof(azureServiceTokenProvider));
+
+            _azureServiceTokenProvider = azureServiceTokenProvider;
         }
 
-        public Task<string> GetAccessTokenAsync()
+        /// <inheritdoc />
+        public Task<string> GetAccessTokenAsync(string resource)
         {
-            return _azureServiceTokenProvider.GetAccessTokenAsync("https://database.windows.net/");
+            return _azureServiceTokenProvider.GetAccessTokenAsync(resource);
         }
     }
 }

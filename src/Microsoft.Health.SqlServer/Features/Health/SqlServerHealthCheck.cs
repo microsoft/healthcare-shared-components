@@ -23,15 +23,15 @@ namespace Microsoft.Health.SqlServer.Features.Health
         private readonly ILogger<SqlServerHealthCheck> _logger;
         private readonly ISqlConnection _sqlConnection;
 
-        public SqlServerHealthCheck(SqlServerDataStoreConfiguration configuration, ILogger<SqlServerHealthCheck> logger, ISqlConnection sqlConnection)
+        public SqlServerHealthCheck(SqlServerDataStoreConfiguration configuration, ISqlConnection sqlConnection, ILogger<SqlServerHealthCheck> logger)
         {
             EnsureArg.IsNotNull(configuration, nameof(configuration));
-            EnsureArg.IsNotNull(logger, nameof(logger));
             EnsureArg.IsNotNull(sqlConnection, nameof(sqlConnection));
+            EnsureArg.IsNotNull(logger, nameof(logger));
 
             _configuration = configuration;
-            _logger = logger;
             _sqlConnection = sqlConnection;
+            _logger = logger;
         }
 
         public async Task<HealthCheckResult> CheckHealthAsync(HealthCheckContext context, CancellationToken cancellationToken)

@@ -4,6 +4,7 @@
 // -------------------------------------------------------------------------------------------------
 
 using System;
+using System.Data;
 using EnsureThat;
 using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.Logging;
@@ -18,6 +19,7 @@ namespace Microsoft.Health.SqlServer.Features.Schema
     /// </summary>
     public class SchemaInitializer : IStartable
     {
+        private const string MasterDatabase = "master";
         private readonly SqlServerDataStoreConfiguration _sqlServerDataStoreConfiguration;
         private readonly SchemaUpgradeRunner _schemaUpgradeRunner;
         private readonly SchemaInformation _schemaInformation;
@@ -138,7 +140,10 @@ namespace Microsoft.Health.SqlServer.Features.Schema
         {
             EnsureArg.IsNotNull(masterDbConnection, nameof(masterDbConnection));
 
-            masterDbConnection.Open();
+            if (masterDbConnection.State != ConnectionState.Open)
+            {
+                masterDbConnection.Open();
+            }
 
             using (var checkDatabaseExistsCommand = masterDbConnection.CreateCommand())
             {
@@ -176,7 +181,10 @@ namespace Microsoft.Health.SqlServer.Features.Schema
         {
             EnsureArg.IsNotNull(connection, nameof(connection));
 
-            connection.Open();
+            if (connection.State != ConnectionState.Open)
+            {
+                connection.Open();
+            }
 
             using (var command = new SqlCommand("SELECT count(*) FROM fn_my_permissions (NULL, 'DATABASE') WHERE permission_name = 'CREATE TABLE'", connection))
             {
@@ -198,7 +206,7 @@ namespace Microsoft.Health.SqlServer.Features.Schema
 
             if (_sqlServerDataStoreConfiguration.AllowDatabaseCreation)
             {
-                using (var connection = _sqlConnection.GetSqlConnection(connectToMaster: true))
+                using (var connection = _sqlConnection.GetSqlConnection(MasterDatabase))
                 {
                     bool doesDatabaseExist = DoesDatabaseExist(connection, databaseName);
 
@@ -217,8 +225,6 @@ namespace Microsoft.Health.SqlServer.Features.Schema
                             _logger.LogWarning("Insufficient permissions to create the database");
                             return false;
                         }
-
-                        connection.Close();
                     }
                 }
             }
