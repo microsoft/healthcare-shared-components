@@ -33,25 +33,25 @@ namespace Microsoft.Health.SqlServer.UnitTests
         }
 
         [Fact]
-        public void GivenManagedIdentityConnectionType_WhenSqlConnectionRequested_AccessTokenIsSet()
+        public async void GivenManagedIdentityConnectionType_WhenSqlConnectionRequested_AccessTokenIsSet()
         {
-            SqlConnection sqlConnection = _sqlConnection.GetSqlConnection();
+            SqlConnection sqlConnection = await _sqlConnection.GetSqlConnectionAsync();
 
             Assert.Equal(TestAccessToken, sqlConnection.AccessToken);
         }
 
         [Fact]
-        public void GivenDefaultConnectionType_WhenSqlConnectionRequested_DatabaseIsSet()
+        public async void GivenDefaultConnectionType_WhenSqlConnectionRequested_DatabaseIsSet()
         {
-            SqlConnection sqlConnection = _sqlConnection.GetSqlConnection();
+            SqlConnection sqlConnection = await _sqlConnection.GetSqlConnectionAsync();
 
             Assert.Equal(DatabaseName, sqlConnection.Database);
         }
 
         [Fact]
-        public void GivenDefaultConnectionType_WhenSqlConnectionToMasterRequested_MasterDatabaseIsSet()
+        public async void GivenDefaultConnectionType_WhenSqlConnectionToMasterRequested_MasterDatabaseIsSet()
         {
-            SqlConnection sqlConnection = _sqlConnection.GetSqlConnection(MasterDatabase);
+            SqlConnection sqlConnection = await _sqlConnection.GetSqlConnectionAsync(MasterDatabase);
 
             Assert.Equal(MasterDatabase, sqlConnection.Database);
         }

@@ -20,26 +20,26 @@ namespace Microsoft.Health.SqlServer.Features.Schema
         private readonly IBaseScriptProvider _baseScriptProvider;
         private readonly IMediator _mediator;
         private readonly ILogger<SchemaUpgradeRunner> _logger;
-        private readonly ISqlConnectionFactory _sqlConnection;
+        private readonly ISqlConnectionFactory _sqlConnectionFactory;
 
         public SchemaUpgradeRunner(
             IScriptProvider scriptProvider,
             IBaseScriptProvider baseScriptProvider,
             IMediator mediator,
             ILogger<SchemaUpgradeRunner> logger,
-            ISqlConnectionFactory sqlConnection)
+            ISqlConnectionFactory sqlConnectionFactory)
         {
             EnsureArg.IsNotNull(scriptProvider, nameof(scriptProvider));
             EnsureArg.IsNotNull(baseScriptProvider, nameof(baseScriptProvider));
             EnsureArg.IsNotNull(mediator, nameof(mediator));
             EnsureArg.IsNotNull(logger, nameof(logger));
-            EnsureArg.IsNotNull(sqlConnection, nameof(sqlConnection));
+            EnsureArg.IsNotNull(sqlConnectionFactory, nameof(sqlConnectionFactory));
 
             _scriptProvider = scriptProvider;
             _baseScriptProvider = baseScriptProvider;
             _mediator = mediator;
             _logger = logger;
-            _sqlConnection = sqlConnection;
+            _sqlConnectionFactory = sqlConnectionFactory;
         }
 
         public void ApplySchema(int version, bool applyFullSchemaSnapshot)
@@ -51,7 +51,7 @@ namespace Microsoft.Health.SqlServer.Features.Schema
                 InsertSchemaVersion(version);
             }
 
-            ExecuteSchema(_scriptProvider.GetMigrationScript(version, applyFullSchemaSnapshot));
+            ExecuteSchemaAsync(_scriptProvider.GetMigrationScript(version, applyFullSchemaSnapshot));
 
             CompleteSchemaVersion(version);
 
@@ -63,16 +63,16 @@ namespace Microsoft.Health.SqlServer.Features.Schema
         {
             _logger.LogInformation("Applying base schema");
 
-            ExecuteSchema(_baseScriptProvider.GetScript());
+            ExecuteSchemaAsync(_baseScriptProvider.GetScript());
 
             _logger.LogInformation("Completed applying base schema");
         }
 
-        private void ExecuteSchema(string script)
+        private async void ExecuteSchemaAsync(string script)
         {
-            using (var connection = _sqlConnection.GetSqlConnection())
+            using (var connection = await _sqlConnectionFactory.GetSqlConnectionAsync())
             {
-                connection.Open();
+                await connection.OpenAsync();
                 var server = new Server(new ServerConnection(connection));
 
                 server.ConnectionContext.ExecuteNonQuery(script);
@@ -81,25 +81,25 @@ namespace Microsoft.Health.SqlServer.Features.Schema
 
         private void InsertSchemaVersion(int schemaVersion)
         {
-            UpsertSchemaVersion(schemaVersion, "started");
+            UpsertSchemaVersionAsync(schemaVersion, "started");
         }
 
         private void CompleteSchemaVersion(int schemaVersion)
         {
-            UpsertSchemaVersion(schemaVersion, "completed");
+            UpsertSchemaVersionAsync(schemaVersion, "completed");
         }
 
-        private void UpsertSchemaVersion(int schemaVersion, string status)
+        private async void UpsertSchemaVersionAsync(int schemaVersion, string status)
         {
-            using (var connection = _sqlConnection.GetSqlConnection())
+            using (var connection = await _sqlConnectionFactory.GetSqlConnectionAsync())
             using (var upsertCommand = new SqlCommand("dbo.UpsertSchemaVersion", connection))
             {
                 upsertCommand.CommandType = CommandType.StoredProcedure;
                 upsertCommand.Parameters.AddWithValue("@version", schemaVersion);
                 upsertCommand.Parameters.AddWithValue("@status", status);
 
-                connection.Open();
-                upsertCommand.ExecuteNonQuery();
+                await connection.OpenAsync();
+                await upsertCommand.ExecuteNonQueryAsync();
             }
         }
     }

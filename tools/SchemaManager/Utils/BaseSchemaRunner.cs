@@ -20,7 +20,7 @@ namespace SchemaManager.Utils
         {
             IBaseScriptProvider baseScriptProvider = new BaseScriptProvider();
 
-            Initialize(connectionString);
+            InitializeAsync(connectionString);
 
             if (!SchemaDataStore.BaseSchemaExists(connectionString))
             {
@@ -62,7 +62,7 @@ namespace SchemaManager.Utils
             }
         }
 
-        private static void Initialize(string connectionString)
+        private static async void InitializeAsync(string connectionString)
         {
             var configuredConnectionBuilder = new SqlConnectionStringBuilder(connectionString);
             string databaseName = configuredConnectionBuilder.InitialCatalog;
@@ -73,14 +73,14 @@ namespace SchemaManager.Utils
 
             using (var connection = new SqlConnection(connectionBuilder.ToString()))
             {
-                bool doesDatabaseExist = SchemaInitializer.DoesDatabaseExist(connection, databaseName);
+                bool doesDatabaseExist = await SchemaInitializer.DoesDatabaseExistAsync(connection, databaseName);
 
                 // database creation is allowed
                 if (!doesDatabaseExist)
                 {
                     Console.WriteLine("The database does not exists.");
 
-                    bool created = SchemaInitializer.CreateDatabase(connection, databaseName);
+                    bool created = await SchemaInitializer.CreateDatabaseAsync(connection, databaseName);
 
                     if (created)
                     {
@@ -100,7 +100,7 @@ namespace SchemaManager.Utils
             // now switch to the target database
             using (var sqlConnection = new SqlConnection(connectionString))
             {
-                canInitialize = SchemaInitializer.CheckDatabasePermissions(sqlConnection);
+                canInitialize = await SchemaInitializer.CheckDatabasePermissionsAsync(sqlConnection);
             }
 
             if (!canInitialize)

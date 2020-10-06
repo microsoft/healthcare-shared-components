@@ -5,6 +5,7 @@
 
 using System;
 using System.Data;
+using System.Threading.Tasks;
 using EnsureThat;
 using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.Logging;
@@ -24,32 +25,32 @@ namespace Microsoft.Health.SqlServer.Features.Schema
         private readonly SchemaUpgradeRunner _schemaUpgradeRunner;
         private readonly SchemaInformation _schemaInformation;
         private readonly ILogger<SchemaInitializer> _logger;
-        private readonly ISqlConnectionFactory _sqlConnection;
+        private readonly ISqlConnectionFactory _sqlConnectionFactory;
         private bool _started;
 
-        public SchemaInitializer(SqlServerDataStoreConfiguration sqlServerDataStoreConfiguration, SchemaUpgradeRunner schemaUpgradeRunner, SchemaInformation schemaInformation, ISqlConnectionFactory sqlConnection, ILogger<SchemaInitializer> logger)
+        public SchemaInitializer(SqlServerDataStoreConfiguration sqlServerDataStoreConfiguration, SchemaUpgradeRunner schemaUpgradeRunner, SchemaInformation schemaInformation, ISqlConnectionFactory sqlConnectionFactory, ILogger<SchemaInitializer> logger)
         {
             EnsureArg.IsNotNull(sqlServerDataStoreConfiguration, nameof(sqlServerDataStoreConfiguration));
             EnsureArg.IsNotNull(schemaUpgradeRunner, nameof(schemaUpgradeRunner));
             EnsureArg.IsNotNull(schemaInformation, nameof(schemaInformation));
-            EnsureArg.IsNotNull(sqlConnection, nameof(sqlConnection));
+            EnsureArg.IsNotNull(sqlConnectionFactory, nameof(sqlConnectionFactory));
             EnsureArg.IsNotNull(logger, nameof(logger));
 
             _sqlServerDataStoreConfiguration = sqlServerDataStoreConfiguration;
             _schemaUpgradeRunner = schemaUpgradeRunner;
             _schemaInformation = schemaInformation;
-            _sqlConnection = sqlConnection;
+            _sqlConnectionFactory = sqlConnectionFactory;
             _logger = logger;
         }
 
-        public void Initialize(bool forceIncrementalSchemaUpgrade = false)
+        public async void InitializeAsync(bool forceIncrementalSchemaUpgrade = false)
         {
-            if (!CanInitialize())
+            if (!await CanInitializeAsync())
             {
                 return;
             }
 
-            GetCurrentSchemaVersion();
+            GetCurrentSchemaVersionAsync();
 
             _logger.LogInformation("Schema version is {version}", _schemaInformation.Current?.ToString() ?? "NULL");
 
@@ -73,7 +74,7 @@ namespace Microsoft.Health.SqlServer.Features.Schema
                         _schemaUpgradeRunner.ApplySchema(_schemaInformation.MaximumSupportedVersion, applyFullSchemaSnapshot: true);
                     }
 
-                    GetCurrentSchemaVersion();
+                    GetCurrentSchemaVersionAsync();
                 }
 
                 // If the current schema version needs to be upgraded
@@ -87,17 +88,17 @@ namespace Microsoft.Health.SqlServer.Features.Schema
                     }
                 }
 
-                GetCurrentSchemaVersion();
+                GetCurrentSchemaVersionAsync();
             }
 
             _started = true;
         }
 
-        private void GetCurrentSchemaVersion()
+        private async void GetCurrentSchemaVersionAsync()
         {
-            using (var connection = _sqlConnection.GetSqlConnection())
+            using (var connection = await _sqlConnectionFactory.GetSqlConnectionAsync())
             {
-                connection.Open();
+                await connection.OpenAsync();
 
                 string tableName = "dbo.SchemaVersion";
 
@@ -110,7 +111,7 @@ namespace Microsoft.Health.SqlServer.Features.Schema
 
                     try
                     {
-                        _schemaInformation.Current = selectCommand.ExecuteScalar() as int?;
+                        _schemaInformation.Current = await selectCommand.ExecuteScalarAsync() as int?;
                     }
                     catch (SqlException e) when (e.Message is "Invalid object name 'dbo.SchemaVersion'.")
                     {
@@ -142,20 +143,20 @@ namespace Microsoft.Health.SqlServer.Features.Schema
         /// <param name="sqlConnection">Sql Connection with permissions to query the system tables in order to check if the provided database exists.</param>
         /// <param name="databaseName">Database name.</param>
         /// <returns>True if database exists, else returns false.</returns>
-        public static bool DoesDatabaseExist(SqlConnection sqlConnection, string databaseName)
+        public static async Task<bool> DoesDatabaseExistAsync(SqlConnection sqlConnection, string databaseName)
         {
             EnsureArg.IsNotNull(sqlConnection, nameof(sqlConnection));
 
             if (sqlConnection.State != ConnectionState.Open)
             {
-                sqlConnection.Open();
+                await sqlConnection.OpenAsync();
             }
 
             using (var checkDatabaseExistsCommand = sqlConnection.CreateCommand())
             {
                 checkDatabaseExistsCommand.CommandText = "SELECT 1 FROM sys.databases where name = @databaseName";
                 checkDatabaseExistsCommand.Parameters.AddWithValue("@databaseName", databaseName);
-                if ((int?)checkDatabaseExistsCommand.ExecuteScalar() == 1)
+                if ((int?)await checkDatabaseExistsCommand.ExecuteScalarAsync() == 1)
                 {
                     return true;
                 }
@@ -164,15 +165,15 @@ namespace Microsoft.Health.SqlServer.Features.Schema
             return false;
         }
 
-        public static bool CreateDatabase(SqlConnection connection, string databaseName)
+        public static async Task<bool> CreateDatabaseAsync(SqlConnection connection, string databaseName)
         {
             using (var canCreateDatabaseCommand = new SqlCommand("SELECT count(*) FROM fn_my_permissions (NULL, 'DATABASE') WHERE permission_name = 'CREATE DATABASE'", connection))
             {
-                if ((int)canCreateDatabaseCommand.ExecuteScalar() > 0)
+                if ((int)await canCreateDatabaseCommand.ExecuteScalarAsync() > 0)
                 {
                     using (var createDatabaseCommand = new SqlCommand($"CREATE DATABASE {databaseName}", connection))
                     {
-                        createDatabaseCommand.ExecuteNonQuery();
+                        await createDatabaseCommand.ExecuteNonQueryAsync();
                         return true;
                     }
                 }
@@ -183,22 +184,22 @@ namespace Microsoft.Health.SqlServer.Features.Schema
             }
         }
 
-        public static bool CheckDatabasePermissions(SqlConnection connection)
+        public static async Task<bool> CheckDatabasePermissionsAsync(SqlConnection connection)
         {
             EnsureArg.IsNotNull(connection, nameof(connection));
 
             if (connection.State != ConnectionState.Open)
             {
-                connection.Open();
+                await connection.OpenAsync();
             }
 
             using (var command = new SqlCommand("SELECT count(*) FROM fn_my_permissions (NULL, 'DATABASE') WHERE permission_name = 'CREATE TABLE'", connection))
             {
-                return (int)command.ExecuteScalar() > 0;
+                return (int)await command.ExecuteScalarAsync() > 0;
             }
         }
 
-        private bool CanInitialize()
+        private async Task<bool> CanInitializeAsync()
         {
             if (!_sqlServerDataStoreConfiguration.Initialize)
             {
@@ -212,15 +213,15 @@ namespace Microsoft.Health.SqlServer.Features.Schema
 
             if (_sqlServerDataStoreConfiguration.AllowDatabaseCreation)
             {
-                using (var connection = _sqlConnection.GetSqlConnection(MasterDatabase))
+                using (var connection = await _sqlConnectionFactory.GetSqlConnectionAsync(MasterDatabase))
                 {
-                    bool doesDatabaseExist = DoesDatabaseExist(connection, databaseName);
+                    bool doesDatabaseExist = await DoesDatabaseExistAsync(connection, databaseName);
 
                     if (!doesDatabaseExist)
                     {
                         _logger.LogInformation("Database does not exist");
 
-                        bool created = CreateDatabase(connection, databaseName);
+                        bool created = await CreateDatabaseAsync(connection, databaseName);
 
                         if (created)
                         {
@@ -238,9 +239,9 @@ namespace Microsoft.Health.SqlServer.Features.Schema
             bool canInitialize = false;
 
             // now switch to the target database
-            using (var connection = _sqlConnection.GetSqlConnection())
+            using (var connection = await _sqlConnectionFactory.GetSqlConnectionAsync())
             {
-                canInitialize = CheckDatabasePermissions(connection);
+                canInitialize = await CheckDatabasePermissionsAsync(connection);
             }
 
             if (!canInitialize)
@@ -257,7 +258,7 @@ namespace Microsoft.Health.SqlServer.Features.Schema
             {
                 if (!string.IsNullOrWhiteSpace(_sqlServerDataStoreConfiguration.ConnectionString))
                 {
-                    Initialize();
+                    InitializeAsync();
                 }
                 else
                 {

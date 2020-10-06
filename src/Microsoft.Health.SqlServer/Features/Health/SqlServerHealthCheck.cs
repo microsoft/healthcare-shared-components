@@ -21,16 +21,16 @@ namespace Microsoft.Health.SqlServer.Features.Health
     {
         private readonly SqlServerDataStoreConfiguration _configuration;
         private readonly ILogger<SqlServerHealthCheck> _logger;
-        private readonly ISqlConnectionFactory _sqlConnection;
+        private readonly ISqlConnectionFactory _sqlConnectionFactory;
 
-        public SqlServerHealthCheck(SqlServerDataStoreConfiguration configuration, ISqlConnectionFactory sqlConnection, ILogger<SqlServerHealthCheck> logger)
+        public SqlServerHealthCheck(SqlServerDataStoreConfiguration configuration, ISqlConnectionFactory sqlConnectionFactory, ILogger<SqlServerHealthCheck> logger)
         {
             EnsureArg.IsNotNull(configuration, nameof(configuration));
-            EnsureArg.IsNotNull(sqlConnection, nameof(sqlConnection));
+            EnsureArg.IsNotNull(sqlConnectionFactory, nameof(sqlConnectionFactory));
             EnsureArg.IsNotNull(logger, nameof(logger));
 
             _configuration = configuration;
-            _sqlConnection = sqlConnection;
+            _sqlConnectionFactory = sqlConnectionFactory;
             _logger = logger;
         }
 
@@ -38,7 +38,7 @@ namespace Microsoft.Health.SqlServer.Features.Health
         {
             try
             {
-                using (var connection = _sqlConnection.GetSqlConnection())
+                using (var connection = await _sqlConnectionFactory.GetSqlConnectionAsync())
                 using (SqlCommand command = connection.CreateCommand())
                 {
                     await connection.OpenAsync(cancellationToken);

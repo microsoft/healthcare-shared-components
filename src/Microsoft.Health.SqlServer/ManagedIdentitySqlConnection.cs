@@ -30,7 +30,7 @@ namespace Microsoft.Health.SqlServer
         /// </summary>
         /// <param name="initialCatalog">Initial catalog to connect to. If value is null, or no argument is provided, initial catalog is determined from the connection string.</param>
         /// <returns>Sql connection task.</returns>
-        private async Task<SqlConnection> GetSqlConnectionAsync(string initialCatalog = null)
+        private async Task<SqlConnection> GetSqlConnectionImplAsync(string initialCatalog = null)
         {
             EnsureArg.IsNotNullOrEmpty(_sqlServerDataStoreConfiguration.ConnectionString);
 
@@ -53,15 +53,15 @@ namespace Microsoft.Health.SqlServer
         }
 
         /// <inheritdoc />
-        public SqlConnection GetSqlConnection()
+        public async Task<SqlConnection> GetSqlConnectionAsync()
         {
-            return GetSqlConnectionAsync().Result;
+            return await GetSqlConnectionImplAsync();
         }
 
         /// <inheritdoc />
-        public SqlConnection GetSqlConnection(string initialCatalog)
+        public async Task<SqlConnection> GetSqlConnectionAsync(string initialCatalog)
         {
-            return GetSqlConnectionAsync(initialCatalog).Result;
+            return await GetSqlConnectionImplAsync(initialCatalog);
         }
     }
 }

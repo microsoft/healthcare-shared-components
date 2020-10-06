@@ -3,6 +3,7 @@
 // Licensed under the MIT License (MIT). See LICENSE in the repo root for license information.
 // -------------------------------------------------------------------------------------------------
 
+using System.Threading.Tasks;
 using EnsureThat;
 using Microsoft.Data.SqlClient;
 using Microsoft.Health.SqlServer.Configs;
@@ -25,13 +26,13 @@ namespace Microsoft.Health.SqlServer
         }
 
         /// <inheritdoc />
-        public SqlConnection GetSqlConnection()
+        public Task<SqlConnection> GetSqlConnectionAsync()
         {
-            return GetSqlConnection(null);
+            return GetSqlConnectionAsync(null);
         }
 
         /// <inheritdoc />
-        public SqlConnection GetSqlConnection(string initialCatalog)
+        public Task<SqlConnection> GetSqlConnectionAsync(string initialCatalog)
         {
             EnsureArg.IsNotNullOrEmpty(_sqlServerDataStoreConfiguration.ConnectionString);
 
@@ -47,7 +48,7 @@ namespace Microsoft.Health.SqlServer
                 sqlConnection = new SqlConnection(connectionBuilder.ToString());
             }
 
-            return sqlConnection;
+            return Task.FromResult(sqlConnection);
         }
     }
 }
