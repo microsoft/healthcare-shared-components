@@ -70,8 +70,8 @@ namespace Microsoft.Health.SqlServer.Features.Schema
                         int? previous = schemaInformation.Current;
                         schemaInformation.Current = await schemaDataStore.UpsertInstanceSchemaInformationAsync(instanceName, schemaInformation, cancellationToken);
 
-                        // If there was a change in the schema version
-                        if (schemaInformation.Current != previous)
+                        // If there was a change in the schema version and this isn't the base schema
+                        if (schemaInformation.Current != previous && schemaInformation.Current > 0)
                         {
                             var isFullSchemaSnapshot = previous == null;
 
