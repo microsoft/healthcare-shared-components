@@ -17,13 +17,14 @@ namespace Microsoft.Health.SqlServer.UnitTests
         private const string ServerName = "(local)";
         private const string MasterDatabase = "master";
         private const string TestAccessToken = "test token";
+        private const string AzureResource = "https://database.windows.net/";
 
         private readonly ManagedIdentitySqlConnection _sqlConnection;
 
         public ManagedIdentitySqlConnectionTests()
         {
             var accessTokenHandler = Substitute.For<IAccessTokenHandler>();
-            accessTokenHandler.GetAccessTokenAsync(string.Empty).Returns(Task.FromResult(TestAccessToken));
+            accessTokenHandler.GetAccessTokenAsync(AzureResource).Returns(Task.FromResult(TestAccessToken));
 
             SqlServerDataStoreConfiguration sqlServerDataStoreConfiguration = new SqlServerDataStoreConfiguration();
             sqlServerDataStoreConfiguration.ConnectionString = $"Server={ServerName};Database={DatabaseName};";
