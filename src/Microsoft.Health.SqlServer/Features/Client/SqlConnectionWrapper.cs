@@ -69,7 +69,7 @@ namespace Microsoft.Health.SqlServer.Features.Client
 
             if (SqlConnection.State != ConnectionState.Open)
             {
-                SqlConnection.Open();
+                await SqlConnection.OpenAsync();
             }
 
             if (_enlistInTransactionIfPresent && _sqlTransactionHandler.SqlTransactionScope != null)

@@ -33,11 +33,11 @@ namespace Microsoft.Health.SqlServer.Features.Schema.Extensions
             return response;
         }
 
-        public static async Task NotifySchemaUpgradedAsync(this IMediator mediator, int version)
+        public static async Task NotifySchemaUpgradedAsync(this IMediator mediator, int version, bool isFullSchemaSnapshotUpgrade)
         {
             EnsureArg.IsNotNull(mediator, nameof(mediator));
 
-            await mediator.Publish(new SchemaUpgradedNotification(version));
+            await mediator.Publish(new SchemaUpgradedNotification(version, isFullSchemaSnapshotUpgrade));
         }
     }
 }

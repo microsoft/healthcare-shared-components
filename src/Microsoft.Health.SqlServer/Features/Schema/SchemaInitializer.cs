@@ -26,7 +26,6 @@ namespace Microsoft.Health.SqlServer.Features.Schema
         private readonly SchemaInformation _schemaInformation;
         private readonly ILogger<SchemaInitializer> _logger;
         private readonly ISqlConnectionFactory _sqlConnectionFactory;
-        private bool _started;
 
         public SchemaInitializer(SqlServerDataStoreConfiguration sqlServerDataStoreConfiguration, SchemaUpgradeRunner schemaUpgradeRunner, SchemaInformation schemaInformation, ISqlConnectionFactory sqlConnectionFactory, ILogger<SchemaInitializer> logger)
         {
@@ -90,8 +89,6 @@ namespace Microsoft.Health.SqlServer.Features.Schema
 
                 await GetCurrentSchemaVersionAsync();
             }
-
-            _started = true;
         }
 
         private async Task GetCurrentSchemaVersionAsync()
@@ -254,17 +251,14 @@ namespace Microsoft.Health.SqlServer.Features.Schema
 
         public void Start()
         {
-            if (!_started)
+            if (!string.IsNullOrWhiteSpace(_sqlServerDataStoreConfiguration.ConnectionString))
             {
-                if (!string.IsNullOrWhiteSpace(_sqlServerDataStoreConfiguration.ConnectionString))
-                {
-                    InitializeAsync().Wait();
-                }
-                else
-                {
-                    _logger.LogCritical(
-                        "There was no connection string supplied. Schema initialization can not be completed.");
-                }
+                InitializeAsync().Wait();
+            }
+            else
+            {
+                _logger.LogCritical(
+                    "There was no connection string supplied. Schema initialization can not be completed.");
             }
         }
     }
