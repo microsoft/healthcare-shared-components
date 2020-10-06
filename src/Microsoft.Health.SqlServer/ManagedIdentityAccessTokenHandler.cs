@@ -3,6 +3,7 @@
 // Licensed under the MIT License (MIT). See LICENSE in the repo root for license information.
 // -------------------------------------------------------------------------------------------------
 
+using System.Threading;
 using System.Threading.Tasks;
 using EnsureThat;
 using Microsoft.Azure.Services.AppAuthentication;
@@ -21,9 +22,9 @@ namespace Microsoft.Health.SqlServer
         }
 
         /// <inheritdoc />
-        public Task<string> GetAccessTokenAsync(string resource)
+        public Task<string> GetAccessTokenAsync(string resource, CancellationToken cancellationToken)
         {
-            return _azureServiceTokenProvider.GetAccessTokenAsync(resource);
+            return _azureServiceTokenProvider.GetAccessTokenAsync(resource, cancellationToken: cancellationToken);
         }
     }
 }

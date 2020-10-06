@@ -17,19 +17,19 @@ namespace Microsoft.Health.SqlServer.UnitTests.Features
         private const string MasterDatabase = "master";
 
         private readonly SqlServerDataStoreConfiguration _sqlServerDataStoreConfiguration;
-        private readonly DefaultSqlConnection _sqlConnection;
+        private readonly DefaultSqlConnectionFactory _sqlConnectionFactory;
 
         public DefaultSqlConnectionTests()
         {
             _sqlServerDataStoreConfiguration = new SqlServerDataStoreConfiguration();
             _sqlServerDataStoreConfiguration.ConnectionString = $"server={ServerName};Initial Catalog={DatabaseName};Integrated Security=true";
-            _sqlConnection = new DefaultSqlConnection(_sqlServerDataStoreConfiguration);
+            _sqlConnectionFactory = new DefaultSqlConnectionFactory(_sqlServerDataStoreConfiguration);
         }
 
         [Fact]
         public async Task GivenDefaultConnectionType_WhenSqlConnectionRequested_AccessTokenIsNotSet()
         {
-            SqlConnection sqlConnection = await _sqlConnection.GetSqlConnectionAsync();
+            SqlConnection sqlConnection = await _sqlConnectionFactory.GetSqlConnectionAsync();
 
             Assert.Null(sqlConnection.AccessToken);
         }
@@ -37,7 +37,7 @@ namespace Microsoft.Health.SqlServer.UnitTests.Features
         [Fact]
         public async Task GivenDefaultConnectionType_WhenSqlConnectionRequested_DatabaseIsSet()
         {
-            SqlConnection sqlConnection = await _sqlConnection.GetSqlConnectionAsync();
+            SqlConnection sqlConnection = await _sqlConnectionFactory.GetSqlConnectionAsync();
 
             Assert.Equal(DatabaseName, sqlConnection.Database);
         }
@@ -45,7 +45,7 @@ namespace Microsoft.Health.SqlServer.UnitTests.Features
         [Fact]
         public async Task GivenDefaultConnectionType_WhenSqlConnectionToMasterRequested_MasterDatabaseIsSet()
         {
-            SqlConnection sqlConnection = await _sqlConnection.GetSqlConnectionAsync(MasterDatabase);
+            SqlConnection sqlConnection = await _sqlConnectionFactory.GetSqlConnectionAsync(MasterDatabase);
 
             Assert.Equal(MasterDatabase, sqlConnection.Database);
         }

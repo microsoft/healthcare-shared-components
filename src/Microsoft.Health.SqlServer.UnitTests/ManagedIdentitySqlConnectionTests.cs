@@ -19,7 +19,7 @@ namespace Microsoft.Health.SqlServer.UnitTests
         private const string TestAccessToken = "test token";
         private const string AzureResource = "https://database.windows.net/";
 
-        private readonly ManagedIdentitySqlConnection _sqlConnection;
+        private readonly ManagedIdentitySqlConnectionFactory _sqlConnectionFactory;
 
         public ManagedIdentitySqlConnectionTests()
         {
@@ -29,13 +29,13 @@ namespace Microsoft.Health.SqlServer.UnitTests
             SqlServerDataStoreConfiguration sqlServerDataStoreConfiguration = new SqlServerDataStoreConfiguration();
             sqlServerDataStoreConfiguration.ConnectionString = $"Server={ServerName};Database={DatabaseName};";
             sqlServerDataStoreConfiguration.AuthenticationType = SqlServerAuthenticationType.ManagedIdentity;
-            _sqlConnection = new ManagedIdentitySqlConnection(sqlServerDataStoreConfiguration, accessTokenHandler);
+            _sqlConnectionFactory = new ManagedIdentitySqlConnectionFactory(sqlServerDataStoreConfiguration, accessTokenHandler);
         }
 
         [Fact]
         public async Task GivenManagedIdentityConnectionType_WhenSqlConnectionRequested_AccessTokenIsSet()
         {
-            SqlConnection sqlConnection = await _sqlConnection.GetSqlConnectionAsync();
+            SqlConnection sqlConnection = await _sqlConnectionFactory.GetSqlConnectionAsync();
 
             Assert.Equal(TestAccessToken, sqlConnection.AccessToken);
         }
@@ -43,7 +43,7 @@ namespace Microsoft.Health.SqlServer.UnitTests
         [Fact]
         public async Task GivenDefaultConnectionType_WhenSqlConnectionRequested_DatabaseIsSet()
         {
-            SqlConnection sqlConnection = await _sqlConnection.GetSqlConnectionAsync();
+            SqlConnection sqlConnection = await _sqlConnectionFactory.GetSqlConnectionAsync();
 
             Assert.Equal(DatabaseName, sqlConnection.Database);
         }
@@ -51,7 +51,7 @@ namespace Microsoft.Health.SqlServer.UnitTests
         [Fact]
         public async Task GivenDefaultConnectionType_WhenSqlConnectionToMasterRequested_MasterDatabaseIsSet()
         {
-            SqlConnection sqlConnection = await _sqlConnection.GetSqlConnectionAsync(MasterDatabase);
+            SqlConnection sqlConnection = await _sqlConnectionFactory.GetSqlConnectionAsync(MasterDatabase);
 
             Assert.Equal(MasterDatabase, sqlConnection.Database);
         }

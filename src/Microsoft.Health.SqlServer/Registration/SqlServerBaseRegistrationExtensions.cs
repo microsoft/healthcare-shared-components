@@ -91,13 +91,13 @@ namespace Microsoft.Health.SqlServer.Registration
             switch (config.AuthenticationType)
             {
                 case SqlServerAuthenticationType.ManagedIdentity:
-                    services.AddSingleton<ISqlConnectionFactory, ManagedIdentitySqlConnection>();
+                    services.AddSingleton<ISqlConnectionFactory, ManagedIdentitySqlConnectionFactory>();
                     services.AddSingleton<IAccessTokenHandler, ManagedIdentityAccessTokenHandler>();
                     services.AddSingleton<AzureServiceTokenProvider>();
                     break;
                 case SqlServerAuthenticationType.ConnectionString:
                 default:
-                    services.AddSingleton<ISqlConnectionFactory, DefaultSqlConnection>();
+                    services.AddSingleton<ISqlConnectionFactory, DefaultSqlConnectionFactory>();
                     break;
             }
 

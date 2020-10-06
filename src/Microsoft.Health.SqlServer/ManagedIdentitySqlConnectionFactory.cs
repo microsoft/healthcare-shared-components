@@ -10,13 +10,13 @@ using Microsoft.Health.SqlServer.Configs;
 
 namespace Microsoft.Health.SqlServer
 {
-    public class ManagedIdentitySqlConnection : ISqlConnectionFactory
+    public class ManagedIdentitySqlConnectionFactory : ISqlConnectionFactory
     {
         private readonly SqlServerDataStoreConfiguration _sqlServerDataStoreConfiguration;
         private readonly IAccessTokenHandler _accessTokenHandler;
         private readonly string _azureResource = "https://database.windows.net/";
 
-        public ManagedIdentitySqlConnection(SqlServerDataStoreConfiguration sqlServerDataStoreConfiguration, IAccessTokenHandler accessTokenHandler)
+        public ManagedIdentitySqlConnectionFactory(SqlServerDataStoreConfiguration sqlServerDataStoreConfiguration, IAccessTokenHandler accessTokenHandler)
         {
             EnsureArg.IsNotNull(sqlServerDataStoreConfiguration, nameof(sqlServerDataStoreConfiguration));
             EnsureArg.IsNotNull(accessTokenHandler, nameof(accessTokenHandler));

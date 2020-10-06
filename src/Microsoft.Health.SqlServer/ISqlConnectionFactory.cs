@@ -15,13 +15,13 @@ namespace Microsoft.Health.SqlServer
         /// Initial catalog is determined from the connection string.
         /// </summary>
         /// <returns>SqlConnection object.</returns>
-        public Task<SqlConnection> GetSqlConnectionAsync();
+        Task<SqlConnection> GetSqlConnectionAsync();
 
         /// <summary>
         /// Get unopened SqlConnection object.
         /// </summary>
         /// <param name="initialCatalog">Initial catalog to connect to.</param>
         /// <returns>SqlConnection object.</returns>
-        public Task<SqlConnection> GetSqlConnectionAsync(string initialCatalog);
+        Task<SqlConnection> GetSqlConnectionAsync(string initialCatalog);
     }
 }
