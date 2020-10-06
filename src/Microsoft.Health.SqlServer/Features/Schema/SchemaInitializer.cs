@@ -43,14 +43,14 @@ namespace Microsoft.Health.SqlServer.Features.Schema
             _logger = logger;
         }
 
-        public async void InitializeAsync(bool forceIncrementalSchemaUpgrade = false)
+        public async Task InitializeAsync(bool forceIncrementalSchemaUpgrade = false)
         {
             if (!await CanInitializeAsync())
             {
                 return;
             }
 
-            GetCurrentSchemaVersionAsync();
+            await GetCurrentSchemaVersionAsync();
 
             _logger.LogInformation("Schema version is {version}", _schemaInformation.Current?.ToString() ?? "NULL");
 
@@ -60,21 +60,21 @@ namespace Microsoft.Health.SqlServer.Features.Schema
                 if (_schemaInformation.Current == null)
                 {
                     // Apply base schema
-                    _schemaUpgradeRunner.ApplyBaseSchema();
+                    await _schemaUpgradeRunner.ApplyBaseSchema();
 
                     // This is for tests purpose only
                     if (forceIncrementalSchemaUpgrade)
                     {
                         // Run version 1 and and apply .diff.sql files to upgrade the schema version.
-                        _schemaUpgradeRunner.ApplySchema(_schemaInformation.MinimumSupportedVersion, applyFullSchemaSnapshot: true);
+                        await _schemaUpgradeRunner.ApplySchema(_schemaInformation.MinimumSupportedVersion, applyFullSchemaSnapshot: true);
                     }
                     else
                     {
                         // Apply the maximum supported version. This won't consider the .diff.sql files.
-                        _schemaUpgradeRunner.ApplySchema(_schemaInformation.MaximumSupportedVersion, applyFullSchemaSnapshot: true);
+                        await _schemaUpgradeRunner.ApplySchema(_schemaInformation.MaximumSupportedVersion, applyFullSchemaSnapshot: true);
                     }
 
-                    GetCurrentSchemaVersionAsync();
+                    await GetCurrentSchemaVersionAsync();
                 }
 
                 // If the current schema version needs to be upgraded
@@ -84,17 +84,17 @@ namespace Microsoft.Health.SqlServer.Features.Schema
                     int current = _schemaInformation.Current ?? 0;
                     for (int i = current + 1; i <= _schemaInformation.MaximumSupportedVersion; i++)
                     {
-                        _schemaUpgradeRunner.ApplySchema(version: i, applyFullSchemaSnapshot: false);
+                        await _schemaUpgradeRunner.ApplySchema(version: i, applyFullSchemaSnapshot: false);
                     }
                 }
 
-                GetCurrentSchemaVersionAsync();
+                await GetCurrentSchemaVersionAsync();
             }
 
             _started = true;
         }
 
-        private async void GetCurrentSchemaVersionAsync()
+        private async Task GetCurrentSchemaVersionAsync()
         {
             using (var connection = await _sqlConnectionFactory.GetSqlConnectionAsync())
             {
@@ -258,7 +258,7 @@ namespace Microsoft.Health.SqlServer.Features.Schema
             {
                 if (!string.IsNullOrWhiteSpace(_sqlServerDataStoreConfiguration.ConnectionString))
                 {
-                    InitializeAsync();
+                    InitializeAsync().Wait();
                 }
                 else
                 {

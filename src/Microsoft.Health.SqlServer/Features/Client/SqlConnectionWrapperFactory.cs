@@ -3,6 +3,7 @@
 // Licensed under the MIT License (MIT). See LICENSE in the repo root for license information.
 // -------------------------------------------------------------------------------------------------
 
+using System.Threading.Tasks;
 using EnsureThat;
 using Microsoft.Health.SqlServer.Features.Storage;
 
@@ -28,10 +29,10 @@ namespace Microsoft.Health.SqlServer.Features.Client
             _sqlConnectionFactory = sqlConnectionFactory;
         }
 
-        public SqlConnectionWrapper ObtainSqlConnectionWrapper(bool enlistInTransaction = false)
+        public async Task<SqlConnectionWrapper> ObtainSqlConnectionWrapperAsync(bool enlistInTransaction = false)
         {
             SqlConnectionWrapper sqlConnectionWrapper = new SqlConnectionWrapper(_sqlTransactionHandler, _sqlCommandWrapperFactory, _sqlConnectionFactory, enlistInTransaction);
-            sqlConnectionWrapper.InitializeAsync();
+            await sqlConnectionWrapper.InitializeAsync();
 
             return sqlConnectionWrapper;
         }

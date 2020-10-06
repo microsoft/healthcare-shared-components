@@ -33,7 +33,7 @@ namespace Microsoft.Health.SqlServer.UnitTests
         }
 
         [Fact]
-        public async void GivenManagedIdentityConnectionType_WhenSqlConnectionRequested_AccessTokenIsSet()
+        public async Task GivenManagedIdentityConnectionType_WhenSqlConnectionRequested_AccessTokenIsSet()
         {
             SqlConnection sqlConnection = await _sqlConnection.GetSqlConnectionAsync();
 
@@ -41,7 +41,7 @@ namespace Microsoft.Health.SqlServer.UnitTests
         }
 
         [Fact]
-        public async void GivenDefaultConnectionType_WhenSqlConnectionRequested_DatabaseIsSet()
+        public async Task GivenDefaultConnectionType_WhenSqlConnectionRequested_DatabaseIsSet()
         {
             SqlConnection sqlConnection = await _sqlConnection.GetSqlConnectionAsync();
 
@@ -49,7 +49,7 @@ namespace Microsoft.Health.SqlServer.UnitTests
         }
 
         [Fact]
-        public async void GivenDefaultConnectionType_WhenSqlConnectionToMasterRequested_MasterDatabaseIsSet()
+        public async Task GivenDefaultConnectionType_WhenSqlConnectionToMasterRequested_MasterDatabaseIsSet()
         {
             SqlConnection sqlConnection = await _sqlConnection.GetSqlConnectionAsync(MasterDatabase);
 

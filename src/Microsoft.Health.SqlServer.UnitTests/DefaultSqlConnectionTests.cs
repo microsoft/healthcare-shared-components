@@ -3,6 +3,7 @@
 // Licensed under the MIT License (MIT). See LICENSE in the repo root for license information.
 // -------------------------------------------------------------------------------------------------
 
+using System.Threading.Tasks;
 using Microsoft.Data.SqlClient;
 using Microsoft.Health.SqlServer.Configs;
 using Xunit;
@@ -26,7 +27,7 @@ namespace Microsoft.Health.SqlServer.UnitTests.Features
         }
 
         [Fact]
-        public async void GivenDefaultConnectionType_WhenSqlConnectionRequested_AccessTokenIsNotSet()
+        public async Task GivenDefaultConnectionType_WhenSqlConnectionRequested_AccessTokenIsNotSet()
         {
             SqlConnection sqlConnection = await _sqlConnection.GetSqlConnectionAsync();
 
@@ -34,7 +35,7 @@ namespace Microsoft.Health.SqlServer.UnitTests.Features
         }
 
         [Fact]
-        public async void GivenDefaultConnectionType_WhenSqlConnectionRequested_DatabaseIsSet()
+        public async Task GivenDefaultConnectionType_WhenSqlConnectionRequested_DatabaseIsSet()
         {
             SqlConnection sqlConnection = await _sqlConnection.GetSqlConnectionAsync();
 
@@ -42,7 +43,7 @@ namespace Microsoft.Health.SqlServer.UnitTests.Features
         }
 
         [Fact]
-        public async void GivenDefaultConnectionType_WhenSqlConnectionToMasterRequested_MasterDatabaseIsSet()
+        public async Task GivenDefaultConnectionType_WhenSqlConnectionToMasterRequested_MasterDatabaseIsSet()
         {
             SqlConnection sqlConnection = await _sqlConnection.GetSqlConnectionAsync(MasterDatabase);
 

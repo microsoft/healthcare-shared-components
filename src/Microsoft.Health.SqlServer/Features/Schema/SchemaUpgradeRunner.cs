@@ -4,6 +4,7 @@
 // -------------------------------------------------------------------------------------------------
 
 using System.Data;
+using System.Threading.Tasks;
 using EnsureThat;
 using MediatR;
 using Microsoft.Data.SqlClient;
@@ -42,33 +43,33 @@ namespace Microsoft.Health.SqlServer.Features.Schema
             _sqlConnectionFactory = sqlConnectionFactory;
         }
 
-        public void ApplySchema(int version, bool applyFullSchemaSnapshot)
+        public async Task ApplySchema(int version, bool applyFullSchemaSnapshot)
         {
             _logger.LogInformation("Applying schema {version}", version);
 
             if (!applyFullSchemaSnapshot)
             {
-                InsertSchemaVersion(version);
+                await InsertSchemaVersionAsync(version);
             }
 
-            ExecuteSchemaAsync(_scriptProvider.GetMigrationScript(version, applyFullSchemaSnapshot));
+            await ExecuteSchemaAsync(_scriptProvider.GetMigrationScript(version, applyFullSchemaSnapshot));
 
-            CompleteSchemaVersion(version);
+            await CompleteSchemaVersionAsync(version);
 
             _mediator.NotifySchemaUpgradedAsync(version).Wait();
             _logger.LogInformation("Completed applying schema {version}", version);
         }
 
-        public void ApplyBaseSchema()
+        public async Task ApplyBaseSchema()
         {
             _logger.LogInformation("Applying base schema");
 
-            ExecuteSchemaAsync(_baseScriptProvider.GetScript());
+            await ExecuteSchemaAsync(_baseScriptProvider.GetScript());
 
             _logger.LogInformation("Completed applying base schema");
         }
 
-        private async void ExecuteSchemaAsync(string script)
+        private async Task ExecuteSchemaAsync(string script)
         {
             using (var connection = await _sqlConnectionFactory.GetSqlConnectionAsync())
             {
@@ -79,17 +80,17 @@ namespace Microsoft.Health.SqlServer.Features.Schema
             }
         }
 
-        private void InsertSchemaVersion(int schemaVersion)
+        private async Task InsertSchemaVersionAsync(int schemaVersion)
         {
-            UpsertSchemaVersionAsync(schemaVersion, "started");
+            await UpsertSchemaVersionAsync(schemaVersion, "started");
         }
 
-        private void CompleteSchemaVersion(int schemaVersion)
+        private async Task CompleteSchemaVersionAsync(int schemaVersion)
         {
-            UpsertSchemaVersionAsync(schemaVersion, "completed");
+            await UpsertSchemaVersionAsync(schemaVersion, "completed");
         }
 
-        private async void UpsertSchemaVersionAsync(int schemaVersion, string status)
+        private async Task UpsertSchemaVersionAsync(int schemaVersion, string status)
         {
             using (var connection = await _sqlConnectionFactory.GetSqlConnectionAsync())
             using (var upsertCommand = new SqlCommand("dbo.UpsertSchemaVersion", connection))

@@ -5,6 +5,7 @@
 
 using System;
 using System.Data;
+using System.Threading.Tasks;
 using EnsureThat;
 using Microsoft.Data.SqlClient;
 using Microsoft.Health.SqlServer.Features.Storage;
@@ -50,7 +51,7 @@ namespace Microsoft.Health.SqlServer.Features.Client
             }
         }
 
-        internal async void InitializeAsync()
+        internal async Task InitializeAsync()
         {
             if (_enlistInTransactionIfPresent && _sqlTransactionHandler.SqlTransactionScope?.SqlConnection != null)
             {

@@ -4,6 +4,7 @@
 // -------------------------------------------------------------------------------------------------
 
 using System;
+using System.Threading.Tasks;
 using Microsoft.Data.SqlClient;
 using Microsoft.Health.SqlServer.Features.Schema;
 using Polly;
@@ -16,11 +17,11 @@ namespace SchemaManager.Utils
         private static readonly TimeSpan RetrySleepDuration = TimeSpan.FromSeconds(20);
         private const int RetryAttempts = 3;
 
-        public static void EnsureBaseSchemaExists(string connectionString)
+        public static async Task EnsureBaseSchemaExistsAsync(string connectionString)
         {
             IBaseScriptProvider baseScriptProvider = new BaseScriptProvider();
 
-            InitializeAsync(connectionString);
+            await InitializeAsync(connectionString);
 
             if (!SchemaDataStore.BaseSchemaExists(connectionString))
             {
@@ -62,7 +63,7 @@ namespace SchemaManager.Utils
             }
         }
 
-        private static async void InitializeAsync(string connectionString)
+        private static async Task InitializeAsync(string connectionString)
         {
             var configuredConnectionBuilder = new SqlConnectionStringBuilder(connectionString);
             string databaseName = configuredConnectionBuilder.InitialCatalog;
