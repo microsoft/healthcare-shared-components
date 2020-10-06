@@ -75,7 +75,6 @@ namespace Microsoft.Health.SqlServer.Features.Schema
                         {
                             var isFullSchemaSnapshot = previous == null;
 
-                            // Fire a notification
                             await _mediator.NotifySchemaUpgradedAsync((int)schemaInformation.Current, isFullSchemaSnapshot);
                         }
 
