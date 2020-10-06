@@ -88,16 +88,16 @@ namespace Microsoft.Health.SqlServer.Registration
                 .AsSelf()
                 .AsImplementedInterfaces();
 
-            switch (config.ConnectionType)
+            switch (config.AuthenticationType)
             {
                 case SqlServerAuthenticationType.ManagedIdentity:
-                    services.AddSingleton<ISqlConnection, ManagedIdentitySqlConnection>();
+                    services.AddSingleton<ISqlConnectionFactory, ManagedIdentitySqlConnection>();
                     services.AddSingleton<IAccessTokenHandler, ManagedIdentityAccessTokenHandler>();
                     services.AddSingleton<AzureServiceTokenProvider>();
                     break;
                 case SqlServerAuthenticationType.ConnectionString:
                 default:
-                    services.AddSingleton<ISqlConnection, DefaultSqlConnection>();
+                    services.AddSingleton<ISqlConnectionFactory, DefaultSqlConnection>();
                     break;
             }
 

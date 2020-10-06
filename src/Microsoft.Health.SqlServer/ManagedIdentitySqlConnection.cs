@@ -10,20 +10,19 @@ using Microsoft.Health.SqlServer.Configs;
 
 namespace Microsoft.Health.SqlServer
 {
-    public class ManagedIdentitySqlConnection : ISqlConnection
+    public class ManagedIdentitySqlConnection : ISqlConnectionFactory
     {
         private readonly SqlServerDataStoreConfiguration _sqlServerDataStoreConfiguration;
         private readonly IAccessTokenHandler _accessTokenHandler;
-        private readonly string _azureResource;
+        private readonly string _azureResource = "https://database.windows.net/";
 
-        public ManagedIdentitySqlConnection(SqlServerDataStoreConfiguration sqlServerDataStoreConfiguration, IAccessTokenHandler accessTokenHandler, string azureResource = "https://database.windows.net/")
+        public ManagedIdentitySqlConnection(SqlServerDataStoreConfiguration sqlServerDataStoreConfiguration, IAccessTokenHandler accessTokenHandler)
         {
             EnsureArg.IsNotNull(sqlServerDataStoreConfiguration, nameof(sqlServerDataStoreConfiguration));
             EnsureArg.IsNotNull(accessTokenHandler, nameof(accessTokenHandler));
 
             _sqlServerDataStoreConfiguration = sqlServerDataStoreConfiguration;
             _accessTokenHandler = accessTokenHandler;
-            _azureResource = azureResource;
         }
 
         /// <summary>
@@ -35,11 +34,17 @@ namespace Microsoft.Health.SqlServer
         {
             EnsureArg.IsNotNullOrEmpty(_sqlServerDataStoreConfiguration.ConnectionString);
 
-            SqlConnectionStringBuilder connectionBuilder = initialCatalog == null ?
-                new SqlConnectionStringBuilder(_sqlServerDataStoreConfiguration.ConnectionString) :
-                new SqlConnectionStringBuilder(_sqlServerDataStoreConfiguration.ConnectionString) { InitialCatalog = initialCatalog };
+            SqlConnection sqlConnection;
 
-            SqlConnection sqlConnection = new SqlConnection(connectionBuilder.ToString());
+            if (initialCatalog == null)
+            {
+                sqlConnection = new SqlConnection(_sqlServerDataStoreConfiguration.ConnectionString);
+            }
+            else
+            {
+                SqlConnectionStringBuilder connectionBuilder = new SqlConnectionStringBuilder(_sqlServerDataStoreConfiguration.ConnectionString) { InitialCatalog = initialCatalog };
+                sqlConnection = new SqlConnection(connectionBuilder.ToString());
+            }
 
             var result = await _accessTokenHandler.GetAccessTokenAsync(_azureResource);
             sqlConnection.AccessToken = result;

@@ -13,7 +13,7 @@ namespace Microsoft.Health.SqlServer
     /// Default Sql Connection Factory is responsible to handle Sql connections that can be made purely based on connection string.
     /// Connection string containing user name and password, or integrated auth are perfect examples for this.
     /// </summary>
-    public class DefaultSqlConnection : ISqlConnection
+    public class DefaultSqlConnection : ISqlConnectionFactory
     {
         private readonly SqlServerDataStoreConfiguration _sqlServerDataStoreConfiguration;
 
@@ -35,11 +35,18 @@ namespace Microsoft.Health.SqlServer
         {
             EnsureArg.IsNotNullOrEmpty(_sqlServerDataStoreConfiguration.ConnectionString);
 
-            SqlConnectionStringBuilder connectionBuilder = initialCatalog == null ?
-                new SqlConnectionStringBuilder(_sqlServerDataStoreConfiguration.ConnectionString) :
-                new SqlConnectionStringBuilder(_sqlServerDataStoreConfiguration.ConnectionString) { InitialCatalog = initialCatalog };
+            SqlConnection sqlConnection;
 
-            SqlConnection sqlConnection = new SqlConnection(connectionBuilder.ToString());
+            if (initialCatalog == null)
+            {
+                sqlConnection = new SqlConnection(_sqlServerDataStoreConfiguration.ConnectionString);
+            }
+            else
+            {
+                SqlConnectionStringBuilder connectionBuilder = new SqlConnectionStringBuilder(_sqlServerDataStoreConfiguration.ConnectionString) { InitialCatalog = initialCatalog };
+                sqlConnection = new SqlConnection(connectionBuilder.ToString());
+            }
+
             return sqlConnection;
         }
     }

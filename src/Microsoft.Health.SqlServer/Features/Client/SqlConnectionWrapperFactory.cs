@@ -12,12 +12,12 @@ namespace Microsoft.Health.SqlServer.Features.Client
     {
         private readonly SqlTransactionHandler _sqlTransactionHandler;
         private readonly SqlCommandWrapperFactory _sqlCommandWrapperFactory;
-        private readonly ISqlConnection _sqlConnection;
+        private readonly ISqlConnectionFactory _sqlConnection;
 
         public SqlConnectionWrapperFactory(
             SqlTransactionHandler sqlTransactionHandler,
             SqlCommandWrapperFactory sqlCommandWrapperFactory,
-            ISqlConnection sqlConnection)
+            ISqlConnectionFactory sqlConnection)
         {
             EnsureArg.IsNotNull(sqlTransactionHandler, nameof(sqlTransactionHandler));
             EnsureArg.IsNotNull(sqlCommandWrapperFactory, nameof(sqlCommandWrapperFactory));

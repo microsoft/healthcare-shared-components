@@ -27,7 +27,7 @@ namespace Microsoft.Health.SqlServer.UnitTests
 
             SqlServerDataStoreConfiguration sqlServerDataStoreConfiguration = new SqlServerDataStoreConfiguration();
             sqlServerDataStoreConfiguration.ConnectionString = $"Server={ServerName};Database={DatabaseName};";
-            sqlServerDataStoreConfiguration.ConnectionType = SqlServerAuthenticationType.ManagedIdentity;
+            sqlServerDataStoreConfiguration.AuthenticationType = SqlServerAuthenticationType.ManagedIdentity;
             _sqlConnection = new ManagedIdentitySqlConnection(sqlServerDataStoreConfiguration, accessTokenHandler);
         }
 
@@ -36,7 +36,7 @@ namespace Microsoft.Health.SqlServer.UnitTests
         {
             SqlConnection sqlConnection = _sqlConnection.GetSqlConnection();
 
-            Assert.NotNull(sqlConnection.AccessToken);
+            Assert.Equal(TestAccessToken, sqlConnection.AccessToken);
         }
 
         [Fact]

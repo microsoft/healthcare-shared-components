@@ -20,14 +20,14 @@ namespace Microsoft.Health.SqlServer.Features.Schema
         private readonly IBaseScriptProvider _baseScriptProvider;
         private readonly IMediator _mediator;
         private readonly ILogger<SchemaUpgradeRunner> _logger;
-        private readonly ISqlConnection _sqlConnection;
+        private readonly ISqlConnectionFactory _sqlConnection;
 
         public SchemaUpgradeRunner(
             IScriptProvider scriptProvider,
             IBaseScriptProvider baseScriptProvider,
             IMediator mediator,
             ILogger<SchemaUpgradeRunner> logger,
-            ISqlConnection sqlConnection)
+            ISqlConnectionFactory sqlConnection)
         {
             EnsureArg.IsNotNull(scriptProvider, nameof(scriptProvider));
             EnsureArg.IsNotNull(baseScriptProvider, nameof(baseScriptProvider));

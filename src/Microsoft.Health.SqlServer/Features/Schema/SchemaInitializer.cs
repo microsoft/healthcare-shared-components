@@ -24,22 +24,22 @@ namespace Microsoft.Health.SqlServer.Features.Schema
         private readonly SchemaUpgradeRunner _schemaUpgradeRunner;
         private readonly SchemaInformation _schemaInformation;
         private readonly ILogger<SchemaInitializer> _logger;
-        private readonly ISqlConnection _sqlConnection;
+        private readonly ISqlConnectionFactory _sqlConnection;
         private bool _started;
 
-        public SchemaInitializer(SqlServerDataStoreConfiguration sqlServerDataStoreConfiguration, SchemaUpgradeRunner schemaUpgradeRunner, SchemaInformation schemaInformation, ILogger<SchemaInitializer> logger, ISqlConnection sqlConnection)
+        public SchemaInitializer(SqlServerDataStoreConfiguration sqlServerDataStoreConfiguration, SchemaUpgradeRunner schemaUpgradeRunner, SchemaInformation schemaInformation, ISqlConnectionFactory sqlConnection, ILogger<SchemaInitializer> logger)
         {
             EnsureArg.IsNotNull(sqlServerDataStoreConfiguration, nameof(sqlServerDataStoreConfiguration));
             EnsureArg.IsNotNull(schemaUpgradeRunner, nameof(schemaUpgradeRunner));
             EnsureArg.IsNotNull(schemaInformation, nameof(schemaInformation));
-            EnsureArg.IsNotNull(logger, nameof(logger));
             EnsureArg.IsNotNull(sqlConnection, nameof(sqlConnection));
+            EnsureArg.IsNotNull(logger, nameof(logger));
 
             _sqlServerDataStoreConfiguration = sqlServerDataStoreConfiguration;
             _schemaUpgradeRunner = schemaUpgradeRunner;
             _schemaInformation = schemaInformation;
-            _logger = logger;
             _sqlConnection = sqlConnection;
+            _logger = logger;
         }
 
         public void Initialize(bool forceIncrementalSchemaUpgrade = false)
@@ -136,16 +136,22 @@ namespace Microsoft.Health.SqlServer.Features.Schema
             }
         }
 
-        public static bool DoesDatabaseExist(SqlConnection masterDbConnection, string databaseName)
+        /// <summary>
+        /// Check if the database exists.
+        /// </summary>
+        /// <param name="sqlConnection">Sql Connection with permissions to query the system tables in order to check if the provided database exists.</param>
+        /// <param name="databaseName">Database name.</param>
+        /// <returns>True if database exists, else returns false.</returns>
+        public static bool DoesDatabaseExist(SqlConnection sqlConnection, string databaseName)
         {
-            EnsureArg.IsNotNull(masterDbConnection, nameof(masterDbConnection));
+            EnsureArg.IsNotNull(sqlConnection, nameof(sqlConnection));
 
-            if (masterDbConnection.State != ConnectionState.Open)
+            if (sqlConnection.State != ConnectionState.Open)
             {
-                masterDbConnection.Open();
+                sqlConnection.Open();
             }
 
-            using (var checkDatabaseExistsCommand = masterDbConnection.CreateCommand())
+            using (var checkDatabaseExistsCommand = sqlConnection.CreateCommand())
             {
                 checkDatabaseExistsCommand.CommandText = "SELECT 1 FROM sys.databases where name = @databaseName";
                 checkDatabaseExistsCommand.Parameters.AddWithValue("@databaseName", databaseName);

@@ -7,7 +7,7 @@ using Microsoft.Data.SqlClient;
 
 namespace Microsoft.Health.SqlServer
 {
-    public interface ISqlConnection
+    public interface ISqlConnectionFactory
     {
         /// <summary>
         /// Get unopened SqlConnection object.
@@ -18,9 +18,9 @@ namespace Microsoft.Health.SqlServer
 
         /// <summary>
         /// Get unopened SqlConnection object.
-        /// Initial catalog is set based on the passed in parameter.
         /// </summary>
         /// <param name="initialCatalog">Initial catalog to connect to.</param>
+        /// <returns>SqlConnection object.</returns>
         public SqlConnection GetSqlConnection(string initialCatalog);
     }
 }

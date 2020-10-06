@@ -21,9 +21,9 @@ namespace Microsoft.Health.SqlServer.Features.Health
     {
         private readonly SqlServerDataStoreConfiguration _configuration;
         private readonly ILogger<SqlServerHealthCheck> _logger;
-        private readonly ISqlConnection _sqlConnection;
+        private readonly ISqlConnectionFactory _sqlConnection;
 
-        public SqlServerHealthCheck(SqlServerDataStoreConfiguration configuration, ISqlConnection sqlConnection, ILogger<SqlServerHealthCheck> logger)
+        public SqlServerHealthCheck(SqlServerDataStoreConfiguration configuration, ISqlConnectionFactory sqlConnection, ILogger<SqlServerHealthCheck> logger)
         {
             EnsureArg.IsNotNull(configuration, nameof(configuration));
             EnsureArg.IsNotNull(sqlConnection, nameof(sqlConnection));

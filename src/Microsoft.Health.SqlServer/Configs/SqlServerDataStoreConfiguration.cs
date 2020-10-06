@@ -20,9 +20,9 @@ namespace Microsoft.Health.SqlServer.Configs
         public bool AllowDatabaseCreation { get; set; }
 
         /// <summary>
-        /// Connection type to connect to Sql Server and Sql DB.
+        /// Authentication type.
         /// </summary>
-        public SqlServerAuthenticationType ConnectionType { get; set; } = SqlServerAuthenticationType.ConnectionString;
+        public SqlServerAuthenticationType AuthenticationType { get; set; } = SqlServerAuthenticationType.ConnectionString;
 
         /// <summary>
         /// Configuration for transient fault retry policy.
