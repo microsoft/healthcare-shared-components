@@ -21,7 +21,7 @@ namespace Microsoft.Health.SqlServer.Features.Client
         private SqlConnection _sqlConnection;
         private SqlTransaction _sqlTransaction;
 
-        public SqlConnectionWrapper(
+        internal SqlConnectionWrapper(
             SqlTransactionHandler sqlTransactionHandler,
             SqlCommandWrapperFactory sqlCommandWrapperFactory,
             ISqlConnectionFactory sqlConnectionFactory,
@@ -35,8 +35,6 @@ namespace Microsoft.Health.SqlServer.Features.Client
             _enlistInTransactionIfPresent = enlistInTransactionIfPresent;
             _sqlCommandWrapperFactory = sqlCommandWrapperFactory;
             _sqlConnectionFactory = sqlConnectionFactory;
-
-            InitializeAsync();
         }
 
         public SqlConnection SqlConnection
@@ -52,7 +50,7 @@ namespace Microsoft.Health.SqlServer.Features.Client
             }
         }
 
-        public async void InitializeAsync()
+        internal async void InitializeAsync()
         {
             if (_enlistInTransactionIfPresent && _sqlTransactionHandler.SqlTransactionScope?.SqlConnection != null)
             {

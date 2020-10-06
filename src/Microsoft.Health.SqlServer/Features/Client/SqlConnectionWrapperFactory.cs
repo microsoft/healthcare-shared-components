@@ -30,7 +30,10 @@ namespace Microsoft.Health.SqlServer.Features.Client
 
         public SqlConnectionWrapper ObtainSqlConnectionWrapper(bool enlistInTransaction = false)
         {
-            return new SqlConnectionWrapper(_sqlTransactionHandler, _sqlCommandWrapperFactory, _sqlConnectionFactory, enlistInTransaction);
+            SqlConnectionWrapper sqlConnectionWrapper = new SqlConnectionWrapper(_sqlTransactionHandler, _sqlCommandWrapperFactory, _sqlConnectionFactory, enlistInTransaction);
+            sqlConnectionWrapper.InitializeAsync();
+
+            return sqlConnectionWrapper;
         }
     }
 }
