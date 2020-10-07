@@ -25,12 +25,8 @@ namespace Microsoft.Health.SqlServer
             _accessTokenHandler = accessTokenHandler;
         }
 
-        /// <summary>
-        /// Get sql connection after getting access token.
-        /// </summary>
-        /// <param name="initialCatalog">Initial catalog to connect to. If value is null, or no argument is provided, initial catalog is determined from the connection string.</param>
-        /// <returns>Sql connection task.</returns>
-        private async Task<SqlConnection> GetSqlConnectionImplAsync(string initialCatalog = null)
+        /// <inheritdoc />
+        public async Task<SqlConnection> GetSqlConnectionAsync(string initialCatalog = null)
         {
             EnsureArg.IsNotNullOrEmpty(_sqlServerDataStoreConfiguration.ConnectionString);
 
@@ -50,18 +46,6 @@ namespace Microsoft.Health.SqlServer
             sqlConnection.AccessToken = result;
 
             return sqlConnection;
-        }
-
-        /// <inheritdoc />
-        public async Task<SqlConnection> GetSqlConnectionAsync()
-        {
-            return await GetSqlConnectionImplAsync();
-        }
-
-        /// <inheritdoc />
-        public async Task<SqlConnection> GetSqlConnectionAsync(string initialCatalog)
-        {
-            return await GetSqlConnectionImplAsync(initialCatalog);
         }
     }
 }

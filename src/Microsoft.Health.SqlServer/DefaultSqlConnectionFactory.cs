@@ -26,13 +26,7 @@ namespace Microsoft.Health.SqlServer
         }
 
         /// <inheritdoc />
-        public Task<SqlConnection> GetSqlConnectionAsync()
-        {
-            return GetSqlConnectionAsync(null);
-        }
-
-        /// <inheritdoc />
-        public Task<SqlConnection> GetSqlConnectionAsync(string initialCatalog)
+        public Task<SqlConnection> GetSqlConnectionAsync(string initialCatalog = null)
         {
             EnsureArg.IsNotNullOrEmpty(_sqlServerDataStoreConfiguration.ConnectionString);
 
