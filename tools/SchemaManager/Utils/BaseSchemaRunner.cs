@@ -4,6 +4,7 @@
 // -------------------------------------------------------------------------------------------------
 
 using System;
+using System.Threading.Tasks;
 using Microsoft.Data.SqlClient;
 using Microsoft.Health.SqlServer.Features.Schema;
 using Polly;
@@ -16,11 +17,11 @@ namespace SchemaManager.Utils
         private static readonly TimeSpan RetrySleepDuration = TimeSpan.FromSeconds(20);
         private const int RetryAttempts = 3;
 
-        public static void EnsureBaseSchemaExists(string connectionString)
+        public static async Task EnsureBaseSchemaExistsAsync(string connectionString)
         {
             IBaseScriptProvider baseScriptProvider = new BaseScriptProvider();
 
-            Initialize(connectionString);
+            await InitializeAsync(connectionString);
 
             if (!SchemaDataStore.BaseSchemaExists(connectionString))
             {
@@ -62,37 +63,46 @@ namespace SchemaManager.Utils
             }
         }
 
-        private static void Initialize(string connectionString)
+        private static async Task InitializeAsync(string connectionString)
         {
             var configuredConnectionBuilder = new SqlConnectionStringBuilder(connectionString);
             string databaseName = configuredConnectionBuilder.InitialCatalog;
 
             SchemaInitializer.ValidateDatabaseName(databaseName);
 
-            var connection = SchemaInitializer.GetConnectionIfDatabaseNotExists(connectionString, databaseName);
+            SqlConnectionStringBuilder connectionBuilder = new SqlConnectionStringBuilder(connectionString) { InitialCatalog = string.Empty };
 
-            // database creation is allowed
-            if (connection != null)
+            using (var connection = new SqlConnection(connectionBuilder.ToString()))
             {
-                Console.WriteLine("The database does not exists.");
+                bool doesDatabaseExist = await SchemaInitializer.DoesDatabaseExistAsync(connection, databaseName);
 
-                bool created = SchemaInitializer.CreateDatabase(connection, databaseName);
-
-                if (created)
+                // database creation is allowed
+                if (!doesDatabaseExist)
                 {
-                    Console.WriteLine("The database is created.");
-                }
-                else
-                {
-                    throw new SchemaManagerException(Resources.InsufficientDatabasePermissionsMessage);
-                }
+                    Console.WriteLine("The database does not exists.");
 
-                connection.Close();
+                    bool created = await SchemaInitializer.CreateDatabaseAsync(connection, databaseName);
+
+                    if (created)
+                    {
+                        Console.WriteLine("The database is created.");
+                    }
+                    else
+                    {
+                        throw new SchemaManagerException(Resources.InsufficientDatabasePermissionsMessage);
+                    }
+
+                    connection.Close();
+                }
             }
 
-            // now switch to the target database
+            bool canInitialize = false;
 
-            bool canInitialize = SchemaInitializer.CheckDatabasePermissions(connectionString);
+            // now switch to the target database
+            using (var sqlConnection = new SqlConnection(connectionString))
+            {
+                canInitialize = await SchemaInitializer.CheckDatabasePermissionsAsync(sqlConnection);
+            }
 
             if (!canInitialize)
             {

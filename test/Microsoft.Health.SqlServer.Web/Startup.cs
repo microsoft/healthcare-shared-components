@@ -32,7 +32,7 @@ namespace Microsoft.Health.SqlServer.Web
                 .AddMvc(options => { options.EnableEndpointRouting = false; })
                 .AddNewtonsoftJson();
 
-            services.AddSqlServerBase<SchemaVersion>();
+            services.AddSqlServerBase<SchemaVersion>(Configuration);
             services.AddSqlServerApi();
 
             services.AddMediatR(typeof(CompatibilityVersionHandler).Assembly);

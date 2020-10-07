@@ -20,6 +20,11 @@ namespace Microsoft.Health.SqlServer.Configs
         public bool AllowDatabaseCreation { get; set; }
 
         /// <summary>
+        /// Authentication type.
+        /// </summary>
+        public SqlServerAuthenticationType AuthenticationType { get; set; } = SqlServerAuthenticationType.ConnectionString;
+
+        /// <summary>
         /// Configuration for transient fault retry policy.
         /// </summary>
         public SqlServerTransientFaultRetryPolicyConfiguration TransientFaultRetryPolicy { get; set; } = new SqlServerTransientFaultRetryPolicyConfiguration();
