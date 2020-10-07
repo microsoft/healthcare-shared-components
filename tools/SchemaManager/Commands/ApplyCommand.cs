@@ -7,6 +7,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Data.SqlClient;
 using Microsoft.SqlServer.Management.Common;
@@ -23,7 +24,7 @@ namespace SchemaManager.Commands
         private const int RetryAttempts = 3;
         private static List<AvailableVersion> availableVersions;
 
-        public static async Task HandlerAsync(string connectionString, Uri server, MutuallyExclusiveType exclusiveType, bool force)
+        public static async Task HandlerAsync(string connectionString, Uri server, MutuallyExclusiveType exclusiveType, bool force, CancellationToken cancellationToken = default)
         {
             ISchemaClient schemaClient = new SchemaClient(server);
 
@@ -36,7 +37,7 @@ namespace SchemaManager.Commands
             {
                 // Base schema is required to run the schema migration tool.
                 // This method also initializes the database if not initialized yet.
-                await BaseSchemaRunner.EnsureBaseSchemaExistsAsync(connectionString);
+                await BaseSchemaRunner.EnsureBaseSchemaExistsAsync(connectionString, cancellationToken);
 
                 // If InstanceSchema table is just created(as part of baseSchema), it takes a while to insert a version record
                 // since the Schema job polls and upserts at the specified interval in the service.

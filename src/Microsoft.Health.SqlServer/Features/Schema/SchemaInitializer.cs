@@ -5,6 +5,7 @@
 
 using System;
 using System.Data;
+using System.Threading;
 using System.Threading.Tasks;
 using EnsureThat;
 using Microsoft.Data.SqlClient;
@@ -42,14 +43,14 @@ namespace Microsoft.Health.SqlServer.Features.Schema
             _logger = logger;
         }
 
-        public async Task InitializeAsync(bool forceIncrementalSchemaUpgrade = false)
+        public async Task InitializeAsync(bool forceIncrementalSchemaUpgrade = false, CancellationToken cancellationToken = default)
         {
-            if (!await CanInitializeAsync())
+            if (!await CanInitializeAsync(cancellationToken))
             {
                 return;
             }
 
-            await GetCurrentSchemaVersionAsync();
+            await GetCurrentSchemaVersionAsync(cancellationToken);
 
             _logger.LogInformation("Schema version is {version}", _schemaInformation.Current?.ToString() ?? "NULL");
 
@@ -59,21 +60,21 @@ namespace Microsoft.Health.SqlServer.Features.Schema
                 if (_schemaInformation.Current == null)
                 {
                     // Apply base schema
-                    await _schemaUpgradeRunner.ApplyBaseSchema();
+                    await _schemaUpgradeRunner.ApplyBaseSchemaAsync(cancellationToken);
 
                     // This is for tests purpose only
                     if (forceIncrementalSchemaUpgrade)
                     {
                         // Run version 1 and and apply .diff.sql files to upgrade the schema version.
-                        await _schemaUpgradeRunner.ApplySchema(_schemaInformation.MinimumSupportedVersion, applyFullSchemaSnapshot: true);
+                        await _schemaUpgradeRunner.ApplySchemaAsync(_schemaInformation.MinimumSupportedVersion, applyFullSchemaSnapshot: true, cancellationToken);
                     }
                     else
                     {
                         // Apply the maximum supported version. This won't consider the .diff.sql files.
-                        await _schemaUpgradeRunner.ApplySchema(_schemaInformation.MaximumSupportedVersion, applyFullSchemaSnapshot: true);
+                        await _schemaUpgradeRunner.ApplySchemaAsync(_schemaInformation.MaximumSupportedVersion, applyFullSchemaSnapshot: true, cancellationToken);
                     }
 
-                    await GetCurrentSchemaVersionAsync();
+                    await GetCurrentSchemaVersionAsync(cancellationToken);
                 }
 
                 // If the current schema version needs to be upgraded
@@ -83,19 +84,19 @@ namespace Microsoft.Health.SqlServer.Features.Schema
                     int current = _schemaInformation.Current ?? 0;
                     for (int i = current + 1; i <= _schemaInformation.MaximumSupportedVersion; i++)
                     {
-                        await _schemaUpgradeRunner.ApplySchema(version: i, applyFullSchemaSnapshot: false);
+                        await _schemaUpgradeRunner.ApplySchemaAsync(version: i, applyFullSchemaSnapshot: false, cancellationToken);
                     }
                 }
 
-                await GetCurrentSchemaVersionAsync();
+                await GetCurrentSchemaVersionAsync(cancellationToken);
             }
         }
 
-        private async Task GetCurrentSchemaVersionAsync()
+        private async Task GetCurrentSchemaVersionAsync(CancellationToken cancellationToken)
         {
-            using (var connection = await _sqlConnectionFactory.GetSqlConnectionAsync())
+            using (var connection = await _sqlConnectionFactory.GetSqlConnectionAsync(cancellationToken: cancellationToken))
             {
-                await connection.OpenAsync();
+                await connection.OpenAsync(cancellationToken);
 
                 string tableName = "dbo.SchemaVersion";
 
@@ -108,7 +109,7 @@ namespace Microsoft.Health.SqlServer.Features.Schema
 
                     try
                     {
-                        _schemaInformation.Current = await selectCommand.ExecuteScalarAsync() as int?;
+                        _schemaInformation.Current = await selectCommand.ExecuteScalarAsync(cancellationToken) as int?;
                     }
                     catch (SqlException e) when (e.Message is "Invalid object name 'dbo.SchemaVersion'.")
                     {
@@ -139,21 +140,22 @@ namespace Microsoft.Health.SqlServer.Features.Schema
         /// </summary>
         /// <param name="sqlConnection">Sql Connection with permissions to query the system tables in order to check if the provided database exists.</param>
         /// <param name="databaseName">Database name.</param>
+        /// <param name="cancellationToken">Cancellation token.</param>
         /// <returns>True if database exists, else returns false.</returns>
-        public static async Task<bool> DoesDatabaseExistAsync(SqlConnection sqlConnection, string databaseName)
+        public static async Task<bool> DoesDatabaseExistAsync(SqlConnection sqlConnection, string databaseName, CancellationToken cancellationToken)
         {
             EnsureArg.IsNotNull(sqlConnection, nameof(sqlConnection));
 
             if (sqlConnection.State != ConnectionState.Open)
             {
-                await sqlConnection.OpenAsync();
+                await sqlConnection.OpenAsync(cancellationToken);
             }
 
             using (var checkDatabaseExistsCommand = sqlConnection.CreateCommand())
             {
                 checkDatabaseExistsCommand.CommandText = "SELECT 1 FROM sys.databases where name = @databaseName";
                 checkDatabaseExistsCommand.Parameters.AddWithValue("@databaseName", databaseName);
-                if ((int?)await checkDatabaseExistsCommand.ExecuteScalarAsync() == 1)
+                if ((int?)await checkDatabaseExistsCommand.ExecuteScalarAsync(cancellationToken) == 1)
                 {
                     return true;
                 }
@@ -162,15 +164,15 @@ namespace Microsoft.Health.SqlServer.Features.Schema
             return false;
         }
 
-        public static async Task<bool> CreateDatabaseAsync(SqlConnection connection, string databaseName)
+        public static async Task<bool> CreateDatabaseAsync(SqlConnection connection, string databaseName, CancellationToken cancellationToken)
         {
             using (var canCreateDatabaseCommand = new SqlCommand("SELECT count(*) FROM fn_my_permissions (NULL, 'DATABASE') WHERE permission_name = 'CREATE DATABASE'", connection))
             {
-                if ((int)await canCreateDatabaseCommand.ExecuteScalarAsync() > 0)
+                if ((int)await canCreateDatabaseCommand.ExecuteScalarAsync(cancellationToken) > 0)
                 {
                     using (var createDatabaseCommand = new SqlCommand($"CREATE DATABASE {databaseName}", connection))
                     {
-                        await createDatabaseCommand.ExecuteNonQueryAsync();
+                        await createDatabaseCommand.ExecuteNonQueryAsync(cancellationToken);
                         return true;
                     }
                 }
@@ -181,22 +183,22 @@ namespace Microsoft.Health.SqlServer.Features.Schema
             }
         }
 
-        public static async Task<bool> CheckDatabasePermissionsAsync(SqlConnection connection)
+        public static async Task<bool> CheckDatabasePermissionsAsync(SqlConnection connection, CancellationToken cancellationToken)
         {
             EnsureArg.IsNotNull(connection, nameof(connection));
 
             if (connection.State != ConnectionState.Open)
             {
-                await connection.OpenAsync();
+                await connection.OpenAsync(cancellationToken);
             }
 
             using (var command = new SqlCommand("SELECT count(*) FROM fn_my_permissions (NULL, 'DATABASE') WHERE permission_name = 'CREATE TABLE'", connection))
             {
-                return (int)await command.ExecuteScalarAsync() > 0;
+                return (int)await command.ExecuteScalarAsync(cancellationToken) > 0;
             }
         }
 
-        private async Task<bool> CanInitializeAsync()
+        private async Task<bool> CanInitializeAsync(CancellationToken cancellationToken)
         {
             if (!_sqlServerDataStoreConfiguration.Initialize)
             {
@@ -210,15 +212,15 @@ namespace Microsoft.Health.SqlServer.Features.Schema
 
             if (_sqlServerDataStoreConfiguration.AllowDatabaseCreation)
             {
-                using (var connection = await _sqlConnectionFactory.GetSqlConnectionAsync(MasterDatabase))
+                using (var connection = await _sqlConnectionFactory.GetSqlConnectionAsync(MasterDatabase, cancellationToken))
                 {
-                    bool doesDatabaseExist = await DoesDatabaseExistAsync(connection, databaseName);
+                    bool doesDatabaseExist = await DoesDatabaseExistAsync(connection, databaseName, cancellationToken);
 
                     if (!doesDatabaseExist)
                     {
                         _logger.LogInformation("Database does not exist");
 
-                        bool created = await CreateDatabaseAsync(connection, databaseName);
+                        bool created = await CreateDatabaseAsync(connection, databaseName, cancellationToken);
 
                         if (created)
                         {
@@ -236,9 +238,9 @@ namespace Microsoft.Health.SqlServer.Features.Schema
             bool canInitialize = false;
 
             // now switch to the target database
-            using (var connection = await _sqlConnectionFactory.GetSqlConnectionAsync())
+            using (var connection = await _sqlConnectionFactory.GetSqlConnectionAsync(cancellationToken: cancellationToken))
             {
-                canInitialize = await CheckDatabasePermissionsAsync(connection);
+                canInitialize = await CheckDatabasePermissionsAsync(connection, cancellationToken);
             }
 
             if (!canInitialize)
