@@ -5,8 +5,8 @@
 
 using System.Collections.Generic;
 using System.Data;
-using System.Data.SqlClient;
 using EnsureThat;
+using Microsoft.Data.SqlClient;
 using Microsoft.Health.SqlServer.Features.Schema.Model;
 
 namespace Microsoft.Health.SqlServer.Features.Storage

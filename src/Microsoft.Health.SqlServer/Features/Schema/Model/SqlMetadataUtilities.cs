@@ -5,7 +5,7 @@
 
 using System.Data;
 using EnsureThat;
-using Microsoft.SqlServer.Server;
+using Microsoft.Data.SqlClient.Server;
 
 namespace Microsoft.Health.SqlServer.Features.Schema.Model
 {

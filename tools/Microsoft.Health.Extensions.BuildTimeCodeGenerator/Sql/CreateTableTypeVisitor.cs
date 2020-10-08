@@ -7,7 +7,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
-using Microsoft.SqlServer.Server;
+using Microsoft.Data.SqlClient.Server;
 using Microsoft.SqlServer.TransactSql.ScriptDom;
 using static Microsoft.CodeAnalysis.CSharp.SyntaxFactory;
 

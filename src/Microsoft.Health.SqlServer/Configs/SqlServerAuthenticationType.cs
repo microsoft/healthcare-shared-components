@@ -3,20 +3,18 @@
 // Licensed under the MIT License (MIT). See LICENSE in the repo root for license information.
 // -------------------------------------------------------------------------------------------------
 
-using EnsureThat;
-using MediatR;
-
-namespace Microsoft.Health.SqlServer.Features.Schema.Messages.Notifications
+namespace Microsoft.Health.SqlServer.Configs
 {
-    public class SchemaUpgradedNotification : INotification
+    public enum SqlServerAuthenticationType
     {
-        public SchemaUpgradedNotification(int version)
-        {
-            EnsureArg.IsGte(version, 1);
+        ManagedIdentity,
 
-            Version = version;
-        }
-
-        public int Version { get; }
+        /// <summary>
+        /// Works for
+        /// 1. Windows Integrated Authentication
+        /// 2. Sql User name and Password
+        /// as they both completely rely on the connection string.
+        /// </summary>
+        ConnectionString,
     }
 }

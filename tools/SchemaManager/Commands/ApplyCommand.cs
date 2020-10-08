@@ -5,11 +5,10 @@
 
 using System;
 using System.Collections.Generic;
-using System.Data;
-using System.Data.SqlClient;
 using System.Linq;
 using System.Net.Http;
 using System.Threading.Tasks;
+using Microsoft.Data.SqlClient;
 using Microsoft.SqlServer.Management.Common;
 using Polly;
 using SchemaManager.Exceptions;
@@ -37,7 +36,7 @@ namespace SchemaManager.Commands
             {
                 // Base schema is required to run the schema migration tool.
                 // This method also initializes the database if not initialized yet.
-                BaseSchemaRunner.EnsureBaseSchemaExists(connectionString);
+                await BaseSchemaRunner.EnsureBaseSchemaExistsAsync(connectionString);
 
                 // If InstanceSchema table is just created(as part of baseSchema), it takes a while to insert a version record
                 // since the Schema job polls and upserts at the specified interval in the service.

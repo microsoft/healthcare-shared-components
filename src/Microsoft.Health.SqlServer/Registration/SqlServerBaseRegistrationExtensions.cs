@@ -4,6 +4,7 @@
 // -------------------------------------------------------------------------------------------------
 
 using System;
+using Microsoft.Azure.Services.AppAuthentication;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Health.Extensions.DependencyInjection;
@@ -18,13 +19,15 @@ namespace Microsoft.Health.SqlServer.Registration
     {
         public static IServiceCollection AddSqlServerBase<TSchemaVersionEnum>(
             this IServiceCollection services,
+            IConfiguration configurationRoot,
             Action<SqlServerDataStoreConfiguration> configureAction = null)
             where TSchemaVersionEnum : Enum
         {
+            var config = new SqlServerDataStoreConfiguration();
+            configurationRoot?.GetSection("SqlServer").Bind(config);
+
             services.Add(provider =>
                 {
-                    var config = new SqlServerDataStoreConfiguration();
-                    provider.GetService<IConfiguration>().GetSection("SqlServer").Bind(config);
                     configureAction?.Invoke(config);
 
                     return config;
@@ -84,6 +87,19 @@ namespace Microsoft.Health.SqlServer.Registration
                 .Scoped()
                 .AsSelf()
                 .AsImplementedInterfaces();
+
+            switch (config.AuthenticationType)
+            {
+                case SqlServerAuthenticationType.ManagedIdentity:
+                    services.AddSingleton<ISqlConnectionFactory, ManagedIdentitySqlConnectionFactory>();
+                    services.AddSingleton<IAccessTokenHandler, ManagedIdentityAccessTokenHandler>();
+                    services.AddSingleton<AzureServiceTokenProvider>();
+                    break;
+                case SqlServerAuthenticationType.ConnectionString:
+                default:
+                    services.AddSingleton<ISqlConnectionFactory, DefaultSqlConnectionFactory>();
+                    break;
+            }
 
             return services;
         }

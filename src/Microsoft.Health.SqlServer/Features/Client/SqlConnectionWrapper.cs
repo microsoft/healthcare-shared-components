@@ -5,9 +5,9 @@
 
 using System;
 using System.Data;
-using System.Data.SqlClient;
+using System.Threading.Tasks;
 using EnsureThat;
-using Microsoft.Health.SqlServer.Configs;
+using Microsoft.Data.SqlClient;
 using Microsoft.Health.SqlServer.Features.Storage;
 
 namespace Microsoft.Health.SqlServer.Features.Client
@@ -17,54 +17,71 @@ namespace Microsoft.Health.SqlServer.Features.Client
         private readonly bool _enlistInTransactionIfPresent;
         private readonly SqlTransactionHandler _sqlTransactionHandler;
         private readonly SqlCommandWrapperFactory _sqlCommandWrapperFactory;
+        private readonly ISqlConnectionFactory _sqlConnectionFactory;
 
-        public SqlConnectionWrapper(
-            SqlServerDataStoreConfiguration configuration,
+        private SqlConnection _sqlConnection;
+        private SqlTransaction _sqlTransaction;
+
+        internal SqlConnectionWrapper(
             SqlTransactionHandler sqlTransactionHandler,
             SqlCommandWrapperFactory sqlCommandWrapperFactory,
+            ISqlConnectionFactory sqlConnectionFactory,
             bool enlistInTransactionIfPresent)
         {
-            EnsureArg.IsNotNull(configuration, nameof(configuration));
             EnsureArg.IsNotNull(sqlTransactionHandler, nameof(sqlTransactionHandler));
             EnsureArg.IsNotNull(sqlCommandWrapperFactory, nameof(sqlCommandWrapperFactory));
+            EnsureArg.IsNotNull(sqlConnectionFactory, nameof(sqlConnectionFactory));
 
             _sqlTransactionHandler = sqlTransactionHandler;
             _enlistInTransactionIfPresent = enlistInTransactionIfPresent;
             _sqlCommandWrapperFactory = sqlCommandWrapperFactory;
+            _sqlConnectionFactory = sqlConnectionFactory;
+        }
 
-            if (_enlistInTransactionIfPresent && sqlTransactionHandler.SqlTransactionScope?.SqlConnection != null)
+        public SqlConnection SqlConnection
+        {
+            get { return _sqlConnection; }
+        }
+
+        public SqlTransaction SqlTransaction
+        {
+            get
             {
-                SqlConnection = sqlTransactionHandler.SqlTransactionScope.SqlConnection;
+                return _sqlTransaction;
+            }
+        }
+
+        internal async Task InitializeAsync()
+        {
+            if (_enlistInTransactionIfPresent && _sqlTransactionHandler.SqlTransactionScope?.SqlConnection != null)
+            {
+                _sqlConnection = _sqlTransactionHandler.SqlTransactionScope.SqlConnection;
             }
             else
             {
-                SqlConnection = new SqlConnection(configuration.ConnectionString);
+                _sqlConnection = await _sqlConnectionFactory.GetSqlConnectionAsync();
             }
 
-            if (_enlistInTransactionIfPresent && sqlTransactionHandler.SqlTransactionScope != null && sqlTransactionHandler.SqlTransactionScope.SqlConnection == null)
+            if (_enlistInTransactionIfPresent && _sqlTransactionHandler.SqlTransactionScope != null && _sqlTransactionHandler.SqlTransactionScope.SqlConnection == null)
             {
-                sqlTransactionHandler.SqlTransactionScope.SqlConnection = SqlConnection;
+                _sqlTransactionHandler.SqlTransactionScope.SqlConnection = SqlConnection;
             }
 
             if (SqlConnection.State != ConnectionState.Open)
             {
-                SqlConnection.Open();
+                await SqlConnection.OpenAsync();
             }
 
-            if (enlistInTransactionIfPresent && sqlTransactionHandler.SqlTransactionScope != null)
+            if (_enlistInTransactionIfPresent && _sqlTransactionHandler.SqlTransactionScope != null)
             {
-                SqlTransaction = sqlTransactionHandler.SqlTransactionScope.SqlTransaction ?? SqlConnection.BeginTransaction();
+                _sqlTransaction = _sqlTransactionHandler.SqlTransactionScope.SqlTransaction ?? SqlConnection.BeginTransaction();
 
-                if (sqlTransactionHandler.SqlTransactionScope.SqlTransaction == null)
+                if (_sqlTransactionHandler.SqlTransactionScope.SqlTransaction == null)
                 {
-                    sqlTransactionHandler.SqlTransactionScope.SqlTransaction = SqlTransaction;
+                    _sqlTransactionHandler.SqlTransactionScope.SqlTransaction = SqlTransaction;
                 }
             }
         }
-
-        public SqlConnection SqlConnection { get; }
-
-        public SqlTransaction SqlTransaction { get; }
 
         public SqlCommandWrapper CreateSqlCommand()
         {

@@ -4,11 +4,11 @@
 // -------------------------------------------------------------------------------------------------
 
 using System.Data;
-using System.Data.SqlClient;
+using System.Threading.Tasks;
 using EnsureThat;
 using MediatR;
+using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.Logging;
-using Microsoft.Health.SqlServer.Configs;
 using Microsoft.Health.SqlServer.Features.Schema.Extensions;
 using Microsoft.SqlServer.Management.Common;
 using Microsoft.SqlServer.Management.Smo;
@@ -19,88 +19,88 @@ namespace Microsoft.Health.SqlServer.Features.Schema
     {
         private readonly IScriptProvider _scriptProvider;
         private readonly IBaseScriptProvider _baseScriptProvider;
-        private readonly SqlServerDataStoreConfiguration _sqlServerDataStoreConfiguration;
         private readonly IMediator _mediator;
         private readonly ILogger<SchemaUpgradeRunner> _logger;
+        private readonly ISqlConnectionFactory _sqlConnectionFactory;
 
         public SchemaUpgradeRunner(
             IScriptProvider scriptProvider,
             IBaseScriptProvider baseScriptProvider,
-            SqlServerDataStoreConfiguration sqlServerDataStoreConfiguration,
             IMediator mediator,
-            ILogger<SchemaUpgradeRunner> logger)
+            ILogger<SchemaUpgradeRunner> logger,
+            ISqlConnectionFactory sqlConnectionFactory)
         {
             EnsureArg.IsNotNull(scriptProvider, nameof(scriptProvider));
             EnsureArg.IsNotNull(baseScriptProvider, nameof(baseScriptProvider));
-            EnsureArg.IsNotNull(sqlServerDataStoreConfiguration, nameof(sqlServerDataStoreConfiguration));
             EnsureArg.IsNotNull(mediator, nameof(mediator));
             EnsureArg.IsNotNull(logger, nameof(logger));
+            EnsureArg.IsNotNull(sqlConnectionFactory, nameof(sqlConnectionFactory));
 
             _scriptProvider = scriptProvider;
             _baseScriptProvider = baseScriptProvider;
-            _sqlServerDataStoreConfiguration = sqlServerDataStoreConfiguration;
             _mediator = mediator;
             _logger = logger;
+            _sqlConnectionFactory = sqlConnectionFactory;
         }
 
-        public void ApplySchema(int version, bool applyFullSchemaSnapshot)
+        public async Task ApplySchema(int version, bool applyFullSchemaSnapshot)
         {
             _logger.LogInformation("Applying schema {version}", version);
 
             if (!applyFullSchemaSnapshot)
             {
-                InsertSchemaVersion(version);
+                await InsertSchemaVersionAsync(version);
             }
 
-            ExecuteSchema(_scriptProvider.GetMigrationScript(version, applyFullSchemaSnapshot));
+            await ExecuteSchemaAsync(_scriptProvider.GetMigrationScript(version, applyFullSchemaSnapshot));
 
-            CompleteSchemaVersion(version);
+            await CompleteSchemaVersionAsync(version);
 
             _mediator.NotifySchemaUpgradedAsync(version).Wait();
             _logger.LogInformation("Completed applying schema {version}", version);
         }
 
-        public void ApplyBaseSchema()
+        public async Task ApplyBaseSchema()
         {
             _logger.LogInformation("Applying base schema");
 
-            ExecuteSchema(_baseScriptProvider.GetScript());
+            await ExecuteSchemaAsync(_baseScriptProvider.GetScript());
 
             _logger.LogInformation("Completed applying base schema");
         }
 
-        private void ExecuteSchema(string script)
+        private async Task ExecuteSchemaAsync(string script)
         {
-            using (var connection = new SqlConnection(_sqlServerDataStoreConfiguration.ConnectionString))
+            using (var connection = await _sqlConnectionFactory.GetSqlConnectionAsync())
             {
-                connection.Open();
+                await connection.OpenAsync();
                 var server = new Server(new ServerConnection(connection));
 
                 server.ConnectionContext.ExecuteNonQuery(script);
             }
         }
 
-        private void InsertSchemaVersion(int schemaVersion)
+        private async Task InsertSchemaVersionAsync(int schemaVersion)
         {
-            UpsertSchemaVersion(schemaVersion, "started");
+            await UpsertSchemaVersionAsync(schemaVersion, "started");
         }
 
-        private void CompleteSchemaVersion(int schemaVersion)
+        private async Task CompleteSchemaVersionAsync(int schemaVersion)
         {
-            UpsertSchemaVersion(schemaVersion, "completed");
+            await UpsertSchemaVersionAsync(schemaVersion, "completed");
         }
 
-        private void UpsertSchemaVersion(int schemaVersion, string status)
+        private async Task UpsertSchemaVersionAsync(int schemaVersion, string status)
         {
-            using (var connection = new SqlConnection(_sqlServerDataStoreConfiguration.ConnectionString))
+            using (var connection = await _sqlConnectionFactory.GetSqlConnectionAsync())
             using (var upsertCommand = new SqlCommand("dbo.UpsertSchemaVersion", connection))
             {
                 upsertCommand.CommandType = CommandType.StoredProcedure;
                 upsertCommand.Parameters.AddWithValue("@version", schemaVersion);
                 upsertCommand.Parameters.AddWithValue("@status", status);
 
-                connection.Open();
-                upsertCommand.ExecuteNonQuery();
+                await connection.OpenAsync();
+                await upsertCommand.ExecuteNonQueryAsync();
             }
         }
     }
