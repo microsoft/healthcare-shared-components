@@ -42,7 +42,7 @@ namespace Microsoft.Health.SqlServer.Features.Storage
         public async Task<CompatibleVersions> GetLatestCompatibleVersionsAsync(CancellationToken cancellationToken)
         {
             CompatibleVersions compatibleVersions;
-            using (SqlConnectionWrapper sqlConnectionWrapper = await _sqlConnectionWrapperFactory.ObtainSqlConnectionWrapperAsync())
+            using (SqlConnectionWrapper sqlConnectionWrapper = await _sqlConnectionWrapperFactory.ObtainSqlConnectionWrapperAsync(cancellationToken: cancellationToken))
             using (SqlCommandWrapper sqlCommandWrapper = sqlConnectionWrapper.CreateSqlCommand())
             {
                 SchemaShared.SelectCompatibleSchemaVersions.PopulateCommand(sqlCommandWrapper);
@@ -77,7 +77,7 @@ namespace Microsoft.Health.SqlServer.Features.Storage
 
         public async Task<int> UpsertInstanceSchemaInformationAsync(string name, SchemaInformation schemaInformation, CancellationToken cancellationToken)
         {
-            using (SqlConnectionWrapper sqlConnectionWrapper = await _sqlConnectionWrapperFactory.ObtainSqlConnectionWrapperAsync())
+            using (SqlConnectionWrapper sqlConnectionWrapper = await _sqlConnectionWrapperFactory.ObtainSqlConnectionWrapperAsync(cancellationToken: cancellationToken))
             using (SqlCommandWrapper sqlCommandWrapper = sqlConnectionWrapper.CreateSqlCommand())
             {
                 SchemaShared.UpsertInstanceSchema.PopulateCommand(
@@ -100,7 +100,7 @@ namespace Microsoft.Health.SqlServer.Features.Storage
 
         public async Task DeleteExpiredInstanceSchemaAsync(CancellationToken cancellationToken)
         {
-            using (SqlConnectionWrapper sqlConnectionWrapper = await _sqlConnectionWrapperFactory.ObtainSqlConnectionWrapperAsync())
+            using (SqlConnectionWrapper sqlConnectionWrapper = await _sqlConnectionWrapperFactory.ObtainSqlConnectionWrapperAsync(cancellationToken: cancellationToken))
             using (SqlCommandWrapper sqlCommandWrapper = sqlConnectionWrapper.CreateSqlCommand())
             {
                 SchemaShared.DeleteInstanceSchema.PopulateCommand(sqlCommandWrapper);
@@ -119,7 +119,7 @@ namespace Microsoft.Health.SqlServer.Features.Storage
         public async Task<List<CurrentVersionInformation>> GetCurrentVersionAsync(CancellationToken cancellationToken)
         {
             var currentVersions = new List<CurrentVersionInformation>();
-            using (SqlConnectionWrapper sqlConnectionWrapper = await _sqlConnectionWrapperFactory.ObtainSqlConnectionWrapperAsync())
+            using (SqlConnectionWrapper sqlConnectionWrapper = await _sqlConnectionWrapperFactory.ObtainSqlConnectionWrapperAsync(cancellationToken: cancellationToken))
             using (SqlCommandWrapper sqlCommandWrapper = sqlConnectionWrapper.CreateSqlCommand())
             {
                 SchemaShared.SelectCurrentVersionsInformation.PopulateCommand(sqlCommandWrapper);
@@ -130,7 +130,7 @@ namespace Microsoft.Health.SqlServer.Features.Storage
                     {
                         if (dataReader.HasRows)
                         {
-                            while (await dataReader.ReadAsync())
+                            while (await dataReader.ReadAsync(cancellationToken))
                             {
                                 IList<string> instanceNames = new List<string>();
                                 if (!dataReader.IsDBNull(2))

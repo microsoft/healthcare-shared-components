@@ -4,6 +4,7 @@
 // -------------------------------------------------------------------------------------------------
 
 using System.Data;
+using System.Threading;
 using System.Threading.Tasks;
 using EnsureThat;
 using MediatR;
@@ -43,64 +44,64 @@ namespace Microsoft.Health.SqlServer.Features.Schema
             _sqlConnectionFactory = sqlConnectionFactory;
         }
 
-        public async Task ApplySchema(int version, bool applyFullSchemaSnapshot)
+        public async Task ApplySchemaAsync(int version, bool applyFullSchemaSnapshot, CancellationToken cancellationToken)
         {
             _logger.LogInformation("Applying schema {version}", version);
 
             if (!applyFullSchemaSnapshot)
             {
-                await InsertSchemaVersionAsync(version);
+                await InsertSchemaVersionAsync(version, cancellationToken);
             }
 
-            await ExecuteSchemaAsync(_scriptProvider.GetMigrationScript(version, applyFullSchemaSnapshot));
+            await ExecuteSchemaAsync(_scriptProvider.GetMigrationScript(version, applyFullSchemaSnapshot), cancellationToken);
 
-            await CompleteSchemaVersionAsync(version);
+            await CompleteSchemaVersionAsync(version, cancellationToken);
 
             _mediator.NotifySchemaUpgradedAsync(version, applyFullSchemaSnapshot).Wait();
             _logger.LogInformation("Completed applying schema {version}", version);
         }
 
-        public async Task ApplyBaseSchema()
+        public async Task ApplyBaseSchemaAsync(CancellationToken cancellationToken)
         {
             _logger.LogInformation("Applying base schema");
 
-            await ExecuteSchemaAsync(_baseScriptProvider.GetScript());
+            await ExecuteSchemaAsync(_baseScriptProvider.GetScript(), cancellationToken);
 
             _logger.LogInformation("Completed applying base schema");
         }
 
-        private async Task ExecuteSchemaAsync(string script)
+        private async Task ExecuteSchemaAsync(string script, CancellationToken cancellationToken)
         {
-            using (var connection = await _sqlConnectionFactory.GetSqlConnectionAsync())
+            using (var connection = await _sqlConnectionFactory.GetSqlConnectionAsync(cancellationToken: cancellationToken))
             {
-                await connection.OpenAsync();
+                await connection.OpenAsync(cancellationToken);
                 var server = new Server(new ServerConnection(connection));
 
                 server.ConnectionContext.ExecuteNonQuery(script);
             }
         }
 
-        private async Task InsertSchemaVersionAsync(int schemaVersion)
+        private async Task InsertSchemaVersionAsync(int schemaVersion, CancellationToken cancellationToken)
         {
-            await UpsertSchemaVersionAsync(schemaVersion, "started");
+            await UpsertSchemaVersionAsync(schemaVersion, "started", cancellationToken);
         }
 
-        private async Task CompleteSchemaVersionAsync(int schemaVersion)
+        private async Task CompleteSchemaVersionAsync(int schemaVersion, CancellationToken cancellationToken)
         {
-            await UpsertSchemaVersionAsync(schemaVersion, "completed");
+            await UpsertSchemaVersionAsync(schemaVersion, "completed", cancellationToken);
         }
 
-        private async Task UpsertSchemaVersionAsync(int schemaVersion, string status)
+        private async Task UpsertSchemaVersionAsync(int schemaVersion, string status, CancellationToken cancellationToken)
         {
-            using (var connection = await _sqlConnectionFactory.GetSqlConnectionAsync())
+            using (var connection = await _sqlConnectionFactory.GetSqlConnectionAsync(cancellationToken: cancellationToken))
             using (var upsertCommand = new SqlCommand("dbo.UpsertSchemaVersion", connection))
             {
                 upsertCommand.CommandType = CommandType.StoredProcedure;
                 upsertCommand.Parameters.AddWithValue("@version", schemaVersion);
                 upsertCommand.Parameters.AddWithValue("@status", status);
 
-                await connection.OpenAsync();
-                await upsertCommand.ExecuteNonQueryAsync();
+                await connection.OpenAsync(cancellationToken);
+                await upsertCommand.ExecuteNonQueryAsync(cancellationToken);
             }
         }
     }

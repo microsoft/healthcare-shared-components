@@ -3,6 +3,7 @@
 // Licensed under the MIT License (MIT). See LICENSE in the repo root for license information.
 // -------------------------------------------------------------------------------------------------
 
+using System.Threading;
 using System.Threading.Tasks;
 using EnsureThat;
 using Microsoft.Data.SqlClient;
@@ -26,7 +27,7 @@ namespace Microsoft.Health.SqlServer
         }
 
         /// <inheritdoc />
-        public async Task<SqlConnection> GetSqlConnectionAsync(string initialCatalog = null)
+        public async Task<SqlConnection> GetSqlConnectionAsync(string initialCatalog = null, CancellationToken cancellationToken = default)
         {
             EnsureArg.IsNotNullOrEmpty(_sqlServerDataStoreConfiguration.ConnectionString);
 
@@ -42,7 +43,7 @@ namespace Microsoft.Health.SqlServer
                 sqlConnection = new SqlConnection(connectionBuilder.ToString());
             }
 
-            var result = await _accessTokenHandler.GetAccessTokenAsync(_azureResource);
+            var result = await _accessTokenHandler.GetAccessTokenAsync(_azureResource, cancellationToken);
             sqlConnection.AccessToken = result;
 
             return sqlConnection;

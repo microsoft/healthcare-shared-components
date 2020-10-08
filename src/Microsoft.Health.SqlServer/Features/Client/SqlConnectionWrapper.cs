@@ -5,6 +5,7 @@
 
 using System;
 using System.Data;
+using System.Threading;
 using System.Threading.Tasks;
 using EnsureThat;
 using Microsoft.Data.SqlClient;
@@ -51,7 +52,7 @@ namespace Microsoft.Health.SqlServer.Features.Client
             }
         }
 
-        internal async Task InitializeAsync()
+        internal async Task InitializeAsync(CancellationToken cancellationToken)
         {
             if (_enlistInTransactionIfPresent && _sqlTransactionHandler.SqlTransactionScope?.SqlConnection != null)
             {
@@ -59,7 +60,7 @@ namespace Microsoft.Health.SqlServer.Features.Client
             }
             else
             {
-                _sqlConnection = await _sqlConnectionFactory.GetSqlConnectionAsync();
+                _sqlConnection = await _sqlConnectionFactory.GetSqlConnectionAsync(cancellationToken: cancellationToken);
             }
 
             if (_enlistInTransactionIfPresent && _sqlTransactionHandler.SqlTransactionScope != null && _sqlTransactionHandler.SqlTransactionScope.SqlConnection == null)
@@ -69,7 +70,7 @@ namespace Microsoft.Health.SqlServer.Features.Client
 
             if (SqlConnection.State != ConnectionState.Open)
             {
-                await SqlConnection.OpenAsync();
+                await SqlConnection.OpenAsync(cancellationToken);
             }
 
             if (_enlistInTransactionIfPresent && _sqlTransactionHandler.SqlTransactionScope != null)

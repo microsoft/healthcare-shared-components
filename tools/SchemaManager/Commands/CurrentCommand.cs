@@ -9,6 +9,7 @@ using System.CommandLine.Invocation;
 using System.CommandLine.Rendering;
 using System.CommandLine.Rendering.Views;
 using System.Net.Http;
+using System.Threading;
 using System.Threading.Tasks;
 using SchemaManager.Exceptions;
 using SchemaManager.Model;
@@ -18,7 +19,7 @@ namespace SchemaManager.Commands
 {
     public static class CurrentCommand
     {
-        public static async Task HandlerAsync(InvocationContext invocationContext, Uri server, string connectionString)
+        public static async Task HandlerAsync(InvocationContext invocationContext, Uri server, string connectionString, CancellationToken cancellationToken = default)
         {
             var region = new Region(
                           0,
@@ -33,7 +34,7 @@ namespace SchemaManager.Commands
             {
                 // Base schema is required to run the schema migration tool.
                 // This method also initializes the database if not initialized yet.
-                await BaseSchemaRunner.EnsureBaseSchemaExistsAsync(connectionString);
+                await BaseSchemaRunner.EnsureBaseSchemaExistsAsync(connectionString, cancellationToken);
 
                 // If InstanceSchema table is just created(as part of baseSchema), it takes a while to insert a version record
                 // since the Schema job polls and upserts at the specified interval in the service.
