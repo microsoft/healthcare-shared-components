@@ -38,7 +38,7 @@ namespace SchemaManager.Commands
 
                 // If InstanceSchema table is just created(as part of baseSchema), it takes a while to insert a version record
                 // since the Schema job polls and upserts at the specified interval in the service.
-                BaseSchemaRunner.EnsureInstanceSchemaRecordExists(connectionString);
+                await BaseSchemaRunner.EnsureInstanceSchemaRecordExistsAsync(connectionString);
 
                 currentVersions = await schemaClient.GetCurrentVersionInformation();
             }

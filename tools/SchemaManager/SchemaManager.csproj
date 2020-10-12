@@ -21,7 +21,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\src\Microsoft.Health.SqlServer\Microsoft.Health.SqlServer.csproj" />
+    <PackageReference Include="Microsoft.Health.SqlServer" Version="1.0.0-master-20201008-2" />
   </ItemGroup>
 
   <ItemGroup>

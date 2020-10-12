@@ -5,6 +5,7 @@
 
 using System;
 using System.Data;
+using System.Threading.Tasks;
 using Microsoft.Data.SqlClient;
 using Microsoft.SqlServer.Management.Common;
 using Microsoft.SqlServer.Management.Smo;
@@ -17,11 +18,11 @@ namespace SchemaManager
         public const string Failed = "failed";
         public const string Completed = "completed";
 
-        public static void ExecuteScriptAndCompleteSchemaVersion(string connectionString, string script, int version)
+        public static async Task ExecuteScriptAndCompleteSchemaVersionAsync(string connectionString, string script, int version)
         {
             using (var connection = new SqlConnection(connectionString))
             {
-                connection.Open();
+                await connection.OpenAsync();
                 ServerConnection serverConnection = new ServerConnection(connection);
 
                 try
@@ -32,40 +33,40 @@ namespace SchemaManager
 
                     server.ConnectionContext.ExecuteNonQuery(script);
 
-                    UpsertSchemaVersion(connection, version, Completed);
+                    await UpsertSchemaVersionAsync(connection, version, Completed);
 
                     serverConnection.CommitTransaction();
                 }
                 catch (Exception e) when (e is SqlException || e is ExecutionFailureException)
                 {
                     serverConnection.RollBackTransaction();
-                    UpsertSchemaVersion(connection, version, Failed);
+                    await UpsertSchemaVersionAsync(connection, version, Failed);
                     throw;
                 }
             }
         }
 
-        public static void DeleteSchemaVersion(string connectionString, int version, string status)
+        public static async Task DeleteSchemaVersionAsync(string connectionString, int version, string status)
         {
             using (var connection = new SqlConnection(connectionString))
             {
-                connection.Open();
+                await connection.OpenAsync();
 
                 using (var deleteCommand = new SqlCommand(DeleteQuery, connection))
                 {
                     deleteCommand.Parameters.AddWithValue("@version", version);
                     deleteCommand.Parameters.AddWithValue("@status", status);
 
-                    deleteCommand.ExecuteNonQuery();
+                    await deleteCommand.ExecuteNonQueryAsync();
                 }
             }
         }
 
-        public static int GetCurrentSchemaVersion(string connectionString)
+        public static async Task<int> GetCurrentSchemaVersionAsync(string connectionString)
         {
             using (var connection = new SqlConnection(connectionString))
             {
-                connection.Open();
+                await connection.OpenAsync();
 
                 try
                 {
@@ -73,7 +74,7 @@ namespace SchemaManager
                     {
                         selectCommand.CommandType = CommandType.StoredProcedure;
 
-                        object current = selectCommand.ExecuteScalar();
+                        object current = await selectCommand.ExecuteScalarAsync();
                         return (current == null || Convert.IsDBNull(current)) ? 0 : (int)current;
                     }
                 }
@@ -84,7 +85,7 @@ namespace SchemaManager
             }
         }
 
-        private static void UpsertSchemaVersion(SqlConnection connection, int version, string status)
+        private static async Task UpsertSchemaVersionAsync(SqlConnection connection, int version, string status)
         {
             using (var upsertCommand = new SqlCommand("dbo.UpsertSchemaVersion", connection))
             {
@@ -92,28 +93,28 @@ namespace SchemaManager
                 upsertCommand.Parameters.AddWithValue("@version", version);
                 upsertCommand.Parameters.AddWithValue("@status", status);
 
-                upsertCommand.ExecuteNonQuery();
+                await upsertCommand.ExecuteNonQueryAsync();
             }
         }
 
-        public static void ExecuteScript(string connectionString, string script)
+        public static async Task ExecuteScript(string connectionString, string script)
         {
             using (var connection = new SqlConnection(connectionString))
             {
-                connection.Open();
+                await connection.OpenAsync();
                 var server = new Server(new ServerConnection(connection));
 
                 server.ConnectionContext.ExecuteNonQuery(script);
             }
         }
 
-        public static bool BaseSchemaExists(string connectionString)
+        public static async Task<bool> BaseSchemaExistsAsync(string connectionString)
         {
             var procedureQuery = "SELECT COUNT(*) FROM sys.objects WHERE name = @name and type = @type";
 
             using (var connection = new SqlConnection(connectionString))
             {
-                connection.Open();
+                await connection.OpenAsync();
 
                 using (var command = new SqlCommand(procedureQuery, connection))
                 {
@@ -125,13 +126,13 @@ namespace SchemaManager
             }
         }
 
-        public static bool InstanceSchemaRecordExists(string connectionString)
+        public static async Task<bool> InstanceSchemaRecordExistsAsync(string connectionString)
         {
             var procedureQuery = "SELECT COUNT(*) FROM dbo.InstanceSchema";
 
             using (var connection = new SqlConnection(connectionString))
             {
-                connection.Open();
+                await connection.OpenAsync();
 
                 using (var command = new SqlCommand(procedureQuery, connection))
                 {

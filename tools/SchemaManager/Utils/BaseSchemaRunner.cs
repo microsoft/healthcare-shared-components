@@ -24,13 +24,13 @@ namespace SchemaManager.Utils
 
             await InitializeAsync(connectionString, cancellationToken);
 
-            if (!SchemaDataStore.BaseSchemaExists(connectionString))
+            if (!await SchemaDataStore.BaseSchemaExistsAsync(connectionString))
             {
                 var script = baseScriptProvider.GetScript();
 
                 Console.WriteLine(Resources.BaseSchemaExecuting);
 
-                SchemaDataStore.ExecuteScript(connectionString, script);
+                await SchemaDataStore.ExecuteScript(connectionString, script);
 
                 Console.WriteLine(Resources.BaseSchemaSuccess);
             }
@@ -40,25 +40,25 @@ namespace SchemaManager.Utils
             }
         }
 
-        public static void EnsureInstanceSchemaRecordExists(string connectionString)
+        public static async Task EnsureInstanceSchemaRecordExistsAsync(string connectionString)
         {
             // Ensure that the current version record is inserted into InstanceSchema table
             int attempts = 1;
 
-            Policy.Handle<SchemaManagerException>()
-            .WaitAndRetry(
+            await Policy.Handle<SchemaManagerException>()
+            .WaitAndRetryAsync(
                 retryCount: RetryAttempts,
                 sleepDurationProvider: (retryCount) => RetrySleepDuration,
                 onRetry: (exception, retryCount) =>
                 {
                     Console.WriteLine(string.Format(Resources.RetryInstanceSchemaRecord, attempts++, RetryAttempts));
                 })
-            .Execute(() => InstanceSchemaRecordCreated(connectionString));
+            .ExecuteAsync(() => InstanceSchemaRecordCreatedAsync(connectionString));
         }
 
-        private static void InstanceSchemaRecordCreated(string connectionString)
+        private static async Task InstanceSchemaRecordCreatedAsync(string connectionString)
         {
-            if (!SchemaDataStore.InstanceSchemaRecordExists(connectionString))
+            if (!await SchemaDataStore.InstanceSchemaRecordExistsAsync(connectionString))
             {
                 throw new SchemaManagerException(Resources.InstanceSchemaRecordErrorMessage);
             }

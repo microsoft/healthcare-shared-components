@@ -41,7 +41,7 @@ namespace SchemaManager.Commands
 
                 // If InstanceSchema table is just created(as part of baseSchema), it takes a while to insert a version record
                 // since the Schema job polls and upserts at the specified interval in the service.
-                BaseSchemaRunner.EnsureInstanceSchemaRecordExists(connectionString);
+                await BaseSchemaRunner.EnsureInstanceSchemaRecordExistsAsync(connectionString);
 
                 availableVersions = await schemaClient.GetAvailability();
 
@@ -92,7 +92,7 @@ namespace SchemaManager.Commands
                     Console.WriteLine(string.Format(Resources.SchemaMigrationStartedMessage, availableVersions.Last().Id));
 
                     string script = await GetScript(schemaClient, 1, availableVersions.Last().ScriptUri);
-                    UpgradeSchema(connectionString, availableVersions.Last().Id, script);
+                    await UpgradeSchema(connectionString, availableVersions.Last().Id, script);
                     return;
                 }
 
@@ -119,7 +119,7 @@ namespace SchemaManager.Commands
 
                     string script = await GetScript(schemaClient, executingVersion, availableVersion.ScriptUri, availableVersion.DiffUri);
 
-                    UpgradeSchema(connectionString, executingVersion, script);
+                    await UpgradeSchema(connectionString, executingVersion, script);
                 }
             }
             catch (Exception ex) when (ex is SchemaManagerException || ex is InvalidOperationException)
@@ -150,12 +150,12 @@ namespace SchemaManager.Commands
             }
         }
 
-        private static void UpgradeSchema(string connectionString, int version, string script)
+        private static async Task UpgradeSchema(string connectionString, int version, string script)
         {
             // check if the record for given version exists in failed status
-            SchemaDataStore.DeleteSchemaVersion(connectionString, version, SchemaDataStore.Failed);
+            await SchemaDataStore.DeleteSchemaVersionAsync(connectionString, version, SchemaDataStore.Failed);
 
-            SchemaDataStore.ExecuteScriptAndCompleteSchemaVersion(connectionString, script, version);
+            await SchemaDataStore.ExecuteScriptAndCompleteSchemaVersionAsync(connectionString, script, version);
 
             Console.WriteLine(string.Format(Resources.SchemaMigrationSuccessMessage, version));
         }
@@ -203,7 +203,7 @@ namespace SchemaManager.Commands
 
             availableVersions.Sort((x, y) => x.Id.CompareTo(y.Id));
 
-            if (availableVersions.First().Id != SchemaDataStore.GetCurrentSchemaVersion(connectionString))
+            if (availableVersions.First().Id != await SchemaDataStore.GetCurrentSchemaVersionAsync(connectionString))
             {
                 throw new SchemaManagerException(Resources.AvailableVersionsErrorMessage);
             }
