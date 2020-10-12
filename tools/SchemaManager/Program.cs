@@ -7,6 +7,7 @@ using System;
 using System.Collections.Generic;
 using System.CommandLine;
 using System.CommandLine.Invocation;
+using System.Threading;
 using SchemaManager.Commands;
 using SchemaManager.Model;
 
@@ -59,7 +60,7 @@ namespace SchemaManager
                 serverOption,
                 connectionStringOption,
             };
-            currentCommand.Handler = CommandHandler.Create<InvocationContext, Uri, string>(CurrentCommand.HandlerAsync);
+            currentCommand.Handler = CommandHandler.Create<InvocationContext, Uri, string, CancellationToken>(CurrentCommand.HandlerAsync);
             currentCommand.Argument.AddValidator(symbol => Validators.RequiredOptionValidator.Validate(symbol, serverOption, Resources.ServerRequiredValidation));
             currentCommand.Argument.AddValidator(symbol => Validators.RequiredOptionValidator.Validate(symbol, connectionStringOption, Resources.ConnectionStringRequiredValidation));
 
@@ -72,7 +73,7 @@ namespace SchemaManager
                 latestOption,
                 forceOption,
             };
-            applyCommand.Handler = CommandHandler.Create<string, Uri, MutuallyExclusiveType, bool>(ApplyCommand.HandlerAsync);
+            applyCommand.Handler = CommandHandler.Create<string, Uri, MutuallyExclusiveType, bool, CancellationToken>(ApplyCommand.HandlerAsync);
             applyCommand.Argument.AddValidator(symbol => Validators.RequiredOptionValidator.Validate(symbol, connectionStringOption, Resources.ConnectionStringRequiredValidation));
             applyCommand.Argument.AddValidator(symbol => Validators.RequiredOptionValidator.Validate(symbol, serverOption, Resources.ServerRequiredValidation));
             applyCommand.Argument.AddValidator(symbol => Validators.MutuallyExclusiveOptionValidator.Validate(symbol, new List<Option> { versionOption, nextOption, latestOption }, Resources.MutuallyExclusiveValidation));
