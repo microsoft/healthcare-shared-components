@@ -3,13 +3,10 @@
 // Licensed under the MIT License (MIT). See LICENSE in the repo root for license information.
 // -------------------------------------------------------------------------------------------------
 
-using System.Collections.Generic;
 using MediatR;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
-using Microsoft.Health.Core;
 using Microsoft.Health.Extensions.DependencyInjection;
 using Microsoft.Health.SqlServer.Api.Features;
 using Microsoft.Health.SqlServer.Api.Registration;
@@ -49,17 +46,6 @@ namespace Microsoft.Health.SqlServer.Web
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public virtual void Configure(IApplicationBuilder app)
         {
-            ILogger logger = app.ApplicationServices.GetRequiredService<ILoggerFactory>().CreateLogger<Startup>();
-
-            // Start IStartable services.
-            foreach (var startable in app.ApplicationServices.GetService<IEnumerable<IStartable>>())
-            {
-                using (logger.BeginTimedScope($"Initializing {startable.GetType().Name}."))
-                {
-                    startable.Start();
-                }
-            }
-
             app.UseMvc();
         }
     }
