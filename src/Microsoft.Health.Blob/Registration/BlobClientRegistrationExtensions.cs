@@ -34,7 +34,7 @@ namespace Microsoft.Extensions.DependencyInjection
                     provider.GetService<IConfiguration>().GetSection(BlobStoreConfigurationSectionName).Bind(config);
                     configureAction?.Invoke(config);
 
-                    if (string.IsNullOrEmpty(config.ConnectionString))
+                    if (string.IsNullOrEmpty(config.ConnectionString) && config.AuthenticationType == BlobDataStoreAuthenticationType.ConnectionString)
                     {
                         config.ConnectionString = BlobLocalEmulator.ConnectionString;
                     }

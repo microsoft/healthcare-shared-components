@@ -5,12 +5,9 @@
 
 namespace Microsoft.Health.Blob.Configs
 {
-    public class BlobDataStoreConfiguration
+    public enum BlobDataStoreAuthenticationType
     {
-        public string ConnectionString { get; set; }
-
-        public BlobDataStoreAuthenticationType AuthenticationType { get; set; } = BlobDataStoreAuthenticationType.ConnectionString;
-
-        public BlobDataStoreRequestOptions RequestOptions { get; } = new BlobDataStoreRequestOptions();
+        ManagedIdentity,
+        ConnectionString,
     }
 }
