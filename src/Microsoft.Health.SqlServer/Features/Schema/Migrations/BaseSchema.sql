@@ -5,9 +5,8 @@
     Configure database
 **************************************************************/
 -- Enable RCSI
--- ROLLBACK IMMEDIATE will cut off live connections and roll back any open transactions immediately
 IF ((SELECT is_read_committed_snapshot_on FROM sys.databases WHERE database_id = DB_ID()) = 0) BEGIN
-    ALTER DATABASE CURRENT SET READ_COMMITTED_SNAPSHOT ON WITH ROLLBACK IMMEDIATE
+    ALTER DATABASE CURRENT SET READ_COMMITTED_SNAPSHOT ON
 END
 
 -- Avoid blocking queries when statistics need to be rebuilt
