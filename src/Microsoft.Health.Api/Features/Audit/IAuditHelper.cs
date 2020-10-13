@@ -26,6 +26,6 @@ namespace Microsoft.Health.Api.Features.Audit
         /// <param name="httpContext">The HTTP context.</param>
         /// <param name="claimsExtractor">The extractor used to extract claims.</param>
         /// <param name="shouldCheckForAuthXFailure">Should check for AuthX failure and print LogExecuted messages only if it is AuthX failure.</param>
-        void LogExecuted(HttpContext httpContext, IClaimsExtractor claimsExtractor, bool shouldCheckForAuthXFailure);
+        void LogExecuted(HttpContext httpContext, IClaimsExtractor claimsExtractor, bool shouldCheckForAuthXFailure = false);
     }
 }
