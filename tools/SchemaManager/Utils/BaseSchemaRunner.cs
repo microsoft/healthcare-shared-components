@@ -24,7 +24,7 @@ namespace SchemaManager.Utils
 
             await InitializeAsync(connectionString, cancellationToken);
 
-            if (!await SchemaDataStore.BaseSchemaExistsAsync(connectionString))
+            if (!await SchemaDataStore.BaseSchemaExistsAsync(connectionString, cancellationToken))
             {
                 var script = baseScriptProvider.GetScript();
 
@@ -40,7 +40,7 @@ namespace SchemaManager.Utils
             }
         }
 
-        public static async Task EnsureInstanceSchemaRecordExistsAsync(string connectionString)
+        public static async Task EnsureInstanceSchemaRecordExistsAsync(string connectionString, CancellationToken cancellationToken)
         {
             // Ensure that the current version record is inserted into InstanceSchema table
             int attempts = 1;
@@ -53,12 +53,12 @@ namespace SchemaManager.Utils
                 {
                     Console.WriteLine(string.Format(Resources.RetryInstanceSchemaRecord, attempts++, RetryAttempts));
                 })
-            .ExecuteAsync(() => InstanceSchemaRecordCreatedAsync(connectionString));
+            .ExecuteAsync(() => InstanceSchemaRecordCreatedAsync(connectionString, cancellationToken));
         }
 
-        private static async Task InstanceSchemaRecordCreatedAsync(string connectionString)
+        private static async Task InstanceSchemaRecordCreatedAsync(string connectionString, CancellationToken cancellationToken)
         {
-            if (!await SchemaDataStore.InstanceSchemaRecordExistsAsync(connectionString))
+            if (!await SchemaDataStore.InstanceSchemaRecordExistsAsync(connectionString, cancellationToken))
             {
                 throw new SchemaManagerException(Resources.InstanceSchemaRecordErrorMessage);
             }

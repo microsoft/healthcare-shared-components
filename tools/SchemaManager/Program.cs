@@ -82,7 +82,7 @@ namespace SchemaManager
             {
                 serverOption,
             };
-            availableCommand.Handler = CommandHandler.Create<InvocationContext, Uri>(AvailableCommand.Handler);
+            availableCommand.Handler = CommandHandler.Create<InvocationContext, Uri, CancellationToken>(AvailableCommand.HandlerAsync);
             availableCommand.Argument.AddValidator(symbol => Validators.RequiredOptionValidator.Validate(symbol, serverOption, Resources.ServerRequiredValidation));
 
             rootCommand.AddCommand(applyCommand);
