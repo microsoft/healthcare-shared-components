@@ -3,7 +3,6 @@
 // Licensed under the MIT License (MIT). See LICENSE in the repo root for license information.
 // -------------------------------------------------------------------------------------------------
 
-using System.Net;
 using System.Threading.Tasks;
 using EnsureThat;
 using Microsoft.AspNetCore.Http;
@@ -42,15 +41,7 @@ namespace Microsoft.Health.Api.Features.Audit
             }
             finally
             {
-                var statusCode = (HttpStatusCode)context.Response.StatusCode;
-
-                // Since authorization filters runs first before any other filters, if the authorization fails,
-                // the AuditLoggingFilterAttribute, which is where the audit logging would normally happen, will not be executed.
-                // This middleware will log any Unauthorized request if it hasn't been logged yet.
-                if (statusCode == HttpStatusCode.Unauthorized)
-                {
-                    _auditHelper.LogExecuted(context, _claimsExtractor);
-                }
+                _auditHelper.LogExecuted(context, _claimsExtractor, true);
             }
         }
     }

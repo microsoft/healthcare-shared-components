@@ -37,6 +37,13 @@ namespace Microsoft.Health.Api.Features.Audit
             base.OnActionExecuting(context);
         }
 
+        /// <summary>
+        /// Log executed messages when the request has completed executing.
+        /// This cannot be moved to AuditMidddleware because of the way how batch statements are handled in FHIR.
+        /// If log executed is moved to AuditMiddleware, we will end up with just one executed message per batch
+        /// instead of one executed message per request in batch.
+        /// </summary>
+        /// <param name="context">Result executed context.</param>
         public override void OnResultExecuted(ResultExecutedContext context)
         {
             EnsureArg.IsNotNull(context, nameof(context));
