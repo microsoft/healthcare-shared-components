@@ -30,7 +30,7 @@ namespace SchemaManager.Utils
 
                 Console.WriteLine(Resources.BaseSchemaExecuting);
 
-                await SchemaDataStore.ExecuteScript(connectionString, script);
+                await SchemaDataStore.ExecuteScript(connectionString, script, cancellationToken);
 
                 Console.WriteLine(Resources.BaseSchemaSuccess);
             }
@@ -53,7 +53,7 @@ namespace SchemaManager.Utils
                 {
                     Console.WriteLine(string.Format(Resources.RetryInstanceSchemaRecord, attempts++, RetryAttempts));
                 })
-            .ExecuteAsync(() => InstanceSchemaRecordCreatedAsync(connectionString, cancellationToken));
+            .ExecuteAsync(token => InstanceSchemaRecordCreatedAsync(connectionString, token), cancellationToken);
         }
 
         private static async Task InstanceSchemaRecordCreatedAsync(string connectionString, CancellationToken cancellationToken)

@@ -98,11 +98,11 @@ namespace SchemaManager
             }
         }
 
-        public static async Task ExecuteScript(string connectionString, string script)
+        public static async Task ExecuteScript(string connectionString, string script, CancellationToken cancellationToken)
         {
             using (var connection = new SqlConnection(connectionString))
             {
-                await connection.OpenAsync();
+                await connection.OpenAsync(cancellationToken);
                 var server = new Server(new ServerConnection(connection));
 
                 server.ConnectionContext.ExecuteNonQuery(script);

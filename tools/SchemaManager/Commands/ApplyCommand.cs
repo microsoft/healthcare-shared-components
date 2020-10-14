@@ -57,7 +57,7 @@ namespace SchemaManager.Commands
                     {
                         Console.WriteLine(string.Format(Resources.RetryCurrentSchemaVersion, attemptCount++, RetryAttempts));
                     })
-                .ExecuteAsync(() => FetchUpdatedAvailableVersionsAsync(schemaClient, connectionString, cancellationToken));
+                .ExecuteAsync(token => FetchUpdatedAvailableVersionsAsync(schemaClient, connectionString, token), cancellationToken);
 
                 if (availableVersions.Count == 1)
                 {
@@ -114,7 +114,7 @@ namespace SchemaManager.Commands
                             {
                                 Console.WriteLine(string.Format(Resources.RetryCurrentVersions, attemptCount++, RetryAttempts));
                             })
-                        .ExecuteAsync(() => ValidateInstancesVersion(schemaClient, executingVersion, cancellationToken));
+                        .ExecuteAsync(token => ValidateInstancesVersionAsync(schemaClient, executingVersion, token), cancellationToken);
                     }
 
                     string script = await GetScriptAsync(schemaClient, executingVersion, availableVersion.ScriptUri, cancellationToken, availableVersion.DiffUri);
@@ -180,7 +180,7 @@ namespace SchemaManager.Commands
             }
         }
 
-        private static async Task ValidateInstancesVersion(ISchemaClient schemaClient, int version, CancellationToken cancellationToken)
+        private static async Task ValidateInstancesVersionAsync(ISchemaClient schemaClient, int version, CancellationToken cancellationToken)
         {
             List<CurrentVersion> currentVersions = await schemaClient.GetCurrentVersionInformationAsync(cancellationToken);
 
