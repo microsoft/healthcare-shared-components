@@ -5,6 +5,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
 using SchemaManager.Model;
 
@@ -12,14 +13,14 @@ namespace SchemaManager
 {
     public interface ISchemaClient
     {
-        Task<List<CurrentVersion>> GetCurrentVersionInformation();
+        Task<List<CurrentVersion>> GetCurrentVersionInformationAsync(CancellationToken cancellationToken);
 
-        Task<string> GetScript(Uri scriptUri);
+        Task<string> GetScriptAsync(Uri scriptUri, CancellationToken cancellationToken);
 
-        Task<string> GetDiffScript(Uri diffScriptUri);
+        Task<string> GetDiffScriptAsync(Uri diffScriptUri, CancellationToken cancellationToken);
 
-        Task<CompatibleVersion> GetCompatibility();
+        Task<CompatibleVersion> GetCompatibilityAsync(CancellationToken cancellationToken);
 
-        Task<List<AvailableVersion>> GetAvailability();
+        Task<List<AvailableVersion>> GetAvailabilityAsync(CancellationToken cancellationToken);
     }
 }

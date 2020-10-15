@@ -10,6 +10,7 @@ using System.CommandLine.Rendering;
 using System.CommandLine.Rendering.Views;
 using System.Linq;
 using System.Net.Http;
+using System.Threading;
 using System.Threading.Tasks;
 using SchemaManager.Exceptions;
 using SchemaManager.Model;
@@ -19,7 +20,7 @@ namespace SchemaManager.Commands
 {
     public static class AvailableCommand
     {
-        public static async Task Handler(InvocationContext invocationContext, Uri server)
+        public static async Task HandlerAsync(InvocationContext invocationContext, Uri server, CancellationToken cancellationToken)
         {
             var region = new Region(
                 0,
@@ -33,7 +34,7 @@ namespace SchemaManager.Commands
 
             try
             {
-                availableVersions = await schemaClient.GetAvailability();
+                availableVersions = await schemaClient.GetAvailabilityAsync(cancellationToken);
 
                 // To ensure that schema version null/0 is not printed
                 if (availableVersions.First().Id == 0)

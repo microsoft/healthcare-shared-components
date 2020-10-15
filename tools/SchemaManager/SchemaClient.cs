@@ -6,6 +6,7 @@
 using System;
 using System.Collections.Generic;
 using System.Net.Http;
+using System.Threading;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
 using SchemaManager.Exceptions;
@@ -24,9 +25,9 @@ namespace SchemaManager
             _httpClient.BaseAddress = serverUri;
         }
 
-        public async Task<List<CurrentVersion>> GetCurrentVersionInformation()
+        public async Task<List<CurrentVersion>> GetCurrentVersionInformationAsync(CancellationToken cancellationToken)
         {
-            var response = await _httpClient.GetAsync(RelativeUrl(UrlConstants.Current));
+            var response = await _httpClient.GetAsync(RelativeUrl(UrlConstants.Current), cancellationToken);
             if (response.IsSuccessStatusCode)
             {
                 var responseBodyAsString = await response.Content.ReadAsStringAsync();
@@ -38,9 +39,9 @@ namespace SchemaManager
             }
         }
 
-        public async Task<string> GetScript(Uri scriptUri)
+        public async Task<string> GetScriptAsync(Uri scriptUri, CancellationToken cancellationToken)
         {
-            var response = await _httpClient.GetAsync(scriptUri);
+            var response = await _httpClient.GetAsync(scriptUri, cancellationToken);
             if (response.IsSuccessStatusCode)
             {
                 return await response.Content.ReadAsStringAsync();
@@ -51,9 +52,9 @@ namespace SchemaManager
             }
         }
 
-        public async Task<CompatibleVersion> GetCompatibility()
+        public async Task<CompatibleVersion> GetCompatibilityAsync(CancellationToken cancellationToken)
         {
-            var response = await _httpClient.GetAsync(RelativeUrl(UrlConstants.Compatibility));
+            var response = await _httpClient.GetAsync(RelativeUrl(UrlConstants.Compatibility), cancellationToken);
             if (response.IsSuccessStatusCode)
             {
                 var responseBodyAsString = await response.Content.ReadAsStringAsync();
@@ -65,9 +66,9 @@ namespace SchemaManager
             }
         }
 
-        public async Task<List<AvailableVersion>> GetAvailability()
+        public async Task<List<AvailableVersion>> GetAvailabilityAsync(CancellationToken cancellationToken)
         {
-            var response = await _httpClient.GetAsync(RelativeUrl(UrlConstants.Availability));
+            var response = await _httpClient.GetAsync(RelativeUrl(UrlConstants.Availability), cancellationToken);
             if (response.IsSuccessStatusCode)
             {
                 var responseBodyAsString = await response.Content.ReadAsStringAsync();
@@ -79,9 +80,9 @@ namespace SchemaManager
             }
         }
 
-        public async Task<string> GetDiffScript(Uri diffUri)
+        public async Task<string> GetDiffScriptAsync(Uri diffUri, CancellationToken cancellationToken)
         {
-            var response = await _httpClient.GetAsync(diffUri);
+            var response = await _httpClient.GetAsync(diffUri, cancellationToken);
             if (response.IsSuccessStatusCode)
             {
                 return await response.Content.ReadAsStringAsync();
