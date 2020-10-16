@@ -21,7 +21,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.Health.SqlServer" Version="1.0.0-master-20201008-2" />
+    <PackageReference Include="Microsoft.Health.SqlServer" Version="1.0.0-master-20201015-1" />
   </ItemGroup>
 
   <ItemGroup>
