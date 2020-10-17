@@ -251,11 +251,28 @@ namespace Microsoft.Health.SqlServer.Features.Schema
             return canInitialize;
         }
 
+        /// <summary>
+        ///  TODO this method is causing the IntegrationTestFixture to hang.
+        ///  Possibly the mix of async and sync. We should consider depreacting the use of this everywhere.
+        /// </summary>
         public void Start()
         {
             if (!string.IsNullOrWhiteSpace(_sqlServerDataStoreConfiguration.ConnectionString))
             {
                 InitializeAsync().Wait();
+            }
+            else
+            {
+                _logger.LogCritical(
+                    "There was no connection string supplied. Schema initialization can not be completed.");
+            }
+        }
+
+        public async Task StartAsync()
+        {
+            if (!string.IsNullOrWhiteSpace(_sqlServerDataStoreConfiguration.ConnectionString))
+            {
+                await InitializeAsync();
             }
             else
             {
