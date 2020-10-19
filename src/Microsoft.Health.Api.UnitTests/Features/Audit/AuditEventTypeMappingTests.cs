@@ -5,14 +5,15 @@
 
 using System;
 using System.Collections.Generic;
+using System.Threading;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Abstractions;
 using Microsoft.AspNetCore.Mvc.Controllers;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.AspNetCore.Mvc.RazorPages;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Health.Api.Features.Audit;
-using Microsoft.Health.Extensions.DependencyInjection;
 using NSubstitute;
 using Xunit;
 
@@ -64,7 +65,7 @@ namespace Microsoft.Health.Api.UnitTests.Features.Audit
 
             _auditEventTypeMapping = new AuditEventTypeMapping(_actionDescriptorCollectionProvider);
 
-            ((IStartable)_auditEventTypeMapping).Start();
+            ((IHostedService)_auditEventTypeMapping).StartAsync(CancellationToken.None);
         }
 
         [Theory]

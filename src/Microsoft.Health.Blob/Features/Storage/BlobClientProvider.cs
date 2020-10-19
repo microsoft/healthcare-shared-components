@@ -5,9 +5,11 @@
 
 using System;
 using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
 using Azure.Storage.Blobs;
 using EnsureThat;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Health.Blob.Configs;
 using Microsoft.Health.Core;
@@ -15,7 +17,7 @@ using Microsoft.Health.Extensions.DependencyInjection;
 
 namespace Microsoft.Health.Blob.Features.Storage
 {
-    public class BlobClientProvider : IStartable, IRequireInitializationOnFirstRequest, IDisposable
+    public class BlobClientProvider : IHostedService, IRequireInitializationOnFirstRequest, IDisposable
     {
         private readonly BlobServiceClient _blobServiceClient;
         private readonly RetryableInitializationOperation _initializationOperation;
@@ -37,14 +39,15 @@ namespace Microsoft.Health.Blob.Features.Storage
                 () => blobClientInitializer.InitializeDataStoreAsync(_blobServiceClient, blobDataStoreConfiguration, collectionInitializers));
         }
 
-        /// <summary>
-        /// Starts the initialization of the blob client and data store.
-        /// </summary>
-        public void Start()
+        public Task StartAsync(CancellationToken cancellationToken)
         {
             // The result is ignored and will be awaited in EnsureInitialized(). Exceptions are logged within DocumentClientInitializer.
             _ = _initializationOperation.EnsureInitialized();
+
+            return Task.CompletedTask;
         }
+
+        public Task StopAsync(CancellationToken cancellationToken) => Task.CompletedTask;
 
         /// <summary>
         /// Returns a task representing the initialization operation. Once completed,

@@ -7,6 +7,7 @@ using System;
 using Microsoft.Azure.Services.AppAuthentication;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Health.Extensions.DependencyInjection;
 using Microsoft.Health.SqlServer.Configs;
 using Microsoft.Health.SqlServer.Features.Client;
@@ -51,7 +52,7 @@ namespace Microsoft.Health.SqlServer.Registration
             services.Add<SchemaInitializer>()
                 .Singleton()
                 .AsSelf()
-                .AsService<IStartable>();
+                .AsService<IHostedService>();
 
             services.Add<ScriptProvider<TSchemaVersionEnum>>()
                 .Singleton()
