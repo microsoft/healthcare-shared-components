@@ -48,7 +48,8 @@ namespace Microsoft.Health.SqlServer.Features.Schema
         {
             _logger.LogInformation("Applying schema {version}", version);
 
-            if (!applyFullSchemaSnapshot)
+            // Eliminate the need to insert schema version from 6.sql, 7.sql and so on.
+            if (!applyFullSchemaSnapshot || version > 5)
             {
                 await InsertSchemaVersionAsync(version, cancellationToken);
             }

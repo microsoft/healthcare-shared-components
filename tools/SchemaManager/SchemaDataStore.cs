@@ -15,7 +15,6 @@ namespace SchemaManager
 {
     public static class SchemaDataStore
     {
-        public const string DeleteQuery = "DELETE FROM dbo.SchemaVersion WHERE Version = @version AND Status = @status";
         public const string Failed = "failed";
         public const string Completed = "completed";
 
@@ -53,7 +52,7 @@ namespace SchemaManager
             {
                 await connection.OpenAsync(cancellationToken);
 
-                using (var deleteCommand = new SqlCommand(DeleteQuery, connection))
+                using (var deleteCommand = new SqlCommand("DELETE FROM dbo.SchemaVersion WHERE Version = @version AND Status = @status", connection))
                 {
                     deleteCommand.Parameters.AddWithValue("@version", version);
                     deleteCommand.Parameters.AddWithValue("@status", status);
@@ -95,6 +94,16 @@ namespace SchemaManager
                 upsertCommand.Parameters.AddWithValue("@status", status);
 
                 await upsertCommand.ExecuteNonQueryAsync(cancellationToken);
+            }
+        }
+
+        public static async Task UpsertSchemaVersionAsync(string connectionString, int version, string status, CancellationToken cancellationToken)
+        {
+            using (var connection = new SqlConnection(connectionString))
+            {
+                await connection.OpenAsync(cancellationToken);
+
+                await UpsertSchemaVersionAsync(connection, version, status, cancellationToken);
             }
         }
 

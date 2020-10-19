@@ -92,7 +92,7 @@ namespace SchemaManager.Commands
                     Console.WriteLine(string.Format(Resources.SchemaMigrationStartedMessage, availableVersions.Last().Id));
 
                     string script = await GetScriptAsync(schemaClient, 1, availableVersions.Last().ScriptUri, cancellationToken);
-                    await UpgradeSchemaAsync(connectionString, availableVersions.Last().Id, script, cancellationToken);
+                    await UpgradeSchemaAsync(connectionString, availableVersions.Last().Id, script, cancellationToken, true);
                     return;
                 }
 
@@ -150,10 +150,17 @@ namespace SchemaManager.Commands
             }
         }
 
-        private static async Task UpgradeSchemaAsync(string connectionString, int version, string script, CancellationToken cancellationToken)
+        private static async Task UpgradeSchemaAsync(string connectionString, int version, string script, CancellationToken cancellationToken, bool isFullSchemaSnapshot = false)
         {
-            // check if the record for given version exists in failed status
-            await SchemaDataStore.DeleteSchemaVersionAsync(connectionString, version, SchemaDataStore.Failed, cancellationToken);
+            if (!isFullSchemaSnapshot || version > 5)
+            {
+                await SchemaDataStore.UpsertSchemaVersionAsync(connectionString, version, "started", cancellationToken);
+            }
+            else
+            {
+                // delete if the record for given version exists in failed status
+                await SchemaDataStore.DeleteSchemaVersionAsync(connectionString, version, SchemaDataStore.Failed, cancellationToken);
+            }
 
             await SchemaDataStore.ExecuteScriptAndCompleteSchemaVersionAsync(connectionString, script, version, cancellationToken);
 
