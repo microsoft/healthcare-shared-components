@@ -251,19 +251,6 @@ namespace Microsoft.Health.SqlServer.Features.Schema
             return canInitialize;
         }
 
-        public void Start()
-        {
-            if (!string.IsNullOrWhiteSpace(_sqlServerDataStoreConfiguration.ConnectionString))
-            {
-                InitializeAsync().Wait();
-            }
-            else
-            {
-                _logger.LogCritical(
-                    "There was no connection string supplied. Schema initialization can not be completed.");
-            }
-        }
-
         public async Task StartAsync(CancellationToken cancellationToken)
         {
             if (!string.IsNullOrWhiteSpace(_sqlServerDataStoreConfiguration.ConnectionString))
