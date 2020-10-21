@@ -18,5 +18,14 @@ namespace Microsoft.Health.SqlServer.Features.Schema
         public int MaximumSupportedVersion { get; }
 
         public int? Current { get; set; }
+
+        /// <summary>
+        /// Checks if the version is not inside the full schema script.
+        /// </summary>
+        /// <param name="version">The schema version.</param>
+        public static bool DoesNotContainsVersionInSchema(int version)
+        {
+            return version > 5;
+        }
     }
 }

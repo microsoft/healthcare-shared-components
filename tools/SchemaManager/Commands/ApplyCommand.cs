@@ -152,6 +152,7 @@ namespace SchemaManager.Commands
 
         private static async Task UpgradeSchemaAsync(string connectionString, int version, string script, CancellationToken cancellationToken, bool isFullSchemaSnapshot = false)
         {
+            // Replace the check(version > 5) with SchemaInformation.DoesNotContainsVersionInSchema after Microsoft.Health.SqlServer dependency upgrade.
             if (!isFullSchemaSnapshot || version > 5)
             {
                 await SchemaDataStore.UpsertSchemaVersionAsync(connectionString, version, "started", cancellationToken);

@@ -49,7 +49,7 @@ namespace Microsoft.Health.SqlServer.Features.Schema
             _logger.LogInformation("Applying schema {version}", version);
 
             // Insert schema version as started for diff scripts and 6.sql, 7.sql and so on.
-            if (!applyFullSchemaSnapshot || version > 5)
+            if (!applyFullSchemaSnapshot || SchemaInformation.DoesNotContainsVersionInSchema(version))
             {
                 await InsertSchemaVersionAsync(version, cancellationToken);
             }
