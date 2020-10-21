@@ -6,6 +6,7 @@
 using System;
 using System.Collections.Generic;
 using System.Threading;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Abstractions;
@@ -19,7 +20,7 @@ using Xunit;
 
 namespace Microsoft.Health.Api.UnitTests.Features.Audit
 {
-    public class AuditEventTypeMappingTests
+    public class AuditEventTypeMappingTests : IAsyncLifetime
     {
         private const string ControllerName = nameof(MockController);
         private const string AnonymousMethodName = nameof(MockController.Anonymous);
@@ -64,9 +65,14 @@ namespace Microsoft.Health.Api.UnitTests.Features.Audit
             _actionDescriptorCollectionProvider.ActionDescriptors.Returns(actionDescriptorCollection);
 
             _auditEventTypeMapping = new AuditEventTypeMapping(_actionDescriptorCollectionProvider);
-
-            ((IHostedService)_auditEventTypeMapping).StartAsync(CancellationToken.None);
         }
+
+        public async Task InitializeAsync()
+        {
+            await ((IHostedService)_auditEventTypeMapping).StartAsync(CancellationToken.None);
+        }
+
+        public Task DisposeAsync() => Task.CompletedTask;
 
         [Theory]
         [InlineData(ControllerName, AnonymousMethodName, null)]
