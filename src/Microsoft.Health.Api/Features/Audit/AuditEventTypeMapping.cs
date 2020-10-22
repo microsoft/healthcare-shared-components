@@ -6,12 +6,14 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 using EnsureThat;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc.Controllers;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Health.Api.Extensions;
-using Microsoft.Health.Extensions.DependencyInjection;
 
 namespace Microsoft.Health.Api.Features.Audit
 {
@@ -31,7 +33,7 @@ namespace Microsoft.Health.Api.Features.Audit
     /// This class builds the mapping ahead of time so that we can lookup the audit event type any time during the pipeline given the controller name and action name.
     /// </para>
     /// </remarks>
-    public class AuditEventTypeMapping : IAuditEventTypeMapping, IStartable
+    public class AuditEventTypeMapping : IAuditEventTypeMapping, IHostedService
     {
         private readonly IActionDescriptorCollectionProvider _actionDescriptorCollectionProvider;
 
@@ -60,14 +62,14 @@ namespace Microsoft.Health.Api.Features.Audit
             return null;
         }
 
-        void IStartable.Start()
+        Task IHostedService.StartAsync(CancellationToken cancellationToken)
         {
             _attributeDictionary = _actionDescriptorCollectionProvider.ActionDescriptors.Items
                 .OfType<ControllerActionDescriptor>()
                 .Select(ad =>
                 {
                     Attribute attribute = ad.MethodInfo?.GetCustomAttributes<AllowAnonymousAttribute>().FirstOrDefault() ??
-                        (Attribute)ad.MethodInfo?.GetCustomAttributes<AuditEventTypeAttribute>().FirstOrDefault();
+                                          (Attribute)ad.MethodInfo?.GetCustomAttributes<AuditEventTypeAttribute>().FirstOrDefault();
 
                     return (ad.ControllerName, ad.ActionName, Attribute: attribute);
                 })
@@ -75,6 +77,10 @@ namespace Microsoft.Health.Api.Features.Audit
                 .ToDictionary(
                     item => (item.ControllerName, item.ActionName),
                     item => item.Attribute);
+
+            return Task.CompletedTask;
         }
+
+        public Task StopAsync(CancellationToken cancellationToken) => Task.CompletedTask;
     }
 }

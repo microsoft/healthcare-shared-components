@@ -8,6 +8,7 @@ using System.Linq;
 using EnsureThat;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Health.Blob.Configs;
 using Microsoft.Health.Blob.Features.Storage;
 using Microsoft.Health.Extensions.DependencyInjection;
@@ -47,7 +48,7 @@ namespace Microsoft.Extensions.DependencyInjection
             services.Add<BlobClientProvider>()
                 .Singleton()
                 .AsSelf()
-                .AsService<IStartable>() // so that it starts initializing ASAP
+                .AsService<IHostedService>() // so that it starts initializing ASAP
                 .AsService<IRequireInitializationOnFirstRequest>(); // so that web requests block on its initialization.
 
             services.Add(sp => sp.GetService<BlobClientProvider>().CreateBlobClient())

@@ -9,8 +9,6 @@ using System.Linq;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
-using Microsoft.Health.Core;
 using Microsoft.Health.Extensions.DependencyInjection;
 
 namespace Microsoft.Health.Api.Modules
@@ -38,17 +36,6 @@ namespace Microsoft.Health.Api.Modules
 
         private static void Configure(IApplicationBuilder app)
         {
-            ILogger logger = app.ApplicationServices.GetRequiredService<ILoggerFactory>().CreateLogger<InitializationModule>();
-
-            // start IStartable services.
-            foreach (var startable in app.ApplicationServices.GetService<IEnumerable<IStartable>>())
-            {
-                using (logger.BeginTimedScope($"Initializing {startable.GetType().Name}."))
-                {
-                    startable.Start();
-                }
-            }
-
             // If there are any IRequireInitializationOnFirstRequest services, ensure they are initialized on the first request.
 
             IRequireInitializationOnFirstRequest[] requireInitializationsOnFirstRequest = app.ApplicationServices.GetService<IEnumerable<IRequireInitializationOnFirstRequest>>().ToArray();

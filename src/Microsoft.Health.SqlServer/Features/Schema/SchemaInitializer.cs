@@ -9,8 +9,8 @@ using System.Threading;
 using System.Threading.Tasks;
 using EnsureThat;
 using Microsoft.Data.SqlClient;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
-using Microsoft.Health.Extensions.DependencyInjection;
 using Microsoft.Health.SqlServer.Configs;
 
 namespace Microsoft.Health.SqlServer.Features.Schema
@@ -19,7 +19,7 @@ namespace Microsoft.Health.SqlServer.Features.Schema
     /// EXPERIMENTAL - Initializes the sql schema and brings the schema up to the min supported version.
     /// The purpose of this it to enable easy scenarios during development and will likely be removed later.
     /// </summary>
-    public class SchemaInitializer : IStartable
+    public class SchemaInitializer : IHostedService
     {
         private const string MasterDatabase = "master";
         private readonly SqlServerDataStoreConfiguration _sqlServerDataStoreConfiguration;
@@ -251,11 +251,11 @@ namespace Microsoft.Health.SqlServer.Features.Schema
             return canInitialize;
         }
 
-        public void Start()
+        public async Task StartAsync(CancellationToken cancellationToken)
         {
             if (!string.IsNullOrWhiteSpace(_sqlServerDataStoreConfiguration.ConnectionString))
             {
-                InitializeAsync().Wait();
+                await InitializeAsync(cancellationToken: cancellationToken);
             }
             else
             {
@@ -263,5 +263,7 @@ namespace Microsoft.Health.SqlServer.Features.Schema
                     "There was no connection string supplied. Schema initialization can not be completed.");
             }
         }
+
+        public Task StopAsync(CancellationToken cancellationToken) => Task.CompletedTask;
     }
 }
