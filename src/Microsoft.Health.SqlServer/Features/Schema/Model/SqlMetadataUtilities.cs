@@ -4,6 +4,7 @@
 // -------------------------------------------------------------------------------------------------
 
 using System.Data;
+using System.Globalization;
 using EnsureThat;
 using Microsoft.Data.SqlClient.Server;
 
@@ -25,8 +26,10 @@ namespace Microsoft.Health.SqlServer.Features.Schema.Model
         {
             EnsureArg.IsNotNull(columnMetadata, nameof(columnMetadata));
             EnsureArg.Is((int)SqlDbType.Decimal, (int)columnMetadata.SqlDbType, nameof(columnMetadata));
-
-            var val = decimal.Parse($"{new string('9', columnMetadata.Precision - columnMetadata.Scale)}.{new string('9', columnMetadata.Scale)}");
+            var separator = CultureInfo.InvariantCulture.NumberFormat.NumberDecimalSeparator;
+            var val = decimal.Parse(
+                $"{new string('9', columnMetadata.Precision - columnMetadata.Scale)}{separator}{new string('9', columnMetadata.Scale)}",
+                CultureInfo.InvariantCulture);
             return min ? -val : val;
         }
     }

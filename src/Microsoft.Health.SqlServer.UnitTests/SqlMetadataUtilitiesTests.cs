@@ -4,6 +4,8 @@
 // -------------------------------------------------------------------------------------------------
 
 using System.Data;
+using System.Globalization;
+using System.Threading;
 using Microsoft.Data.SqlClient.Server;
 using Microsoft.Health.SqlServer.Features.Schema.Model;
 using Xunit;
@@ -26,6 +28,20 @@ namespace Microsoft.Health.SqlServer.UnitTests
             var sqlMetaData = new SqlMetaData("foo", SqlDbType.Decimal, precision: 10, scale: 3);
             Assert.Equal(-9999999.999M, SqlMetadataUtilities.GetMinValueForDecimalColumn(sqlMetaData));
             Assert.Equal(9999999.999M, SqlMetadataUtilities.GetMaxValueForDecimalColumn(sqlMetaData));
+        }
+
+        [Fact]
+        public void GivenASqlMetadataInstanceWithSpecifiedScaleAndPrecisionInCommaCulture_WhenGettingMinAndMaxValues_ReturnsCorrectValues()
+        {
+            var sqlMetaData = new SqlMetaData("foo", SqlDbType.Decimal, precision: 10, scale: 3);
+            CultureInfo culture = (CultureInfo)CultureInfo.InvariantCulture.Clone();
+            culture.NumberFormat.NumberDecimalSeparator = ",";
+            culture.NumberFormat.NumberGroupSeparator = ".";
+            var originalCulture = Thread.CurrentThread.CurrentCulture;
+            Thread.CurrentThread.CurrentCulture = culture;
+            Assert.Equal(-9999999.999M, SqlMetadataUtilities.GetMinValueForDecimalColumn(sqlMetaData));
+            Assert.Equal(9999999.999M, SqlMetadataUtilities.GetMaxValueForDecimalColumn(sqlMetaData));
+            Thread.CurrentThread.CurrentCulture = originalCulture;
         }
     }
 }
