@@ -9,6 +9,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using EnsureThat;
 using Microsoft.Extensions.Options;
+using Microsoft.Health.Client.Exceptions;
 using Microsoft.IdentityModel.Protocols.OpenIdConnect;
 
 namespace Microsoft.Health.Client
@@ -50,6 +51,11 @@ namespace Microsoft.Health.Client
             using HttpResponseMessage tokenResponse = await _httpClient.PostAsync(_oAuth2UserPasswordCredentialConfiguration.TokenUri, formContent, cancellationToken);
 
             var openIdConnectMessage = new OpenIdConnectMessage(await tokenResponse.Content.ReadAsStringAsync());
+            if (openIdConnectMessage.AccessToken == null)
+            {
+                throw new FailToRetrieveTokenException(openIdConnectMessage.Error);
+            }
+
             return openIdConnectMessage.AccessToken;
         }
     }
