@@ -4,7 +4,14 @@
 // -------------------------------------------------------------------------------------------------
 
 using System;
+using System.Net;
+using System.Net.Http;
+using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Options;
+using Microsoft.Health.Client.Exceptions;
+using Moq;
+using Moq.Protected;
 using Xunit;
 
 namespace Microsoft.Health.Client.UnitTests
@@ -26,6 +33,68 @@ namespace Microsoft.Health.Client.UnitTests
 
             // JWT token expiration is limited to second precision
             Assert.InRange(credentialProvider.TokenExpiration, expirationTime.AddSeconds(-1), expirationTime.AddSeconds(1));
+        }
+
+        [Fact]
+        public async Task InvalidOAuth2ClientCredential_RetrieveToken_ShouldThrowError()
+        {
+            var mockHandler = new Mock<HttpMessageHandler>();
+            var response = new HttpResponseMessage
+            {
+                StatusCode = HttpStatusCode.BadRequest,
+                Content = new StringContent(@"{""error"": ""This is an error!""}"),
+            };
+
+            mockHandler
+               .Protected()
+               .Setup<Task<HttpResponseMessage>>(
+                  "SendAsync",
+                  ItExpr.IsAny<HttpRequestMessage>(),
+                  ItExpr.IsAny<CancellationToken>())
+               .ReturnsAsync(response);
+
+            var httpClient = new HttpClient(mockHandler.Object);
+
+            var credentialConfiguration = new OAuth2ClientCredentialConfiguration(
+                        new Uri("https://fakehost/connect/token"),
+                        "invalid resource",
+                        "invalid scope",
+                        "invalid client id",
+                        "invalid client secret");
+            var credentialProvider = new OAuth2ClientCredentialProvider(Options.Create(credentialConfiguration), httpClient);
+            await Assert.ThrowsAsync<FailToRetrieveTokenException>(() => credentialProvider.GetBearerToken(cancellationToken: default));
+        }
+
+        [Fact]
+        public async Task InvalidOAuth2UserPasswordCredential_RetrieveToken_ShouldThrowError()
+        {
+            var mockHandler = new Mock<HttpMessageHandler>();
+            var response = new HttpResponseMessage
+            {
+                StatusCode = HttpStatusCode.BadRequest,
+                Content = new StringContent(@"{""error"": ""This is an error!""}"),
+            };
+
+            mockHandler
+               .Protected()
+               .Setup<Task<HttpResponseMessage>>(
+                  "SendAsync",
+                  ItExpr.IsAny<HttpRequestMessage>(),
+                  ItExpr.IsAny<CancellationToken>())
+               .ReturnsAsync(response);
+
+            var httpClient = new HttpClient(mockHandler.Object);
+
+            var credentialConfiguration = new OAuth2UserPasswordCredentialConfiguration(
+                        new Uri("https://fakehost/connect/token"),
+                        "invalid resource",
+                        "invalid scope",
+                        "invalid client id",
+                        "invalid client secret",
+                        "invalid username",
+                        "invaid password");
+            var credentialProvider = new OAuth2UserPasswordCredentialProvider(Options.Create(credentialConfiguration), httpClient);
+            await Assert.ThrowsAsync<FailToRetrieveTokenException>(() => credentialProvider.GetBearerToken(cancellationToken: default));
         }
 
         [Fact]
