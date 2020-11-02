@@ -41,7 +41,7 @@ namespace Microsoft.Health.Client.UnitTests
             var mockHandler = new Mock<HttpMessageHandler>();
             var response = new HttpResponseMessage
             {
-                StatusCode = HttpStatusCode.OK,
+                StatusCode = HttpStatusCode.BadRequest,
                 Content = new StringContent(@"{""error"": ""This is an error!""}"),
             };
 
@@ -71,7 +71,7 @@ namespace Microsoft.Health.Client.UnitTests
             var mockHandler = new Mock<HttpMessageHandler>();
             var response = new HttpResponseMessage
             {
-                StatusCode = HttpStatusCode.OK,
+                StatusCode = HttpStatusCode.BadRequest,
                 Content = new StringContent(@"{""error"": ""This is an error!""}"),
             };
 

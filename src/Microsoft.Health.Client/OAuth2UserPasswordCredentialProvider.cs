@@ -51,9 +51,9 @@ namespace Microsoft.Health.Client
             using HttpResponseMessage tokenResponse = await _httpClient.PostAsync(_oAuth2UserPasswordCredentialConfiguration.TokenUri, formContent, cancellationToken);
 
             var openIdConnectMessage = new OpenIdConnectMessage(await tokenResponse.Content.ReadAsStringAsync());
-            if (openIdConnectMessage.AccessToken == null)
+            if (tokenResponse.StatusCode == System.Net.HttpStatusCode.BadRequest)
             {
-                throw new FailToRetrieveTokenException(openIdConnectMessage.Error);
+                throw new FailToRetrieveTokenException(openIdConnectMessage.ErrorDescription);
             }
 
             return openIdConnectMessage.AccessToken;
