@@ -54,5 +54,36 @@ namespace Microsoft.Health.SqlServer
                     sb.AppendLine();
                 });
         }
+
+        /// <summary>
+        /// Helps with building a nested clause with 0 to many predicates joined (ANDed or ORed) together.
+        /// Call <see cref="IndentedStringBuilder.DelimitedScope.BeginDelimitedElement"/> before appending
+        /// a predicate and be sure to dispose the the <see cref="IndentedStringBuilder.DelimitedScope"/>
+        /// at the end.
+        /// </summary>
+        /// <param name="indentedStringBuilder">The string builder</param>
+        /// <param name="delimiter">Delimiter to use for joining. Typically: "AND " or "OR "</param>
+        /// <returns>The scope</returns>
+        public static IndentedStringBuilder.DelimitedScope BeginDelimitedClause(this IndentedStringBuilder indentedStringBuilder, string delimiter)
+        {
+            return indentedStringBuilder.BeginDelimitedScope(
+                sb =>
+                {
+                    sb.AppendLine();
+                    sb.AppendLine("(");
+                    sb.IndentLevel++;
+                },
+                sb =>
+                {
+                    sb.AppendLine();
+                    sb.Append(delimiter);
+                },
+                sb =>
+                {
+                    sb.AppendLine();
+                    sb.IndentLevel--;
+                    sb.Append(")");
+                });
+        }
     }
 }
