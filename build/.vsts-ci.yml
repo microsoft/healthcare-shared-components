@@ -9,15 +9,30 @@ name: $(SourceBranchName)-$(Date:yyyyMMdd)$(Rev:-r)
 variables:
   buildConfiguration: 'Release'
 jobs:
+- job: Semver
+  pool:
+    vmImage: 'ubuntu-latest'
+  steps:
+  - template: ./update-semver.yml
+  - script: echo %Action%%BuildVersion%
+    displayName: 'Set build version'
+    env:
+      Action: '##vso[build.updatebuildnumber]'
+      BuildVersion: $(GitVersion.semVer)
+
 - job: Windows
   pool:
     vmImage: 'windows-latest'
+  dependsOn:
+  - Semver
   steps:
   - template: build.yml
 
 - job: Linux
   pool:
     vmImage: 'ubuntu-latest'
+  dependsOn:
+  - Semver
   steps:
   - template: build.yml
     parameters:
