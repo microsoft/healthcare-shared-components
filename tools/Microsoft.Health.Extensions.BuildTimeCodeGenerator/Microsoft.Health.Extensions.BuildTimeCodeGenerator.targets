@@ -7,9 +7,8 @@
     </PropertyGroup>
 
     <Target Name="CollectGenerateFilesInputs" BeforeTargets="GenerateFiles">
-        <Message Text="hello" />
-
         <ItemGroup>
+            <GenerateFilesInputs Include="$(GeneratorPath)" />
             <GenerateFilesInputs Include="$(MSBuildProjectFile)" />
             <GenerateFilesInputs Include="$(MSBuildThisFileFullPath)" />
         </ItemGroup>

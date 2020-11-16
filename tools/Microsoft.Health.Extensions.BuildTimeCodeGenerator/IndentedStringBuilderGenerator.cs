@@ -49,24 +49,16 @@ namespace Microsoft.Health.Extensions.BuildTimeCodeGenerator
 
             public override SyntaxNode VisitPropertyDeclaration(PropertyDeclarationSyntax node)
             {
-                node = node.WithExplicitInterfaceSpecifier(null);
-                if (IsDeclaredOnObject(node))
-                {
-                    node = node.AddModifiers(Token(SyntaxKind.PublicKeyword), Token(SyntaxKind.OverrideKeyword));
-                }
-
-                return node;
+                return node
+                    .WithExplicitInterfaceSpecifier(null)
+                    .AddModifiers(Token(SyntaxKind.PublicKeyword));
             }
 
             public override SyntaxNode VisitIndexerDeclaration(IndexerDeclarationSyntax node)
             {
-                node = node.WithExplicitInterfaceSpecifier(null);
-                if (IsDeclaredOnObject(node))
-                {
-                    node = node.AddModifiers(Token(SyntaxKind.PublicKeyword), Token(SyntaxKind.OverrideKeyword));
-                }
-
-                return node;
+                return node
+                    .WithExplicitInterfaceSpecifier(null)
+                    .AddModifiers(Token(SyntaxKind.PublicKeyword));
             }
 
             public override SyntaxNode VisitMethodDeclaration(MethodDeclarationSyntax node)
