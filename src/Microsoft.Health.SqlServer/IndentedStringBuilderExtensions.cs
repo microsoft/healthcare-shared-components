@@ -135,7 +135,7 @@ namespace Microsoft.Health.SqlServer
         }
 
         /// <summary>
-        /// Helps with building a parenthesized nested clause with 0 to many predicates jORed together.
+        /// Helps with building a parenthesized nested clause with 0 to many predicates ORed together.
         /// Call <see cref="IndentedStringBuilder.DelimitedScope.BeginDelimitedElement"/> before appending
         /// a predicate and be sure to dispose the the <see cref="IndentedStringBuilder.DelimitedScope"/>
         /// at the end.
