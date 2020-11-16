@@ -17,7 +17,7 @@ namespace Microsoft.Health.SqlServer
         }
 
         [System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverageAttribute]
-        System.Int32 Capacity
+        public System.Int32 Capacity
         {
             get
             {
@@ -31,7 +31,7 @@ namespace Microsoft.Health.SqlServer
         }
 
         [System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverageAttribute]
-        System.Char this[System.Int32 index]
+        public System.Char this[System.Int32 index]
         {
             get
             {
@@ -45,7 +45,7 @@ namespace Microsoft.Health.SqlServer
         }
 
         [System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverageAttribute]
-        System.Int32 Length
+        public System.Int32 Length
         {
             get
             {
@@ -59,7 +59,7 @@ namespace Microsoft.Health.SqlServer
         }
 
         [System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverageAttribute]
-        System.Int32 MaxCapacity
+        public System.Int32 MaxCapacity
         {
             get
             {
