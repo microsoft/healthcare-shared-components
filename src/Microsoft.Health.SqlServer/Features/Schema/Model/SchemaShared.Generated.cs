@@ -33,6 +33,8 @@ namespace Microsoft.Health.SqlServer.Features.Schema.Model
             internal readonly IntColumn MaxVersion = new IntColumn("MaxVersion");
             internal readonly IntColumn MinVersion = new IntColumn("MinVersion");
             internal readonly DateTime2Column Timeout = new DateTime2Column("Timeout", 0);
+            internal readonly Index IXC_InstanceSchema = new Index("IXC_InstanceSchema");
+            internal readonly Index IX_InstanceSchema_Timeout = new Index("IX_InstanceSchema_Timeout");
         }
 
         internal class SchemaVersionTable : Table
