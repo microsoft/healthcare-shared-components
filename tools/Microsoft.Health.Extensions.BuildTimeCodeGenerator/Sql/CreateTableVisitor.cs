@@ -3,6 +3,7 @@
 // Licensed under the MIT License (MIT). See LICENSE in the repo root for license information.
 // -------------------------------------------------------------------------------------------------
 
+using System;
 using System.Linq;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
@@ -22,7 +23,7 @@ namespace Microsoft.Health.Extensions.BuildTimeCodeGenerator.Sql
         {
             string tableName = node.SchemaObjectName.BaseIdentifier.Value;
             string schemaQualifiedTableName = $"{node.SchemaObjectName.SchemaIdentifier.Value}.{tableName}";
-            string className = $"{tableName}Table";
+            string className = GetClassNameForTable(tableName);
 
             ClassDeclarationSyntax classDeclarationSyntax =
                 ClassDeclaration(className)
@@ -57,5 +58,40 @@ namespace Microsoft.Health.Extensions.BuildTimeCodeGenerator.Sql
 
             base.Visit(node);
         }
+
+        public override void Visit(CreateIndexStatement node)
+        {
+            string indexName = node.Name.Value;
+
+            var indexClassName = IdentifierName("Index");
+            FieldDeclarationSyntax indexNameField =
+                FieldDeclaration(
+                        VariableDeclaration(indexClassName)
+                            .AddVariables(
+                                VariableDeclarator(Identifier(indexName))
+                                    .WithInitializer(
+                                        EqualsValueClause(
+                                            ObjectCreationExpression(indexClassName).AddArgumentListArguments(
+                                                Argument(
+                                                    LiteralExpression(
+                                                        SyntaxKind.StringLiteralExpression,
+                                                        Literal(indexName))))))))
+                    .AddModifiers(Token(SyntaxKind.InternalKeyword), Token(SyntaxKind.ReadOnlyKeyword));
+
+            string tableClassName = GetClassNameForTable(node.OnName.BaseIdentifier.Value);
+
+            var memberIndex = MembersToAdd.FindIndex(m => m is ClassDeclarationSyntax c && c.Identifier.ValueText == tableClassName);
+
+            if (memberIndex < 0)
+            {
+                throw new InvalidOperationException($"Index '{node.Name.Value}' is declared on an unrecognized type '{node.OnName.BaseIdentifier.Value}'");
+            }
+
+            MembersToAdd[memberIndex] = ((ClassDeclarationSyntax)MembersToAdd[memberIndex]).AddMembers(indexNameField);
+
+            base.Visit(node);
+        }
+
+        private static string GetClassNameForTable(string tableName) => $"{tableName}Table";
     }
 }
