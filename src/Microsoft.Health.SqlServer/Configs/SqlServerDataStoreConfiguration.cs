@@ -10,11 +10,6 @@ namespace Microsoft.Health.SqlServer.Configs
         public string ConnectionString { get; set; }
 
         /// <summary>
-        /// Allows the experimental schema initializer to attempt to bring the schema to the minimum supported version.
-        /// </summary>
-        public bool Initialize { get; set; }
-
-        /// <summary>
         /// Allows the experimental schema initializer to attempt to create the database if not present.
         /// </summary>
         public bool AllowDatabaseCreation { get; set; }

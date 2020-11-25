@@ -4,7 +4,6 @@
       "commandName": "Project",
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "development",
-        "SqlServer:Initialize": "false",
         "SqlServer:SchemaOptions:AutomaticUpdatesEnabled": "true",
         "SqlServer:AllowDatabaseCreation": "false",
         "SqlServer:ConnectionString": "server=(local);Initial Catalog=SHARED_HEALTHCARE;Integrated Security=true"

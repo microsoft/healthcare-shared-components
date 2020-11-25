@@ -200,11 +200,6 @@ namespace Microsoft.Health.SqlServer.Features.Schema
 
         private async Task<bool> CanInitializeAsync(CancellationToken cancellationToken)
         {
-            if (!_sqlServerDataStoreConfiguration.Initialize)
-            {
-                return false;
-            }
-
             var configuredConnectionBuilder = new SqlConnectionStringBuilder(_sqlServerDataStoreConfiguration.ConnectionString);
             string databaseName = configuredConnectionBuilder.InitialCatalog;
 
