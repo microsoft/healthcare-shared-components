@@ -205,16 +205,16 @@ namespace Microsoft.Health.SqlServer.Features.Schema
 
             ValidateDatabaseName(databaseName);
 
-            if (_sqlServerDataStoreConfiguration.AllowDatabaseCreation)
+            using (var connection = await _sqlConnectionFactory.GetSqlConnectionAsync(MasterDatabase, cancellationToken))
             {
-                using (var connection = await _sqlConnectionFactory.GetSqlConnectionAsync(MasterDatabase, cancellationToken))
+                bool doesDatabaseExist = await DoesDatabaseExistAsync(connection, databaseName, cancellationToken);
+
+                if (!doesDatabaseExist)
                 {
-                    bool doesDatabaseExist = await DoesDatabaseExistAsync(connection, databaseName, cancellationToken);
+                    _logger.LogInformation("Database does not exist");
 
-                    if (!doesDatabaseExist)
+                    if (_sqlServerDataStoreConfiguration.AllowDatabaseCreation)
                     {
-                        _logger.LogInformation("Database does not exist");
-
                         bool created = await CreateDatabaseAsync(connection, databaseName, cancellationToken);
 
                         if (created)
@@ -226,6 +226,12 @@ namespace Microsoft.Health.SqlServer.Features.Schema
                             _logger.LogWarning("Insufficient permissions to create the database");
                             return false;
                         }
+                    }
+                    else
+                    {
+                        _logger.LogWarning("Database creation is not enabled.");
+
+                        throw new InvalidOperationException(Resources.NewDatabaseCannotBeCreated);
                     }
                 }
             }

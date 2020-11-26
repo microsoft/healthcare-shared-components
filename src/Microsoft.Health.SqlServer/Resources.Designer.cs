@@ -10,8 +10,8 @@
 
 namespace Microsoft.Health.SqlServer {
     using System;
-    
-    
+
+
     /// <summary>
     ///   A strongly-typed resource class, for looking up localized strings, etc.
     /// </summary>
@@ -23,15 +23,15 @@ namespace Microsoft.Health.SqlServer {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
     internal class Resources {
-        
+
         private static global::System.Resources.ResourceManager resourceMan;
-        
+
         private static global::System.Globalization.CultureInfo resourceCulture;
-        
+
         [global::System.Diagnostics.CodeAnalysis.SuppressMessageAttribute("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
         internal Resources() {
         }
-        
+
         /// <summary>
         ///   Returns the cached ResourceManager instance used by this class.
         /// </summary>
@@ -45,7 +45,7 @@ namespace Microsoft.Health.SqlServer {
                 return resourceMan;
             }
         }
-        
+
         /// <summary>
         ///   Overrides the current thread's CurrentUICulture property for all
         ///   resource lookups using this strongly typed resource class.
@@ -59,7 +59,7 @@ namespace Microsoft.Health.SqlServer {
                 resourceCulture = value;
             }
         }
-        
+
         /// <summary>
         ///   Looks up a localized string similar to The base script is not found..
         /// </summary>
@@ -68,7 +68,7 @@ namespace Microsoft.Health.SqlServer {
                 return ResourceManager.GetString("BaseScriptNotFound", resourceCulture);
             }
         }
-        
+
         /// <summary>
         ///   Looks up a localized string similar to The compatibility information was not found..
         /// </summary>
@@ -77,7 +77,16 @@ namespace Microsoft.Health.SqlServer {
                 return ResourceManager.GetString("CompatibilityRecordNotFound", resourceCulture);
             }
         }
-        
+
+        /// <summary>
+        ///   Looks up a localized string similar to An existing database does not exist, and database creation is not enabled..
+        /// </summary>
+        internal static string NewDatabaseCannotBeCreated {
+            get {
+                return ResourceManager.GetString("NewDatabaseCannotBeCreated", resourceCulture);
+            }
+        }
+
         /// <summary>
         ///   Looks up a localized string similar to The SQL operation has failed..
         /// </summary>
@@ -86,7 +95,7 @@ namespace Microsoft.Health.SqlServer {
                 return ResourceManager.GetString("OperationFailed", resourceCulture);
             }
         }
-        
+
         /// <summary>
         ///   Looks up a localized string similar to The provided version is unknown..
         /// </summary>
