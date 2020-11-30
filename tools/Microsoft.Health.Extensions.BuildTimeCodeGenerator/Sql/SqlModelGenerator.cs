@@ -3,10 +3,10 @@
 // Licensed under the MIT License (MIT). See LICENSE in the repo root for license information.
 // -------------------------------------------------------------------------------------------------
 
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using EnsureThat;
-using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.SqlServer.TransactSql.ScriptDom;
 using static Microsoft.CodeAnalysis.CSharp.SyntaxFactory;
@@ -14,40 +14,42 @@ using static Microsoft.CodeAnalysis.CSharp.SyntaxFactory;
 namespace Microsoft.Health.Extensions.BuildTimeCodeGenerator.Sql
 {
     /// <summary>
-    /// Generates a C# class based on the CREATE TABLE, CREATE TABLE TYPE, and CREATE PROCEDURE statements in a .sql file
+    /// Generates a C# classes based on the CREATE TABLE, CREATE TABLE TYPE, and CREATE PROCEDURE statements in a .sql file
     /// </summary>
-    public class SqlModelGenerator : ICodeGenerator
+    public abstract class SqlModelGenerator : ICodeGenerator
     {
-        private readonly string _sqlFile;
+        private readonly string[] _sqlFiles;
 
-        public SqlModelGenerator(string[] args)
+        protected SqlModelGenerator(string[] args)
         {
             EnsureArg.IsNotNull(args, nameof(args));
-            EnsureArg.SizeIs(args, 1, nameof(args));
 
-            _sqlFile = args[0];
+            _sqlFiles = args;
         }
 
-        public (MemberDeclarationSyntax, UsingDirectiveSyntax[]) Generate(string typeName)
+        protected abstract SqlVisitor[] Visitors { get; }
+
+        public (MemberDeclarationSyntax[], UsingDirectiveSyntax[]) Generate(string typeName)
         {
-            TSqlFragment sqlFragment = ParseSqlFile();
+            IEnumerable<TSqlFragment> sqlFragments = ParseSqlFiles();
 
-            var visitors = new SqlVisitor[] { new CreateTableVisitor(), new CreateProcedureVisitor(), new CreateTableTypeVisitor() };
+            var visitors = Visitors;
 
-            foreach (var sqlVisitor in visitors)
+            foreach (TSqlFragment sqlFragment in sqlFragments)
             {
-                sqlFragment.Accept(sqlVisitor);
+                foreach (var sqlVisitor in visitors)
+                {
+                    sqlFragment.Accept(sqlVisitor);
+                }
             }
 
-            var classDeclaration = ClassDeclaration(typeName)
-                .WithModifiers(TokenList(Token(SyntaxKind.InternalKeyword)))
-                .AddMembers(visitors
-                    .SelectMany(v => v.MembersToAdd)
-                    .OrderBy(m => m, MemberSorting.Comparer)
-                    .ToArray());
+            MemberDeclarationSyntax[] members = visitors
+                .SelectMany(v => v.MembersToAdd)
+                .OrderBy(m => m, MemberSorting.Comparer)
+                .ToArray();
 
             return (
-                classDeclaration,
+                WrapMembers(members, typeName),
                 new[]
                 {
                     UsingDirective(ParseName("Microsoft.Health.SqlServer.Features.Client")),
@@ -55,13 +57,18 @@ namespace Microsoft.Health.Extensions.BuildTimeCodeGenerator.Sql
                 });
         }
 
-        private TSqlFragment ParseSqlFile()
+        protected abstract MemberDeclarationSyntax[] WrapMembers(MemberDeclarationSyntax[] members, string containingTypeName);
+
+        private IEnumerable<TSqlFragment> ParseSqlFiles()
         {
-            using (var stream = File.OpenRead(_sqlFile))
-            using (var reader = new StreamReader(stream))
+            foreach (var sqlFile in _sqlFiles)
             {
-                var parser = new TSql150Parser(true);
-                return parser.Parse(reader, out var errors);
+                using (var stream = File.OpenRead(sqlFile))
+                using (var reader = new StreamReader(stream))
+                {
+                    var parser = new TSql150Parser(true);
+                    yield return parser.Parse(reader, out var errors);
+                }
             }
         }
     }

@@ -22,7 +22,7 @@ namespace Microsoft.Health.Extensions.BuildTimeCodeGenerator
         {
         }
 
-        (MemberDeclarationSyntax, UsingDirectiveSyntax[]) ICodeGenerator.Generate(string typeName)
+        (MemberDeclarationSyntax[], UsingDirectiveSyntax[]) ICodeGenerator.Generate(string typeName)
         {
             // start off by generating a class that has the same API shape as StringBuilder and that forwards calls to an inner
             // StringBuilder. Reuse DelegatingInterfaceImplementationGenerator even though StringBuilder is not an interface.
@@ -33,11 +33,11 @@ namespace Microsoft.Health.Extensions.BuildTimeCodeGenerator
                 constructorModifiers: TokenList(Token(SyntaxKind.PublicKeyword)),
                 typeof(StringBuilder));
 
-            (MemberDeclarationSyntax declaration, UsingDirectiveSyntax[] usings) = delegatingGenerator.Generate(typeName);
+            (MemberDeclarationSyntax[] declarations, UsingDirectiveSyntax[] usings) = delegatingGenerator.Generate(typeName);
 
-            SyntaxNode syntaxNode = new Rewriter().Visit(declaration.SyntaxTree.GetRoot());
+            SyntaxNode syntaxNode = new Rewriter().Visit(declarations.Single().SyntaxTree.GetRoot());
 
-            return ((MemberDeclarationSyntax)syntaxNode, usings);
+            return (new[] { (MemberDeclarationSyntax)syntaxNode }, usings);
         }
 
         private class Rewriter : CSharpSyntaxRewriter

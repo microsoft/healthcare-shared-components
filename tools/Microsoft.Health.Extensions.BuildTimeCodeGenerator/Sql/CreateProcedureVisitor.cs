@@ -27,8 +27,9 @@ namespace Microsoft.Health.Extensions.BuildTimeCodeGenerator.Sql
 
         public override void Visit(CreateProcedureStatement node)
         {
-            string procedureName = node.ProcedureReference.Name.BaseIdentifier.Value;
-            string schemaQualifiedProcedureName = $"{node.ProcedureReference.Name.SchemaIdentifier.Value}.{procedureName}";
+            var rawProcedureName = node.ProcedureReference.Name.BaseIdentifier.Value;
+            string procedureName = GetMemberNameWithoutVersionSuffix(node.ProcedureReference.Name);
+            string schemaQualifiedProcedureName = $"{node.ProcedureReference.Name.SchemaIdentifier.Value}.{rawProcedureName}";
             string className = $"{procedureName}Procedure";
 
             ClassDeclarationSyntax classDeclarationSyntax =
