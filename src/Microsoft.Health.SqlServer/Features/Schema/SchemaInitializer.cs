@@ -224,6 +224,8 @@ namespace Microsoft.Health.SqlServer.Features.Schema
                         else
                         {
                             _logger.LogWarning("Insufficient permissions to create the database");
+
+                            // TODO: Throw exception here once database creation is enabled for E2E tests.
                             return false;
                         }
                     }
@@ -231,7 +233,8 @@ namespace Microsoft.Health.SqlServer.Features.Schema
                     {
                         _logger.LogWarning("Database creation is not enabled.");
 
-                        throw new InvalidOperationException(Resources.NewDatabaseCannotBeCreated);
+                        // TODO: Throw exception here once database creation is enabled for E2E tests.
+                        return false;
                     }
                 }
             }
