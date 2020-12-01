@@ -15,13 +15,15 @@ namespace Microsoft.Health.SqlServer.Web.Features.Schema.Model
     {
         internal readonly static InsertNumbersProcedure InsertNumbers = new InsertNumbersProcedure();
         internal readonly static MyProcedureProcedure MyProcedure = new MyProcedureProcedure();
+
         internal class InsertNumbersProcedure : StoredProcedure
         {
-            internal InsertNumbersProcedure(): base("dbo.InsertNumbers")
+            internal InsertNumbersProcedure() : base("dbo.InsertNumbers")
             {
             }
 
             private readonly ComplexNumber1TableValuedParameterDefinition _names = new ComplexNumber1TableValuedParameterDefinition("@names");
+
             public void PopulateCommand(SqlCommandWrapper command, global::System.Collections.Generic.IEnumerable<ComplexNumber1Row> names)
             {
                 command.CommandType = global::System.Data.CommandType.StoredProcedure;
@@ -43,6 +45,7 @@ namespace Microsoft.Health.SqlServer.Web.Features.Schema.Model
             }
 
             private readonly ITableValuedParameterRowGenerator<TInput, ComplexNumber1Row> ComplexNumber1RowGenerator;
+
             public InsertNumbersTableValuedParameters Generate(TInput input)
             {
                 return new InsertNumbersTableValuedParameters(ComplexNumber1RowGenerator.GenerateRows(input));
@@ -56,19 +59,17 @@ namespace Microsoft.Health.SqlServer.Web.Features.Schema.Model
                 this.Names = Names;
             }
 
-            internal global::System.Collections.Generic.IEnumerable<ComplexNumber1Row> Names
-            {
-                get;
-            }
+            internal global::System.Collections.Generic.IEnumerable<ComplexNumber1Row> Names { get; }
         }
 
         internal class MyProcedureProcedure : StoredProcedure
         {
-            internal MyProcedureProcedure(): base("dbo.MyProcedure_2")
+            internal MyProcedureProcedure() : base("dbo.MyProcedure_2")
             {
             }
 
             private readonly NameType1TableValuedParameterDefinition _names = new NameType1TableValuedParameterDefinition("@names");
+
             public void PopulateCommand(SqlCommandWrapper command, global::System.Collections.Generic.IEnumerable<NameType1Row> names)
             {
                 command.CommandType = global::System.Data.CommandType.StoredProcedure;
@@ -90,6 +91,7 @@ namespace Microsoft.Health.SqlServer.Web.Features.Schema.Model
             }
 
             private readonly ITableValuedParameterRowGenerator<TInput, NameType1Row> NameType1RowGenerator;
+
             public MyProcedureTableValuedParameters Generate(TInput input)
             {
                 return new MyProcedureTableValuedParameters(NameType1RowGenerator.GenerateRows(input));
@@ -103,10 +105,7 @@ namespace Microsoft.Health.SqlServer.Web.Features.Schema.Model
                 this.Names = Names;
             }
 
-            internal global::System.Collections.Generic.IEnumerable<NameType1Row> Names
-            {
-                get;
-            }
+            internal global::System.Collections.Generic.IEnumerable<NameType1Row> Names { get; }
         }
     }
 }

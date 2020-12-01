@@ -11,6 +11,7 @@ namespace Microsoft.Health.SqlServer
     public partial class IndentedStringBuilder
     {
         private readonly System.Text.StringBuilder _inner;
+
         public IndentedStringBuilder(System.Text.StringBuilder inner)
         {
             _inner = inner ?? throw new System.ArgumentNullException(nameof(inner));

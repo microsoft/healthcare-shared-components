@@ -13,13 +13,15 @@ namespace Microsoft.Health.SqlServer.Web.Features.Schema.Model
 
     internal class ComplexNumber1TableValuedParameterDefinition : TableValuedParameterDefinition<ComplexNumber1Row>
     {
-        internal ComplexNumber1TableValuedParameterDefinition(System.String parameterName): base(parameterName, "dbo.ComplexNumber_1")
+        internal ComplexNumber1TableValuedParameterDefinition(System.String parameterName) : base(parameterName, "dbo.ComplexNumber_1")
         {
         }
 
         internal readonly NVarCharColumn A = new NVarCharColumn("A", 128);
         internal readonly NVarCharColumn B = new NVarCharColumn("B", 128);
-        protected override global::System.Collections.Generic.IEnumerable<Column> Columns => new Column[]{A, B};
+
+        protected override global::System.Collections.Generic.IEnumerable<Column> Columns => new Column[] { A, B };
+
         protected override void FillSqlDataRecord(global::Microsoft.Data.SqlClient.Server.SqlDataRecord record, ComplexNumber1Row rowData)
         {
             A.Set(record, 0, rowData.A);
@@ -35,26 +37,21 @@ namespace Microsoft.Health.SqlServer.Web.Features.Schema.Model
             this.B = B;
         }
 
-        internal System.String A
-        {
-            get;
-        }
-
-        internal System.String B
-        {
-            get;
-        }
+        internal System.String A { get; }
+        internal System.String B { get; }
     }
 
     internal class NameType1TableValuedParameterDefinition : TableValuedParameterDefinition<NameType1Row>
     {
-        internal NameType1TableValuedParameterDefinition(System.String parameterName): base(parameterName, "dbo.NameType_1")
+        internal NameType1TableValuedParameterDefinition(System.String parameterName) : base(parameterName, "dbo.NameType_1")
         {
         }
 
         internal readonly NVarCharColumn Given = new NVarCharColumn("Given", 128);
         internal readonly NVarCharColumn Family = new NVarCharColumn("Family", 128);
-        protected override global::System.Collections.Generic.IEnumerable<Column> Columns => new Column[]{Given, Family};
+
+        protected override global::System.Collections.Generic.IEnumerable<Column> Columns => new Column[] { Given, Family };
+
         protected override void FillSqlDataRecord(global::Microsoft.Data.SqlClient.Server.SqlDataRecord record, NameType1Row rowData)
         {
             Given.Set(record, 0, rowData.Given);
@@ -70,26 +67,21 @@ namespace Microsoft.Health.SqlServer.Web.Features.Schema.Model
             this.Family = Family;
         }
 
-        internal System.String Given
-        {
-            get;
-        }
-
-        internal System.String Family
-        {
-            get;
-        }
+        internal System.String Given { get; }
+        internal System.String Family { get; }
     }
 
     internal class NameType2TableValuedParameterDefinition : TableValuedParameterDefinition<NameType2Row>
     {
-        internal NameType2TableValuedParameterDefinition(System.String parameterName): base(parameterName, "dbo.NameType_2")
+        internal NameType2TableValuedParameterDefinition(System.String parameterName) : base(parameterName, "dbo.NameType_2")
         {
         }
 
         internal readonly NVarCharColumn Given = new NVarCharColumn("Given", 128);
         internal readonly NVarCharColumn Family = new NVarCharColumn("Family", 128);
-        protected override global::System.Collections.Generic.IEnumerable<Column> Columns => new Column[]{Given, Family};
+
+        protected override global::System.Collections.Generic.IEnumerable<Column> Columns => new Column[] { Given, Family };
+
         protected override void FillSqlDataRecord(global::Microsoft.Data.SqlClient.Server.SqlDataRecord record, NameType2Row rowData)
         {
             Given.Set(record, 0, rowData.Given);
@@ -105,14 +97,7 @@ namespace Microsoft.Health.SqlServer.Web.Features.Schema.Model
             this.Family = Family;
         }
 
-        internal System.String Given
-        {
-            get;
-        }
-
-        internal System.String Family
-        {
-            get;
-        }
+        internal System.String Given { get; }
+        internal System.String Family { get; }
     }
 }

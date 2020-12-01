@@ -22,9 +22,10 @@ namespace Microsoft.Health.SqlServer.Features.Schema.Model
         internal readonly static SelectCurrentVersionsInformationProcedure SelectCurrentVersionsInformation = new SelectCurrentVersionsInformationProcedure();
         internal readonly static UpsertInstanceSchemaProcedure UpsertInstanceSchema = new UpsertInstanceSchemaProcedure();
         internal readonly static UpsertSchemaVersionProcedure UpsertSchemaVersion = new UpsertSchemaVersionProcedure();
+
         internal class InstanceSchemaTable : Table
         {
-            internal InstanceSchemaTable(): base("dbo.InstanceSchema")
+            internal InstanceSchemaTable() : base("dbo.InstanceSchema")
             {
             }
 
@@ -39,7 +40,7 @@ namespace Microsoft.Health.SqlServer.Features.Schema.Model
 
         internal class SchemaVersionTable : Table
         {
-            internal SchemaVersionTable(): base("dbo.SchemaVersion")
+            internal SchemaVersionTable() : base("dbo.SchemaVersion")
             {
             }
 
@@ -49,7 +50,7 @@ namespace Microsoft.Health.SqlServer.Features.Schema.Model
 
         internal class DeleteInstanceSchemaProcedure : StoredProcedure
         {
-            internal DeleteInstanceSchemaProcedure(): base("dbo.DeleteInstanceSchema")
+            internal DeleteInstanceSchemaProcedure() : base("dbo.DeleteInstanceSchema")
             {
             }
 
@@ -62,11 +63,12 @@ namespace Microsoft.Health.SqlServer.Features.Schema.Model
 
         internal class GetInstanceSchemaByNameProcedure : StoredProcedure
         {
-            internal GetInstanceSchemaByNameProcedure(): base("dbo.GetInstanceSchemaByName")
+            internal GetInstanceSchemaByNameProcedure() : base("dbo.GetInstanceSchemaByName")
             {
             }
 
             private readonly ParameterDefinition<System.String> _name = new ParameterDefinition<System.String>("@name", global::System.Data.SqlDbType.VarChar, false, 64);
+
             public void PopulateCommand(SqlCommandWrapper command, System.String name)
             {
                 command.CommandType = global::System.Data.CommandType.StoredProcedure;
@@ -77,7 +79,7 @@ namespace Microsoft.Health.SqlServer.Features.Schema.Model
 
         internal class SelectCompatibleSchemaVersionsProcedure : StoredProcedure
         {
-            internal SelectCompatibleSchemaVersionsProcedure(): base("dbo.SelectCompatibleSchemaVersions")
+            internal SelectCompatibleSchemaVersionsProcedure() : base("dbo.SelectCompatibleSchemaVersions")
             {
             }
 
@@ -90,7 +92,7 @@ namespace Microsoft.Health.SqlServer.Features.Schema.Model
 
         internal class SelectCurrentSchemaVersionProcedure : StoredProcedure
         {
-            internal SelectCurrentSchemaVersionProcedure(): base("dbo.SelectCurrentSchemaVersion")
+            internal SelectCurrentSchemaVersionProcedure() : base("dbo.SelectCurrentSchemaVersion")
             {
             }
 
@@ -103,7 +105,7 @@ namespace Microsoft.Health.SqlServer.Features.Schema.Model
 
         internal class SelectCurrentVersionsInformationProcedure : StoredProcedure
         {
-            internal SelectCurrentVersionsInformationProcedure(): base("dbo.SelectCurrentVersionsInformation")
+            internal SelectCurrentVersionsInformationProcedure() : base("dbo.SelectCurrentVersionsInformation")
             {
             }
 
@@ -116,7 +118,7 @@ namespace Microsoft.Health.SqlServer.Features.Schema.Model
 
         internal class UpsertInstanceSchemaProcedure : StoredProcedure
         {
-            internal UpsertInstanceSchemaProcedure(): base("dbo.UpsertInstanceSchema")
+            internal UpsertInstanceSchemaProcedure() : base("dbo.UpsertInstanceSchema")
             {
             }
 
@@ -124,6 +126,7 @@ namespace Microsoft.Health.SqlServer.Features.Schema.Model
             private readonly ParameterDefinition<System.Int32> _maxVersion = new ParameterDefinition<System.Int32>("@maxVersion", global::System.Data.SqlDbType.Int, false);
             private readonly ParameterDefinition<System.Int32> _minVersion = new ParameterDefinition<System.Int32>("@minVersion", global::System.Data.SqlDbType.Int, false);
             private readonly ParameterDefinition<System.Int32> _addMinutesOnTimeout = new ParameterDefinition<System.Int32>("@addMinutesOnTimeout", global::System.Data.SqlDbType.Int, false);
+
             public void PopulateCommand(SqlCommandWrapper command, System.String name, System.Int32 maxVersion, System.Int32 minVersion, System.Int32 addMinutesOnTimeout)
             {
                 command.CommandType = global::System.Data.CommandType.StoredProcedure;
@@ -137,12 +140,13 @@ namespace Microsoft.Health.SqlServer.Features.Schema.Model
 
         internal class UpsertSchemaVersionProcedure : StoredProcedure
         {
-            internal UpsertSchemaVersionProcedure(): base("dbo.UpsertSchemaVersion")
+            internal UpsertSchemaVersionProcedure() : base("dbo.UpsertSchemaVersion")
             {
             }
 
             private readonly ParameterDefinition<System.Int32> _version = new ParameterDefinition<System.Int32>("@version", global::System.Data.SqlDbType.Int, false);
             private readonly ParameterDefinition<System.String> _status = new ParameterDefinition<System.String>("@status", global::System.Data.SqlDbType.VarChar, false, 10);
+
             public void PopulateCommand(SqlCommandWrapper command, System.Int32 version, System.String status)
             {
                 command.CommandType = global::System.Data.CommandType.StoredProcedure;
