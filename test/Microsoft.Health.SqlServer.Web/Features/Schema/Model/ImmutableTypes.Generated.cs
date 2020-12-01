@@ -11,9 +11,9 @@ namespace Microsoft.Health.SqlServer.Web.Features.Schema.Model
     using Microsoft.Health.SqlServer.Features.Client;
     using Microsoft.Health.SqlServer.Features.Schema.Model;
 
-    internal class ComplexNumber1TableValuedParameterDefinition : TableValuedParameterDefinition<ComplexNumber1Row>
+    internal class ComplexNumberV1TableValuedParameterDefinition : TableValuedParameterDefinition<ComplexNumberV1Row>
     {
-        internal ComplexNumber1TableValuedParameterDefinition(System.String parameterName) : base(parameterName, "dbo.ComplexNumber_1")
+        internal ComplexNumberV1TableValuedParameterDefinition(System.String parameterName) : base(parameterName, "dbo.ComplexNumber_1")
         {
         }
 
@@ -22,16 +22,16 @@ namespace Microsoft.Health.SqlServer.Web.Features.Schema.Model
 
         protected override global::System.Collections.Generic.IEnumerable<Column> Columns => new Column[] { A, B };
 
-        protected override void FillSqlDataRecord(global::Microsoft.Data.SqlClient.Server.SqlDataRecord record, ComplexNumber1Row rowData)
+        protected override void FillSqlDataRecord(global::Microsoft.Data.SqlClient.Server.SqlDataRecord record, ComplexNumberV1Row rowData)
         {
             A.Set(record, 0, rowData.A);
             B.Set(record, 1, rowData.B);
         }
     }
 
-    internal struct ComplexNumber1Row
+    internal struct ComplexNumberV1Row
     {
-        internal ComplexNumber1Row(System.String A, System.String B)
+        internal ComplexNumberV1Row(System.String A, System.String B)
         {
             this.A = A;
             this.B = B;
@@ -41,9 +41,9 @@ namespace Microsoft.Health.SqlServer.Web.Features.Schema.Model
         internal System.String B { get; }
     }
 
-    internal class NameType1TableValuedParameterDefinition : TableValuedParameterDefinition<NameType1Row>
+    internal class NameTypeV1TableValuedParameterDefinition : TableValuedParameterDefinition<NameTypeV1Row>
     {
-        internal NameType1TableValuedParameterDefinition(System.String parameterName) : base(parameterName, "dbo.NameType_1")
+        internal NameTypeV1TableValuedParameterDefinition(System.String parameterName) : base(parameterName, "dbo.NameType_1")
         {
         }
 
@@ -52,16 +52,16 @@ namespace Microsoft.Health.SqlServer.Web.Features.Schema.Model
 
         protected override global::System.Collections.Generic.IEnumerable<Column> Columns => new Column[] { Given, Family };
 
-        protected override void FillSqlDataRecord(global::Microsoft.Data.SqlClient.Server.SqlDataRecord record, NameType1Row rowData)
+        protected override void FillSqlDataRecord(global::Microsoft.Data.SqlClient.Server.SqlDataRecord record, NameTypeV1Row rowData)
         {
             Given.Set(record, 0, rowData.Given);
             Family.Set(record, 1, rowData.Family);
         }
     }
 
-    internal struct NameType1Row
+    internal struct NameTypeV1Row
     {
-        internal NameType1Row(System.String Given, System.String Family)
+        internal NameTypeV1Row(System.String Given, System.String Family)
         {
             this.Given = Given;
             this.Family = Family;
@@ -71,9 +71,9 @@ namespace Microsoft.Health.SqlServer.Web.Features.Schema.Model
         internal System.String Family { get; }
     }
 
-    internal class NameType2TableValuedParameterDefinition : TableValuedParameterDefinition<NameType2Row>
+    internal class NameTypeV2TableValuedParameterDefinition : TableValuedParameterDefinition<NameTypeV2Row>
     {
-        internal NameType2TableValuedParameterDefinition(System.String parameterName) : base(parameterName, "dbo.NameType_2")
+        internal NameTypeV2TableValuedParameterDefinition(System.String parameterName) : base(parameterName, "dbo.NameType_2")
         {
         }
 
@@ -82,16 +82,16 @@ namespace Microsoft.Health.SqlServer.Web.Features.Schema.Model
 
         protected override global::System.Collections.Generic.IEnumerable<Column> Columns => new Column[] { Given, Family };
 
-        protected override void FillSqlDataRecord(global::Microsoft.Data.SqlClient.Server.SqlDataRecord record, NameType2Row rowData)
+        protected override void FillSqlDataRecord(global::Microsoft.Data.SqlClient.Server.SqlDataRecord record, NameTypeV2Row rowData)
         {
             Given.Set(record, 0, rowData.Given);
             Family.Set(record, 1, rowData.Family);
         }
     }
 
-    internal struct NameType2Row
+    internal struct NameTypeV2Row
     {
-        internal NameType2Row(System.String Given, System.String Family)
+        internal NameTypeV2Row(System.String Given, System.String Family)
         {
             this.Given = Given;
             this.Family = Family;

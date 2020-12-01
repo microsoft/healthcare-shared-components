@@ -22,9 +22,9 @@ namespace Microsoft.Health.SqlServer.Web.Features.Schema.Model
             {
             }
 
-            private readonly ComplexNumber1TableValuedParameterDefinition _names = new ComplexNumber1TableValuedParameterDefinition("@names");
+            private readonly ComplexNumberV1TableValuedParameterDefinition _names = new ComplexNumberV1TableValuedParameterDefinition("@names");
 
-            public void PopulateCommand(SqlCommandWrapper command, global::System.Collections.Generic.IEnumerable<ComplexNumber1Row> names)
+            public void PopulateCommand(SqlCommandWrapper command, global::System.Collections.Generic.IEnumerable<ComplexNumberV1Row> names)
             {
                 command.CommandType = global::System.Data.CommandType.StoredProcedure;
                 command.CommandText = "dbo.InsertNumbers";
@@ -39,27 +39,27 @@ namespace Microsoft.Health.SqlServer.Web.Features.Schema.Model
 
         internal class InsertNumbersTvpGenerator<TInput> : IStoredProcedureTableValuedParametersGenerator<TInput, InsertNumbersTableValuedParameters>
         {
-            public InsertNumbersTvpGenerator(ITableValuedParameterRowGenerator<TInput, ComplexNumber1Row> ComplexNumber1RowGenerator)
+            public InsertNumbersTvpGenerator(ITableValuedParameterRowGenerator<TInput, ComplexNumberV1Row> ComplexNumberV1RowGenerator)
             {
-                this.ComplexNumber1RowGenerator = ComplexNumber1RowGenerator;
+                this.ComplexNumberV1RowGenerator = ComplexNumberV1RowGenerator;
             }
 
-            private readonly ITableValuedParameterRowGenerator<TInput, ComplexNumber1Row> ComplexNumber1RowGenerator;
+            private readonly ITableValuedParameterRowGenerator<TInput, ComplexNumberV1Row> ComplexNumberV1RowGenerator;
 
             public InsertNumbersTableValuedParameters Generate(TInput input)
             {
-                return new InsertNumbersTableValuedParameters(ComplexNumber1RowGenerator.GenerateRows(input));
+                return new InsertNumbersTableValuedParameters(ComplexNumberV1RowGenerator.GenerateRows(input));
             }
         }
 
         internal struct InsertNumbersTableValuedParameters
         {
-            internal InsertNumbersTableValuedParameters(global::System.Collections.Generic.IEnumerable<ComplexNumber1Row> Names)
+            internal InsertNumbersTableValuedParameters(global::System.Collections.Generic.IEnumerable<ComplexNumberV1Row> Names)
             {
                 this.Names = Names;
             }
 
-            internal global::System.Collections.Generic.IEnumerable<ComplexNumber1Row> Names { get; }
+            internal global::System.Collections.Generic.IEnumerable<ComplexNumberV1Row> Names { get; }
         }
 
         internal class MyProcedureProcedure : StoredProcedure
@@ -68,9 +68,9 @@ namespace Microsoft.Health.SqlServer.Web.Features.Schema.Model
             {
             }
 
-            private readonly NameType1TableValuedParameterDefinition _names = new NameType1TableValuedParameterDefinition("@names");
+            private readonly NameTypeV1TableValuedParameterDefinition _names = new NameTypeV1TableValuedParameterDefinition("@names");
 
-            public void PopulateCommand(SqlCommandWrapper command, global::System.Collections.Generic.IEnumerable<NameType1Row> names)
+            public void PopulateCommand(SqlCommandWrapper command, global::System.Collections.Generic.IEnumerable<NameTypeV1Row> names)
             {
                 command.CommandType = global::System.Data.CommandType.StoredProcedure;
                 command.CommandText = "dbo.MyProcedure_2";
@@ -85,27 +85,27 @@ namespace Microsoft.Health.SqlServer.Web.Features.Schema.Model
 
         internal class MyProcedureTvpGenerator<TInput> : IStoredProcedureTableValuedParametersGenerator<TInput, MyProcedureTableValuedParameters>
         {
-            public MyProcedureTvpGenerator(ITableValuedParameterRowGenerator<TInput, NameType1Row> NameType1RowGenerator)
+            public MyProcedureTvpGenerator(ITableValuedParameterRowGenerator<TInput, NameTypeV1Row> NameTypeV1RowGenerator)
             {
-                this.NameType1RowGenerator = NameType1RowGenerator;
+                this.NameTypeV1RowGenerator = NameTypeV1RowGenerator;
             }
 
-            private readonly ITableValuedParameterRowGenerator<TInput, NameType1Row> NameType1RowGenerator;
+            private readonly ITableValuedParameterRowGenerator<TInput, NameTypeV1Row> NameTypeV1RowGenerator;
 
             public MyProcedureTableValuedParameters Generate(TInput input)
             {
-                return new MyProcedureTableValuedParameters(NameType1RowGenerator.GenerateRows(input));
+                return new MyProcedureTableValuedParameters(NameTypeV1RowGenerator.GenerateRows(input));
             }
         }
 
         internal struct MyProcedureTableValuedParameters
         {
-            internal MyProcedureTableValuedParameters(global::System.Collections.Generic.IEnumerable<NameType1Row> Names)
+            internal MyProcedureTableValuedParameters(global::System.Collections.Generic.IEnumerable<NameTypeV1Row> Names)
             {
                 this.Names = Names;
             }
 
-            internal global::System.Collections.Generic.IEnumerable<NameType1Row> Names { get; }
+            internal global::System.Collections.Generic.IEnumerable<NameTypeV1Row> Names { get; }
         }
     }
 }

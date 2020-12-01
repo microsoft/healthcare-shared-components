@@ -193,7 +193,7 @@ namespace Microsoft.Health.Extensions.BuildTimeCodeGenerator.Sql
         /// <returns>The class name</returns>
         protected static string GetClassNameForTableValuedParameterDefinition(SchemaObjectName objectName)
         {
-            return $"{GetTableTypeNameWithoutVersionSuffix(objectName)}TableValuedParameterDefinition";
+            return $"{GetTableTypeMemberName(objectName)}TableValuedParameterDefinition";
         }
 
         /// <summary>
@@ -203,18 +203,18 @@ namespace Microsoft.Health.Extensions.BuildTimeCodeGenerator.Sql
         /// <returns>The struct name</returns>
         protected static string GetRowStructNameForTableType(SchemaObjectName objectName)
         {
-            return $"{GetTableTypeNameWithoutVersionSuffix(objectName)}Row";
+            return $"{GetTableTypeMemberName(objectName)}Row";
         }
 
         /// <summary>
-        /// Strips away the underscore in a in a suffix for a table type name.
-        /// For example, MyTableType_1 will return MyTableType1
+        /// Strips away the underscore in a in a suffix for a table type name and replaces it with "V"
+        /// For example, MyTableType_1 will return MyTableTypeV1
         /// </summary>
         /// <param name="objectName">The table type name</param>
         /// <returns>The name</returns>
-        private static string GetTableTypeNameWithoutVersionSuffix(SchemaObjectName objectName)
+        private static string GetTableTypeMemberName(SchemaObjectName objectName)
         {
-            return Regex.Replace(objectName.BaseIdentifier.Value, @"_(\d+)$", "$1");
+            return Regex.Replace(objectName.BaseIdentifier.Value, @"_(\d+)$", "V$1");
         }
 
         /// <summary>
