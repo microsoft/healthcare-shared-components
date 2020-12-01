@@ -36,9 +36,9 @@
   <ItemGroup>
     <GenerateFilesInputs Include="Features\Schema\Migrations\BaseSchema.sql" />
     <Generated Include="Features\Schema\Model\SchemaShared.Generated.cs">
-      <Generator>SqlModelGenerator</Generator>
+      <Generator>MutableSqlModelGenerator</Generator>
       <Namespace>Microsoft.Health.SqlServer.Features.Schema.Model</Namespace>
-      <Args>$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)\Features\Schema\Migrations\BaseSchema.sql'))</Args>
+      <Args>"$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)\Features\Schema\Migrations\BaseSchema.sql'))"</Args>
     </Generated>
   </ItemGroup>
 

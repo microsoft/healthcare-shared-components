@@ -6,11 +6,11 @@
 
 INSERT INTO dbo.SchemaVersion
 VALUES
-    (2, 'started')
+    (3, 'started')
 
 GO
 
-CREATE TYPE dbo.NameType_1 AS TABLE
+CREATE TYPE dbo.NameType_2 AS TABLE
 (
     Given nvarchar(128) NOT NULL,
     Family nvarchar(128) NOT NULL
@@ -24,7 +24,7 @@ CREATE TYPE dbo.ComplexNumber_1 AS TABLE
 
 GO
 
-CREATE PROCEDURE dbo.InsertNames
+CREATE PROCEDURE dbo.MyProcedure_2
     @names dbo.NameType_1 READONLY
 AS
     SELECT 1

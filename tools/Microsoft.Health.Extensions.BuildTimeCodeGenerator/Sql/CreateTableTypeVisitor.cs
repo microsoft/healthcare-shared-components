@@ -3,6 +3,7 @@
 // Licensed under the MIT License (MIT). See LICENSE in the repo root for license information.
 // -------------------------------------------------------------------------------------------------
 
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.CodeAnalysis.CSharp;
@@ -20,11 +21,20 @@ namespace Microsoft.Health.Extensions.BuildTimeCodeGenerator.Sql
     /// </summary>
     public class CreateTableTypeVisitor : SqlVisitor
     {
+        private readonly HashSet<string> _visitedTypes = new HashSet<string>(StringComparer.Ordinal);
+
         public override int ArtifactSortOder => 2;
 
         public override void Visit(CreateTypeTableStatement node)
         {
             string tableTypeName = node.Name.BaseIdentifier.Value;
+
+            if (!_visitedTypes.Add(tableTypeName))
+            {
+                // This table type has already been added from a previous .sql file.
+                return;
+            }
+
             string schemaQualifiedTableTypeName = $"{node.Name.SchemaIdentifier.Value}.{tableTypeName}";
             string className = GetClassNameForTableValuedParameterDefinition(node.Name);
             string rowStructName = GetRowStructNameForTableType(node.Name);
@@ -37,7 +47,7 @@ namespace Microsoft.Health.Extensions.BuildTimeCodeGenerator.Sql
 
             ClassDeclarationSyntax classDeclarationSyntax =
                 ClassDeclaration(className)
-                    .WithModifiers(TokenList(Token(SyntaxKind.PrivateKeyword)))
+                    .WithModifiers(TokenList(Token(SyntaxKind.InternalKeyword)))
                     .AddBaseListTypes(
                         SimpleBaseType(
                             GenericName("TableValuedParameterDefinition")
