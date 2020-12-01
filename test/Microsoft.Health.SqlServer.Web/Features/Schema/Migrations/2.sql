@@ -6,7 +6,7 @@
 
 INSERT INTO dbo.SchemaVersion
 VALUES
-    (3, 'started')
+    (2, 'started')
 
 GO
 

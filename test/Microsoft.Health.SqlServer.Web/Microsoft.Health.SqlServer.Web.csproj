@@ -27,6 +27,7 @@
       <None Remove="Features\Schema\Migrations\2.sql" />
       <EmbeddedResource Include="Features\Schema\Migrations\2.sql" />
       <GenerateFilesInputs Include="Features\Schema\Migrations\2.sql" />
+      <GenerateFilesInputs Include="Features\Schema\Migrations\3.sql" />
       <Generated Include="Features\Schema\Model\VLatest.Generated.cs">
         <Generator>MutableSqlModelGenerator</Generator>
         <Namespace>Microsoft.Health.SqlServer.Web.Features.Schema.Model</Namespace>
