@@ -11,6 +11,11 @@
     <!--This will target the latest patch release of the runtime released with the current SDK.  -->
     <TargetLatestRuntimePatch>true</TargetLatestRuntimePatch>
     <RepositoryUrl>https://github.com/microsoft/healthcare-components</RepositoryUrl>
+    <SdkPackageVersion>3.1.7</SdkPackageVersion>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="$(TargetFramework.StartsWith('net5'))">
+    <SdkPackageVersion>5.0.0</SdkPackageVersion>
   </PropertyGroup>
 
   <PropertyGroup Condition=" '$(EnableSourceLink)' == 'true' ">
