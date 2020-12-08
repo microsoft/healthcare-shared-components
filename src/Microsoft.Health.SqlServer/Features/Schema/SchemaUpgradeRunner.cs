@@ -53,7 +53,7 @@ namespace Microsoft.Health.SqlServer.Features.Schema
                 await InsertSchemaVersionAsync(version, cancellationToken);
             }
 
-            await ExecuteSchemaAsync(_scriptProvider.GetMigrationScript(version, applyFullSchemaSnapshot), cancellationToken);
+            await ExecuteScriptAsync(_scriptProvider.GetMigrationScript(version, applyFullSchemaSnapshot), cancellationToken);
 
             await CompleteSchemaVersionAsync(version, cancellationToken);
 
@@ -65,12 +65,12 @@ namespace Microsoft.Health.SqlServer.Features.Schema
         {
             _logger.LogInformation("Applying base schema");
 
-            await ExecuteSchemaAsync(_baseScriptProvider.GetScript(), cancellationToken);
+            await ExecuteScriptAsync(_baseScriptProvider.GetScript(), cancellationToken);
 
             _logger.LogInformation("Completed applying base schema");
         }
 
-        private async Task ExecuteSchemaAsync(string script, CancellationToken cancellationToken)
+        public async Task ExecuteScriptAsync(string script, CancellationToken cancellationToken)
         {
             using (var connection = await _sqlConnectionFactory.GetSqlConnectionAsync(cancellationToken: cancellationToken))
             {
