@@ -7,5 +7,5 @@ Addresses [issue #].
 ## Testing
 Describe how this change was tested.
 
-### Semver Change
-Patch|Skip|Minor|Major
+## Semver Change
+Patch|Skip|Feature|Breaking
