@@ -3,7 +3,7 @@
   <PropertyGroup>
     <OutputType>Exe</OutputType>
     <AssemblyName>Microsoft.Health.Extensions.BuildTimeCodeGenerator</AssemblyName>
-    <TargetFramework>netcoreapp3.1</TargetFramework>
+    <TargetFrameworks>$(SupportedFrameworks);</TargetFrameworks>
   </PropertyGroup>
 
   <ItemGroup>
@@ -26,6 +26,7 @@
 
   <!-- Executes /t:Publish for all target frameworks before packing-->
   <Target Name="PublishAll" BeforeTargets="GenerateNuspec">
-    <MSBuild Projects="$(MSBuildProjectFullPath)" Targets="Publish" />
+    <MSBuild Projects="$(MSBuildProjectFullPath)" Targets="Publish" Properties="TargetFramework=net5.0" />
+    <MSBuild Projects="$(MSBuildProjectFullPath)" Targets="Publish" Properties="TargetFramework=netcoreapp3.1" />
   </Target>
 </Project>
