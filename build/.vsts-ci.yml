@@ -11,7 +11,7 @@ variables:
 jobs:
 - job: Semver
   pool:
-    vmImage: 'ubuntu-latest'
+    vmImage: 'windows-latest'
   steps:
   - template: ./update-semver.yml
   - script: echo %Action%%BuildVersion%
