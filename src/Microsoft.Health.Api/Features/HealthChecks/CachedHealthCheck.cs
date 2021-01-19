@@ -46,11 +46,14 @@ namespace Microsoft.Health.Api.Features.HealthChecks
 
             try
             {
+                _logger.LogTrace($"Begining wait for semaphore for {nameof(CheckHealthAsync)}, healthcheck context: {context.Registration}");
                 await _semaphore.WaitAsync(cancellationToken);
+                _logger.LogTrace($"Obtained semaphore for {nameof(CheckHealthAsync)}, healthcheck context: {context.Registration}");
             }
             catch (OperationCanceledException oce) when (cancellationToken.IsCancellationRequested)
             {
-                _logger.LogInformation(oce, $"Cancellation was requested for {nameof(CheckHealthAsync)}");
+                _logger.LogTrace(oce, $"Cancellation was requested for {nameof(CheckHealthAsync)}, healthcheck context: {context.Registration}");
+                _semaphore.Release();
                 return _lastResult;
             }
 
@@ -82,6 +85,7 @@ namespace Microsoft.Health.Api.Features.HealthChecks
             finally
             {
                 _semaphore.Release();
+                _logger.LogInformation($"Released semaphore for {nameof(CheckHealthAsync)}");
             }
         }
 
