@@ -46,14 +46,13 @@ namespace Microsoft.Health.Api.Features.HealthChecks
 
             try
             {
-                _logger.LogTrace($"Begining wait for semaphore for {nameof(CheckHealthAsync)}, healthcheck context: {context.Registration}");
+                _logger.LogTrace($"Begining wait for semaphore for {nameof(CheckHealthAsync)}, healthcheck context: {context.Registration}, semaphore count: {_semaphore.CurrentCount}");
                 await _semaphore.WaitAsync(cancellationToken);
-                _logger.LogTrace($"Obtained semaphore for {nameof(CheckHealthAsync)}, healthcheck context: {context.Registration}");
+                _logger.LogTrace($"Entered semaphore for {nameof(CheckHealthAsync)}, healthcheck context: {context.Registration}, semaphore count: {_semaphore.CurrentCount}");
             }
             catch (OperationCanceledException oce) when (cancellationToken.IsCancellationRequested)
             {
-                _logger.LogTrace(oce, $"Cancellation was requested for {nameof(CheckHealthAsync)}, healthcheck context: {context.Registration}");
-                _semaphore.Release();
+                _logger.LogTrace(oce, $"Cancellation was requested for {nameof(CheckHealthAsync)}, healthcheck context: {context.Registration}, semaphore count: {_semaphore.CurrentCount}");
                 return _lastResult;
             }
 
@@ -85,7 +84,7 @@ namespace Microsoft.Health.Api.Features.HealthChecks
             finally
             {
                 _semaphore.Release();
-                _logger.LogInformation($"Released semaphore for {nameof(CheckHealthAsync)}");
+                _logger.LogTrace($"Released semaphore for {nameof(CheckHealthAsync)}, semaphore count: {_semaphore.CurrentCount} ");
             }
         }
 
