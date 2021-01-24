@@ -1,29 +1,28 @@
 <Project>
 
   <PropertyGroup>
+    <Authors>Microsot Health Team</Authors>
+    <AllowedOutputExtensionsInPackageBuildOutputFolder>$(AllowedOutputExtensionsInPackageBuildOutputFolder);.pdb</AllowedOutputExtensionsInPackageBuildOutputFolder>
+    <Company>Microsoft Corporation</Company>
+    <Copyright>Copyright © Microsoft Corporation. All rights reserved.</Copyright>
+    <Deterministic>true</Deterministic>
+    <EmbedUntrackedSources>true</EmbedUntrackedSources>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <HighEntropyVA>true</HighEntropyVA>
+    <LangVersion>8.0</LangVersion>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <Product>Microsoft Health</Product>
+    <PublishRepositoryUrl>true</PublishRepositoryUrl>
+    <RepositoryUrl>https://github.com/microsoft/healthcare-components</RepositoryUrl>
+    <SdkPackageVersion>3.1.7</SdkPackageVersion>
+    <SupportedFrameworks>netcoreapp3.1;net5.0</SupportedFrameworks>
+    <TargetLatestRuntimePatch>true</TargetLatestRuntimePatch>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <WarningsAsErrors />
-    <DebugType>Portable</DebugType>
-    <LangVersion>8.0</LangVersion>
-    <HighEntropyVA>true</HighEntropyVA>
-    <EnableSourceLink Condition="$([MSBuild]::IsOSPlatform('osx'))">false</EnableSourceLink>
-    <EnableSourceControlManagerQueries>$(EnableSourceLink)</EnableSourceControlManagerQueries>
-    <!--This will target the latest patch release of the runtime released with the current SDK.  -->
-    <TargetLatestRuntimePatch>true</TargetLatestRuntimePatch>
-    <RepositoryUrl>https://github.com/microsoft/healthcare-components</RepositoryUrl>
-
-    <SupportedFrameworks>netcoreapp3.1;net5.0</SupportedFrameworks>
-    <SdkPackageVersion>3.1.7</SdkPackageVersion>
   </PropertyGroup>
 
   <PropertyGroup Condition="$(TargetFramework.StartsWith('net5'))">
     <SdkPackageVersion>5.0.0</SdkPackageVersion>
-  </PropertyGroup>
-
-  <PropertyGroup Condition=" '$(EnableSourceLink)' == 'true' ">
-    <PublishRepositoryUrl>true</PublishRepositoryUrl>
-    <EmbedUntrackedSources>true</EmbedUntrackedSources>
-    <AllowedOutputExtensionsInPackageBuildOutputFolder>$(AllowedOutputExtensionsInPackageBuildOutputFolder);.pdb</AllowedOutputExtensionsInPackageBuildOutputFolder>
   </PropertyGroup>
 
   <Choose>
@@ -46,15 +45,16 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.0.0" />
-    <PackageReference Include="StyleCop.Analyzers" Version="1.1.118" />
+    <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.0.0" PrivateAssets="All" />
+    <PackageReference Include="StyleCop.Analyzers" Version="1.1.118" PrivateAssets="All" />
   </ItemGroup>
 
   <Choose>
     <When Condition="$(MSBuildProjectName)!='Microsoft.Health.Extensions.BuildTimeCodeGenerator' AND !$(MSBuildProjectName.Contains('Test'))">
       <ItemGroup>
-        <PackageReference Include="Microsoft.CodeAnalysis.FxCopAnalyzers" Version="2.6.3" />
+        <PackageReference Include="Microsoft.CodeAnalysis.FxCopAnalyzers" Version="2.6.3" PrivateAssets="All" />
       </ItemGroup>
     </When>
   </Choose>
+
 </Project>
