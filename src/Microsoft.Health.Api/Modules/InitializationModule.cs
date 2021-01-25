@@ -14,8 +14,8 @@ using Microsoft.Health.Extensions.DependencyInjection;
 namespace Microsoft.Health.Api.Modules
 {
     /// <summary>
-    /// Starts all <see cref="IStartable"/> instances in the IoC container and ensures that all <see cref="IRequireInitializationOnFirstRequest"/> instances
-    /// are initialized before any controllers are invoked.
+    /// Ensures that all <see cref="IRequireInitializationOnFirstRequest"/> instances are
+    /// initialized before any controllers are invoked.
     /// </summary>
     public class InitializationModule : IStartupModule, IStartupFilter
     {
