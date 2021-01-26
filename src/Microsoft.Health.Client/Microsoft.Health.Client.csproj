@@ -1,13 +1,15 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
-    <PropertyGroup>
-        <TargetFrameworks>$(SupportedFrameworks);</TargetFrameworks>
-    </PropertyGroup>
+  <PropertyGroup>
+    <Description>Utilities for HTTP clients that communicate with Microsoft Health services.</Description>
+    <TargetFrameworks>$(SupportedFrameworks);</TargetFrameworks>
+  </PropertyGroup>
 
-    <ItemGroup>
-        <PackageReference Include="Ensure.That" Version="9.2.0" />
-        <PackageReference Include="Microsoft.Azure.Services.AppAuthentication" Version="1.5.0" />
-        <PackageReference Include="Microsoft.Extensions.Options" Version="$(SdkPackageVersion)" />
-        <PackageReference Include="Microsoft.IdentityModel.Protocols.OpenIdConnect" Version="5.5.0" />
-    </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Ensure.That" Version="9.2.0" />
+    <PackageReference Include="Microsoft.Azure.Services.AppAuthentication" Version="1.5.0" />
+    <PackageReference Include="Microsoft.Extensions.Options" Version="$(SdkPackageVersion)" />
+    <PackageReference Include="Microsoft.IdentityModel.Protocols.OpenIdConnect" Version="5.5.0" />
+  </ItemGroup>
+
 </Project>
