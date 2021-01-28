@@ -141,7 +141,7 @@ namespace Microsoft.Health.SqlServer.Features.Client
             => _sqlCommand.PrepareAsync(cancellationToken);
 
         /// <summary>
-        /// <see cref="SqlCommand.ExecuteReader"/>.
+        /// <see cref="SqlCommand.ExecuteReader()"/>.
         /// </summary>
         /// <returns>A <see cref="SqlDataReader"/> object.</returns>
         public virtual SqlDataReader ExecuteReader()

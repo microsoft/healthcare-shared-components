@@ -1,7 +1,9 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
+
   <Import Project="..\..\tools\Microsoft.Health.Extensions.BuildTimeCodeGenerator\Microsoft.Health.Extensions.BuildTimeCodeGenerator.targets" />
 
   <PropertyGroup>
+    <Description>SQL Server extensions and utilities used by Microsoft Health.</Description>
     <TargetFrameworks>$(SupportedFrameworks);</TargetFrameworks>
   </PropertyGroup>
 
@@ -74,4 +76,5 @@
       <Output TaskParameter="TargetOutputs" PropertyName="GeneratorPath" />
     </MSBuild>
   </Target>
+
 </Project>

@@ -1,10 +1,10 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
-    <PropertyGroup>
-        <TargetFrameworks>$(SupportedFrameworks);</TargetFrameworks>
-        <IsPackable>false</IsPackable>
-        <RootNamespace>Microsoft.Health.SqlServer.Tests.E2E</RootNamespace>
-    </PropertyGroup>
+  <PropertyGroup>
+    <TargetFrameworks>$(SupportedFrameworks);</TargetFrameworks>
+    <IsPackable>false</IsPackable>
+    <RootNamespace>Microsoft.Health.SqlServer.Tests.E2E</RootNamespace>
+  </PropertyGroup>
 
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.TestHost" Version="$(SdkPackageVersion)" />

@@ -29,4 +29,5 @@
     <MSBuild Projects="$(MSBuildProjectFullPath)" Targets="Publish" Properties="TargetFramework=net5.0" />
     <MSBuild Projects="$(MSBuildProjectFullPath)" Targets="Publish" Properties="TargetFramework=netcoreapp3.1" />
   </Target>
+
 </Project>

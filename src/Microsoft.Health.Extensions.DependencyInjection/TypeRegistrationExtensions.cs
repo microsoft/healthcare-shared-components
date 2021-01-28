@@ -139,7 +139,7 @@ namespace Microsoft.Health.Extensions.DependencyInjection
             EnsureArg.IsNotNull(provider, nameof(provider));
 
             var delegateType = typeof(TDelegate);
-            Func<TService> factory = () => (TService)provider.GetService<TImplementation>();
+            Func<TService> factory = () => provider.GetService<TImplementation>();
             var invokeMethod = factory.GetType().GetMethod(nameof(factory.Invoke));
             return invokeMethod.CreateDelegate(delegateType, factory);
         }

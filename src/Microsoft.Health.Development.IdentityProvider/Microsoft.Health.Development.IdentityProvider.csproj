@@ -1,6 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
+    <Description>Identity primitives used by Microsoft Health for local development.</Description>
     <TargetFrameworks>$(SupportedFrameworks);</TargetFrameworks>
   </PropertyGroup>
 
