@@ -17,7 +17,7 @@ steps:
   displayName: 'dotnet build $(buildConfiguration)'
   inputs:
     command: build
-    arguments: '--configuration $(buildConfiguration) /p:AssemblyVersion="$(assemblySemVer)" /p:FileVersion="$(assemblySemFileVer)" /p:InformationalVersion="$(informationalVersion)" /p:ContinuousIntegrationBuild=true /warnaserror'
+    arguments: '--configuration $(buildConfiguration) "-p:AssemblyVersion=$(assemblySemVer);FileVersion=$(assemblySemFileVer);InformationalVersion=$(informationalVersion);ContinuousIntegrationBuild=true"'
 
 - task: DotNetCoreCLI@2
   displayName: 'dotnet test UnitTests'
