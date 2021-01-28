@@ -3,7 +3,6 @@
   <PropertyGroup>
     <TargetFrameworks>$(SupportedFrameworks);</TargetFrameworks>
     <NoWarn>$(NoWarn);NU1603</NoWarn>
-    <DefineConstants>R5</DefineConstants>
   </PropertyGroup>
 
   <ItemGroup>
