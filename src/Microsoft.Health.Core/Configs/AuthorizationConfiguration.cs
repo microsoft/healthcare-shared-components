@@ -3,20 +3,20 @@
 // Licensed under the MIT License (MIT). See LICENSE in the repo root for license information.
 // -------------------------------------------------------------------------------------------------
 
+using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
+using Microsoft.Health.Core.Features.Security;
 
-namespace Microsoft.Health.Development.IdentityProvider.Configuration
+namespace Microsoft.Health.Core.Configs
 {
-    public class Provider
+    public class AuthorizationConfiguration<TEnum>
+        where TEnum : Enum
     {
-        public const string Audience = "health-api";
-        public const string LastModifiedClaim = "appid";
-        public const string ClientIdClaim = "client_id";
+        public string RolesClaim { get; set; } = "roles";
 
         public bool Enabled { get; set; }
 
-        public IList<Application> ClientApplications { get; } = new List<Application>();
-
-        public IList<User> Users { get; } = new List<User>();
+        public IReadOnlyList<Role<TEnum>> Roles { get; internal set; } = ImmutableList<Role<TEnum>>.Empty;
     }
 }

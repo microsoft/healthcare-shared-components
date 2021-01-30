@@ -1,4 +1,4 @@
-﻿// -------------------------------------------------------------------------------------------------
+// -------------------------------------------------------------------------------------------------
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License (MIT). See LICENSE in the repo root for license information.
 // -------------------------------------------------------------------------------------------------
@@ -7,6 +7,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Security.Claims;
 using System.Text.RegularExpressions;
 using EnsureThat;
 using IdentityServer4.Models;
@@ -16,11 +17,12 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Configuration.Json;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
-using Config = Microsoft.Health.Development.IdentityProvider.Configuration;
+using Microsoft.Health.Core.Configs;
+using Microsoft.Health.Development.IdentityProvider.Configuration;
 
-namespace Microsoft.Health.Development.IdentityProvider
+namespace Microsoft.Health.Development.IdentityProvider.Registration
 {
-    public static class RegistrationExtensions
+    public static class DevelopmentIdentityProviderRegistrationExtensions
     {
         private const string WrongAudienceClient = "wrongAudienceClient";
 
@@ -30,12 +32,16 @@ namespace Microsoft.Health.Development.IdentityProvider
         /// <param name="services">The services collection.</param>
         /// <param name="configuration">The configuration root. The "DevelopmentIdentityProvider" section will be used to populate configuration values.</param>
         /// <returns>The same services collection.</returns>
-        public static IServiceCollection AddDevelopmentIdentityProvider(this IServiceCollection services, IConfiguration configuration)
+        public static IServiceCollection AddDevelopmentIdentityProvider<TEnum>(this IServiceCollection services, IConfiguration configuration)
+            where TEnum : Enum
         {
             EnsureArg.IsNotNull(services, nameof(services));
             EnsureArg.IsNotNull(configuration, nameof(configuration));
 
-            var developmentIdentityProviderConfiguration = new Config.Provider();
+            var authorizationConfiguration = new AuthorizationConfiguration<TEnum>();
+            configuration.GetSection("DicomServer:Security:Authorization").Bind(authorizationConfiguration);
+
+            var developmentIdentityProviderConfiguration = new DevelopmentIdentityProviderConfiguration();
             configuration.GetSection("DevelopmentIdentityProvider").Bind(developmentIdentityProviderConfiguration);
             services.AddSingleton(Options.Create(developmentIdentityProviderConfiguration));
 
@@ -43,10 +49,21 @@ namespace Microsoft.Health.Development.IdentityProvider
             {
                 services.AddIdentityServer()
                     .AddDeveloperSigningCredential()
+                    .AddInMemoryApiScopes(new[] { new ApiScope(DevelopmentIdentityProviderConfiguration.Audience), new ApiScope(WrongAudienceClient),  })
                     .AddInMemoryApiResources(new[]
                     {
-                        new ApiResource(Config.Provider.Audience) { },
-                        new ApiResource(WrongAudienceClient) { },
+                        new ApiResource(
+                            DevelopmentIdentityProviderConfiguration.Audience,
+                            userClaims: new[] { authorizationConfiguration.RolesClaim })
+                        {
+                            Scopes = { DevelopmentIdentityProviderConfiguration.Audience },
+                        },
+                        new ApiResource(
+                            WrongAudienceClient,
+                            userClaims: new[] { authorizationConfiguration.RolesClaim })
+                        {
+                            Scopes = { WrongAudienceClient },
+                        },
                     })
                     .AddTestUsers(developmentIdentityProviderConfiguration.Users?.Select(user =>
                         new TestUser
@@ -55,6 +72,7 @@ namespace Microsoft.Health.Development.IdentityProvider
                             Password = user.Id,
                             IsActive = true,
                             SubjectId = user.Id,
+                            Claims = user.Roles.Select(r => new Claim(authorizationConfiguration.RolesClaim, r)).ToList(),
                         }).ToList())
                     .AddInMemoryClients(
                         developmentIdentityProviderConfiguration.ClientApplications.Select(
@@ -70,7 +88,12 @@ namespace Microsoft.Health.Development.IdentityProvider
                                     ClientSecrets = { new Secret(applicationConfiguration.Id.Sha256()) },
 
                                     // scopes that client has access to
-                                    AllowedScopes = { Config.Provider.Audience, WrongAudienceClient },
+                                    AllowedScopes = { DevelopmentIdentityProviderConfiguration.Audience, WrongAudienceClient },
+
+                                    // app roles that the client app may have
+                                    Claims = applicationConfiguration.Roles.Select(r => new ClientClaim(authorizationConfiguration.RolesClaim, r)).Concat(new[] { new ClientClaim("appid", applicationConfiguration.Id), }).ToList(),
+
+                                    ClientClaimsPrefix = string.Empty,
                                 }));
             }
 
@@ -85,7 +108,7 @@ namespace Microsoft.Health.Development.IdentityProvider
         public static IApplicationBuilder UseDevelopmentIdentityProviderIfConfigured(this IApplicationBuilder app)
         {
             EnsureArg.IsNotNull(app, nameof(app));
-            if (app.ApplicationServices.GetService<IOptions<Config.Provider>>()?.Value?.Enabled == true)
+            if (app.ApplicationServices.GetService<IOptions<DevelopmentIdentityProviderConfiguration>>()?.Value?.Enabled == true)
             {
                 app.UseIdentityServer();
             }
@@ -95,18 +118,17 @@ namespace Microsoft.Health.Development.IdentityProvider
 
         /// <summary>
         /// If <paramref name="existingConfiguration"/> contains a value for TestAuthEnvironment:FilePath and the file exists, this method adds an <see cref="IConfigurationBuilder"/> that
-        /// reads a testauthenvironment.json file and reshapes it to fit into the expected schema of the server
+        /// reads a testauthenvironment.json file and reshapes it to fit into the expected schema of the FHIR server
         /// configuration. Also sets the security audience and sets the development identity server as enabled.
         /// This is an optional configuration source and is only intended to be used for local development.
         /// </summary>
         /// <param name="configurationBuilder">The configuration builder.</param>
-        /// <param name="existingConfiguration">Configuration root</param>
-        /// <param name="healthServerKey">Server key used in the appsettings.json.</param>
+        /// <param name="existingConfiguration">abc</param>
         /// <returns>The same configuration builder.</returns>
-        public static IConfigurationBuilder AddDevelopmentAuthEnvironmentIfConfigured(this IConfigurationBuilder configurationBuilder, IConfigurationRoot existingConfiguration, string healthServerKey)
+        public static IConfigurationBuilder AddDevelopmentAuthEnvironmentIfConfigured(this IConfigurationBuilder configurationBuilder, IConfigurationRoot existingConfiguration, string serverKey)
         {
             EnsureArg.IsNotNull(existingConfiguration, nameof(existingConfiguration));
-            EnsureArg.IsNotNullOrWhiteSpace(healthServerKey, nameof(healthServerKey));
+            EnsureArg.IsNotNullOrWhiteSpace(serverKey, nameof(serverKey));
 
             string testEnvironmentFilePath = existingConfiguration["TestAuthEnvironment:FilePath"];
 
@@ -121,21 +143,23 @@ namespace Microsoft.Health.Development.IdentityProvider
                 return configurationBuilder;
             }
 
-            return configurationBuilder.Add(new DevelopmentAuthEnvironmentConfigurationSource(testEnvironmentFilePath, existingConfiguration, healthServerKey));
+            return configurationBuilder.Add(new DevelopmentAuthEnvironmentConfigurationSource(testEnvironmentFilePath, existingConfiguration, serverKey));
         }
 
         private class DevelopmentAuthEnvironmentConfigurationSource : IConfigurationSource
         {
             private readonly string _filePath;
             private readonly IConfigurationRoot _existingConfiguration;
-            private readonly string _healthServerKey;
+            private string _serverKey;
 
-            public DevelopmentAuthEnvironmentConfigurationSource(string filePath, IConfigurationRoot existingConfiguration, string healthServerKey)
+            public DevelopmentAuthEnvironmentConfigurationSource(string filePath, IConfigurationRoot existingConfiguration, string serverKey)
             {
                 EnsureArg.IsNotNullOrWhiteSpace(filePath, nameof(filePath));
+                EnsureArg.IsNotNullOrWhiteSpace(serverKey, nameof(serverKey));
+
                 _filePath = filePath;
+                _serverKey = serverKey;
                 _existingConfiguration = existingConfiguration;
-                _healthServerKey = healthServerKey;
             }
 
             public IConfigurationProvider Build(IConfigurationBuilder builder)
@@ -147,31 +171,37 @@ namespace Microsoft.Health.Development.IdentityProvider
                 };
 
                 jsonConfigurationSource.ResolveFileProvider();
-                return new Provider(jsonConfigurationSource, _existingConfiguration, _healthServerKey);
+                return new Provider(jsonConfigurationSource, _existingConfiguration, _serverKey);
             }
 
             private class Provider : JsonConfigurationProvider
             {
-                private readonly string _authorityKey;
-                private readonly string _audienceKey;
-                private readonly string _securityEnabledKey;
-                private const string DevelopmentIdpEnabledKey = "DevelopmentIdentityProvider:Enabled";
-
                 private readonly IConfigurationRoot _existingConfiguration;
+
                 private static readonly Dictionary<string, string> Mappings = new Dictionary<string, string>
                 {
                     { "^users:", "DevelopmentIdentityProvider:Users:" },
                     { "^clientApplications:", "DevelopmentIdentityProvider:ClientApplications:" },
                 };
 
-                public Provider(JsonConfigurationSource source, IConfigurationRoot existingConfiguration, string healthServerKey)
+                private const string DevelopmentIdpEnabledKey = "DevelopmentIdentityProvider:Enabled";
+
+                private string _serverKey;
+
+                public Provider(JsonConfigurationSource source, IConfigurationRoot existingConfiguration, string serverKey)
                     : base(source)
                 {
+                    EnsureArg.IsNotNullOrWhiteSpace(serverKey, nameof(serverKey));
+
+                    _serverKey = serverKey;
                     _existingConfiguration = existingConfiguration;
-                    _authorityKey = $"{healthServerKey}:Security:Authentication:Authority";
-                    _audienceKey = $"{healthServerKey}:Security:Authentication:Audience";
-                    _securityEnabledKey = $"{healthServerKey}:Security:Enabled";
                 }
+
+                private string AuthorityKey => $"{_serverKey}:Security:Authentication:Authority";
+
+                private string AudienceKey => $"{_serverKey}:Security:Authentication:Audience";
+
+                private string PrincipalClaimsKey => $"{_serverKey}:Security:PrincipalClaims";
 
                 public override void Load()
                 {
@@ -184,21 +214,20 @@ namespace Microsoft.Health.Development.IdentityProvider
                         StringComparer.OrdinalIgnoreCase);
 
                     // add properties related to the development identity provider.
-                    if (bool.TryParse(_existingConfiguration[_securityEnabledKey], out bool securityEnabledValue)
-                        && securityEnabledValue == true)
+                    Data[DevelopmentIdpEnabledKey] = bool.TrueString;
+
+                    if (string.IsNullOrWhiteSpace(_existingConfiguration[AudienceKey]))
                     {
-                        Data[DevelopmentIdpEnabledKey] = bool.TrueString;
-
-                        if (string.IsNullOrWhiteSpace(_existingConfiguration[_audienceKey]))
-                        {
-                            Data[_audienceKey] = Config.Provider.Audience;
-                        }
-
-                        if (string.IsNullOrWhiteSpace(_existingConfiguration[_authorityKey]))
-                        {
-                            Data[_authorityKey] = GetAuthority();
-                        }
+                        Data[AudienceKey] = DevelopmentIdentityProviderConfiguration.Audience;
                     }
+
+                    if (string.IsNullOrWhiteSpace(_existingConfiguration[AuthorityKey]))
+                    {
+                        Data[AuthorityKey] = GetAuthority();
+                    }
+
+                    Data[$"{PrincipalClaimsKey}:0"] = DevelopmentIdentityProviderConfiguration.LastModifiedClaim;
+                    Data[$"{PrincipalClaimsKey}:1"] = DevelopmentIdentityProviderConfiguration.ClientIdClaim;
                 }
 
                 private string GetAuthority()
