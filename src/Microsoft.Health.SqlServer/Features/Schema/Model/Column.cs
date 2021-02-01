@@ -436,14 +436,14 @@ namespace Microsoft.Health.SqlServer.Features.Schema.Model
 
         public override double? Read(SqlDataReader reader, int ordinal)
         {
-            return reader.IsDBNull(Metadata.Name, ordinal) ? default(float?) : reader.GetDouble(Metadata.Name, ordinal);
+            return reader.IsDBNull(Metadata.Name, ordinal) ? default(double?) : reader.GetDouble(Metadata.Name, ordinal);
         }
 
         public override void Set(SqlDataRecord record, int ordinal, double? value)
         {
             if (value.HasValue)
             {
-                record.SetDouble(ordinal, value);
+                record.SetDouble(ordinal, value.Value);
             }
             else
             {
