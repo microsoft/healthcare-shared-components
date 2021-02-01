@@ -217,6 +217,24 @@ namespace Microsoft.Health.SqlServer.Features.Schema.Model
         }
     }
 
+    public class FloatColumn : Column<double>
+    {
+        public FloatColumn(string name, byte precision)
+            :base(name, SqlDbType.Float, precision, 0)
+        {
+        }
+
+        public override double Read(SqlDataReader reader, int ordinal)
+        {
+            return reader.GetDouble(Metadata.name, ordinal);
+        }
+
+        public override void Set(SqlDataRecord record, int ordinal, double value)
+        {
+            record.SetDouble(ordinal, value);
+        }
+    }
+
     public class SmallIntColumn : Column<short>
     {
         public SmallIntColumn(string name)
