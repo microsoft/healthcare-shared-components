@@ -220,7 +220,7 @@ namespace Microsoft.Health.SqlServer.Features.Schema.Model
     public class FloatColumn : Column<double>
     {
         public FloatColumn(string name, byte precision)
-            :base(name, SqlDbType.Float, precision, 0)
+            : base(name, SqlDbType.Float, false, precision, 0)
         {
         }
 
@@ -419,6 +419,31 @@ namespace Microsoft.Health.SqlServer.Features.Schema.Model
             if (value.HasValue)
             {
                 record.SetDecimal(ordinal, value.Value);
+            }
+            else
+            {
+                record.SetDBNull(ordinal);
+            }
+        }
+    }
+
+    public class NullableFloatColumn : Column<double?>
+    {
+        public NullableFloatColumn(string name, byte precision)
+            : base(name, SqlDbType.Float, true, precision, 0)
+        {
+        }
+
+        public override double Read(SqlDataReader reader, int ordinal)
+        {
+            return reader.IsDBNull(Metadata.Name, ordinal) ? default(float?) : reader.GetDouble(Metadata.name, ordinal);
+        }
+
+        public override void Set(SqlDataRecord record, int ordinal, double? value)
+        {
+            if (value.HasValue)
+            {
+                record.SetDouble(ordinal, value);
             }
             else
             {
