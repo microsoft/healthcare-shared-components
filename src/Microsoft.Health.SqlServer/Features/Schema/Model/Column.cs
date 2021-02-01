@@ -226,7 +226,7 @@ namespace Microsoft.Health.SqlServer.Features.Schema.Model
 
         public override double Read(SqlDataReader reader, int ordinal)
         {
-            return reader.GetDouble(Metadata.name, ordinal);
+            return reader.GetDouble(Metadata.Name, ordinal);
         }
 
         public override void Set(SqlDataRecord record, int ordinal, double value)
@@ -436,7 +436,7 @@ namespace Microsoft.Health.SqlServer.Features.Schema.Model
 
         public override double? Read(SqlDataReader reader, int ordinal)
         {
-            return reader.IsDBNull(Metadata.Name, ordinal) ? default(float?) : reader.GetDouble(Metadata.name, ordinal);
+            return reader.IsDBNull(Metadata.Name, ordinal) ? default(float?) : reader.GetDouble(Metadata.Name, ordinal);
         }
 
         public override void Set(SqlDataRecord record, int ordinal, double? value)
