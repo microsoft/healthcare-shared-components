@@ -434,7 +434,7 @@ namespace Microsoft.Health.SqlServer.Features.Schema.Model
         {
         }
 
-        public override double Read(SqlDataReader reader, int ordinal)
+        public override double? Read(SqlDataReader reader, int ordinal)
         {
             return reader.IsDBNull(Metadata.Name, ordinal) ? default(float?) : reader.GetDouble(Metadata.name, ordinal);
         }
