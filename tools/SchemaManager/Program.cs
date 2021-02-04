@@ -3,93 +3,53 @@
 // Licensed under the MIT License (MIT). See LICENSE in the repo root for license information.
 // -------------------------------------------------------------------------------------------------
 
-using System;
-using System.Collections.Generic;
 using System.CommandLine;
+using System.CommandLine.Builder;
 using System.CommandLine.Invocation;
-using System.Threading;
-using SchemaManager.Commands;
-using SchemaManager.Model;
+using System.Threading.Tasks;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Health.SqlServer;
+using Microsoft.Health.SqlServer.Configs;
+using Microsoft.Health.SqlServer.Features.Schema.Manager;
 
 namespace SchemaManager
 {
     internal class Program
     {
-        public static void Main(string[] args)
+        public static async Task<int> Main(string[] args)
         {
-            var serverOption = new Option(
-                OptionAliases.Server,
-                Resources.ServerOptionDescription,
-                new Argument<Uri> { Arity = ArgumentArity.ExactlyOne });
-            serverOption.AddAlias(OptionAliases.ShortServer);
+            ServiceProvider serviceProvider = BuildServiceProvider();
+            Parser parser = BuildParser(serviceProvider);
 
-            var connectionStringOption = new Option(
-                OptionAliases.ConnectionString,
-                Resources.ConnectionStringOptionDescription,
-                new Argument<string> { Arity = ArgumentArity.ExactlyOne });
-            connectionStringOption.AddAlias(OptionAliases.ShortConnectionString);
+            return await parser.InvokeAsync(args).ConfigureAwait(false);
+        }
 
-            var versionOption = new Option(
-                OptionAliases.Version,
-                Resources.VersionOptionDescription,
-                new Argument<int> { Arity = ArgumentArity.ExactlyOne });
-            versionOption.AddAlias(OptionAliases.ShortVersion);
+        private static Parser BuildParser(ServiceProvider serviceProvider)
+        {
+            var commandLineBuilder = new CommandLineBuilder();
 
-            var nextOption = new Option(
-               OptionAliases.Next,
-               Resources.NextOptionDescritpion,
-               new Argument<bool> { Arity = ArgumentArity.ZeroOrOne });
-            nextOption.AddAlias(OptionAliases.ShortNext);
-
-            var latestOption = new Option(
-               OptionAliases.Latest,
-               Resources.LatestOptionDescription,
-               new Argument<bool> { Arity = ArgumentArity.ZeroOrOne });
-            latestOption.AddAlias(OptionAliases.ShortLatest);
-
-            var forceOption = new Option(
-                OptionAliases.Force,
-                Resources.ForceOptionDescription,
-                new Argument<bool> { Arity = ArgumentArity.ZeroOrOne });
-            forceOption.AddAlias(OptionAliases.ShortForce);
-
-            var rootCommand = new RootCommand();
-
-            var currentCommand = new Command(CommandNames.Current, Resources.CurrentCommandDescription)
+            foreach (Command command in serviceProvider.GetServices<Command>())
             {
-                serverOption,
-                connectionStringOption,
-            };
-            currentCommand.Handler = CommandHandler.Create<InvocationContext, Uri, string, CancellationToken>(CurrentCommand.HandlerAsync);
-            currentCommand.Argument.AddValidator(symbol => Validators.RequiredOptionValidator.Validate(symbol, serverOption, Resources.ServerRequiredValidation));
-            currentCommand.Argument.AddValidator(symbol => Validators.RequiredOptionValidator.Validate(symbol, connectionStringOption, Resources.ConnectionStringRequiredValidation));
+                commandLineBuilder.AddCommand(command);
+            }
 
-            var applyCommand = new Command(CommandNames.Apply, Resources.ApplyCommandDescription)
-            {
-                connectionStringOption,
-                serverOption,
-                versionOption,
-                nextOption,
-                latestOption,
-                forceOption,
-            };
-            applyCommand.Handler = CommandHandler.Create<string, Uri, MutuallyExclusiveType, bool, CancellationToken>(ApplyCommand.HandlerAsync);
-            applyCommand.Argument.AddValidator(symbol => Validators.RequiredOptionValidator.Validate(symbol, connectionStringOption, Resources.ConnectionStringRequiredValidation));
-            applyCommand.Argument.AddValidator(symbol => Validators.RequiredOptionValidator.Validate(symbol, serverOption, Resources.ServerRequiredValidation));
-            applyCommand.Argument.AddValidator(symbol => Validators.MutuallyExclusiveOptionValidator.Validate(symbol, new List<Option> { versionOption, nextOption, latestOption }, Resources.MutuallyExclusiveValidation));
+            return commandLineBuilder.UseDefaults().Build();
+        }
 
-            var availableCommand = new Command(CommandNames.Available, Resources.AvailableCommandDescription)
-            {
-                serverOption,
-            };
-            availableCommand.Handler = CommandHandler.Create<InvocationContext, Uri, CancellationToken>(AvailableCommand.HandlerAsync);
-            availableCommand.Argument.AddValidator(symbol => Validators.RequiredOptionValidator.Validate(symbol, serverOption, Resources.ServerRequiredValidation));
+        private static ServiceProvider BuildServiceProvider()
+        {
+            var services = new ServiceCollection();
 
-            rootCommand.AddCommand(applyCommand);
-            rootCommand.AddCommand(availableCommand);
-            rootCommand.AddCommand(currentCommand);
+            services.AddCliCommands();
 
-            rootCommand.InvokeAsync(args).Wait();
+            // Add SqlServer services
+            services.AddSingleton<SqlServerDataStoreConfiguration>();
+            services.AddSingleton<ISqlConnectionFactory, DefaultSqlConnectionFactory>();
+            services.AddSingleton<BaseSchemaRunner>();
+            services.AddSingleton<ISchemaManagerDataStore, SchemaManagerDataStore>();
+            services.AddSingleton<ISchemaClient, SchemaClient>();
+
+            return services.BuildServiceProvider();
         }
     }
 }

@@ -117,14 +117,49 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
+  <data name="AvailableVersionsDefaultErrorMessage" xml:space="preserve">
+    <value>There are no available versions.</value>
+  </data>
+  <data name="BaseSchemaAlreadyExists" xml:space="preserve">
+    <value>The base schema already exists.</value>
+  </data>
+  <data name="BaseSchemaExecuting" xml:space="preserve">
+    <value>The base schema execution is started.</value>
+  </data>
+  <data name="BaseSchemaSuccess" xml:space="preserve">
+    <value>The base schema execution is completed.</value>
+  </data>
   <data name="BaseScriptNotFound" xml:space="preserve">
     <value>The base script is not found.</value>
+  </data>
+  <data name="CompatibilityDefaultErrorMessage" xml:space="preserve">
+    <value>The compatible versions information is not available.</value>
   </data>
   <data name="CompatibilityRecordNotFound" xml:space="preserve">
     <value>The compatibility information was not found.</value>
   </data>
+  <data name="CurrentDefaultErrorDescription" xml:space="preserve">
+    <value>The current version information is not available due to "{0}".</value>
+    <comment>{0} is the response statusCode.</comment>
+  </data>
+  <data name="CurrentSchemaVersionStoredProcedureNotFound" xml:space="preserve">
+    <value>Could not find stored procedure 'dbo.SelectCurrentSchemaVersion'.</value>
+  </data>
+  <data name="InstanceSchemaRecordErrorMessage" xml:space="preserve">
+    <value>The current version information could not be fetched from the service. Please try again.</value>
+  </data>
+  <data name="InsufficientDatabasePermissionsMessage" xml:space="preserve">
+    <value>Insufficient permissions to create the database.</value>
+  </data>
+  <data name="InsufficientTablesPermissionsMessage" xml:space="preserve">
+    <value>Insufficient permissions to create tables in the database.</value>
+  </data>
   <data name="OperationFailed" xml:space="preserve">
     <value>The SQL operation has failed.</value>
+  </data>
+  <data name="RetryInstanceSchemaRecord" xml:space="preserve">
+    <value>Attempt {0} of {1} to verify if the base schema is synced up with the service.</value>
+    <comment>(0) is retry attempt, {1} is total number of retries.</comment>
   </data>
   <data name="ScriptNotFound" xml:space="preserve">
     <value>The provided version is unknown.</value>

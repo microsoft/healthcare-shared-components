@@ -3,11 +3,18 @@
 // Licensed under the MIT License (MIT). See LICENSE in the repo root for license information.
 // -------------------------------------------------------------------------------------------------
 
-namespace Microsoft.Health.SqlServer.Api.Features.Routing
+namespace Microsoft.Health.SqlServer.Features.Schema.Manager.Model
 {
-    public static class RouteNames
+    public class CompatibleVersion
     {
-        public const string Script = "Script";
-        public const string Diff = "Diff";
+        public CompatibleVersion(int min, int max)
+        {
+            Min = min;
+            Max = max;
+        }
+
+        public int Min { get; }
+
+        public int Max { get; }
     }
 }

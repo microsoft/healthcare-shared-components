@@ -11,8 +11,7 @@ using MediatR;
 using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.Logging;
 using Microsoft.Health.SqlServer.Features.Schema.Extensions;
-using Microsoft.SqlServer.Management.Common;
-using Microsoft.SqlServer.Management.Smo;
+using Microsoft.Health.SqlServer.Features.Schema.Manager;
 
 namespace Microsoft.Health.SqlServer.Features.Schema
 {
@@ -23,25 +22,29 @@ namespace Microsoft.Health.SqlServer.Features.Schema
         private readonly IMediator _mediator;
         private readonly ILogger<SchemaUpgradeRunner> _logger;
         private readonly ISqlConnectionFactory _sqlConnectionFactory;
+        private ISchemaManagerDataStore _schemaManagerDataStore;
 
         public SchemaUpgradeRunner(
             IScriptProvider scriptProvider,
             IBaseScriptProvider baseScriptProvider,
             IMediator mediator,
             ILogger<SchemaUpgradeRunner> logger,
-            ISqlConnectionFactory sqlConnectionFactory)
+            ISqlConnectionFactory sqlConnectionFactory,
+            ISchemaManagerDataStore schemaManagerDataStore)
         {
             EnsureArg.IsNotNull(scriptProvider, nameof(scriptProvider));
             EnsureArg.IsNotNull(baseScriptProvider, nameof(baseScriptProvider));
             EnsureArg.IsNotNull(mediator, nameof(mediator));
             EnsureArg.IsNotNull(logger, nameof(logger));
             EnsureArg.IsNotNull(sqlConnectionFactory, nameof(sqlConnectionFactory));
+            EnsureArg.IsNotNull(schemaManagerDataStore, nameof(schemaManagerDataStore));
 
             _scriptProvider = scriptProvider;
             _baseScriptProvider = baseScriptProvider;
             _mediator = mediator;
             _logger = logger;
             _sqlConnectionFactory = sqlConnectionFactory;
+            _schemaManagerDataStore = schemaManagerDataStore;
         }
 
         public async Task ApplySchemaAsync(int version, bool applyFullSchemaSnapshot, CancellationToken cancellationToken)
@@ -53,7 +56,7 @@ namespace Microsoft.Health.SqlServer.Features.Schema
                 await InsertSchemaVersionAsync(version, cancellationToken);
             }
 
-            await ExecuteScriptAsync(_scriptProvider.GetMigrationScript(version, applyFullSchemaSnapshot), cancellationToken);
+            await _schemaManagerDataStore.ExecuteScriptAsync(_scriptProvider.GetMigrationScript(version, applyFullSchemaSnapshot), cancellationToken);
 
             await CompleteSchemaVersionAsync(version, cancellationToken);
 
@@ -65,20 +68,9 @@ namespace Microsoft.Health.SqlServer.Features.Schema
         {
             _logger.LogInformation("Applying base schema");
 
-            await ExecuteScriptAsync(_baseScriptProvider.GetScript(), cancellationToken);
+            await _schemaManagerDataStore.ExecuteScriptAsync(_baseScriptProvider.GetScript(), cancellationToken);
 
             _logger.LogInformation("Completed applying base schema");
-        }
-
-        public async Task ExecuteScriptAsync(string script, CancellationToken cancellationToken)
-        {
-            using (var connection = await _sqlConnectionFactory.GetSqlConnectionAsync(cancellationToken: cancellationToken))
-            {
-                await connection.OpenAsync(cancellationToken);
-                var server = new Server(new ServerConnection(connection));
-
-                server.ConnectionContext.ExecuteNonQuery(script);
-            }
         }
 
         private async Task InsertSchemaVersionAsync(int schemaVersion, CancellationToken cancellationToken)

@@ -5,6 +5,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.CommandLine;
 using System.CommandLine.Invocation;
 using System.CommandLine.Rendering;
 using System.CommandLine.Rendering.Views;
@@ -12,15 +13,35 @@ using System.Linq;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
-using SchemaManager.Exceptions;
-using SchemaManager.Model;
+using EnsureThat;
+using Microsoft.Health.SqlServer.Features.Schema.Manager;
+using Microsoft.Health.SqlServer.Features.Schema.Manager.Exceptions;
+using Microsoft.Health.SqlServer.Features.Schema.Manager.Model;
 using SchemaManager.Utils;
 
 namespace SchemaManager.Commands
 {
-    public static class AvailableCommand
+    public class AvailableCommand : Command
     {
-        public static async Task HandlerAsync(InvocationContext invocationContext, Uri server, CancellationToken cancellationToken)
+        private readonly ISchemaClient _schemaClient;
+
+        public AvailableCommand(ISchemaClient schemaClient)
+            : base(CommandNames.Available, Resources.AvailableCommandDescription)
+        {
+            AddOption(CommandOptions.ServerOption());
+
+            Handler = CommandHandler.Create(
+                (InvocationContext context, Uri server, CancellationToken token)
+                => HandlerAsync(context, server, token));
+
+            Argument.AddValidator(symbol => Validators.RequiredOptionValidator.Validate(symbol, CommandOptions.ServerOption(), Resources.ServerRequiredValidation));
+
+            EnsureArg.IsNotNull(schemaClient);
+
+            _schemaClient = schemaClient;
+        }
+
+        private async Task HandlerAsync(InvocationContext invocationContext, Uri server, CancellationToken cancellationToken)
         {
             var region = new Region(
                 0,
@@ -30,11 +51,11 @@ namespace SchemaManager.Commands
                 true);
 
             List<AvailableVersion> availableVersions = null;
-            ISchemaClient schemaClient = new SchemaClient(server);
+            _schemaClient.SetUri(server);
 
             try
             {
-                availableVersions = await schemaClient.GetAvailabilityAsync(cancellationToken);
+                availableVersions = await _schemaClient.GetAvailabilityAsync(cancellationToken);
 
                 // To ensure that schema version null/0 is not printed
                 if (availableVersions.First().Id == 0)
