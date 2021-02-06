@@ -12,7 +12,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Routing;
 using Microsoft.Extensions.Logging;
 using Microsoft.Health.SqlServer.Api.Features.Filters;
-using Microsoft.Health.SqlServer.Api.Features.Routing;
+using Microsoft.Health.SqlServer.Features.Routing;
 using Microsoft.Health.SqlServer.Features.Schema;
 using Microsoft.Health.SqlServer.Features.Schema.Extensions;
 

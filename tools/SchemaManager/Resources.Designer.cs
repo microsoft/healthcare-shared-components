@@ -106,42 +106,6 @@ namespace SchemaManager {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to The base schema already exists..
-        /// </summary>
-        internal static string BaseSchemaAlreadyExists {
-            get {
-                return ResourceManager.GetString("BaseSchemaAlreadyExists", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to The base schema execution is started..
-        /// </summary>
-        internal static string BaseSchemaExecuting {
-            get {
-                return ResourceManager.GetString("BaseSchemaExecuting", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to The base schema execution is completed..
-        /// </summary>
-        internal static string BaseSchemaSuccess {
-            get {
-                return ResourceManager.GetString("BaseSchemaSuccess", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to The compatible versions information is not available..
-        /// </summary>
-        internal static string CompatibilityDefaultErrorMessage {
-            get {
-                return ResourceManager.GetString("CompatibilityDefaultErrorMessage", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to The connection string of the SQL server to apply the schema update..
         /// </summary>
         internal static string ConnectionStringOptionDescription {
@@ -178,15 +142,6 @@ namespace SchemaManager {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Could not find stored procedure &apos;dbo.SelectCurrentSchemaVersion&apos;..
-        /// </summary>
-        internal static string CurrentSchemaVersionStoredProcedureNotFound {
-            get {
-                return ResourceManager.GetString("CurrentSchemaVersionStoredProcedureNotFound", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to The schema migration is run without validating the schema verison..
         /// </summary>
         internal static string ForceOptionDescription {
@@ -210,33 +165,6 @@ namespace SchemaManager {
         internal static string HttpRequestExceptionMessage {
             get {
                 return ResourceManager.GetString("HttpRequestExceptionMessage", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to The current version information could not be fetched from the service. Please try again..
-        /// </summary>
-        internal static string InstanceSchemaRecordErrorMessage {
-            get {
-                return ResourceManager.GetString("InstanceSchemaRecordErrorMessage", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Insufficient permissions to create the database..
-        /// </summary>
-        internal static string InsufficientDatabasePermissionsMessage {
-            get {
-                return ResourceManager.GetString("InsufficientDatabasePermissionsMessage", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Insufficient permissions to create tables in the database..
-        /// </summary>
-        internal static string InsufficientTablesPermissionsMessage {
-            get {
-                return ResourceManager.GetString("InsufficientTablesPermissionsMessage", resourceCulture);
             }
         }
         
@@ -313,15 +241,6 @@ namespace SchemaManager {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Attempt {0} of {1} to verify if the base schema is synced up with the service..
-        /// </summary>
-        internal static string RetryInstanceSchemaRecord {
-            get {
-                return ResourceManager.GetString("RetryInstanceSchemaRecord", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to Schema migration is started for the version : {0}..
         /// </summary>
         internal static string SchemaMigrationStartedMessage {
@@ -336,15 +255,6 @@ namespace SchemaManager {
         internal static string SchemaMigrationSuccessMessage {
             get {
                 return ResourceManager.GetString("SchemaMigrationSuccessMessage", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to The script is not found for the given version..
-        /// </summary>
-        internal static string ScriptNotFound {
-            get {
-                return ResourceManager.GetString("ScriptNotFound", resourceCulture);
             }
         }
         

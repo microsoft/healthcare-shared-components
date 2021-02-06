@@ -6,7 +6,7 @@
 using System.Collections.Generic;
 using EnsureThat;
 
-namespace SchemaManager.Model
+namespace Microsoft.Health.SqlServer.Features.Schema.Manager.Model
 {
     public class CurrentVersion
     {

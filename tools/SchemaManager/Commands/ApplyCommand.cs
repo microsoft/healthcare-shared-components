@@ -5,28 +5,74 @@
 
 using System;
 using System.Collections.Generic;
+using System.CommandLine;
+using System.CommandLine.Invocation;
 using System.Linq;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
+using EnsureThat;
 using Microsoft.Data.SqlClient;
+using Microsoft.Health.SqlServer.Configs;
+using Microsoft.Health.SqlServer.Features.Schema;
+using Microsoft.Health.SqlServer.Features.Schema.Manager;
+using Microsoft.Health.SqlServer.Features.Schema.Manager.Exceptions;
+using Microsoft.Health.SqlServer.Features.Schema.Manager.Model;
 using Microsoft.SqlServer.Management.Common;
 using Polly;
-using SchemaManager.Exceptions;
 using SchemaManager.Model;
 using SchemaManager.Utils;
 
 namespace SchemaManager.Commands
 {
-    public static class ApplyCommand
+    public class ApplyCommand : Command
     {
         private static readonly TimeSpan RetrySleepDuration = TimeSpan.FromSeconds(20);
         private const int RetryAttempts = 3;
         private static List<AvailableVersion> availableVersions;
+        private readonly SqlServerDataStoreConfiguration _sqlServerDataStoreConfiguration;
+        private readonly BaseSchemaRunner _baseSchemaRunner;
+        private readonly ISchemaManagerDataStore _schemaManagerDataStore;
+        private readonly ISchemaClient _schemaClient;
 
-        public static async Task HandlerAsync(string connectionString, Uri server, MutuallyExclusiveType exclusiveType, bool force, CancellationToken cancellationToken = default)
+        public ApplyCommand(
+            SqlServerDataStoreConfiguration sqlServerDataStoreConfiguration,
+            BaseSchemaRunner baseSchemaRunner,
+            ISchemaManagerDataStore schemaManagerDataStore,
+            ISchemaClient schemaClient)
+            : base(CommandNames.Apply, Resources.ApplyCommandDescription)
         {
-            ISchemaClient schemaClient = new SchemaClient(server);
+            AddOption(CommandOptions.ConnectionStringOption());
+            AddOption(CommandOptions.ServerOption());
+            AddOption(CommandOptions.VersionOption());
+            AddOption(CommandOptions.NextOption());
+            AddOption(CommandOptions.LatestOption());
+            AddOption(CommandOptions.ForceOption());
+
+            Handler = CommandHandler.Create(
+                (string connectionString, Uri server, MutuallyExclusiveType type, bool force, CancellationToken token)
+                => HandlerAsync(connectionString, server, type, force, token));
+
+            Argument.AddValidator(symbol => Validators.RequiredOptionValidator.Validate(symbol, CommandOptions.ConnectionStringOption(), Resources.ConnectionStringRequiredValidation));
+            Argument.AddValidator(symbol => Validators.RequiredOptionValidator.Validate(symbol, CommandOptions.ServerOption(), Resources.ServerRequiredValidation));
+            Argument.AddValidator(symbol => Validators.MutuallyExclusiveOptionValidator.Validate(symbol, new List<Option> { CommandOptions.VersionOption(), CommandOptions.NextOption(), CommandOptions.LatestOption() }, Resources.MutuallyExclusiveValidation));
+
+            EnsureArg.IsNotNull(sqlServerDataStoreConfiguration);
+            EnsureArg.IsNotNull(baseSchemaRunner);
+            EnsureArg.IsNotNull(schemaManagerDataStore);
+            EnsureArg.IsNotNull(schemaClient);
+
+            _sqlServerDataStoreConfiguration = sqlServerDataStoreConfiguration;
+            _baseSchemaRunner = baseSchemaRunner;
+            _schemaManagerDataStore = schemaManagerDataStore;
+            _schemaClient = schemaClient;
+        }
+
+        private async Task HandlerAsync(string connectionString, Uri server, MutuallyExclusiveType exclusiveType, bool force, CancellationToken cancellationToken = default)
+        {
+            _schemaClient.SetUri(server);
+
+            _sqlServerDataStoreConfiguration.ConnectionString = connectionString;
 
             if (force && !EnsureForce())
             {
@@ -35,15 +81,17 @@ namespace SchemaManager.Commands
 
             try
             {
+                _sqlServerDataStoreConfiguration.ConnectionString = connectionString;
+
                 // Base schema is required to run the schema migration tool.
                 // This method also initializes the database if not initialized yet.
-                await BaseSchemaRunner.EnsureBaseSchemaExistsAsync(connectionString, cancellationToken);
+                await _baseSchemaRunner.EnsureBaseSchemaExistsAsync(cancellationToken);
 
                 // If InstanceSchema table is just created(as part of baseSchema), it takes a while to insert a version record
                 // since the Schema job polls and upserts at the specified interval in the service.
-                await BaseSchemaRunner.EnsureInstanceSchemaRecordExistsAsync(connectionString, cancellationToken);
+                await _baseSchemaRunner.EnsureInstanceSchemaRecordExistsAsync(cancellationToken);
 
-                availableVersions = await schemaClient.GetAvailabilityAsync(cancellationToken);
+                availableVersions = await _schemaClient.GetAvailabilityAsync(cancellationToken);
 
                 // If the user hits apply command multiple times in a row, then the service schema job might not poll the updated available versions
                 // so there are retries to give it a fair amount of time.
@@ -57,7 +105,7 @@ namespace SchemaManager.Commands
                     {
                         Console.WriteLine(string.Format(Resources.RetryCurrentSchemaVersion, attemptCount++, RetryAttempts));
                     })
-                .ExecuteAsync(token => FetchUpdatedAvailableVersionsAsync(schemaClient, connectionString, token), cancellationToken);
+                .ExecuteAsync(token => FetchUpdatedAvailableVersionsAsync(token), cancellationToken);
 
                 if (availableVersions.Count == 1)
                 {
@@ -83,7 +131,7 @@ namespace SchemaManager.Commands
 
                 if (!force)
                 {
-                    await ValidateVersionCompatibility(schemaClient, availableVersions.Last().Id, cancellationToken);
+                    await ValidateVersionCompatibility(availableVersions.Last().Id, cancellationToken);
                 }
 
                 if (availableVersions.First().Id == 1)
@@ -91,8 +139,8 @@ namespace SchemaManager.Commands
                     // Upgrade schema directly to the latest schema version
                     Console.WriteLine(string.Format(Resources.SchemaMigrationStartedMessage, availableVersions.Last().Id));
 
-                    string script = await GetScriptAsync(schemaClient, 1, availableVersions.Last().ScriptUri, cancellationToken);
-                    await UpgradeSchemaAsync(connectionString, availableVersions.Last().Id, script, cancellationToken);
+                    string script = await GetScriptAsync(1, availableVersions.Last().ScriptUri, cancellationToken);
+                    await UpgradeSchemaAsync(availableVersions.Last().Id, script, cancellationToken);
                     return;
                 }
 
@@ -114,12 +162,12 @@ namespace SchemaManager.Commands
                             {
                                 Console.WriteLine(string.Format(Resources.RetryCurrentVersions, attemptCount++, RetryAttempts));
                             })
-                        .ExecuteAsync(token => ValidateInstancesVersionAsync(schemaClient, executingVersion, token), cancellationToken);
+                        .ExecuteAsync(token => ValidateInstancesVersionAsync(executingVersion, token), cancellationToken);
                     }
 
-                    string script = await GetScriptAsync(schemaClient, executingVersion, availableVersion.ScriptUri, cancellationToken, availableVersion.DiffUri);
+                    string script = await GetScriptAsync(executingVersion, availableVersion.ScriptUri, cancellationToken, availableVersion.DiffUri);
 
-                    await UpgradeSchemaAsync(connectionString, executingVersion, script, cancellationToken);
+                    await UpgradeSchemaAsync(executingVersion, script, cancellationToken);
                 }
             }
             catch (Exception ex) when (ex is SchemaManagerException || ex is InvalidOperationException)
@@ -140,39 +188,33 @@ namespace SchemaManager.Commands
                     return;
                 }
 
-                if (ex is SchemaManagerException || ex is InvalidOperationException)
-                {
-                    CommandUtils.PrintError(ex.Message);
-                    return;
-                }
-
                 throw;
             }
         }
 
-        private static async Task UpgradeSchemaAsync(string connectionString, int version, string script, CancellationToken cancellationToken)
+        private async Task UpgradeSchemaAsync(int version, string script, CancellationToken cancellationToken)
         {
             // check if the record for given version exists in failed status
-            await SchemaDataStore.DeleteSchemaVersionAsync(connectionString, version, SchemaDataStore.Failed, cancellationToken);
+            await _schemaManagerDataStore.DeleteSchemaVersionAsync(version, SchemaVersionStatus.Failed.ToString(), cancellationToken);
 
-            await SchemaDataStore.ExecuteScriptAndCompleteSchemaVersionAsync(connectionString, script, version, cancellationToken);
+            await _schemaManagerDataStore.ExecuteScriptAndCompleteSchemaVersionAsync(script, version, cancellationToken);
 
             Console.WriteLine(string.Format(Resources.SchemaMigrationSuccessMessage, version));
         }
 
-        private static async Task<string> GetScriptAsync(ISchemaClient schemaClient, int version, string scriptUri, CancellationToken cancellationToken, string diffUri = null)
+        private async Task<string> GetScriptAsync(int version, string scriptUri, CancellationToken cancellationToken, string diffUri = null)
         {
             if (version == 1)
             {
-                return await schemaClient.GetScriptAsync(new Uri(scriptUri, UriKind.Relative), cancellationToken);
+                return await _schemaClient.GetScriptAsync(new Uri(scriptUri, UriKind.Relative), cancellationToken);
             }
 
-            return await schemaClient.GetDiffScriptAsync(new Uri(diffUri, UriKind.Relative), cancellationToken);
+            return await _schemaClient.GetDiffScriptAsync(new Uri(diffUri, UriKind.Relative), cancellationToken);
         }
 
-        private static async Task ValidateVersionCompatibility(ISchemaClient schemaClient, int maxAvailableVersion, CancellationToken cancellationToken)
+        private async Task ValidateVersionCompatibility(int maxAvailableVersion, CancellationToken cancellationToken)
         {
-            CompatibleVersion compatibleVersion = await schemaClient.GetCompatibilityAsync(cancellationToken);
+            CompatibleVersion compatibleVersion = await _schemaClient.GetCompatibilityAsync(cancellationToken);
 
             if (maxAvailableVersion > compatibleVersion.Max)
             {
@@ -180,9 +222,9 @@ namespace SchemaManager.Commands
             }
         }
 
-        private static async Task ValidateInstancesVersionAsync(ISchemaClient schemaClient, int version, CancellationToken cancellationToken)
+        private async Task ValidateInstancesVersionAsync(int version, CancellationToken cancellationToken)
         {
-            List<CurrentVersion> currentVersions = await schemaClient.GetCurrentVersionInformationAsync(cancellationToken);
+            List<CurrentVersion> currentVersions = await _schemaClient.GetCurrentVersionInformationAsync(cancellationToken);
 
             // check if any instance is not running on the previous version
             if (currentVersions.Any(currentVersion => currentVersion.Id != (version - 1) && currentVersion.Servers.Count > 0))
@@ -197,13 +239,13 @@ namespace SchemaManager.Commands
             return string.Equals(Console.ReadLine(), "yes", StringComparison.OrdinalIgnoreCase);
         }
 
-        private static async Task FetchUpdatedAvailableVersionsAsync(ISchemaClient schemaClient, string connectionString, CancellationToken cancellationToken)
+        private async Task FetchUpdatedAvailableVersionsAsync(CancellationToken cancellationToken)
         {
-            availableVersions = await schemaClient.GetAvailabilityAsync(cancellationToken);
+            availableVersions = await _schemaClient.GetAvailabilityAsync(cancellationToken);
 
             availableVersions.Sort((x, y) => x.Id.CompareTo(y.Id));
 
-            if (availableVersions.First().Id != await SchemaDataStore.GetCurrentSchemaVersionAsync(connectionString, cancellationToken))
+            if (availableVersions.First().Id != await _schemaManagerDataStore.GetCurrentSchemaVersionAsync(cancellationToken))
             {
                 throw new SchemaManagerException(Resources.AvailableVersionsErrorMessage);
             }

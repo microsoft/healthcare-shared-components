@@ -8,26 +8,32 @@ using System.Collections.Generic;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Health.SqlServer.Features.Routing;
+using Microsoft.Health.SqlServer.Features.Schema.Manager.Exceptions;
+using Microsoft.Health.SqlServer.Features.Schema.Manager.Model;
 using Newtonsoft.Json;
-using SchemaManager.Exceptions;
-using SchemaManager.Model;
-using SchemaManager.Utils;
 
-namespace SchemaManager
+namespace Microsoft.Health.SqlServer.Features.Schema.Manager
 {
-    internal class SchemaClient : ISchemaClient
+    public class SchemaClient : ISchemaClient, IDisposable
     {
-        private static HttpClient _httpClient;
+        private HttpClient _httpClient;
+        private const string Slash = "/";
 
-        public SchemaClient(Uri serverUri)
+        public SchemaClient()
         {
             _httpClient = new HttpClient();
-            _httpClient.BaseAddress = serverUri;
+        }
+
+        public void SetUri(Uri serverUrl)
+        {
+            _httpClient.BaseAddress = serverUrl;
         }
 
         public async Task<List<CurrentVersion>> GetCurrentVersionInformationAsync(CancellationToken cancellationToken)
         {
-            var response = await _httpClient.GetAsync(RelativeUrl(UrlConstants.Current), cancellationToken);
+            var currentUrl = Slash + KnownRoutes.SchemaRoot + Slash + KnownRoutes.Current;
+            var response = await _httpClient.GetAsync(RelativeUrl(currentUrl), cancellationToken);
             if (response.IsSuccessStatusCode)
             {
                 var responseBodyAsString = await response.Content.ReadAsStringAsync();
@@ -54,7 +60,8 @@ namespace SchemaManager
 
         public async Task<CompatibleVersion> GetCompatibilityAsync(CancellationToken cancellationToken)
         {
-            var response = await _httpClient.GetAsync(RelativeUrl(UrlConstants.Compatibility), cancellationToken);
+            var compatibilityUrl = Slash + KnownRoutes.SchemaRoot + Slash + KnownRoutes.Compatibility;
+            var response = await _httpClient.GetAsync(RelativeUrl(compatibilityUrl), cancellationToken);
             if (response.IsSuccessStatusCode)
             {
                 var responseBodyAsString = await response.Content.ReadAsStringAsync();
@@ -68,7 +75,8 @@ namespace SchemaManager
 
         public async Task<List<AvailableVersion>> GetAvailabilityAsync(CancellationToken cancellationToken)
         {
-            var response = await _httpClient.GetAsync(RelativeUrl(UrlConstants.Availability), cancellationToken);
+            var availabilityUrl = Slash + KnownRoutes.SchemaRoot + Slash + KnownRoutes.Versions;
+            var response = await _httpClient.GetAsync(RelativeUrl(availabilityUrl), cancellationToken);
             if (response.IsSuccessStatusCode)
             {
                 var responseBodyAsString = await response.Content.ReadAsStringAsync();
@@ -96,6 +104,20 @@ namespace SchemaManager
         private Uri RelativeUrl(string url)
         {
             return new Uri(url, UriKind.Relative);
+        }
+
+        public void Dispose()
+        {
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                _httpClient?.Dispose();
+            }
         }
     }
 }

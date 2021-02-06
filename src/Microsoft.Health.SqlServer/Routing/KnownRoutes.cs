@@ -3,9 +3,9 @@
 // Licensed under the MIT License (MIT). See LICENSE in the repo root for license information.
 // -------------------------------------------------------------------------------------------------
 
-namespace Microsoft.Health.SqlServer.Api.Features.Routing
+namespace Microsoft.Health.SqlServer.Features.Routing
 {
-    internal class KnownRoutes
+    public static class KnownRoutes
     {
         public const string SchemaRoot = "_schema";
 
