@@ -25,8 +25,12 @@ namespace Microsoft.Health.SqlServer.Features.Schema.Manager
             _sqlConnectionFactory = sqlConnectionFactory;
         }
 
+        /// <inheritdoc />
         public async Task ExecuteScriptAndCompleteSchemaVersionAsync(string script, int version, CancellationToken cancellationToken)
         {
+            EnsureArg.IsNotNull(script, nameof(script));
+            EnsureArg.IsGte(version, 1);
+
             using (var connection = await _sqlConnectionFactory.GetSqlConnectionAsync(cancellationToken: cancellationToken))
             {
                 await connection.OpenAsync(cancellationToken);
@@ -53,8 +57,12 @@ namespace Microsoft.Health.SqlServer.Features.Schema.Manager
             }
         }
 
+        /// <inheritdoc />
         public async Task DeleteSchemaVersionAsync(int version, string status, CancellationToken cancellationToken)
         {
+            EnsureArg.IsNotNull(status, nameof(status));
+            EnsureArg.IsGte(version, 1);
+
             using (var connection = await _sqlConnectionFactory.GetSqlConnectionAsync(cancellationToken: cancellationToken))
             {
                 await connection.OpenAsync(cancellationToken);
@@ -70,6 +78,7 @@ namespace Microsoft.Health.SqlServer.Features.Schema.Manager
             }
         }
 
+        /// <inheritdoc />
         public async Task<int> GetCurrentSchemaVersionAsync(CancellationToken cancellationToken)
         {
             using (var connection = await _sqlConnectionFactory.GetSqlConnectionAsync(cancellationToken: cancellationToken))
@@ -95,6 +104,10 @@ namespace Microsoft.Health.SqlServer.Features.Schema.Manager
 
         private async Task UpsertSchemaVersionAsync(SqlConnection connection, int version, string status, CancellationToken cancellationToken)
         {
+            EnsureArg.IsNotNull(connection, nameof(connection));
+            EnsureArg.IsNotNull(status, nameof(status));
+            EnsureArg.IsGte(version, 1);
+
             using (var upsertCommand = new SqlCommand("dbo.UpsertSchemaVersion", connection))
             {
                 upsertCommand.CommandType = CommandType.StoredProcedure;
@@ -105,8 +118,11 @@ namespace Microsoft.Health.SqlServer.Features.Schema.Manager
             }
         }
 
+        /// <inheritdoc />
         public async Task ExecuteScriptAsync(string script, CancellationToken cancellationToken)
         {
+            EnsureArg.IsNotNull(script, nameof(script));
+
             using (var connection = await _sqlConnectionFactory.GetSqlConnectionAsync(cancellationToken: cancellationToken))
             {
                 await connection.OpenAsync(cancellationToken);
@@ -116,6 +132,7 @@ namespace Microsoft.Health.SqlServer.Features.Schema.Manager
             }
         }
 
+        /// <inheritdoc />
         public async Task<bool> BaseSchemaExistsAsync(CancellationToken cancellationToken)
         {
             var procedureQuery = "SELECT COUNT(*) FROM sys.objects WHERE name = @name and type = @type";
@@ -134,6 +151,7 @@ namespace Microsoft.Health.SqlServer.Features.Schema.Manager
             }
         }
 
+        /// <inheritdoc />
         public async Task<bool> InstanceSchemaRecordExistsAsync(CancellationToken cancellationToken)
         {
             var procedureQuery = "SELECT COUNT(*) FROM dbo.InstanceSchema";

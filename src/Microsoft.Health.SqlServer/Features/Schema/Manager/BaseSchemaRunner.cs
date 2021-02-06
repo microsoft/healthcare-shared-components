@@ -29,6 +29,7 @@ namespace Microsoft.Health.SqlServer.Features.Schema.Manager
         {
             EnsureArg.IsNotNull(sqlConnectionFactory);
             EnsureArg.IsNotNull(schemaManagerDataStore);
+            EnsureArg.IsNotNull(sqlServerDataStoreConfiguration);
 
             _sqlConnectionFactory = sqlConnectionFactory;
             _schemaManagerDataStore = schemaManagerDataStore;
