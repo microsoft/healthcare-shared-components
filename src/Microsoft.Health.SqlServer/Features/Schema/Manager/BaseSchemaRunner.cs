@@ -8,7 +8,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using EnsureThat;
 using Microsoft.Data.SqlClient;
-using Microsoft.Health.SqlServer.Configs;
 using Microsoft.Health.SqlServer.Features.Schema.Manager.Exceptions;
 using Polly;
 
@@ -20,20 +19,20 @@ namespace Microsoft.Health.SqlServer.Features.Schema.Manager
         private const int RetryAttempts = 3;
         private ISqlConnectionFactory _sqlConnectionFactory;
         private ISchemaManagerDataStore _schemaManagerDataStore;
-        private SqlServerDataStoreConfiguration _sqlServerDataStoreConfiguration;
+        private ISqlConnectionStringProvider _sqlConnectionStringProvider;
 
         public BaseSchemaRunner(
             ISqlConnectionFactory sqlConnectionFactory,
             ISchemaManagerDataStore schemaManagerDataStore,
-            SqlServerDataStoreConfiguration sqlServerDataStoreConfiguration)
+            ISqlConnectionStringProvider sqlConnectionStringProvider)
         {
             EnsureArg.IsNotNull(sqlConnectionFactory);
             EnsureArg.IsNotNull(schemaManagerDataStore);
-            EnsureArg.IsNotNull(sqlServerDataStoreConfiguration);
+            EnsureArg.IsNotNull(sqlConnectionStringProvider);
 
             _sqlConnectionFactory = sqlConnectionFactory;
             _schemaManagerDataStore = schemaManagerDataStore;
-            _sqlServerDataStoreConfiguration = sqlServerDataStoreConfiguration;
+            _sqlConnectionStringProvider = sqlConnectionStringProvider;
         }
 
         public async Task EnsureBaseSchemaExistsAsync(CancellationToken cancellationToken)
@@ -84,13 +83,13 @@ namespace Microsoft.Health.SqlServer.Features.Schema.Manager
 
         private async Task InitializeAsync(CancellationToken cancellationToken)
         {
-            var configuredConnectionBuilder = new SqlConnectionStringBuilder(_sqlServerDataStoreConfiguration.ConnectionString);
+            string sqlConnectionString = await _sqlConnectionStringProvider.GetSqlConnectionString();
+            var configuredConnectionBuilder = new SqlConnectionStringBuilder(sqlConnectionString);
             string databaseName = configuredConnectionBuilder.InitialCatalog;
 
             SchemaInitializer.ValidateDatabaseName(databaseName);
 
-            SqlConnectionStringBuilder connectionBuilder = new SqlConnectionStringBuilder(_sqlServerDataStoreConfiguration.ConnectionString) { InitialCatalog = string.Empty };
-
+            SqlConnectionStringBuilder connectionBuilder = new SqlConnectionStringBuilder(sqlConnectionString);
             using (var connection = new SqlConnection(connectionBuilder.ToString()))
             {
                 bool doesDatabaseExist = await SchemaInitializer.DoesDatabaseExistAsync(connection, databaseName, cancellationToken);
