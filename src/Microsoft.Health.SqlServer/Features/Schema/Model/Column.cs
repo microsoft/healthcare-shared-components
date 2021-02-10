@@ -222,7 +222,13 @@ namespace Microsoft.Health.SqlServer.Features.Schema.Model
         public FloatColumn(string name, byte precision)
             : base(name, SqlDbType.Float, false, precision, 0)
         {
+            MinValue = SqlMetadataUtilities.GetMinValueForFloatColumn(Metadata);
+            MaxValue = SqlMetadataUtilities.GetMaxValueForFloatColumn(Metadata);
         }
+
+        public double MinValue { get; }
+
+        public double MaxValue { get; }
 
         public override double Read(SqlDataReader reader, int ordinal)
         {
@@ -432,7 +438,13 @@ namespace Microsoft.Health.SqlServer.Features.Schema.Model
         public NullableFloatColumn(string name, byte precision)
             : base(name, SqlDbType.Float, true, precision, 0)
         {
+            MinValue = SqlMetadataUtilities.GetMinValueForFloatColumn(Metadata);
+            MaxValue = SqlMetadataUtilities.GetMaxValueForFloatColumn(Metadata);
         }
+
+        public double MinValue { get; }
+
+        public double MaxValue { get; }
 
         public override double? Read(SqlDataReader reader, int ordinal)
         {
