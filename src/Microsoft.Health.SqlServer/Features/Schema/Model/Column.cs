@@ -442,7 +442,7 @@ namespace Microsoft.Health.SqlServer.Features.Schema.Model
     public class NullableFloatColumn : Column<double?>
     {
         public NullableFloatColumn(string name, byte precision)
-            : base(name, SqlDbType.Float, true)
+            : base(name, SqlDbType.Float, true, 8, precision, 0, 0, SqlCompareOptions.None, null)
         {
         }
 
