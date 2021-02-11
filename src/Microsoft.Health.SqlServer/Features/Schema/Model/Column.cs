@@ -6,6 +6,7 @@
 using System;
 using System.Buffers;
 using System.Data;
+using System.Data.SqlTypes;
 using System.IO;
 using Microsoft.Data.SqlClient;
 using Microsoft.Data.SqlClient.Server;
@@ -36,6 +37,12 @@ namespace Microsoft.Health.SqlServer.Features.Schema.Model
             : this(nullable)
         {
             Metadata = new SqlMetaData(name, type, precision, scale);
+        }
+
+        protected Column(string name, SqlDbType dbType, bool nullable, long length, byte precision, byte scale, long locale, SqlCompareOptions compareOptions, Type userDefinedType)
+            : this(nullable)
+        {
+            Metadata = new SqlMetaData(name, dbType, length, precision, scale, locale, compareOptions, userDefinedType);
         }
 
         private Column(bool nullable)
@@ -70,6 +77,11 @@ namespace Microsoft.Health.SqlServer.Features.Schema.Model
 
         protected Column(string name, SqlDbType type, bool nullable, byte precision, byte scale)
             : base(name, type, nullable, precision, scale)
+        {
+        }
+
+        protected Column(string name, SqlDbType dbType, bool nullable, long length, byte precision, byte scale, long locale, SqlCompareOptions compareOptions, Type userDefinedType)
+            : base(name, dbType, nullable, length, precision, scale, locale, compareOptions, userDefinedType)
         {
         }
 
@@ -220,7 +232,7 @@ namespace Microsoft.Health.SqlServer.Features.Schema.Model
     public class FloatColumn : Column<double>
     {
         public FloatColumn(string name, byte precision)
-            : base(name, SqlDbType.Float, false, precision, 0)
+            : base(name, SqlDbType.Float, false, 8, precision, 0, 0, SqlCompareOptions.None, null)
         {
         }
 
@@ -430,7 +442,7 @@ namespace Microsoft.Health.SqlServer.Features.Schema.Model
     public class NullableFloatColumn : Column<double?>
     {
         public NullableFloatColumn(string name, byte precision)
-            : base(name, SqlDbType.Float, true, precision, 0)
+            : base(name, SqlDbType.Float, true)
         {
         }
 
