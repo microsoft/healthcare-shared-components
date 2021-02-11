@@ -83,7 +83,7 @@ namespace Microsoft.Health.SqlServer.Features.Schema.Manager
 
         private async Task InitializeAsync(CancellationToken cancellationToken)
         {
-            string sqlConnectionString = await _sqlConnectionStringProvider.GetSqlConnectionString();
+            string sqlConnectionString = await _sqlConnectionStringProvider.GetSqlConnectionString(cancellationToken);
             var configuredConnectionBuilder = new SqlConnectionStringBuilder(sqlConnectionString);
             string databaseName = configuredConnectionBuilder.InitialCatalog;
 

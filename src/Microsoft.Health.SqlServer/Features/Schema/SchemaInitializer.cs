@@ -208,7 +208,7 @@ namespace Microsoft.Health.SqlServer.Features.Schema
                 return false;
             }
 
-            var configuredConnectionBuilder = new SqlConnectionStringBuilder(await _sqlConnectionStringProvider.GetSqlConnectionString());
+            var configuredConnectionBuilder = new SqlConnectionStringBuilder(await _sqlConnectionStringProvider.GetSqlConnectionString(cancellationToken));
             string databaseName = configuredConnectionBuilder.InitialCatalog;
 
             ValidateDatabaseName(databaseName);
@@ -256,7 +256,7 @@ namespace Microsoft.Health.SqlServer.Features.Schema
 
         public async Task StartAsync(CancellationToken cancellationToken)
         {
-            if (!string.IsNullOrWhiteSpace(await _sqlConnectionStringProvider.GetSqlConnectionString()))
+            if (!string.IsNullOrWhiteSpace(await _sqlConnectionStringProvider.GetSqlConnectionString(cancellationToken)))
             {
                 await InitializeAsync(cancellationToken: cancellationToken);
             }

@@ -3,6 +3,7 @@
 // Licensed under the MIT License (MIT). See LICENSE in the repo root for license information.
 // -------------------------------------------------------------------------------------------------
 
+using System.Threading;
 using System.Threading.Tasks;
 using EnsureThat;
 using Microsoft.Health.SqlServer.Configs;
@@ -19,11 +20,11 @@ namespace Microsoft.Health.SqlServer
         public DefaultSqlConnectionStringProvider(SqlServerDataStoreConfiguration sqlServerDataStoreConfiguration)
         {
             EnsureArg.IsNotNull(sqlServerDataStoreConfiguration, nameof(sqlServerDataStoreConfiguration));
-            _sqlConnectionString = sqlServerDataStoreConfiguration.ConnectionString;
+            _sqlConnectionString = EnsureArg.IsNotNullOrEmpty(sqlServerDataStoreConfiguration.ConnectionString, nameof(sqlServerDataStoreConfiguration.ConnectionString));
         }
 
         /// <inheritdoc />
-        public Task<string> GetSqlConnectionString()
+        public Task<string> GetSqlConnectionString(CancellationToken cancellationToken)
         {
             return Task.FromResult(_sqlConnectionString);
         }

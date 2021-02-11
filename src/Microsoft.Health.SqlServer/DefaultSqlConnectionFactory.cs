@@ -3,6 +3,7 @@
 // Licensed under the MIT License (MIT). See LICENSE in the repo root for license information.
 // -------------------------------------------------------------------------------------------------
 
+using System;
 using System.Threading;
 using System.Threading.Tasks;
 using EnsureThat;
@@ -29,7 +30,11 @@ namespace Microsoft.Health.SqlServer
         public async Task<SqlConnection> GetSqlConnectionAsync(string initialCatalog = null, CancellationToken cancellationToken = default)
         {
             SqlConnection sqlConnection;
-            string sqlConnectionString = await _sqlConnectionStringProvider.GetSqlConnectionString();
+            string sqlConnectionString = await _sqlConnectionStringProvider.GetSqlConnectionString(cancellationToken);
+            if (string.IsNullOrEmpty(sqlConnectionString))
+            {
+                throw new InvalidOperationException("The SQL connection string cannot be null or empty.");
+            }
 
             if (initialCatalog == null)
             {
