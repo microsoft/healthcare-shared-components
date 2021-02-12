@@ -11,11 +11,11 @@ namespace Microsoft.Health.SqlServer.Features.Schema.Model
     {
         internal static long GetLengthForFloatColumn(byte precision)
         {
-            if (precision >= 1 && precision <= 23)
+            if (precision >= 1 && precision <= 24)
             {
                 return 4;
             }
-            else if (precision >= 24 && precision <= 53)
+            else if (precision >= 25 && precision <= 53)
             {
                 return 8;
             }
