@@ -8,6 +8,7 @@ using System.CommandLine.Builder;
 using System.CommandLine.Invocation;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Microsoft.Health.SqlServer;
 using Microsoft.Health.SqlServer.Configs;
 using Microsoft.Health.SqlServer.Features.Schema.Manager;
@@ -48,7 +49,7 @@ namespace SchemaManager
             services.AddSingleton<BaseSchemaRunner>();
             services.AddSingleton<ISchemaManagerDataStore, SchemaManagerDataStore>();
             services.AddSingleton<ISchemaClient, SchemaClient>();
-
+            services.AddLogging(configure => configure.AddConsole());
             return services.BuildServiceProvider();
         }
     }

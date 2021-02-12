@@ -14,18 +14,19 @@ using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using EnsureThat;
+using Microsoft.Extensions.Logging;
 using Microsoft.Health.SqlServer.Features.Schema.Manager;
 using Microsoft.Health.SqlServer.Features.Schema.Manager.Exceptions;
 using Microsoft.Health.SqlServer.Features.Schema.Manager.Model;
-using SchemaManager.Utils;
 
 namespace SchemaManager.Commands
 {
     public class AvailableCommand : Command
     {
         private readonly ISchemaClient _schemaClient;
+        private readonly ILogger<AvailableCommand> _logger;
 
-        public AvailableCommand(ISchemaClient schemaClient)
+        public AvailableCommand(ISchemaClient schemaClient, ILogger<AvailableCommand> logger)
             : base(CommandNames.Available, Resources.AvailableCommandDescription)
         {
             AddOption(CommandOptions.ServerOption());
@@ -37,8 +38,10 @@ namespace SchemaManager.Commands
             Argument.AddValidator(symbol => Validators.RequiredOptionValidator.Validate(symbol, CommandOptions.ServerOption(), Resources.ServerRequiredValidation));
 
             EnsureArg.IsNotNull(schemaClient);
+            EnsureArg.IsNotNull(logger, nameof(logger));
 
             _schemaClient = schemaClient;
+            _logger = logger;
         }
 
         private async Task HandlerAsync(InvocationContext invocationContext, Uri server, CancellationToken cancellationToken)
@@ -65,12 +68,12 @@ namespace SchemaManager.Commands
             }
             catch (SchemaManagerException ex)
             {
-                CommandUtils.PrintError(ex.Message);
+                _logger.LogError(ex, ex.Message);
                 return;
             }
-            catch (HttpRequestException)
+            catch (HttpRequestException ex)
             {
-                CommandUtils.PrintError(string.Format(Resources.RequestFailedMessage, server));
+                _logger.LogError(ex, string.Format(Resources.RequestFailedMessage, server));
                 return;
             }
 

@@ -13,6 +13,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using EnsureThat;
 using Microsoft.Data.SqlClient;
+using Microsoft.Extensions.Logging;
 using Microsoft.Health.SqlServer.Configs;
 using Microsoft.Health.SqlServer.Features.Schema;
 using Microsoft.Health.SqlServer.Features.Schema.Manager;
@@ -21,7 +22,6 @@ using Microsoft.Health.SqlServer.Features.Schema.Manager.Model;
 using Microsoft.SqlServer.Management.Common;
 using Polly;
 using SchemaManager.Model;
-using SchemaManager.Utils;
 
 namespace SchemaManager.Commands
 {
@@ -34,12 +34,14 @@ namespace SchemaManager.Commands
         private readonly BaseSchemaRunner _baseSchemaRunner;
         private readonly ISchemaManagerDataStore _schemaManagerDataStore;
         private readonly ISchemaClient _schemaClient;
+        private readonly ILogger<ApplyCommand> _logger;
 
         public ApplyCommand(
             SqlServerDataStoreConfiguration sqlServerDataStoreConfiguration,
             BaseSchemaRunner baseSchemaRunner,
             ISchemaManagerDataStore schemaManagerDataStore,
-            ISchemaClient schemaClient)
+            ISchemaClient schemaClient,
+            ILogger<ApplyCommand> logger)
             : base(CommandNames.Apply, Resources.ApplyCommandDescription)
         {
             AddOption(CommandOptions.ConnectionStringOption());
@@ -61,11 +63,13 @@ namespace SchemaManager.Commands
             EnsureArg.IsNotNull(baseSchemaRunner);
             EnsureArg.IsNotNull(schemaManagerDataStore);
             EnsureArg.IsNotNull(schemaClient);
+            EnsureArg.IsNotNull(logger, nameof(logger));
 
             _sqlServerDataStoreConfiguration = sqlServerDataStoreConfiguration;
             _baseSchemaRunner = baseSchemaRunner;
             _schemaManagerDataStore = schemaManagerDataStore;
             _schemaClient = schemaClient;
+            _logger = logger;
         }
 
         private async Task HandlerAsync(string connectionString, Uri server, MutuallyExclusiveType exclusiveType, bool force, CancellationToken cancellationToken = default)
@@ -103,13 +107,13 @@ namespace SchemaManager.Commands
                     sleepDurationProvider: (retryCount) => RetrySleepDuration,
                     onRetry: (exception, retryCount) =>
                     {
-                        Console.WriteLine(string.Format(Resources.RetryCurrentSchemaVersion, attemptCount++, RetryAttempts));
+                        _logger.LogError(exception, string.Format(Resources.RetryCurrentSchemaVersion, attemptCount++, RetryAttempts));
                     })
                 .ExecuteAsync(token => FetchUpdatedAvailableVersionsAsync(token), cancellationToken);
 
                 if (availableVersions.Count == 1)
                 {
-                    CommandUtils.PrintError(Resources.AvailableVersionsDefaultErrorMessage);
+                    _logger.LogError(Resources.AvailableVersionsDefaultErrorMessage);
                     return;
                 }
 
@@ -137,7 +141,7 @@ namespace SchemaManager.Commands
                 if (availableVersions.First().Id == 1)
                 {
                     // Upgrade schema directly to the latest schema version
-                    Console.WriteLine(string.Format(Resources.SchemaMigrationStartedMessage, availableVersions.Last().Id));
+                    _logger.LogInformation(string.Format(Resources.SchemaMigrationStartedMessage, availableVersions.Last().Id));
 
                     string script = await GetScriptAsync(1, availableVersions.Last().ScriptUri, cancellationToken);
                     await UpgradeSchemaAsync(availableVersions.Last().Id, script, cancellationToken);
@@ -148,7 +152,7 @@ namespace SchemaManager.Commands
                 {
                     int executingVersion = availableVersion.Id;
 
-                    Console.WriteLine(string.Format(Resources.SchemaMigrationStartedMessage, executingVersion));
+                    _logger.LogInformation(string.Format(Resources.SchemaMigrationStartedMessage, executingVersion));
 
                     if (!force)
                     {
@@ -160,7 +164,7 @@ namespace SchemaManager.Commands
                             sleepDurationProvider: (retryCount) => RetrySleepDuration,
                             onRetry: (exception, retryCount) =>
                             {
-                                Console.WriteLine(string.Format(Resources.RetryCurrentVersions, attemptCount++, RetryAttempts));
+                                _logger.LogError(exception, string.Format(Resources.RetryCurrentVersions, attemptCount++, RetryAttempts));
                             })
                         .ExecuteAsync(token => ValidateInstancesVersionAsync(executingVersion, token), cancellationToken);
                     }
@@ -172,19 +176,19 @@ namespace SchemaManager.Commands
             }
             catch (Exception ex) when (ex is SchemaManagerException || ex is InvalidOperationException)
             {
-                CommandUtils.PrintError(ex.Message);
+                _logger.LogError(ex, ex.Message);
                 return;
             }
-            catch (HttpRequestException)
+            catch (HttpRequestException ex)
             {
-                CommandUtils.PrintError(string.Format(Resources.RequestFailedMessage, server));
+                _logger.LogError(ex, string.Format(Resources.RequestFailedMessage, server));
                 return;
             }
             catch (Exception ex)
             {
                 if (ex is SqlException || ex is ExecutionFailureException)
                 {
-                    CommandUtils.PrintError(string.Format(Resources.QueryExecutionErrorMessage, ex.Message));
+                    _logger.LogError(ex, string.Format(Resources.QueryExecutionErrorMessage, ex.Message));
                     return;
                 }
 
@@ -199,7 +203,7 @@ namespace SchemaManager.Commands
 
             await _schemaManagerDataStore.ExecuteScriptAndCompleteSchemaVersionAsync(script, version, cancellationToken);
 
-            Console.WriteLine(string.Format(Resources.SchemaMigrationSuccessMessage, version));
+            _logger.LogInformation(string.Format(Resources.SchemaMigrationSuccessMessage, version));
         }
 
         private async Task<string> GetScriptAsync(int version, string scriptUri, CancellationToken cancellationToken, string diffUri = null)
@@ -233,9 +237,9 @@ namespace SchemaManager.Commands
             }
         }
 
-        private static bool EnsureForce()
+        private bool EnsureForce()
         {
-            Console.WriteLine(Resources.ForceWarning);
+            _logger.LogWarning(Resources.ForceWarning);
             return string.Equals(Console.ReadLine(), "yes", StringComparison.OrdinalIgnoreCase);
         }
 

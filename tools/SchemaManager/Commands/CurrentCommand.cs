@@ -13,11 +13,11 @@ using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using EnsureThat;
+using Microsoft.Extensions.Logging;
 using Microsoft.Health.SqlServer.Configs;
 using Microsoft.Health.SqlServer.Features.Schema.Manager;
 using Microsoft.Health.SqlServer.Features.Schema.Manager.Exceptions;
 using Microsoft.Health.SqlServer.Features.Schema.Manager.Model;
-using SchemaManager.Utils;
 
 namespace SchemaManager.Commands
 {
@@ -26,11 +26,13 @@ namespace SchemaManager.Commands
         private readonly BaseSchemaRunner _baseSchemaRunner;
         private readonly SqlServerDataStoreConfiguration _sqlServerDataStore;
         private readonly ISchemaClient _schemaClient;
+        private readonly ILogger<CurrentCommand> _logger;
 
         public CurrentCommand(
             BaseSchemaRunner baseSchemaRunner,
             SqlServerDataStoreConfiguration sqlServerDataStore,
-            ISchemaClient schemaClient)
+            ISchemaClient schemaClient,
+            ILogger<CurrentCommand> logger)
             : base(CommandNames.Current, Resources.CurrentCommandDescription)
         {
             AddOption(CommandOptions.ServerOption());
@@ -46,10 +48,12 @@ namespace SchemaManager.Commands
             EnsureArg.IsNotNull(baseSchemaRunner);
             EnsureArg.IsNotNull(sqlServerDataStore);
             EnsureArg.IsNotNull(schemaClient);
+            EnsureArg.IsNotNull(logger, nameof(logger));
 
             _baseSchemaRunner = baseSchemaRunner;
             _sqlServerDataStore = sqlServerDataStore;
             _schemaClient = schemaClient;
+            _logger = logger;
         }
 
         private async Task HandlerAsync(InvocationContext invocationContext, Uri server, string connectionString, CancellationToken cancellationToken = default)
@@ -80,12 +84,12 @@ namespace SchemaManager.Commands
             }
             catch (SchemaManagerException ex)
             {
-                CommandUtils.PrintError(ex.Message);
+                _logger.LogError(ex, ex.Message);
                 return;
             }
-            catch (HttpRequestException)
+            catch (HttpRequestException ex)
             {
-                CommandUtils.PrintError(string.Format(Resources.RequestFailedMessage, server));
+                _logger.LogError(ex, string.Format(Resources.RequestFailedMessage, server));
                 return;
             }
 
