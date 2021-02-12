@@ -27,19 +27,22 @@ namespace Microsoft.Health.SqlServer.Features.Schema
         private readonly SchemaInformation _schemaInformation;
         private readonly ILogger<SchemaInitializer> _logger;
         private readonly ISqlConnectionFactory _sqlConnectionFactory;
+        private readonly ISqlConnectionStringProvider _sqlConnectionStringProvider;
 
-        public SchemaInitializer(SqlServerDataStoreConfiguration sqlServerDataStoreConfiguration, SchemaUpgradeRunner schemaUpgradeRunner, SchemaInformation schemaInformation, ISqlConnectionFactory sqlConnectionFactory, ILogger<SchemaInitializer> logger)
+        public SchemaInitializer(SqlServerDataStoreConfiguration sqlServerDataStoreConfiguration, SchemaUpgradeRunner schemaUpgradeRunner, SchemaInformation schemaInformation, ISqlConnectionFactory sqlConnectionFactory, ISqlConnectionStringProvider sqlConnectionStringProvider, ILogger<SchemaInitializer> logger)
         {
             EnsureArg.IsNotNull(sqlServerDataStoreConfiguration, nameof(sqlServerDataStoreConfiguration));
             EnsureArg.IsNotNull(schemaUpgradeRunner, nameof(schemaUpgradeRunner));
             EnsureArg.IsNotNull(schemaInformation, nameof(schemaInformation));
             EnsureArg.IsNotNull(sqlConnectionFactory, nameof(sqlConnectionFactory));
+            EnsureArg.IsNotNull(sqlConnectionStringProvider, nameof(sqlConnectionStringProvider));
             EnsureArg.IsNotNull(logger, nameof(logger));
 
             _sqlServerDataStoreConfiguration = sqlServerDataStoreConfiguration;
             _schemaUpgradeRunner = schemaUpgradeRunner;
             _schemaInformation = schemaInformation;
             _sqlConnectionFactory = sqlConnectionFactory;
+            _sqlConnectionStringProvider = sqlConnectionStringProvider;
             _logger = logger;
         }
 
@@ -205,7 +208,7 @@ namespace Microsoft.Health.SqlServer.Features.Schema
                 return false;
             }
 
-            var configuredConnectionBuilder = new SqlConnectionStringBuilder(_sqlServerDataStoreConfiguration.ConnectionString);
+            var configuredConnectionBuilder = new SqlConnectionStringBuilder(await _sqlConnectionStringProvider.GetSqlConnectionString(cancellationToken));
             string databaseName = configuredConnectionBuilder.InitialCatalog;
 
             ValidateDatabaseName(databaseName);
@@ -253,7 +256,7 @@ namespace Microsoft.Health.SqlServer.Features.Schema
 
         public async Task StartAsync(CancellationToken cancellationToken)
         {
-            if (!string.IsNullOrWhiteSpace(_sqlServerDataStoreConfiguration.ConnectionString))
+            if (!string.IsNullOrWhiteSpace(await _sqlConnectionStringProvider.GetSqlConnectionString(cancellationToken)))
             {
                 await InitializeAsync(cancellationToken: cancellationToken);
             }

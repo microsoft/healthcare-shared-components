@@ -95,6 +95,8 @@ namespace Microsoft.Health.SqlServer.Registration
                 .AsSelf()
                 .AsImplementedInterfaces();
 
+            services.AddSingleton<ISqlConnectionStringProvider, DefaultSqlConnectionStringProvider>();
+
             switch (config.AuthenticationType)
             {
                 case SqlServerAuthenticationType.ManagedIdentity:
