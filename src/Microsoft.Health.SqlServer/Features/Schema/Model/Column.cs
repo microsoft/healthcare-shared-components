@@ -232,24 +232,8 @@ namespace Microsoft.Health.SqlServer.Features.Schema.Model
     public class FloatColumn : Column<double>
     {
         public FloatColumn(string name, byte precision)
-            : base(name, SqlDbType.Float, false, GetLength(precision), precision, 0, 0, SqlCompareOptions.None, null)
+            : base(name, SqlDbType.Float, false, ColumnUtilities.GetLengthForFloatColumn(precision), precision, 0, 0, SqlCompareOptions.None, null)
         {
-        }
-
-        private static long GetLength(byte precision)
-        {
-            if (precision >= 1 && precision <= 23)
-            {
-                return 4;
-            }
-            else if (precision >= 24 && precision <= 53)
-            {
-                return 8;
-            }
-            else
-            {
-                throw new ArgumentOutOfRangeException(string.Format("Precision {0} must be between 1 & 53", precision));
-            }
         }
 
         public override double Read(SqlDataReader reader, int ordinal)
@@ -458,24 +442,8 @@ namespace Microsoft.Health.SqlServer.Features.Schema.Model
     public class NullableFloatColumn : Column<double?>
     {
         public NullableFloatColumn(string name, byte precision)
-            : base(name, SqlDbType.Float, true, GetLength(precision), precision, 0, 0, SqlCompareOptions.None, null)
+            : base(name, SqlDbType.Float, true, ColumnUtilities.GetLengthForFloatColumn(precision), precision, 0, 0, SqlCompareOptions.None, null)
         {
-        }
-
-        private static long GetLength(byte precision)
-        {
-            if (precision >= 1 && precision <= 23)
-            {
-                return 4;
-            }
-            else if (precision >= 24 && precision <= 53)
-            {
-                return 8;
-            }
-            else
-            {
-                throw new ArgumentOutOfRangeException(string.Format("Precision {0} must be between 1 & 53", precision));
-            }
         }
 
         public override double? Read(SqlDataReader reader, int ordinal)
