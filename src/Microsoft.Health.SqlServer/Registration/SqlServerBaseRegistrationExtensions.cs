@@ -75,6 +75,11 @@ namespace Microsoft.Health.SqlServer.Registration
                 .AsSelf()
                 .AsImplementedInterfaces();
 
+            services.Add<SchemaManagerDataStore>()
+                .Singleton()
+                .AsSelf()
+                .AsImplementedInterfaces();
+
             services.Add<PollyRetryLoggerFactory>()
                 .Singleton()
                 .AsSelf()
