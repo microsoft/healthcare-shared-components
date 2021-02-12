@@ -19,27 +19,16 @@ namespace Microsoft.Health.SqlServer.UnitTests.Features
             Assert.Throws<ArgumentNullException>(() => new DefaultSqlConnectionStringProvider(sqlServerDataStoreConfiguration: null));
         }
 
-        [Fact]
-        public void GivenNullConnectionString_CtorThrows()
+        [Theory]
+        [InlineData(null)]
+        [InlineData("")]
+        [InlineData("server=(local);Initial Catalog=Dicom;Integrated Security=true")]
+        public async Task GivenValidSqlServerDataStoreConfiguration_GetSqlConnectionString_ReturnsConnectionString(string sqlConnectionString)
         {
-            var sqlServerDataStoreConfiguration = new SqlServerDataStoreConfiguration() { ConnectionString = null };
-            Assert.Throws<ArgumentNullException>(() => new DefaultSqlConnectionStringProvider(sqlServerDataStoreConfiguration));
-        }
-
-        [Fact]
-        public void GivenEmptyConnectionString_CtorThrows()
-        {
-            var sqlServerDataStoreConfiguration = new SqlServerDataStoreConfiguration() { ConnectionString = string.Empty };
-            Assert.Throws<ArgumentException>(() => new DefaultSqlConnectionStringProvider(sqlServerDataStoreConfiguration));
-        }
-
-        [Fact]
-        public async Task GivenValidSqlServerDataStoreConfiguration_GetSqlConnectionString_ReturnsConnectionString()
-        {
-            var sqlServerDataStoreConfiguration = new SqlServerDataStoreConfiguration() { ConnectionString = $"server=(local);Initial Catalog=Dicom;Integrated Security=true" };
+            var sqlServerDataStoreConfiguration = new SqlServerDataStoreConfiguration() { ConnectionString = sqlConnectionString };
             ISqlConnectionStringProvider sqlConnectionStringProvider = new DefaultSqlConnectionStringProvider(sqlServerDataStoreConfiguration);
 
-            Assert.Equal(sqlServerDataStoreConfiguration.ConnectionString, await sqlConnectionStringProvider.GetSqlConnectionString(CancellationToken.None));
+            Assert.Equal(sqlConnectionString, await sqlConnectionStringProvider.GetSqlConnectionString(CancellationToken.None));
         }
     }
 }

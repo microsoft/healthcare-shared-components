@@ -15,18 +15,17 @@ namespace Microsoft.Health.SqlServer
     /// </summary>
     public class DefaultSqlConnectionStringProvider : ISqlConnectionStringProvider
     {
-        private readonly string _sqlConnectionString;
+        private readonly SqlServerDataStoreConfiguration _sqlServerDataStoreConfiguration;
 
         public DefaultSqlConnectionStringProvider(SqlServerDataStoreConfiguration sqlServerDataStoreConfiguration)
         {
-            EnsureArg.IsNotNull(sqlServerDataStoreConfiguration, nameof(sqlServerDataStoreConfiguration));
-            _sqlConnectionString = EnsureArg.IsNotNullOrEmpty(sqlServerDataStoreConfiguration.ConnectionString, nameof(sqlServerDataStoreConfiguration.ConnectionString));
+            _sqlServerDataStoreConfiguration = EnsureArg.IsNotNull(sqlServerDataStoreConfiguration, nameof(sqlServerDataStoreConfiguration));
         }
 
         /// <inheritdoc />
         public Task<string> GetSqlConnectionString(CancellationToken cancellationToken)
         {
-            return Task.FromResult(_sqlConnectionString);
+            return Task.FromResult(_sqlServerDataStoreConfiguration.ConnectionString);
         }
     }
 }
