@@ -9,9 +9,13 @@ using System.Threading.Tasks;
 
 namespace Microsoft.Health.Core.Features.Security.Authorization
 {
-    public interface IAuthorizationService<T>
-        where T : Enum
+    /// <summary>
+    /// Service used for checking if given set of dataActions are present
+    /// </summary>
+    /// <typeparam name="TEnum">Type representing the dataActions for the service</typeparam>
+    public interface IAuthorizationService<TEnum>
+        where TEnum : Enum
     {
-        ValueTask<T> CheckAccess(T dataActions, CancellationToken cancellationToken);
+        ValueTask<TEnum> CheckAccess(TEnum dataActions, CancellationToken cancellationToken);
     }
 }

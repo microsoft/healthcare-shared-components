@@ -31,15 +31,18 @@ namespace Microsoft.Health.Development.IdentityProvider.Registration
         /// </summary>
         /// <param name="services">The services collection.</param>
         /// <param name="configuration">The configuration root. The "DevelopmentIdentityProvider" section will be used to populate configuration values.</param>
+        /// <param name="serverKey">The server key for the configuration (e.g. 'FhirServer' or 'DicomServer')</param>
         /// <returns>The same services collection.</returns>
-        public static IServiceCollection AddDevelopmentIdentityProvider<TEnum>(this IServiceCollection services, IConfiguration configuration)
+        /// <typeparam name="TEnum">Type representing the dataActions for the service</typeparam>
+        public static IServiceCollection AddDevelopmentIdentityProvider<TEnum>(this IServiceCollection services, IConfiguration configuration, string serverKey)
             where TEnum : Enum
         {
             EnsureArg.IsNotNull(services, nameof(services));
             EnsureArg.IsNotNull(configuration, nameof(configuration));
+            EnsureArg.IsNotNullOrWhiteSpace(serverKey, nameof(serverKey));
 
             var authorizationConfiguration = new AuthorizationConfiguration<TEnum>();
-            configuration.GetSection("DicomServer:Security:Authorization").Bind(authorizationConfiguration);
+            configuration.GetSection($"{serverKey}:Security:Authorization").Bind(authorizationConfiguration);
 
             var developmentIdentityProviderConfiguration = new DevelopmentIdentityProviderConfiguration();
             configuration.GetSection("DevelopmentIdentityProvider").Bind(developmentIdentityProviderConfiguration);
@@ -123,7 +126,8 @@ namespace Microsoft.Health.Development.IdentityProvider.Registration
         /// This is an optional configuration source and is only intended to be used for local development.
         /// </summary>
         /// <param name="configurationBuilder">The configuration builder.</param>
-        /// <param name="existingConfiguration">abc</param>
+        /// <param name="existingConfiguration">Configuration root.</param>
+        /// <param name="serverKey">The server key for the configuration (e.g. 'FhirServer' or 'DicomServer')</param>
         /// <returns>The same configuration builder.</returns>
         public static IConfigurationBuilder AddDevelopmentAuthEnvironmentIfConfigured(this IConfigurationBuilder configurationBuilder, IConfigurationRoot existingConfiguration, string serverKey)
         {

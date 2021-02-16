@@ -28,6 +28,7 @@ namespace Microsoft.Health.Core.Features.Security
     /// behavior when multiple config providers set array elements can
     /// lead to unexpected results)
     /// </summary>
+    /// <typeparam name="TEnum">Type representing the dataActions for the service</typeparam>
     public abstract class RoleLoader<TEnum> : IHostedService
         where TEnum : Enum
     {

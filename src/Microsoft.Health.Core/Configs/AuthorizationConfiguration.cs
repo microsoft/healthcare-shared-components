@@ -10,6 +10,10 @@ using Microsoft.Health.Core.Features.Security;
 
 namespace Microsoft.Health.Core.Configs
 {
+    /// <summary>
+    /// Configuration settings for authorization
+    /// </summary>
+    /// <typeparam name="TEnum">Type representing the dataActions for the service</typeparam>
     public class AuthorizationConfiguration<TEnum>
         where TEnum : Enum
     {

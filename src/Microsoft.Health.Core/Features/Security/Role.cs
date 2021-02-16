@@ -9,6 +9,10 @@ using EnsureThat;
 
 namespace Microsoft.Health.Core.Features.Security
 {
+    /// <summary>
+    /// Class representing the concept of a role for the RBAC System
+    /// </summary>
+    /// <typeparam name="TEnum">Type representing the dataActions for the service</typeparam>
     public class Role<TEnum>
         where TEnum : Enum
     {

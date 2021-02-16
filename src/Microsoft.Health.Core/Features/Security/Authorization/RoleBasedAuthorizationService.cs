@@ -16,6 +16,11 @@ using Microsoft.Health.Core.Features.Context;
 
 namespace Microsoft.Health.Core.Features.Security.Authorization
 {
+    /// <summary>
+    /// Service used for checking if given set of dataActions are present in a given request contexts principal.
+    /// </summary>
+    /// <typeparam name="TEnum">Type representing the dataActions for the service</typeparam>
+    /// <typeparam name="TContext">Type representing the IRequestContext implementation for the service</typeparam>
     public class RoleBasedAuthorizationService<TEnum, TContext> : IAuthorizationService<TEnum>
         where TEnum : Enum
         where TContext : IRequestContext
