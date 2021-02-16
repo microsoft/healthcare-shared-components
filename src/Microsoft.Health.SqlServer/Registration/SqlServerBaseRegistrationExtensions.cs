@@ -12,6 +12,7 @@ using Microsoft.Health.Extensions.DependencyInjection;
 using Microsoft.Health.SqlServer.Configs;
 using Microsoft.Health.SqlServer.Features.Client;
 using Microsoft.Health.SqlServer.Features.Schema;
+using Microsoft.Health.SqlServer.Features.Schema.Manager;
 using Microsoft.Health.SqlServer.Features.Storage;
 
 namespace Microsoft.Health.SqlServer.Registration
@@ -39,6 +40,11 @@ namespace Microsoft.Health.SqlServer.Registration
             services.Add<SchemaUpgradeRunner>()
                 .Singleton()
                 .AsSelf();
+
+            services.Add<SchemaManagerDataStore>()
+                .Scoped()
+                .AsSelf()
+                .AsImplementedInterfaces();
 
             services.Add<SqlServerSchemaDataStore>()
                 .Scoped()
@@ -69,6 +75,11 @@ namespace Microsoft.Health.SqlServer.Registration
                 .AsSelf()
                 .AsImplementedInterfaces();
 
+            services.Add<SchemaManagerDataStore>()
+                .Singleton()
+                .AsSelf()
+                .AsImplementedInterfaces();
+
             services.Add<PollyRetryLoggerFactory>()
                 .Singleton()
                 .AsSelf()
@@ -88,6 +99,8 @@ namespace Microsoft.Health.SqlServer.Registration
                 .Scoped()
                 .AsSelf()
                 .AsImplementedInterfaces();
+
+            services.AddSingleton<ISqlConnectionStringProvider, DefaultSqlConnectionStringProvider>();
 
             switch (config.AuthenticationType)
             {

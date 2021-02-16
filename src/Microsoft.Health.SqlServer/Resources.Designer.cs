@@ -61,11 +61,56 @@ namespace Microsoft.Health.SqlServer {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to There are no available versions..
+        /// </summary>
+        internal static string AvailableVersionsDefaultErrorMessage {
+            get {
+                return ResourceManager.GetString("AvailableVersionsDefaultErrorMessage", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The base schema already exists..
+        /// </summary>
+        internal static string BaseSchemaAlreadyExists {
+            get {
+                return ResourceManager.GetString("BaseSchemaAlreadyExists", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The base schema execution is started..
+        /// </summary>
+        internal static string BaseSchemaExecuting {
+            get {
+                return ResourceManager.GetString("BaseSchemaExecuting", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The base schema execution is completed..
+        /// </summary>
+        internal static string BaseSchemaSuccess {
+            get {
+                return ResourceManager.GetString("BaseSchemaSuccess", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to The base script is not found..
         /// </summary>
         internal static string BaseScriptNotFound {
             get {
                 return ResourceManager.GetString("BaseScriptNotFound", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The compatible versions information is not available..
+        /// </summary>
+        internal static string CompatibilityDefaultErrorMessage {
+            get {
+                return ResourceManager.GetString("CompatibilityDefaultErrorMessage", resourceCulture);
             }
         }
         
@@ -79,11 +124,74 @@ namespace Microsoft.Health.SqlServer {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to The current version information is not available due to &quot;{0}&quot;..
+        /// </summary>
+        internal static string CurrentDefaultErrorDescription {
+            get {
+                return ResourceManager.GetString("CurrentDefaultErrorDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Could not find stored procedure &apos;dbo.SelectCurrentSchemaVersion&apos;..
+        /// </summary>
+        internal static string CurrentSchemaVersionStoredProcedureNotFound {
+            get {
+                return ResourceManager.GetString("CurrentSchemaVersionStoredProcedureNotFound", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The current version information could not be fetched from the service. Please try again..
+        /// </summary>
+        internal static string InstanceSchemaRecordErrorMessage {
+            get {
+                return ResourceManager.GetString("InstanceSchemaRecordErrorMessage", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Insufficient permissions to create the database..
+        /// </summary>
+        internal static string InsufficientDatabasePermissionsMessage {
+            get {
+                return ResourceManager.GetString("InsufficientDatabasePermissionsMessage", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Insufficient permissions to create tables in the database..
+        /// </summary>
+        internal static string InsufficientTablesPermissionsMessage {
+            get {
+                return ResourceManager.GetString("InsufficientTablesPermissionsMessage", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to The SQL operation has failed..
         /// </summary>
         internal static string OperationFailed {
             get {
                 return ResourceManager.GetString("OperationFailed", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Precision value {0} must be greater than or equal to 1 and less than or equal to 53..
+        /// </summary>
+        internal static string PrecisionValueOutOfRange {
+            get {
+                return ResourceManager.GetString("PrecisionValueOutOfRange", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Attempt {0} of {1} to verify if the base schema is synced up with the service..
+        /// </summary>
+        internal static string RetryInstanceSchemaRecord {
+            get {
+                return ResourceManager.GetString("RetryInstanceSchemaRecord", resourceCulture);
             }
         }
         

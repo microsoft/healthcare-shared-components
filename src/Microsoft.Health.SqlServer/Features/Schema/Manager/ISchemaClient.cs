@@ -7,12 +7,14 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
-using SchemaManager.Model;
+using Microsoft.Health.SqlServer.Features.Schema.Manager.Model;
 
-namespace SchemaManager
+namespace Microsoft.Health.SqlServer.Features.Schema.Manager
 {
     public interface ISchemaClient
     {
+        void SetUri(Uri uri);
+
         Task<List<CurrentVersion>> GetCurrentVersionInformationAsync(CancellationToken cancellationToken);
 
         Task<string> GetScriptAsync(Uri scriptUri, CancellationToken cancellationToken);

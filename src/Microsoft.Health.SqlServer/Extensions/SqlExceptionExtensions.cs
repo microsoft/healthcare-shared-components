@@ -13,7 +13,7 @@ namespace Microsoft.Health.SqlServer.Extensions
         /// Determines whether the exception is transient.
         /// </summary>
         /// <param name="exception">The exception to check.</param>
-        /// <returns><c>true</c> if the exception is transient; otherwise, <c>false</c>.</returns
+        /// <returns><c>true</c> if the exception is transient; otherwise, <c>false</c>.</returns>
         /// <remarks>
         /// Inspired by https://github.com/Azure/elastic-db-tools/blob/master/Src/ElasticScale.Client/ElasticScale.Common/TransientFaultHandling/Implementation/SqlDatabaseTransientErrorDetectionStrategy.cs.
         /// </remarks>

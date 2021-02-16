@@ -6,7 +6,7 @@
 using EnsureThat;
 using Newtonsoft.Json;
 
-namespace SchemaManager.Model
+namespace Microsoft.Health.SqlServer.Features.Schema.Manager.Model
 {
     [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1056:Uri properties should not be strings", Justification = "The Uri are written to console in string format")]
     public class AvailableVersion

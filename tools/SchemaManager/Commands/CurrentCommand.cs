@@ -5,21 +5,54 @@
 
 using System;
 using System.Collections.Generic;
+using System.CommandLine;
 using System.CommandLine.Invocation;
 using System.CommandLine.Rendering;
 using System.CommandLine.Rendering.Views;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
-using SchemaManager.Exceptions;
-using SchemaManager.Model;
+using EnsureThat;
+using Microsoft.Health.SqlServer.Configs;
+using Microsoft.Health.SqlServer.Features.Schema.Manager;
+using Microsoft.Health.SqlServer.Features.Schema.Manager.Exceptions;
+using Microsoft.Health.SqlServer.Features.Schema.Manager.Model;
 using SchemaManager.Utils;
 
 namespace SchemaManager.Commands
 {
-    public static class CurrentCommand
+    public class CurrentCommand : Command
     {
-        public static async Task HandlerAsync(InvocationContext invocationContext, Uri server, string connectionString, CancellationToken cancellationToken = default)
+        private readonly BaseSchemaRunner _baseSchemaRunner;
+        private readonly SqlServerDataStoreConfiguration _sqlServerDataStore;
+        private readonly ISchemaClient _schemaClient;
+
+        public CurrentCommand(
+            BaseSchemaRunner baseSchemaRunner,
+            SqlServerDataStoreConfiguration sqlServerDataStore,
+            ISchemaClient schemaClient)
+            : base(CommandNames.Current, Resources.CurrentCommandDescription)
+        {
+            AddOption(CommandOptions.ServerOption());
+            AddOption(CommandOptions.ConnectionStringOption());
+
+            Handler = CommandHandler.Create(
+                (InvocationContext context, Uri server, string connectionString, CancellationToken token)
+                => HandlerAsync(context, server, connectionString, token));
+
+            Argument.AddValidator(symbol => Validators.RequiredOptionValidator.Validate(symbol, CommandOptions.ConnectionStringOption(), Resources.ConnectionStringRequiredValidation));
+            Argument.AddValidator(symbol => Validators.RequiredOptionValidator.Validate(symbol, CommandOptions.ServerOption(), Resources.ServerRequiredValidation));
+
+            EnsureArg.IsNotNull(baseSchemaRunner);
+            EnsureArg.IsNotNull(sqlServerDataStore);
+            EnsureArg.IsNotNull(schemaClient);
+
+            _baseSchemaRunner = baseSchemaRunner;
+            _sqlServerDataStore = sqlServerDataStore;
+            _schemaClient = schemaClient;
+        }
+
+        private async Task HandlerAsync(InvocationContext invocationContext, Uri server, string connectionString, CancellationToken cancellationToken = default)
         {
             var region = new Region(
                           0,
@@ -28,19 +61,22 @@ namespace SchemaManager.Commands
                           Console.WindowHeight,
                           true);
             List<CurrentVersion> currentVersions = null;
-            ISchemaClient schemaClient = new SchemaClient(server);
+
+            _schemaClient.SetUri(server);
 
             try
             {
+                _sqlServerDataStore.ConnectionString = connectionString;
+
                 // Base schema is required to run the schema migration tool.
                 // This method also initializes the database if not initialized yet.
-                await BaseSchemaRunner.EnsureBaseSchemaExistsAsync(connectionString, cancellationToken);
+                await _baseSchemaRunner.EnsureBaseSchemaExistsAsync(cancellationToken);
 
                 // If InstanceSchema table is just created(as part of baseSchema), it takes a while to insert a version record
                 // since the Schema job polls and upserts at the specified interval in the service.
-                await BaseSchemaRunner.EnsureInstanceSchemaRecordExistsAsync(connectionString, cancellationToken);
+                await _baseSchemaRunner.EnsureInstanceSchemaRecordExistsAsync(cancellationToken);
 
-                currentVersions = await schemaClient.GetCurrentVersionInformationAsync(cancellationToken);
+                currentVersions = await _schemaClient.GetCurrentVersionInformationAsync(cancellationToken);
             }
             catch (SchemaManagerException ex)
             {

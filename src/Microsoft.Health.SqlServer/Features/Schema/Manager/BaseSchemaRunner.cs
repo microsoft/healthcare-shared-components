@@ -6,31 +6,48 @@
 using System;
 using System.Threading;
 using System.Threading.Tasks;
+using EnsureThat;
 using Microsoft.Data.SqlClient;
-using Microsoft.Health.SqlServer.Features.Schema;
+using Microsoft.Health.SqlServer.Features.Schema.Manager.Exceptions;
 using Polly;
-using SchemaManager.Exceptions;
 
-namespace SchemaManager.Utils
+namespace Microsoft.Health.SqlServer.Features.Schema.Manager
 {
-    public static class BaseSchemaRunner
+    public class BaseSchemaRunner
     {
         private static readonly TimeSpan RetrySleepDuration = TimeSpan.FromSeconds(20);
         private const int RetryAttempts = 3;
+        private ISqlConnectionFactory _sqlConnectionFactory;
+        private ISchemaManagerDataStore _schemaManagerDataStore;
+        private ISqlConnectionStringProvider _sqlConnectionStringProvider;
 
-        public static async Task EnsureBaseSchemaExistsAsync(string connectionString, CancellationToken cancellationToken)
+        public BaseSchemaRunner(
+            ISqlConnectionFactory sqlConnectionFactory,
+            ISchemaManagerDataStore schemaManagerDataStore,
+            ISqlConnectionStringProvider sqlConnectionStringProvider)
+        {
+            EnsureArg.IsNotNull(sqlConnectionFactory);
+            EnsureArg.IsNotNull(schemaManagerDataStore);
+            EnsureArg.IsNotNull(sqlConnectionStringProvider);
+
+            _sqlConnectionFactory = sqlConnectionFactory;
+            _schemaManagerDataStore = schemaManagerDataStore;
+            _sqlConnectionStringProvider = sqlConnectionStringProvider;
+        }
+
+        public async Task EnsureBaseSchemaExistsAsync(CancellationToken cancellationToken)
         {
             IBaseScriptProvider baseScriptProvider = new BaseScriptProvider();
 
-            await InitializeAsync(connectionString, cancellationToken);
+            await InitializeAsync(cancellationToken);
 
-            if (!await SchemaDataStore.BaseSchemaExistsAsync(connectionString, cancellationToken))
+            if (!await _schemaManagerDataStore.BaseSchemaExistsAsync(cancellationToken))
             {
                 var script = baseScriptProvider.GetScript();
 
                 Console.WriteLine(Resources.BaseSchemaExecuting);
 
-                await SchemaDataStore.ExecuteScript(connectionString, script, cancellationToken);
+                await _schemaManagerDataStore.ExecuteScriptAsync(script, cancellationToken);
 
                 Console.WriteLine(Resources.BaseSchemaSuccess);
             }
@@ -40,7 +57,7 @@ namespace SchemaManager.Utils
             }
         }
 
-        public static async Task EnsureInstanceSchemaRecordExistsAsync(string connectionString, CancellationToken cancellationToken)
+        public async Task EnsureInstanceSchemaRecordExistsAsync(CancellationToken cancellationToken)
         {
             // Ensure that the current version record is inserted into InstanceSchema table
             int attempts = 1;
@@ -53,26 +70,26 @@ namespace SchemaManager.Utils
                 {
                     Console.WriteLine(string.Format(Resources.RetryInstanceSchemaRecord, attempts++, RetryAttempts));
                 })
-            .ExecuteAsync(token => InstanceSchemaRecordCreatedAsync(connectionString, token), cancellationToken);
+            .ExecuteAsync(token => InstanceSchemaRecordCreatedAsync(token), cancellationToken);
         }
 
-        private static async Task InstanceSchemaRecordCreatedAsync(string connectionString, CancellationToken cancellationToken)
+        private async Task InstanceSchemaRecordCreatedAsync(CancellationToken cancellationToken)
         {
-            if (!await SchemaDataStore.InstanceSchemaRecordExistsAsync(connectionString, cancellationToken))
+            if (!await _schemaManagerDataStore.InstanceSchemaRecordExistsAsync(cancellationToken))
             {
                 throw new SchemaManagerException(Resources.InstanceSchemaRecordErrorMessage);
             }
         }
 
-        private static async Task InitializeAsync(string connectionString, CancellationToken cancellationToken)
+        private async Task InitializeAsync(CancellationToken cancellationToken)
         {
-            var configuredConnectionBuilder = new SqlConnectionStringBuilder(connectionString);
+            string sqlConnectionString = await _sqlConnectionStringProvider.GetSqlConnectionString(cancellationToken);
+            var configuredConnectionBuilder = new SqlConnectionStringBuilder(sqlConnectionString);
             string databaseName = configuredConnectionBuilder.InitialCatalog;
 
             SchemaInitializer.ValidateDatabaseName(databaseName);
 
-            SqlConnectionStringBuilder connectionBuilder = new SqlConnectionStringBuilder(connectionString) { InitialCatalog = string.Empty };
-
+            SqlConnectionStringBuilder connectionBuilder = new SqlConnectionStringBuilder(sqlConnectionString);
             using (var connection = new SqlConnection(connectionBuilder.ToString()))
             {
                 bool doesDatabaseExist = await SchemaInitializer.DoesDatabaseExistAsync(connection, databaseName, cancellationToken);
@@ -100,9 +117,9 @@ namespace SchemaManager.Utils
             bool canInitialize = false;
 
             // now switch to the target database
-            using (var sqlConnection = new SqlConnection(connectionString))
+            using (var connection = await _sqlConnectionFactory.GetSqlConnectionAsync(cancellationToken: cancellationToken))
             {
-                canInitialize = await SchemaInitializer.CheckDatabasePermissionsAsync(sqlConnection, cancellationToken);
+                canInitialize = await SchemaInitializer.CheckDatabasePermissionsAsync(connection, cancellationToken);
             }
 
             if (!canInitialize)

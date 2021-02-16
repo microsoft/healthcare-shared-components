@@ -6,6 +6,7 @@
 using System;
 using System.Buffers;
 using System.Data;
+using System.Data.SqlTypes;
 using System.IO;
 using Microsoft.Data.SqlClient;
 using Microsoft.Data.SqlClient.Server;
@@ -36,6 +37,12 @@ namespace Microsoft.Health.SqlServer.Features.Schema.Model
             : this(nullable)
         {
             Metadata = new SqlMetaData(name, type, precision, scale);
+        }
+
+        protected Column(string name, SqlDbType dbType, bool nullable, long length, byte precision, byte scale, long locale, SqlCompareOptions compareOptions, Type userDefinedType)
+            : this(nullable)
+        {
+            Metadata = new SqlMetaData(name, dbType, length, precision, scale, locale, compareOptions, userDefinedType);
         }
 
         private Column(bool nullable)
@@ -70,6 +77,11 @@ namespace Microsoft.Health.SqlServer.Features.Schema.Model
 
         protected Column(string name, SqlDbType type, bool nullable, byte precision, byte scale)
             : base(name, type, nullable, precision, scale)
+        {
+        }
+
+        protected Column(string name, SqlDbType dbType, bool nullable, long length, byte precision, byte scale, long locale, SqlCompareOptions compareOptions, Type userDefinedType)
+            : base(name, dbType, nullable, length, precision, scale, locale, compareOptions, userDefinedType)
         {
         }
 
@@ -214,6 +226,24 @@ namespace Microsoft.Health.SqlServer.Features.Schema.Model
         public override void Set(SqlDataRecord record, int ordinal, decimal value)
         {
             record.SetDecimal(ordinal, value);
+        }
+    }
+
+    public class FloatColumn : Column<double>
+    {
+        public FloatColumn(string name, byte precision)
+            : base(name, SqlDbType.Float, false, ColumnUtilities.GetLengthForFloatColumn(precision), precision, 0, 0, SqlCompareOptions.None, null)
+        {
+        }
+
+        public override double Read(SqlDataReader reader, int ordinal)
+        {
+            return reader.GetDouble(Metadata.Name, ordinal);
+        }
+
+        public override void Set(SqlDataRecord record, int ordinal, double value)
+        {
+            record.SetDouble(ordinal, value);
         }
     }
 
@@ -401,6 +431,31 @@ namespace Microsoft.Health.SqlServer.Features.Schema.Model
             if (value.HasValue)
             {
                 record.SetDecimal(ordinal, value.Value);
+            }
+            else
+            {
+                record.SetDBNull(ordinal);
+            }
+        }
+    }
+
+    public class NullableFloatColumn : Column<double?>
+    {
+        public NullableFloatColumn(string name, byte precision)
+            : base(name, SqlDbType.Float, true, ColumnUtilities.GetLengthForFloatColumn(precision), precision, 0, 0, SqlCompareOptions.None, null)
+        {
+        }
+
+        public override double? Read(SqlDataReader reader, int ordinal)
+        {
+            return reader.IsDBNull(Metadata.Name, ordinal) ? default(double?) : reader.GetDouble(Metadata.Name, ordinal);
+        }
+
+        public override void Set(SqlDataRecord record, int ordinal, double? value)
+        {
+            if (value.HasValue)
+            {
+                record.SetDouble(ordinal, value.Value);
             }
             else
             {

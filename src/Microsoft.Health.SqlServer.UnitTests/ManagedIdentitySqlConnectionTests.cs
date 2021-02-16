@@ -29,7 +29,7 @@ namespace Microsoft.Health.SqlServer.UnitTests
             SqlServerDataStoreConfiguration sqlServerDataStoreConfiguration = new SqlServerDataStoreConfiguration();
             sqlServerDataStoreConfiguration.ConnectionString = $"Server={ServerName};Database={DatabaseName};";
             sqlServerDataStoreConfiguration.AuthenticationType = SqlServerAuthenticationType.ManagedIdentity;
-            _sqlConnectionFactory = new ManagedIdentitySqlConnectionFactory(sqlServerDataStoreConfiguration, accessTokenHandler);
+            _sqlConnectionFactory = new ManagedIdentitySqlConnectionFactory(new DefaultSqlConnectionStringProvider(sqlServerDataStoreConfiguration), accessTokenHandler);
         }
 
         [Fact]

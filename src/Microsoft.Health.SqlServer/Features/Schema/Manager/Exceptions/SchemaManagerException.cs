@@ -3,18 +3,17 @@
 // Licensed under the MIT License (MIT). See LICENSE in the repo root for license information.
 // -------------------------------------------------------------------------------------------------
 
-namespace SchemaManager.Model
+using System;
+using System.Diagnostics;
+
+namespace Microsoft.Health.SqlServer.Features.Schema.Manager.Exceptions
 {
-    public class CompatibleVersion
+    public class SchemaManagerException : Exception
     {
-        public CompatibleVersion(int min, int max)
+        public SchemaManagerException(string message)
+            : base(message)
         {
-            Min = min;
-            Max = max;
+            Debug.Assert(!string.IsNullOrEmpty(message), "Exception message should not be empty");
         }
-
-        public int Min { get; }
-
-        public int Max { get; }
     }
 }
