@@ -20,14 +20,14 @@ namespace Microsoft.Health.Core.Features.Security.Authorization
         where TEnum : Enum
         where TContext : IRequestContext
     {
-        private readonly GenericRequestContextAccessor<TContext> _dicomRequestContextAccessor;
+        private readonly GenericRequestContextAccessor<TContext> _genericRequestContextAccessor;
         private readonly string _rolesClaimName;
         private readonly Dictionary<string, Role<TEnum>> _roles;
 
-        public RoleBasedAuthorizationService(AuthorizationConfiguration<TEnum> authorizationConfiguration, GenericRequestContextAccessor<TContext> dicomRequestContextAccessor)
+        public RoleBasedAuthorizationService(AuthorizationConfiguration<TEnum> authorizationConfiguration, GenericRequestContextAccessor<TContext> genericRequestContextAccessor)
         {
             EnsureArg.IsNotNull(authorizationConfiguration, nameof(authorizationConfiguration));
-            _dicomRequestContextAccessor = EnsureArg.IsNotNull(dicomRequestContextAccessor, nameof(dicomRequestContextAccessor));
+            _genericRequestContextAccessor = EnsureArg.IsNotNull(genericRequestContextAccessor, nameof(genericRequestContextAccessor));
 
             _rolesClaimName = authorizationConfiguration.RolesClaim;
             _roles = authorizationConfiguration.Roles.ToDictionary(r => r.Name, StringComparer.OrdinalIgnoreCase);
@@ -35,7 +35,7 @@ namespace Microsoft.Health.Core.Features.Security.Authorization
 
         public ValueTask<TEnum> CheckAccess(TEnum dataActions, CancellationToken cancellationToken)
         {
-            ClaimsPrincipal principal = _dicomRequestContextAccessor.RequestContext.Principal;
+            ClaimsPrincipal principal = _genericRequestContextAccessor.RequestContext.Principal;
 
             ulong permittedDataActions = 0;
             ulong dataActionsUlong = Convert.ToUInt64(dataActions, NumberFormatInfo.InvariantInfo);
