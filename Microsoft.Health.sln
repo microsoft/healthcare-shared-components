@@ -55,9 +55,11 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Health.Test.Utili
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Health.Test.Utilities.UnitTests", "test\Microsoft.Health.Test.Common.Tests\Microsoft.Health.Test.Utilities.UnitTests.csproj", "{83A62677-D82C-49A6-92E9-0D188C941A02}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.Health.Client", "src\Microsoft.Health.Client\Microsoft.Health.Client.csproj", "{0EAE32B6-97C9-43C8-ABA5-8C0BAD9ED864}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Health.Client", "src\Microsoft.Health.Client\Microsoft.Health.Client.csproj", "{0EAE32B6-97C9-43C8-ABA5-8C0BAD9ED864}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.Health.Client.UnitTests", "src\Microsoft.Health.Client.UnitTests\Microsoft.Health.Client.UnitTests.csproj", "{D4DD763B-5246-47F4-A618-211AA820B65E}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Health.Client.UnitTests", "src\Microsoft.Health.Client.UnitTests\Microsoft.Health.Client.UnitTests.csproj", "{D4DD763B-5246-47F4-A618-211AA820B65E}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SchemaManager.Core", "tools\SchemaManager.Core\SchemaManager.Core.csproj", "{72816760-BDE2-4CAF-AF41-F7BEE8E26158}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -153,6 +155,10 @@ Global
 		{D4DD763B-5246-47F4-A618-211AA820B65E}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{D4DD763B-5246-47F4-A618-211AA820B65E}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{D4DD763B-5246-47F4-A618-211AA820B65E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{72816760-BDE2-4CAF-AF41-F7BEE8E26158}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{72816760-BDE2-4CAF-AF41-F7BEE8E26158}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{72816760-BDE2-4CAF-AF41-F7BEE8E26158}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{72816760-BDE2-4CAF-AF41-F7BEE8E26158}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -180,9 +186,10 @@ Global
 		{83A62677-D82C-49A6-92E9-0D188C941A02} = {CCD9FF99-E177-446E-B9E5-9F570FD96A34}
 		{0EAE32B6-97C9-43C8-ABA5-8C0BAD9ED864} = {8AD2A324-DAB5-4380-94A5-31F7D817C384}
 		{D4DD763B-5246-47F4-A618-211AA820B65E} = {8AD2A324-DAB5-4380-94A5-31F7D817C384}
+		{72816760-BDE2-4CAF-AF41-F7BEE8E26158} = {B70945F4-01A6-4351-955B-C4A2943B5E3B}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
-		RESX_SortFileContentOnSave = True
 		SolutionGuid = {562bbd07-1817-4af5-ab66-8837cf849248}
+		RESX_SortFileContentOnSave = True
 	EndGlobalSection
 EndGlobal

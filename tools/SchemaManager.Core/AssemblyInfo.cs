@@ -3,14 +3,6 @@
 // Licensed under the MIT License (MIT). See LICENSE in the repo root for license information.
 // -------------------------------------------------------------------------------------------------
 
-namespace SchemaManager.Model
-{
-    public class MutuallyExclusiveType
-    {
-        public int Version { get; set; }
+using System.Resources;
 
-        public bool Next { get; set; }
-
-        public bool Latest { get; set; }
-    }
-}
+[assembly: NeutralResourcesLanguage("en-us")]

@@ -117,47 +117,46 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  <data name="ApplyCommandDescription" xml:space="preserve">
-    <value>Applies the specified SQL schema update to the supplied connection string for the given server.</value>
+  <data name="AvailableVersionsDefaultErrorMessage" xml:space="preserve">
+    <value>There are no available versions.</value>
   </data>
-  <data name="AvailableCommandDescription" xml:space="preserve">
-    <value>Returns the available SQL schema versions for the given server.</value>
+  <data name="AvailableVersionsErrorMessage" xml:space="preserve">
+    <value>The available versions are not up-to-date.</value>
   </data>
-  <data name="ConnectionStringOptionDescription" xml:space="preserve">
-    <value>The connection string of the SQL server to apply the schema update.</value>
+  <data name="InvalidVersionMessage" xml:space="preserve">
+    <value>The schema version {0} cannot be applied because all the instances are not running the previous version.</value>
+    <comment>{0} is a version.</comment>
   </data>
-  <data name="ConnectionStringRequiredValidation" xml:space="preserve">
-    <value>You must include a connection string.</value>
+  <data name="QueryExecutionErrorMessage" xml:space="preserve">
+    <value>Script execution has failed due to "{0}".</value>
+    <comment>{0} is the exception message.</comment>
   </data>
-  <data name="CurrentCommandDescription" xml:space="preserve">
-    <value>Returns the current SQL schema version(s) from the given server.</value>
+  <data name="RequestFailedMessage" xml:space="preserve">
+    <value>Unable to connect to host "{0}".</value>
+    <comment>{0} is the server url.</comment>
   </data>
-  <data name="CurrentDefaultErrorDescription" xml:space="preserve">
-    <value>The current version information is not available due to "{0}".</value>
-    <comment>{0} is the response statusCode.</comment>
+  <data name="RetryCurrentSchemaVersion" xml:space="preserve">
+    <value>Attempt {0} of {1} to wait for the current version to be updated on the server.</value>
+    <comment>(0) is retry attempt, {1} is total number of retries.</comment>
   </data>
-  <data name="ForceOptionDescription" xml:space="preserve">
-    <value>The schema migration is run without validating the schema verison.</value>
+  <data name="RetryCurrentVersions" xml:space="preserve">
+    <value>Attempt {0} of {1} to verify if all the instances are running the previous version.</value>
+    <comment>(0) is retry attempt, {1} is total retries</comment>
   </data>
-  <data name="ForceWarning" xml:space="preserve">
-    <value>Are you sure to apply command with force option? Type 'yes' to confirm.</value>
+  <data name="SchemaMigrationStartedMessage" xml:space="preserve">
+    <value>Schema migration is started for the version : {0}.</value>
+    <comment>{0} is a version.</comment>
   </data>
-  <data name="LatestOptionDescription" xml:space="preserve">
-    <value>The versions between current version and latest available version to apply.</value>
+  <data name="SchemaMigrationSuccessMessage" xml:space="preserve">
+    <value>Schema migration is completed successfully for the version : {0}.</value>
+    <comment>{0} is a version.</comment>
   </data>
-  <data name="MutuallyExclusiveValidation" xml:space="preserve">
-    <value>You must include only one of the option from [version, next, latest].</value>
+  <data name="SpecifiedVersionNotAvailable" xml:space="preserve">
+    <value>The specified schema version "{0}" is not available.</value>
+    <comment>{0} is a version.</comment>
   </data>
-  <data name="NextOptionDescritpion" xml:space="preserve">
-    <value>The next version to apply.</value>
-  </data>
-  <data name="ServerOptionDescription" xml:space="preserve">
-    <value>The root URL of the server to connect to.</value>
-  </data>
-  <data name="ServerRequiredValidation" xml:space="preserve">
-    <value>You must include a Server.</value>
-  </data>
-  <data name="VersionOptionDescription" xml:space="preserve">
-    <value>The versions between current version and specified version to apply.</value>
+  <data name="VersionIncompatibilityMessage" xml:space="preserve">
+    <value>The schema version "{0}" is not compatible.</value>
+    <comment>{0} is a version.</comment>
   </data>
 </root>
