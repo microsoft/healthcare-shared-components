@@ -3,17 +3,14 @@
 // Licensed under the MIT License (MIT). See LICENSE in the repo root for license information.
 // -------------------------------------------------------------------------------------------------
 
-using System;
-
-namespace SchemaManager.Utils
+namespace SchemaManager.Core.Model
 {
-    public static class CommandUtils
+    public class MutuallyExclusiveType
     {
-        public static void PrintError(string errorMessage)
-        {
-            Console.ForegroundColor = ConsoleColor.Red;
-            Console.WriteLine(errorMessage);
-            Console.ResetColor();
-        }
+        public int Version { get; set; }
+
+        public bool Next { get; set; }
+
+        public bool Latest { get; set; }
     }
 }

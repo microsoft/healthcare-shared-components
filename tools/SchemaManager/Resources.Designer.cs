@@ -79,33 +79,6 @@ namespace SchemaManager {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to There are no available versions..
-        /// </summary>
-        internal static string AvailableVersionsDefaultErrorMessage {
-            get {
-                return ResourceManager.GetString("AvailableVersionsDefaultErrorMessage", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to The available versions are not up-to-date..
-        /// </summary>
-        internal static string AvailableVersionsErrorMessage {
-            get {
-                return ResourceManager.GetString("AvailableVersionsErrorMessage", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Applies the base SQL schema required to upgrade the schema version by this tool..
-        /// </summary>
-        internal static string BaseCommandDescription {
-            get {
-                return ResourceManager.GetString("BaseCommandDescription", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to The connection string of the SQL server to apply the schema update..
         /// </summary>
         internal static string ConnectionStringOptionDescription {
@@ -160,24 +133,6 @@ namespace SchemaManager {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to No connection could be made to the target machine..
-        /// </summary>
-        internal static string HttpRequestExceptionMessage {
-            get {
-                return ResourceManager.GetString("HttpRequestExceptionMessage", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to The schema version {0} cannot be applied because all the instances are not running the previous version..
-        /// </summary>
-        internal static string InvalidVersionMessage {
-            get {
-                return ResourceManager.GetString("InvalidVersionMessage", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to The versions between current version and latest available version to apply..
         /// </summary>
         internal static string LatestOptionDescription {
@@ -205,60 +160,6 @@ namespace SchemaManager {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Script execution has failed due to &quot;{0}&quot;..
-        /// </summary>
-        internal static string QueryExecutionErrorMessage {
-            get {
-                return ResourceManager.GetString("QueryExecutionErrorMessage", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Unable to connect to host &quot;{0}&quot;..
-        /// </summary>
-        internal static string RequestFailedMessage {
-            get {
-                return ResourceManager.GetString("RequestFailedMessage", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Attempt {0} of {1} to wait for the current version to be updated on the server..
-        /// </summary>
-        internal static string RetryCurrentSchemaVersion {
-            get {
-                return ResourceManager.GetString("RetryCurrentSchemaVersion", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Attempt {0} of {1} to verify if all the instances are running the previous version..
-        /// </summary>
-        internal static string RetryCurrentVersions {
-            get {
-                return ResourceManager.GetString("RetryCurrentVersions", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Schema migration is started for the version : {0}..
-        /// </summary>
-        internal static string SchemaMigrationStartedMessage {
-            get {
-                return ResourceManager.GetString("SchemaMigrationStartedMessage", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Schema migration is completed successfully for the version : {0}..
-        /// </summary>
-        internal static string SchemaMigrationSuccessMessage {
-            get {
-                return ResourceManager.GetString("SchemaMigrationSuccessMessage", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to The root URL of the server to connect to..
         /// </summary>
         internal static string ServerOptionDescription {
@@ -277,38 +178,11 @@ namespace SchemaManager {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to The specified schema version &quot;{0}&quot; is not available..
-        /// </summary>
-        internal static string SpecifiedVersionNotAvailable {
-            get {
-                return ResourceManager.GetString("SpecifiedVersionNotAvailable", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to The schema version &quot;{0}&quot; is not compatible..
-        /// </summary>
-        internal static string VersionIncompatibilityMessage {
-            get {
-                return ResourceManager.GetString("VersionIncompatibilityMessage", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to The versions between current version and specified version to apply..
         /// </summary>
         internal static string VersionOptionDescription {
             get {
                 return ResourceManager.GetString("VersionOptionDescription", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Waiting for a minute to ensure server side polling is completed....
-        /// </summary>
-        internal static string WaitMessage {
-            get {
-                return ResourceManager.GetString("WaitMessage", resourceCulture);
             }
         }
     }

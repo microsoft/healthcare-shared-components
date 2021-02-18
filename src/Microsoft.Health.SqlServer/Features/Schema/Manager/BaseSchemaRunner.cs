@@ -8,6 +8,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using EnsureThat;
 using Microsoft.Data.SqlClient;
+using Microsoft.Extensions.Logging;
 using Microsoft.Health.SqlServer.Features.Schema.Manager.Exceptions;
 using Polly;
 
@@ -17,22 +18,26 @@ namespace Microsoft.Health.SqlServer.Features.Schema.Manager
     {
         private static readonly TimeSpan RetrySleepDuration = TimeSpan.FromSeconds(20);
         private const int RetryAttempts = 3;
-        private ISqlConnectionFactory _sqlConnectionFactory;
-        private ISchemaManagerDataStore _schemaManagerDataStore;
-        private ISqlConnectionStringProvider _sqlConnectionStringProvider;
+        private readonly ISqlConnectionFactory _sqlConnectionFactory;
+        private readonly ISchemaManagerDataStore _schemaManagerDataStore;
+        private readonly ISqlConnectionStringProvider _sqlConnectionStringProvider;
+        private readonly ILogger<BaseSchemaRunner> _logger;
 
         public BaseSchemaRunner(
             ISqlConnectionFactory sqlConnectionFactory,
             ISchemaManagerDataStore schemaManagerDataStore,
-            ISqlConnectionStringProvider sqlConnectionStringProvider)
+            ISqlConnectionStringProvider sqlConnectionStringProvider,
+            ILogger<BaseSchemaRunner> logger)
         {
             EnsureArg.IsNotNull(sqlConnectionFactory);
             EnsureArg.IsNotNull(schemaManagerDataStore);
             EnsureArg.IsNotNull(sqlConnectionStringProvider);
+            EnsureArg.IsNotNull(logger, nameof(logger));
 
             _sqlConnectionFactory = sqlConnectionFactory;
             _schemaManagerDataStore = schemaManagerDataStore;
             _sqlConnectionStringProvider = sqlConnectionStringProvider;
+            _logger = logger;
         }
 
         public async Task EnsureBaseSchemaExistsAsync(CancellationToken cancellationToken)
@@ -45,15 +50,15 @@ namespace Microsoft.Health.SqlServer.Features.Schema.Manager
             {
                 var script = baseScriptProvider.GetScript();
 
-                Console.WriteLine(Resources.BaseSchemaExecuting);
+                _logger.LogInformation(Resources.BaseSchemaExecuting);
 
                 await _schemaManagerDataStore.ExecuteScriptAsync(script, cancellationToken);
 
-                Console.WriteLine(Resources.BaseSchemaSuccess);
+                _logger.LogInformation(Resources.BaseSchemaSuccess);
             }
             else
             {
-                Console.WriteLine(Resources.BaseSchemaAlreadyExists);
+                _logger.LogWarning(Resources.BaseSchemaAlreadyExists);
             }
         }
 
@@ -68,7 +73,7 @@ namespace Microsoft.Health.SqlServer.Features.Schema.Manager
                 sleepDurationProvider: (retryCount) => RetrySleepDuration,
                 onRetry: (exception, retryCount) =>
                 {
-                    Console.WriteLine(string.Format(Resources.RetryInstanceSchemaRecord, attempts++, RetryAttempts));
+                    _logger.LogWarning(exception, string.Format(Resources.RetryInstanceSchemaRecord, attempts++, RetryAttempts));
                 })
             .ExecuteAsync(token => InstanceSchemaRecordCreatedAsync(token), cancellationToken);
         }
@@ -97,13 +102,13 @@ namespace Microsoft.Health.SqlServer.Features.Schema.Manager
                 // database creation is allowed
                 if (!doesDatabaseExist)
                 {
-                    Console.WriteLine("The database does not exists.");
+                    _logger.LogInformation("The database does not exists.");
 
                     bool created = await SchemaInitializer.CreateDatabaseAsync(connection, databaseName, cancellationToken);
 
                     if (created)
                     {
-                        Console.WriteLine("The database is created.");
+                        _logger.LogInformation("The database is created.");
                     }
                     else
                     {

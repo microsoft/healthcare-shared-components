@@ -4,28 +4,24 @@
 // -------------------------------------------------------------------------------------------------
 
 using System;
-using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.CommandLine;
 using System.CommandLine.Invocation;
 using System.CommandLine.Rendering;
 using System.CommandLine.Rendering.Views;
-using System.Linq;
-using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using EnsureThat;
-using Microsoft.Health.SqlServer.Features.Schema.Manager;
-using Microsoft.Health.SqlServer.Features.Schema.Manager.Exceptions;
 using Microsoft.Health.SqlServer.Features.Schema.Manager.Model;
-using SchemaManager.Utils;
+using SchemaManager.Core;
 
 namespace SchemaManager.Commands
 {
     public class AvailableCommand : Command
     {
-        private readonly ISchemaClient _schemaClient;
+        private readonly ISchemaManager _schemaManager;
 
-        public AvailableCommand(ISchemaClient schemaClient)
+        public AvailableCommand(ISchemaManager schemaManager)
             : base(CommandNames.Available, Resources.AvailableCommandDescription)
         {
             AddOption(CommandOptions.ServerOption());
@@ -36,13 +32,15 @@ namespace SchemaManager.Commands
 
             Argument.AddValidator(symbol => Validators.RequiredOptionValidator.Validate(symbol, CommandOptions.ServerOption(), Resources.ServerRequiredValidation));
 
-            EnsureArg.IsNotNull(schemaClient);
+            EnsureArg.IsNotNull(schemaManager);
 
-            _schemaClient = schemaClient;
+            _schemaManager = schemaManager;
         }
 
         private async Task HandlerAsync(InvocationContext invocationContext, Uri server, CancellationToken cancellationToken)
         {
+            var availableVersions = await _schemaManager.GetAvailableSchema(server, cancellationToken);
+
             var region = new Region(
                 0,
                 0,
@@ -50,33 +48,9 @@ namespace SchemaManager.Commands
                 Console.WindowHeight,
                 true);
 
-            List<AvailableVersion> availableVersions = null;
-            _schemaClient.SetUri(server);
-
-            try
-            {
-                availableVersions = await _schemaClient.GetAvailabilityAsync(cancellationToken);
-
-                // To ensure that schema version null/0 is not printed
-                if (availableVersions.First().Id == 0)
-                {
-                    availableVersions.RemoveAt(0);
-                }
-            }
-            catch (SchemaManagerException ex)
-            {
-                CommandUtils.PrintError(ex.Message);
-                return;
-            }
-            catch (HttpRequestException)
-            {
-                CommandUtils.PrintError(string.Format(Resources.RequestFailedMessage, server));
-                return;
-            }
-
             var tableView = new TableView<AvailableVersion>
             {
-                Items = availableVersions,
+                Items = new ReadOnlyCollection<AvailableVersion>(availableVersions),
             };
 
             tableView.AddColumn(
