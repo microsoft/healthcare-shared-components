@@ -22,21 +22,21 @@ namespace Microsoft.Health.Core.Features.Security
 {
     /// <summary>
     /// Reads in roles from roles.json and validates against roles.json.schema and then
-    /// sets <see cref="AuthorizationConfiguration.Roles"/>.
+    /// sets <see cref="AuthorizationConfiguration{TDataActions}.Roles"/>.
     /// We do not use asp.net configuration for reading in these settings
     /// because the binder provides no error handling (and its merging
     /// behavior when multiple config providers set array elements can
     /// lead to unexpected results)
     /// </summary>
-    /// <typeparam name="TEnum">Type representing the dataActions for the service</typeparam>
-    public abstract class RoleLoader<TEnum> : IHostedService
-        where TEnum : Enum
+    /// <typeparam name="TDataActions">Type representing the dataActions for the service</typeparam>
+    public abstract class RoleLoader<TDataActions> : IHostedService
+        where TDataActions : Enum
     {
-        private readonly AuthorizationConfiguration<TEnum> _authorizationConfiguration;
+        private readonly AuthorizationConfiguration<TDataActions> _authorizationConfiguration;
         private readonly IHostEnvironment _hostEnvironment;
         private readonly Microsoft.Extensions.FileProviders.IFileProvider _fileProvider;
 
-        public RoleLoader(AuthorizationConfiguration<TEnum> authorizationConfiguration, IHostEnvironment hostEnvironment)
+        public RoleLoader(AuthorizationConfiguration<TDataActions> authorizationConfiguration, IHostEnvironment hostEnvironment)
         {
             EnsureArg.IsNotNull(authorizationConfiguration, nameof(authorizationConfiguration));
             EnsureArg.IsNotNull(hostEnvironment, nameof(hostEnvironment));
@@ -69,7 +69,7 @@ namespace Microsoft.Health.Core.Features.Security
             _authorizationConfiguration.Roles = rolesContract.Roles.Select(RoleContractToRole).ToArray();
 
             // validate that names are all unique
-            foreach (IGrouping<string, Role<TEnum>> grouping in _authorizationConfiguration.Roles.GroupBy(r => r.Name))
+            foreach (IGrouping<string, Role<TDataActions>> grouping in _authorizationConfiguration.Roles.GroupBy(r => r.Name))
             {
                 if (grouping.Count() > 1)
                 {
@@ -83,7 +83,7 @@ namespace Microsoft.Health.Core.Features.Security
 
         public Task StopAsync(CancellationToken cancellationToken) => Task.CompletedTask;
 
-        protected abstract Role<TEnum> RoleContractToRole(RoleContract roleContract);
+        protected abstract Role<TDataActions> RoleContractToRole(RoleContract roleContract);
 
         private class RolesContract
         {

@@ -13,8 +13,9 @@ namespace Microsoft.Health.Api.Features.Context
     /// <summary>
     /// Middleware that runs after authentication middleware so that it can retrieved authenticated user claims.
     /// </summary>
-    public class RequestContextAfterAuthenticationMiddleware<T>
-        where T : IRequestContext
+    /// <typeparam name="TRequestContext">The type of the IRequestContext</typeparam>
+    public class RequestContextAfterAuthenticationMiddleware<TRequestContext>
+        where TRequestContext : IRequestContext
     {
         private readonly RequestDelegate _next;
 
@@ -25,7 +26,7 @@ namespace Microsoft.Health.Api.Features.Context
             _next = next;
         }
 
-        public async Task Invoke(HttpContext context, GenericRequestContextAccessor<T> requestContextAccessor)
+        public async Task Invoke(HttpContext context, RequestContextAccessor<TRequestContext> requestContextAccessor)
         {
             // Now the authentication is completed successfully, sets the user.
             if (context.User != null)

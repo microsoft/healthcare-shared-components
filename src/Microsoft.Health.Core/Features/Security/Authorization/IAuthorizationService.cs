@@ -12,10 +12,10 @@ namespace Microsoft.Health.Core.Features.Security.Authorization
     /// <summary>
     /// Service used for checking if given set of dataActions are present
     /// </summary>
-    /// <typeparam name="TEnum">Type representing the dataActions for the service</typeparam>
-    public interface IAuthorizationService<TEnum>
-        where TEnum : Enum
+    /// <typeparam name="TDataActions">Type representing the dataActions for the service</typeparam>
+    public interface IAuthorizationService<TDataActions>
+        where TDataActions : Enum
     {
-        ValueTask<TEnum> CheckAccess(TEnum dataActions, CancellationToken cancellationToken);
+        ValueTask<TDataActions> CheckAccess(TDataActions dataActions, CancellationToken cancellationToken);
     }
 }

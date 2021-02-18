@@ -13,14 +13,14 @@ namespace Microsoft.Health.Core.Configs
     /// <summary>
     /// Configuration settings for authorization
     /// </summary>
-    /// <typeparam name="TEnum">Type representing the dataActions for the service</typeparam>
-    public class AuthorizationConfiguration<TEnum>
-        where TEnum : Enum
+    /// <typeparam name="TDataActions">Type representing the dataActions for the service</typeparam>
+    public class AuthorizationConfiguration<TDataActions>
+        where TDataActions : Enum
     {
         public string RolesClaim { get; set; } = "roles";
 
         public bool Enabled { get; set; }
 
-        public IReadOnlyList<Role<TEnum>> Roles { get; internal set; } = ImmutableList<Role<TEnum>>.Empty;
+        public IReadOnlyList<Role<TDataActions>> Roles { get; internal set; } = ImmutableList<Role<TDataActions>>.Empty;
     }
 }

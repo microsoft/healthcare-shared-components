@@ -7,6 +7,7 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Security.Claims;
 using System.Threading;
 using System.Threading.Tasks;
@@ -19,34 +20,49 @@ namespace Microsoft.Health.Core.Features.Security.Authorization
     /// <summary>
     /// Service used for checking if given set of dataActions are present in a given request contexts principal.
     /// </summary>
-    /// <typeparam name="TEnum">Type representing the dataActions for the service</typeparam>
-    /// <typeparam name="TContext">Type representing the IRequestContext implementation for the service</typeparam>
-    public class RoleBasedAuthorizationService<TEnum, TContext> : IAuthorizationService<TEnum>
-        where TEnum : Enum
-        where TContext : IRequestContext
+    /// <typeparam name="TDataActions">Type representing the dataActions for the service</typeparam>
+    /// <typeparam name="TRequestContext">Type representing the IRequestContext implementation for the service</typeparam>
+    public class RoleBasedAuthorizationService<TDataActions, TRequestContext> : IAuthorizationService<TDataActions>
+        where TDataActions : Enum
+        where TRequestContext : IRequestContext
     {
-        private readonly GenericRequestContextAccessor<TContext> _genericRequestContextAccessor;
+        private readonly RequestContextAccessor<TRequestContext> _requestContextAccessor;
         private readonly string _rolesClaimName;
-        private readonly Dictionary<string, Role<TEnum>> _roles;
+        private readonly Dictionary<string, Role<TDataActions>> _roles;
 
-        public RoleBasedAuthorizationService(AuthorizationConfiguration<TEnum> authorizationConfiguration, GenericRequestContextAccessor<TContext> genericRequestContextAccessor)
+        private static readonly Func<TDataActions, ulong> ConvertToULong = CreateConvertToULongFunc();
+        private static readonly Func<ulong, TDataActions> ConvertToTDataAction = CreateConvertToTDataActionFunc();
+
+        public RoleBasedAuthorizationService(AuthorizationConfiguration<TDataActions> authorizationConfiguration, RequestContextAccessor<TRequestContext> requestContextAccessor)
         {
             EnsureArg.IsNotNull(authorizationConfiguration, nameof(authorizationConfiguration));
-            _genericRequestContextAccessor = EnsureArg.IsNotNull(genericRequestContextAccessor, nameof(genericRequestContextAccessor));
+            _requestContextAccessor = EnsureArg.IsNotNull(requestContextAccessor, nameof(requestContextAccessor));
 
             _rolesClaimName = authorizationConfiguration.RolesClaim;
             _roles = authorizationConfiguration.Roles.ToDictionary(r => r.Name, StringComparer.OrdinalIgnoreCase);
         }
 
-        public ValueTask<TEnum> CheckAccess(TEnum dataActions, CancellationToken cancellationToken)
+        private static Func<TDataActions, ulong> CreateConvertToULongFunc()
         {
-            ClaimsPrincipal principal = _genericRequestContextAccessor.RequestContext.Principal;
+            var parameterExpression = Expression.Parameter(typeof(TDataActions));
+            return Expression.Lambda<Func<TDataActions, ulong>>(Expression.Convert(parameterExpression, typeof(ulong)), parameterExpression).Compile();
+        }
+
+        private static Func<ulong, TDataActions> CreateConvertToTDataActionFunc()
+        {
+            var parameterExpression = Expression.Parameter(typeof(ulong));
+            return Expression.Lambda<Func<ulong, TDataActions>>(Expression.Convert(parameterExpression, typeof(TDataActions)), parameterExpression).Compile();
+        }
+
+        public ValueTask<TDataActions> CheckAccess(TDataActions dataActions, CancellationToken cancellationToken)
+        {
+            ClaimsPrincipal principal = _requestContextAccessor.RequestContext.Principal;
 
             ulong permittedDataActions = 0;
-            ulong dataActionsUlong = Convert.ToUInt64(dataActions, NumberFormatInfo.InvariantInfo);
+            ulong dataActionsUlong = ConvertToULong(dataActions);
             foreach (Claim claim in principal.FindAll(_rolesClaimName))
             {
-                if (_roles.TryGetValue(claim.Value, out Role<TEnum> role))
+                if (_roles.TryGetValue(claim.Value, out Role<TDataActions> role))
                 {
                     permittedDataActions |= role.AllowedDataActionsUlong;
                     if (permittedDataActions == dataActionsUlong)
@@ -56,7 +72,7 @@ namespace Microsoft.Health.Core.Features.Security.Authorization
                 }
             }
 
-            return new ValueTask<TEnum>((TEnum)Enum.ToObject(typeof(TEnum), dataActionsUlong & permittedDataActions));
+            return new ValueTask<TDataActions>(ConvertToTDataAction(dataActionsUlong & permittedDataActions));
         }
     }
 }

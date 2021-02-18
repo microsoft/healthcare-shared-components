@@ -12,11 +12,11 @@ namespace Microsoft.Health.Core.Features.Security
     /// <summary>
     /// Class representing the concept of a role for the RBAC System
     /// </summary>
-    /// <typeparam name="TEnum">Type representing the dataActions for the service</typeparam>
-    public class Role<TEnum>
-        where TEnum : Enum
+    /// <typeparam name="TDataActions">Type representing the dataActions for the service</typeparam>
+    public class Role<TDataActions>
+        where TDataActions : Enum
     {
-        public Role(string name, TEnum allowedDataActions, string scope)
+        public Role(string name, TDataActions allowedDataActions, string scope)
         {
             EnsureArg.IsNotNullOrWhiteSpace(name, nameof(name));
             EnsureArg.Is(scope, "/", nameof(scope));
@@ -29,7 +29,7 @@ namespace Microsoft.Health.Core.Features.Security
 
         public string Name { get; }
 
-        public TEnum AllowedDataActions { get; }
+        public TDataActions AllowedDataActions { get; }
 
         public ulong AllowedDataActionsUlong { get; }
 

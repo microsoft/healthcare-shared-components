@@ -33,15 +33,15 @@ namespace Microsoft.Health.Development.IdentityProvider.Registration
         /// <param name="configuration">The configuration root. The "DevelopmentIdentityProvider" section will be used to populate configuration values.</param>
         /// <param name="serverKey">The server key for the configuration (e.g. 'FhirServer' or 'DicomServer')</param>
         /// <returns>The same services collection.</returns>
-        /// <typeparam name="TEnum">Type representing the dataActions for the service</typeparam>
-        public static IServiceCollection AddDevelopmentIdentityProvider<TEnum>(this IServiceCollection services, IConfiguration configuration, string serverKey)
-            where TEnum : Enum
+        /// <typeparam name="TDataActions">Type representing the dataActions for the service</typeparam>
+        public static IServiceCollection AddDevelopmentIdentityProvider<TDataActions>(this IServiceCollection services, IConfiguration configuration, string serverKey)
+            where TDataActions : Enum
         {
             EnsureArg.IsNotNull(services, nameof(services));
             EnsureArg.IsNotNull(configuration, nameof(configuration));
             EnsureArg.IsNotNullOrWhiteSpace(serverKey, nameof(serverKey));
 
-            var authorizationConfiguration = new AuthorizationConfiguration<TEnum>();
+            var authorizationConfiguration = new AuthorizationConfiguration<TDataActions>();
             configuration.GetSection($"{serverKey}:Security:Authorization").Bind(authorizationConfiguration);
 
             var developmentIdentityProviderConfiguration = new DevelopmentIdentityProviderConfiguration();

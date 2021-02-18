@@ -5,7 +5,7 @@
 
 namespace Microsoft.Health.Core.Features.Context
 {
-    public abstract class GenericRequestContextAccessor<T>
+    public abstract class RequestContextAccessor<T>
     {
         public abstract T RequestContext { get; set; }
     }
