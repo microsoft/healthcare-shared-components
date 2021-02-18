@@ -26,8 +26,8 @@ namespace Microsoft.Health.SqlServer.Features.Schema.Manager
         public BaseSchemaRunner(
             ISqlConnectionFactory sqlConnectionFactory,
             ISchemaManagerDataStore schemaManagerDataStore,
-            ISqlConnectionStringProvider sqlConnectionStringProvider
-            ILogger<BaseSchemaRunner> logger;)
+            ISqlConnectionStringProvider sqlConnectionStringProvider,
+            ILogger<BaseSchemaRunner> logger)
         {
             EnsureArg.IsNotNull(sqlConnectionFactory);
             EnsureArg.IsNotNull(schemaManagerDataStore);
