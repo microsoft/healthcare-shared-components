@@ -157,6 +157,10 @@
   <data name="OperationFailed" xml:space="preserve">
     <value>The SQL operation has failed.</value>
   </data>
+  <data name="PrecisionValueOutOfRange" xml:space="preserve">
+    <value>Precision value {0} must be greater than or equal to 1 and less than or equal to 53.</value>
+    <comment>{0} is precision.</comment>
+  </data>
   <data name="RetryInstanceSchemaRecord" xml:space="preserve">
     <value>Attempt {0} of {1} to verify if the base schema is synced up with the service.</value>
     <comment>(0) is retry attempt, {1} is total number of retries.</comment>

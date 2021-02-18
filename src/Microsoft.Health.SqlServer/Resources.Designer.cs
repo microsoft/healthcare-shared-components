@@ -178,6 +178,15 @@ namespace Microsoft.Health.SqlServer {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Precision value {0} must be greater than or equal to 1 and less than or equal to 53..
+        /// </summary>
+        internal static string PrecisionValueOutOfRange {
+            get {
+                return ResourceManager.GetString("PrecisionValueOutOfRange", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Attempt {0} of {1} to verify if the base schema is synced up with the service..
         /// </summary>
         internal static string RetryInstanceSchemaRecord {

@@ -16,14 +16,13 @@ namespace Microsoft.Health.SqlServer.UnitTests.Features
         private const string ServerName = "(local)";
         private const string MasterDatabase = "master";
 
-        private readonly SqlServerDataStoreConfiguration _sqlServerDataStoreConfiguration;
         private readonly DefaultSqlConnectionFactory _sqlConnectionFactory;
 
         public DefaultSqlConnectionTests()
         {
-            _sqlServerDataStoreConfiguration = new SqlServerDataStoreConfiguration();
-            _sqlServerDataStoreConfiguration.ConnectionString = $"server={ServerName};Initial Catalog={DatabaseName};Integrated Security=true";
-            _sqlConnectionFactory = new DefaultSqlConnectionFactory(_sqlServerDataStoreConfiguration);
+            var sqlServerDataStoreConfiguration = new SqlServerDataStoreConfiguration();
+            sqlServerDataStoreConfiguration.ConnectionString = $"server={ServerName};Initial Catalog={DatabaseName};Integrated Security=true";
+            _sqlConnectionFactory = new DefaultSqlConnectionFactory(new DefaultSqlConnectionStringProvider(sqlServerDataStoreConfiguration));
         }
 
         [Fact]

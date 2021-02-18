@@ -75,6 +75,11 @@ namespace Microsoft.Health.SqlServer.Registration
                 .AsSelf()
                 .AsImplementedInterfaces();
 
+            services.Add<SchemaManagerDataStore>()
+                .Singleton()
+                .AsSelf()
+                .AsImplementedInterfaces();
+
             services.Add<PollyRetryLoggerFactory>()
                 .Singleton()
                 .AsSelf()
@@ -94,6 +99,8 @@ namespace Microsoft.Health.SqlServer.Registration
                 .Scoped()
                 .AsSelf()
                 .AsImplementedInterfaces();
+
+            services.AddSingleton<ISqlConnectionStringProvider, DefaultSqlConnectionStringProvider>();
 
             switch (config.AuthenticationType)
             {
