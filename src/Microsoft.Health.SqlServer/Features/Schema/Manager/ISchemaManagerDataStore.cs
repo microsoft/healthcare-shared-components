@@ -16,7 +16,8 @@ namespace Microsoft.Health.SqlServer.Features.Schema.Manager
         /// <param name="script">The script to execute</param>
         /// <param name="version">The version to update its status</param>
         /// <param name="cancellationToken">A cancellation token</param>
-        Task ExecuteScriptAndCompleteSchemaVersionAsync(string script, int version, CancellationToken cancellationToken);
+        /// <param name="isPaasScript">Sets to true if the executing script is Paas-specific</param>
+        Task ExecuteScriptAndCompleteSchemaVersionAsync(string script, int version, CancellationToken cancellationToken, bool isPaasScript = false);
 
         /// <summary>
         /// Deletes the row for given version and status in the SchemaVersion table
@@ -50,5 +51,28 @@ namespace Microsoft.Health.SqlServer.Features.Schema.Manager
         /// </summary>
         /// <param name="cancellationToken">A cancellation token</param>
         Task<bool> InstanceSchemaRecordExistsAsync(CancellationToken cancellationToken);
+
+        /// <summary>
+        /// Create PaasSchemaVersion table if not exists.
+        /// </summary>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns>A task</returns>
+        Task CreatePaasSchemaTableIfNotExistsAsync(CancellationToken cancellationToken);
+
+        /// <summary>
+        /// Returns true if the record for given version and status exists in PaasSchemaVersion table.
+        /// </summary>
+        /// <param name="version">The paas schema version.</param>
+        /// <param name="status">The paas schema status.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns>A boolean</returns>
+        Task<bool> ExistsPaasSchemaRecordAsync(int version, string status, CancellationToken cancellationToken);
+
+        /// <summary>
+        /// Deletes the row for given version and failed status from the PaasSchemaVersion table
+        /// </summary>
+        /// <param name="version">The schema version</param>
+        /// <param name="cancellationToken">A cancellation token</param>
+        Task DeletesPaasSchemaFailedRecordAsync(int version, CancellationToken cancellationToken);
     }
 }

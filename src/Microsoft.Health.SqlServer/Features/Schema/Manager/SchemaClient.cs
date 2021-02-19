@@ -5,6 +5,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Net;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
@@ -27,7 +28,10 @@ namespace Microsoft.Health.SqlServer.Features.Schema.Manager
 
         public void SetUri(Uri serverUrl)
         {
-            _httpClient.BaseAddress = serverUrl;
+            if (_httpClient.BaseAddress == null)
+            {
+                _httpClient.BaseAddress = serverUrl;
+            }
         }
 
         public async Task<List<CurrentVersion>> GetCurrentVersionInformationAsync(CancellationToken cancellationToken)
@@ -94,6 +98,24 @@ namespace Microsoft.Health.SqlServer.Features.Schema.Manager
             if (response.IsSuccessStatusCode)
             {
                 return await response.Content.ReadAsStringAsync();
+            }
+            else
+            {
+                throw new SchemaManagerException(string.Format(Resources.ScriptNotFound, response.StatusCode));
+            }
+        }
+
+        public async Task<List<PaasSchema>> GetPaasScriptAsync(CancellationToken cancellationToken)
+        {
+            var response = await _httpClient.GetAsync(RelativeUrl(Slash + "_schema/paas/scripts"), cancellationToken);
+            if (response.IsSuccessStatusCode)
+            {
+                var responseBodyAsString = await response.Content.ReadAsStringAsync();
+                return JsonConvert.DeserializeObject<List<PaasSchema>>(responseBodyAsString);
+            }
+            else if (response.StatusCode == HttpStatusCode.NotFound)
+            {
+                return null;
             }
             else
             {

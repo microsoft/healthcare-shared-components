@@ -69,6 +69,8 @@ namespace SchemaManager.Core
                 // since the Schema job polls and upserts at the specified interval in the service.
                 await _baseSchemaRunner.EnsureInstanceSchemaRecordExistsAsync(cancellationToken);
 
+                await ExecutePaasSchemaIfExistsAsync(cancellationToken);
+
                 var availableVersions = (await GetAvailableSchema(server, cancellationToken)).ToList();
 
                 // If the user hits apply command multiple times in a row, then the service schema job might not poll the updated available versions
@@ -280,6 +282,40 @@ namespace SchemaManager.Core
             if (currentVersions.Any(currentVersion => currentVersion.Id != (version - 1) && currentVersion.Servers.Count > 0))
             {
                 throw new SchemaManagerException(string.Format(Resources.InvalidVersionMessage, version));
+            }
+        }
+
+        private async Task ExecutePaasSchemaIfExistsAsync(CancellationToken cancellationToken)
+        {
+            List<PaasSchema> paasSchemas = await _schemaClient.GetPaasScriptAsync(cancellationToken);
+
+            // For OSS, the paas scripts would not be present so return if paas schema is null.
+            if (paasSchemas == null || paasSchemas.Count < 1)
+            {
+                return;
+            }
+
+            _logger.LogInformation(Resources.CreatePaasSchemaVersionTableMessage);
+            await _schemaManagerDataStore.CreatePaasSchemaTableIfNotExistsAsync(cancellationToken);
+
+            foreach (var paasSchema in paasSchemas)
+            {
+                int version = paasSchema.Id;
+
+                if (await _schemaManagerDataStore.ExistsPaasSchemaRecordAsync(version, SchemaVersionStatus.Completed.ToString(), cancellationToken))
+                {
+                    _logger.LogInformation(string.Format(Resources.PaasSchemaAlreadyExists, version));
+                    continue;
+                }
+
+                // Delete the versioned record if exists in failed status
+                await _schemaManagerDataStore.DeletesPaasSchemaFailedRecordAsync(version, cancellationToken);
+
+                _logger.LogInformation(string.Format(Resources.ApplyPaasSchemaStarted, version));
+
+                await _schemaManagerDataStore.ExecuteScriptAndCompleteSchemaVersionAsync(paasSchema.ScriptContent, version, cancellationToken, true);
+
+                _logger.LogInformation(Resources.ApplyPaasSchemaCompleted);
             }
         }
     }

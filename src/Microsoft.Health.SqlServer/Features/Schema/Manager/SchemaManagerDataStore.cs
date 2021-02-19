@@ -26,7 +26,7 @@ namespace Microsoft.Health.SqlServer.Features.Schema.Manager
         }
 
         /// <inheritdoc />
-        public async Task ExecuteScriptAndCompleteSchemaVersionAsync(string script, int version, CancellationToken cancellationToken)
+        public async Task ExecuteScriptAndCompleteSchemaVersionAsync(string script, int version, CancellationToken cancellationToken, bool isPaasScript)
         {
             EnsureArg.IsNotNull(script, nameof(script));
             EnsureArg.IsGte(version, 1);
@@ -44,14 +44,14 @@ namespace Microsoft.Health.SqlServer.Features.Schema.Manager
 
                     server.ConnectionContext.ExecuteNonQuery(script);
 
-                    await UpsertSchemaVersionAsync(connection, version, SchemaVersionStatus.Completed.ToString(), cancellationToken);
+                    await UpsertVersionAsync(connection, version, SchemaVersionStatus.Completed.ToString(), isPaasScript, cancellationToken);
 
                     serverConnection.CommitTransaction();
                 }
                 catch (Exception e) when (e is SqlException || e is ExecutionFailureException)
                 {
                     serverConnection.RollBackTransaction();
-                    await UpsertSchemaVersionAsync(connection, version, SchemaVersionStatus.Failed.ToString(), cancellationToken);
+                    await UpsertVersionAsync(connection, version, SchemaVersionStatus.Failed.ToString(), isPaasScript, cancellationToken);
                     throw;
                 }
             }
@@ -79,6 +79,26 @@ namespace Microsoft.Health.SqlServer.Features.Schema.Manager
         }
 
         /// <inheritdoc />
+        public async Task DeletesPaasSchemaFailedRecordAsync(int version, CancellationToken cancellationToken)
+        {
+            EnsureArg.IsGte(version, 1);
+
+            using (var connection = await _sqlConnectionFactory.GetSqlConnectionAsync(cancellationToken: cancellationToken))
+            {
+                await connection.OpenAsync(cancellationToken);
+
+                var deleteQuery = "DELETE FROM dbo.PaasSchemaVersion WHERE Version = @version AND Status = @status";
+                using (var deleteCommand = new SqlCommand(deleteQuery, connection))
+                {
+                    deleteCommand.Parameters.AddWithValue("@version", version);
+                    deleteCommand.Parameters.AddWithValue("@status", SchemaVersionStatus.Failed.ToString());
+
+                    await deleteCommand.ExecuteNonQueryAsync(cancellationToken);
+                }
+            }
+        }
+
+        /// <inheritdoc />
         public async Task<int> GetCurrentSchemaVersionAsync(CancellationToken cancellationToken)
         {
             using (var connection = await _sqlConnectionFactory.GetSqlConnectionAsync(cancellationToken: cancellationToken))
@@ -99,22 +119,6 @@ namespace Microsoft.Health.SqlServer.Features.Schema.Manager
                 {
                     return 0;
                 }
-            }
-        }
-
-        private async Task UpsertSchemaVersionAsync(SqlConnection connection, int version, string status, CancellationToken cancellationToken)
-        {
-            EnsureArg.IsNotNull(connection, nameof(connection));
-            EnsureArg.IsNotNull(status, nameof(status));
-            EnsureArg.IsGte(version, 1);
-
-            using (var upsertCommand = new SqlCommand("dbo.UpsertSchemaVersion", connection))
-            {
-                upsertCommand.CommandType = CommandType.StoredProcedure;
-                upsertCommand.Parameters.AddWithValue("@version", version);
-                upsertCommand.Parameters.AddWithValue("@status", status);
-
-                await upsertCommand.ExecuteNonQueryAsync(cancellationToken);
             }
         }
 
@@ -164,6 +168,85 @@ namespace Microsoft.Health.SqlServer.Features.Schema.Manager
                 {
                     return (int)await command.ExecuteScalarAsync() != 0;
                 }
+            }
+        }
+
+        /// <inheritdoc />
+        public async Task CreatePaasSchemaTableIfNotExistsAsync(CancellationToken cancellationToken)
+        {
+            var createQuery = @"IF NOT EXISTS (SELECT * FROM sys.objects WHERE name = 'PaasSchemaVersion' and type = 'U')
+                                    CREATE TABLE dbo.PaasSchemaVersion
+                                    (
+                                        Version int PRIMARY KEY,
+                                        Status varchar(10)
+                                    )";
+
+            using (var connection = await _sqlConnectionFactory.GetSqlConnectionAsync(cancellationToken: cancellationToken))
+            {
+                await connection.OpenAsync(cancellationToken);
+
+                using (var command = new SqlCommand(createQuery, connection))
+                {
+                    await command.ExecuteNonQueryAsync();
+                }
+            }
+        }
+
+        /// <inheritdoc />
+        public async Task<bool> ExistsPaasSchemaRecordAsync(int version, string status, CancellationToken cancellationToken)
+        {
+            var selectQuery = "SELECT COUNT(*) FROM dbo.PaasSchemaVersion where version = @version and status = @status";
+
+            using (var connection = await _sqlConnectionFactory.GetSqlConnectionAsync(cancellationToken: cancellationToken))
+            {
+                await connection.OpenAsync(cancellationToken);
+
+                using (var command = new SqlCommand(selectQuery, connection))
+                {
+                    command.Parameters.AddWithValue("@version", version);
+                    command.Parameters.AddWithValue("@status", status);
+                    return (int)await command.ExecuteScalarAsync() != 0;
+                }
+            }
+        }
+
+        private async Task UpsertVersionAsync(SqlConnection connection, int version, string status, bool isPaasScript, CancellationToken cancellationToken)
+        {
+            EnsureArg.IsNotNull(connection, nameof(connection));
+            EnsureArg.IsNotNull(status, nameof(status));
+            EnsureArg.IsGte(version, 1);
+
+            if (isPaasScript)
+            {
+                await UpsertPaasSchemaVersionAsync(connection, version, status, cancellationToken);
+            }
+            else
+            {
+                await UpsertSchemaVersionAsync(connection, version, status, cancellationToken);
+            }
+        }
+
+        private static async Task UpsertSchemaVersionAsync(SqlConnection connection, int version, string status, CancellationToken cancellationToken)
+        {
+            using (var upsertCommand = new SqlCommand("dbo.UpsertSchemaVersion", connection))
+            {
+                upsertCommand.CommandType = CommandType.StoredProcedure;
+                upsertCommand.Parameters.AddWithValue("@version", version);
+                upsertCommand.Parameters.AddWithValue("@status", status);
+
+                await upsertCommand.ExecuteNonQueryAsync(cancellationToken);
+            }
+        }
+
+        private static async Task UpsertPaasSchemaVersionAsync(SqlConnection connection, int version, string status, CancellationToken cancellationToken)
+        {
+            var insertQuery = "INSERT INTO dbo.PaasSchemaVersion VALUES(@version, @status)";
+
+            using (var command = new SqlCommand(insertQuery, connection))
+            {
+                command.Parameters.AddWithValue("@version", version);
+                command.Parameters.AddWithValue("@status", status);
+                await command.ExecuteNonQueryAsync(cancellationToken);
             }
         }
     }

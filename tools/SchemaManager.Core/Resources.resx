@@ -117,14 +117,28 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
+  <data name="ApplyPaasSchemaCompleted" xml:space="preserve">
+    <value>Completed applying Paas schema.</value>
+  </data>
+  <data name="ApplyPaasSchemaStarted" xml:space="preserve">
+    <value>Applying Paas schema for version: {0}.</value>
+    <comment>{0} is a version.</comment>
+  </data>
   <data name="AvailableVersionsDefaultErrorMessage" xml:space="preserve">
     <value>There are no available versions.</value>
   </data>
   <data name="AvailableVersionsErrorMessage" xml:space="preserve">
     <value>The available versions are not up-to-date.</value>
   </data>
+  <data name="CreatePaasSchemaVersionTableMessage" xml:space="preserve">
+    <value>Creating PaaSchemaVersion table if not exists.</value>
+  </data>
   <data name="InvalidVersionMessage" xml:space="preserve">
     <value>The schema version {0} cannot be applied because all the instances are not running the previous version.</value>
+    <comment>{0} is a version.</comment>
+  </data>
+  <data name="PaasSchemaAlreadyExists" xml:space="preserve">
+    <value>Paas schema already exists for version: {0}.</value>
     <comment>{0} is a version.</comment>
   </data>
   <data name="QueryExecutionErrorMessage" xml:space="preserve">

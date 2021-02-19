@@ -61,6 +61,24 @@ namespace SchemaManager.Core {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Completed applying Paas schema..
+        /// </summary>
+        internal static string ApplyPaasSchemaCompleted {
+            get {
+                return ResourceManager.GetString("ApplyPaasSchemaCompleted", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Applying Paas schema for version: {0}..
+        /// </summary>
+        internal static string ApplyPaasSchemaStarted {
+            get {
+                return ResourceManager.GetString("ApplyPaasSchemaStarted", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to There are no available versions..
         /// </summary>
         internal static string AvailableVersionsDefaultErrorMessage {
@@ -79,11 +97,29 @@ namespace SchemaManager.Core {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Creating PaaSchemaVersion table if not exists..
+        /// </summary>
+        internal static string CreatePaasSchemaVersionTableMessage {
+            get {
+                return ResourceManager.GetString("CreatePaasSchemaVersionTableMessage", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to The schema version {0} cannot be applied because all the instances are not running the previous version..
         /// </summary>
         internal static string InvalidVersionMessage {
             get {
                 return ResourceManager.GetString("InvalidVersionMessage", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Paas schema already exists for version: {0}..
+        /// </summary>
+        internal static string PaasSchemaAlreadyExists {
+            get {
+                return ResourceManager.GetString("PaasSchemaAlreadyExists", resourceCulture);
             }
         }
         
