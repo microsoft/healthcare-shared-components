@@ -49,7 +49,7 @@ namespace SchemaManager.Core
         }
 
         /// <inheritdoc />
-        public async Task ApplySchema(string connectionString, Uri server, MutuallyExclusiveType exclusiveType, CancellationToken cancellationToken = default)
+        public virtual async Task ApplySchema(string connectionString, Uri server, MutuallyExclusiveType exclusiveType, CancellationToken cancellationToken = default)
         {
             EnsureArg.IsNotNullOrEmpty(connectionString, nameof(connectionString));
             EnsureArg.IsNotNull(server, nameof(server));

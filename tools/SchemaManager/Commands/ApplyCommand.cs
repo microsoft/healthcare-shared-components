@@ -13,6 +13,7 @@ using EnsureThat;
 using Microsoft.Extensions.Logging;
 using SchemaManager.Core;
 using SchemaManager.Core.Model;
+using SchemaManager.Validators;
 
 namespace SchemaManager.Commands
 {
@@ -37,9 +38,9 @@ namespace SchemaManager.Commands
                 (string connectionString, Uri server, MutuallyExclusiveType type, bool force, CancellationToken token)
                 => HandlerAsync(connectionString, server, type, force, token));
 
-            Argument.AddValidator(symbol => Validators.RequiredOptionValidator.Validate(symbol, CommandOptions.ConnectionStringOption(), Resources.ConnectionStringRequiredValidation));
-            Argument.AddValidator(symbol => Validators.RequiredOptionValidator.Validate(symbol, CommandOptions.ServerOption(), Resources.ServerRequiredValidation));
-            Argument.AddValidator(symbol => Validators.MutuallyExclusiveOptionValidator.Validate(symbol, new List<Option> { CommandOptions.VersionOption(), CommandOptions.NextOption(), CommandOptions.LatestOption() }, Resources.MutuallyExclusiveValidation));
+            Argument.AddValidator(symbol => RequiredOptionValidator.Validate(symbol, CommandOptions.ConnectionStringOption(), Resources.ConnectionStringRequiredValidation));
+            Argument.AddValidator(symbol => RequiredOptionValidator.Validate(symbol, CommandOptions.ServerOption(), Resources.ServerRequiredValidation));
+            Argument.AddValidator(symbol => MutuallyExclusiveOptionValidator.Validate(symbol, new List<Option> { CommandOptions.VersionOption(), CommandOptions.NextOption(), CommandOptions.LatestOption() }, Resources.MutuallyExclusiveValidation));
 
             EnsureArg.IsNotNull(logger, nameof(logger));
             EnsureArg.IsNotNull(schemaManager, nameof(schemaManager));

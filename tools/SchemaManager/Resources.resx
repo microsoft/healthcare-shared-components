@@ -123,9 +123,6 @@
   <data name="AvailableCommandDescription" xml:space="preserve">
     <value>Returns the available SQL schema versions for the given server.</value>
   </data>
-  <data name="ConnectionStringOptionDescription" xml:space="preserve">
-    <value>The connection string of the SQL server to apply the schema update.</value>
-  </data>
   <data name="ConnectionStringRequiredValidation" xml:space="preserve">
     <value>You must include a connection string.</value>
   </data>
@@ -136,28 +133,13 @@
     <value>The current version information is not available due to "{0}".</value>
     <comment>{0} is the response statusCode.</comment>
   </data>
-  <data name="ForceOptionDescription" xml:space="preserve">
-    <value>The schema migration is run without validating the schema verison.</value>
-  </data>
   <data name="ForceWarning" xml:space="preserve">
     <value>Are you sure to apply command with force option? Type 'yes' to confirm.</value>
-  </data>
-  <data name="LatestOptionDescription" xml:space="preserve">
-    <value>The versions between current version and latest available version to apply.</value>
   </data>
   <data name="MutuallyExclusiveValidation" xml:space="preserve">
     <value>You must include only one of the option from [version, next, latest].</value>
   </data>
-  <data name="NextOptionDescritpion" xml:space="preserve">
-    <value>The next version to apply.</value>
-  </data>
-  <data name="ServerOptionDescription" xml:space="preserve">
-    <value>The root URL of the server to connect to.</value>
-  </data>
   <data name="ServerRequiredValidation" xml:space="preserve">
     <value>You must include a Server.</value>
-  </data>
-  <data name="VersionOptionDescription" xml:space="preserve">
-    <value>The versions between current version and specified version to apply.</value>
   </data>
 </root>
