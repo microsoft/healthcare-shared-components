@@ -79,15 +79,6 @@ namespace SchemaManager {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to The connection string of the SQL server to apply the schema update..
-        /// </summary>
-        internal static string ConnectionStringOptionDescription {
-            get {
-                return ResourceManager.GetString("ConnectionStringOptionDescription", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to You must include a connection string..
         /// </summary>
         internal static string ConnectionStringRequiredValidation {
@@ -115,29 +106,11 @@ namespace SchemaManager {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to The schema migration is run without validating the schema verison..
-        /// </summary>
-        internal static string ForceOptionDescription {
-            get {
-                return ResourceManager.GetString("ForceOptionDescription", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to Are you sure to apply command with force option? Type &apos;yes&apos; to confirm..
         /// </summary>
         internal static string ForceWarning {
             get {
                 return ResourceManager.GetString("ForceWarning", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to The versions between current version and latest available version to apply..
-        /// </summary>
-        internal static string LatestOptionDescription {
-            get {
-                return ResourceManager.GetString("LatestOptionDescription", resourceCulture);
             }
         }
         
@@ -151,38 +124,11 @@ namespace SchemaManager {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to The next version to apply..
-        /// </summary>
-        internal static string NextOptionDescritpion {
-            get {
-                return ResourceManager.GetString("NextOptionDescritpion", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to The root URL of the server to connect to..
-        /// </summary>
-        internal static string ServerOptionDescription {
-            get {
-                return ResourceManager.GetString("ServerOptionDescription", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to You must include a Server..
         /// </summary>
         internal static string ServerRequiredValidation {
             get {
                 return ResourceManager.GetString("ServerRequiredValidation", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to The versions between current version and specified version to apply..
-        /// </summary>
-        internal static string VersionOptionDescription {
-            get {
-                return ResourceManager.GetString("VersionOptionDescription", resourceCulture);
             }
         }
     }
