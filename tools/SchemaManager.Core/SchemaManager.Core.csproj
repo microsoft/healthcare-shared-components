@@ -2,18 +2,13 @@
 
   <PropertyGroup>
     <TargetFrameworks>$(SupportedFrameworks);</TargetFrameworks>
-    <AssemblyName>Microsoft.Health.SchemaManager.Core</AssemblyName>
+    <AssemblyName>SchemaManager.Core</AssemblyName>
     <OutputType>Library</OutputType>
   </PropertyGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\..\src\Microsoft.Health.SqlServer.Api\Microsoft.Health.SqlServer.Api.csproj" />
     <ProjectReference Include="..\..\src\Microsoft.Health.SqlServer\Microsoft.Health.SqlServer.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <PackageReference Include="System.CommandLine.Experimental" Version="0.2.0-alpha.19174.3" />
-    <PackageReference Include="System.CommandLine.Rendering" Version="0.2.0-alpha.19174.3" />
   </ItemGroup>
 
   <ItemGroup>

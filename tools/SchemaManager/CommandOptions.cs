@@ -6,7 +6,7 @@
 using System;
 using System.CommandLine;
 
-namespace SchemaManager.Core
+namespace SchemaManager
 {
     public static class CommandOptions
     {

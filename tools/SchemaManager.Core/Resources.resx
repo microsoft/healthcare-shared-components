@@ -123,21 +123,9 @@
   <data name="AvailableVersionsErrorMessage" xml:space="preserve">
     <value>The available versions are not up-to-date.</value>
   </data>
-  <data name="ConnectionStringOptionDescription" xml:space="preserve">
-    <value>The connection string of the SQL server to apply the schema update.</value>
-  </data>
-  <data name="ForceOptionDescription" xml:space="preserve">
-    <value>The schema migration is run without validating the schema verison.</value>
-  </data>
   <data name="InvalidVersionMessage" xml:space="preserve">
     <value>The schema version {0} cannot be applied because all the instances are not running the previous version.</value>
     <comment>{0} is a version.</comment>
-  </data>
-  <data name="LatestOptionDescription" xml:space="preserve">
-    <value>The versions between current version and latest available version to apply.</value>
-  </data>
-  <data name="NextOptionDescritpion" xml:space="preserve">
-    <value>The next version to apply.</value>
   </data>
   <data name="QueryExecutionErrorMessage" xml:space="preserve">
     <value>Script execution has failed due to "{0}".</value>
@@ -163,9 +151,6 @@
     <value>Schema migration is completed successfully for the version : {0}.</value>
     <comment>{0} is a version.</comment>
   </data>
-  <data name="ServerOptionDescription" xml:space="preserve">
-    <value>The root URL of the server to connect to.</value>
-  </data>
   <data name="SpecifiedVersionNotAvailable" xml:space="preserve">
     <value>The specified schema version "{0}" is not available.</value>
     <comment>{0} is a version.</comment>
@@ -173,8 +158,5 @@
   <data name="VersionIncompatibilityMessage" xml:space="preserve">
     <value>The schema version "{0}" is not compatible.</value>
     <comment>{0} is a version.</comment>
-  </data>
-  <data name="VersionOptionDescription" xml:space="preserve">
-    <value>The versions between current version and specified version to apply.</value>
   </data>
 </root>

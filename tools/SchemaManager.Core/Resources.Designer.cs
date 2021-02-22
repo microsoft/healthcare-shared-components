@@ -79,47 +79,11 @@ namespace SchemaManager.Core {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to The connection string of the SQL server to apply the schema update..
-        /// </summary>
-        internal static string ConnectionStringOptionDescription {
-            get {
-                return ResourceManager.GetString("ConnectionStringOptionDescription", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to The schema migration is run without validating the schema verison..
-        /// </summary>
-        internal static string ForceOptionDescription {
-            get {
-                return ResourceManager.GetString("ForceOptionDescription", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to The schema version {0} cannot be applied because all the instances are not running the previous version..
         /// </summary>
         internal static string InvalidVersionMessage {
             get {
                 return ResourceManager.GetString("InvalidVersionMessage", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to The versions between current version and latest available version to apply..
-        /// </summary>
-        internal static string LatestOptionDescription {
-            get {
-                return ResourceManager.GetString("LatestOptionDescription", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to The next version to apply..
-        /// </summary>
-        internal static string NextOptionDescritpion {
-            get {
-                return ResourceManager.GetString("NextOptionDescritpion", resourceCulture);
             }
         }
         
@@ -178,15 +142,6 @@ namespace SchemaManager.Core {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to The root URL of the server to connect to..
-        /// </summary>
-        internal static string ServerOptionDescription {
-            get {
-                return ResourceManager.GetString("ServerOptionDescription", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to The specified schema version &quot;{0}&quot; is not available..
         /// </summary>
         internal static string SpecifiedVersionNotAvailable {
@@ -201,15 +156,6 @@ namespace SchemaManager.Core {
         internal static string VersionIncompatibilityMessage {
             get {
                 return ResourceManager.GetString("VersionIncompatibilityMessage", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to The versions between current version and specified version to apply..
-        /// </summary>
-        internal static string VersionOptionDescription {
-            get {
-                return ResourceManager.GetString("VersionOptionDescription", resourceCulture);
             }
         }
     }

@@ -3,7 +3,7 @@
 // Licensed under the MIT License (MIT). See LICENSE in the repo root for license information.
 // -------------------------------------------------------------------------------------------------
 
-namespace SchemaManager.Core
+namespace SchemaManager
 {
     public static class OptionAliases
     {
