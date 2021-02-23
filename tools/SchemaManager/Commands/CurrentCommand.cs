@@ -14,6 +14,7 @@ using System.Threading.Tasks;
 using EnsureThat;
 using Microsoft.Health.SqlServer.Features.Schema.Manager.Model;
 using SchemaManager.Core;
+using SchemaManager.Validators;
 
 namespace SchemaManager.Commands
 {
@@ -31,8 +32,8 @@ namespace SchemaManager.Commands
                 (InvocationContext context, Uri server, string connectionString, CancellationToken token)
                 => HandlerAsync(context, connectionString, server, token));
 
-            Argument.AddValidator(symbol => Validators.RequiredOptionValidator.Validate(symbol, CommandOptions.ConnectionStringOption(), Resources.ConnectionStringRequiredValidation));
-            Argument.AddValidator(symbol => Validators.RequiredOptionValidator.Validate(symbol, CommandOptions.ServerOption(), Resources.ServerRequiredValidation));
+            Argument.AddValidator(symbol => RequiredOptionValidator.Validate(symbol, CommandOptions.ConnectionStringOption(), Resources.ConnectionStringRequiredValidation));
+            Argument.AddValidator(symbol => RequiredOptionValidator.Validate(symbol, CommandOptions.ServerOption(), Resources.ServerRequiredValidation));
 
             EnsureArg.IsNotNull(schemaManager, nameof(schemaManager));
 
