@@ -93,7 +93,7 @@ namespace Microsoft.Health.Extensions.BuildTimeCodeGenerator.Sql
                 case SqlDbType.Decimal:
                     return typeof(decimal);
                 case SqlDbType.Float:
-                    break;
+                    return typeof(double);
                 case SqlDbType.Image:
                     break;
                 case SqlDbType.Int:
