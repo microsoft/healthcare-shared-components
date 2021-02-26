@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 using Microsoft.Data.SqlClient;
 using Microsoft.Health.SqlServer.Configs;
 using Microsoft.Health.SqlServer.Features.Schema;
+using Microsoft.SqlServer.Management.Smo;
 using NSubstitute;
 using Xunit;
 using Xunit.Abstractions;
@@ -19,10 +20,11 @@ namespace Microsoft.Health.SqlServer.Tests.Integration
     {
         public SqlIntegrationTestBase(ITestOutputHelper outputHelper)
         {
+            Output = outputHelper;
             DatabaseName = $"IntegrationTests_BaseSchemaRunner_{Guid.NewGuid().ToString().Replace("-", string.Empty)}";
             Config = new SqlServerDataStoreConfiguration
             {
-                ConnectionString = $"server=(local);Initial Catalog={DatabaseName};Integrated Security=true",
+                ConnectionString = Environment.GetEnvironmentVariable("TestSqlConnectionString") ?? $"server=(local);Initial Catalog={DatabaseName};Integrated Security=true",
                 AllowDatabaseCreation = true,
             };
 
@@ -48,21 +50,37 @@ namespace Microsoft.Health.SqlServer.Tests.Integration
             await Connection.OpenAsync();
             await SchemaInitializer.CreateDatabaseAsync(Connection, DatabaseName, CancellationToken.None);
             await Connection.ChangeDatabaseAsync(DatabaseName);
+            Output.WriteLine($"Using database '{DatabaseName}'.");
         }
 
         public virtual async Task DisposeAsync()
         {
             await Connection.ChangeDatabaseAsync("master");
-            await DeleteDatabaseAsync(DatabaseName);
+            try
+            {
+                await DeleteDatabaseAsync(DatabaseName);
+            }
+            catch (Exception e)
+            {
+                Output.WriteLine($"Failed to delete test database after test run: {e.Message}{Environment.NewLine}{Environment.NewLine}{e.StackTrace}");
+                throw;
+            }
+
             await Connection.CloseAsync();
         }
 
         protected async Task DeleteDatabaseAsync(string dbName)
         {
-            using (var canCreateDatabaseCommand = new SqlCommand($"ALTER DATABASE {dbName} SET SINGLE_USER WITH ROLLBACK IMMEDIATE; DROP DATABASE {dbName};", Connection))
+            using (var deleteDatabaseCommand = new SqlCommand($"ALTER DATABASE {dbName} SET SINGLE_USER WITH ROLLBACK IMMEDIATE; DROP DATABASE {dbName};", Connection))
             {
-                int result = await canCreateDatabaseCommand.ExecuteNonQueryAsync(CancellationToken.None);
-                if (result > 0)
+                if (Connection.Database == dbName)
+                {
+                    Output.WriteLine($"Switching from '{dbName}' to master prior to delete.");
+                    await Connection.ChangeDatabaseAsync("master", CancellationToken.None);
+                }
+
+                int result = await deleteDatabaseCommand.ExecuteNonQueryAsync(CancellationToken.None);
+                if (result != -1)
                 {
                     Output.WriteLine($"Clean up of {dbName} failed with result code {result}");
                     Assert.False(true);

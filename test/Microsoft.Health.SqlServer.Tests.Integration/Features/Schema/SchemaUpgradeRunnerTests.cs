@@ -61,7 +61,7 @@ namespace Microsoft.Health.SqlServer.Tests.Integration.Features.Schema
             Assert.Equal(1, version);
         }
 
-        [Fact(Skip = "Sample schemas have version insertion which causes this to fail. Unignore when samples fixed")]
+        [Fact(Skip = "Sample schemas have version insertion which causes this to fail. Unignore when test scripts fixed.")]
         public async Task ApplySchema_UpgradeSchema_Succeeds()
         {
             await _runner.ApplyBaseSchemaAsync(CancellationToken.None);
