@@ -9,7 +9,6 @@ using System.Threading.Tasks;
 using Microsoft.Data.SqlClient;
 using Microsoft.Health.SqlServer.Configs;
 using Microsoft.Health.SqlServer.Features.Schema;
-using Microsoft.SqlServer.Management.Smo;
 using NSubstitute;
 using Xunit;
 using Xunit.Abstractions;
@@ -67,6 +66,7 @@ namespace Microsoft.Health.SqlServer.Tests.Integration
             }
 
             await Connection.CloseAsync();
+            await Connection.DisposeAsync();
         }
 
         protected async Task DeleteDatabaseAsync(string dbName)
@@ -82,7 +82,7 @@ namespace Microsoft.Health.SqlServer.Tests.Integration
                 int result = await deleteDatabaseCommand.ExecuteNonQueryAsync(CancellationToken.None);
                 if (result != -1)
                 {
-                    Output.WriteLine($"Clean up of {dbName} failed with result code {result}");
+                    Output.WriteLine($"Clean up of {dbName} failed with result code {result}.");
                     Assert.False(true);
                 }
             }
