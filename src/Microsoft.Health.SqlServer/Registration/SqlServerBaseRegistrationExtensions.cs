@@ -41,11 +41,6 @@ namespace Microsoft.Health.SqlServer.Registration
                 .Singleton()
                 .AsSelf();
 
-            services.Add<SchemaManagerDataStore>()
-                .Scoped()
-                .AsSelf()
-                .AsImplementedInterfaces();
-
             services.Add<SqlServerSchemaDataStore>()
                 .Scoped()
                 .AsSelf()

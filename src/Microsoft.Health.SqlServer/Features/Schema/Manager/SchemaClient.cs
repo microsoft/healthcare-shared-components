@@ -27,7 +27,10 @@ namespace Microsoft.Health.SqlServer.Features.Schema.Manager
 
         public void SetUri(Uri serverUrl)
         {
-            _httpClient.BaseAddress = serverUrl;
+            if (_httpClient.BaseAddress == null)
+            {
+                _httpClient.BaseAddress = serverUrl;
+            }
         }
 
         public async Task<List<CurrentVersion>> GetCurrentVersionInformationAsync(CancellationToken cancellationToken)

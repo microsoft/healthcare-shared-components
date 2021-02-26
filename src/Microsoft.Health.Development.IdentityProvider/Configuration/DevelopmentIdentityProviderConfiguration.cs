@@ -4,10 +4,11 @@
 // -------------------------------------------------------------------------------------------------
 
 using System.Collections.Generic;
+using Microsoft.Health.Development.IdentityProvider.Configuration;
 
 namespace Microsoft.Health.Development.IdentityProvider.Configuration
 {
-    public class Provider
+    public class DevelopmentIdentityProviderConfiguration
     {
         public const string Audience = "health-api";
         public const string LastModifiedClaim = "appid";
