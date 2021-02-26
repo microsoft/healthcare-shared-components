@@ -17,16 +17,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Remove="Features\Schema\Migrations\1.sql" />
-    <None Remove="Features\Schema\Migrations\2.diff.sql" />
-    <None Remove="Features\Schema\Migrations\3.diff.sql" />
-    <None Remove="Features\Schema\Migrations\3.sql" />
-    <EmbeddedResource Include="Features\Schema\Migrations\3.diff.sql" />
-    <EmbeddedResource Include="Features\Schema\Migrations\3.sql" />
-    <EmbeddedResource Include="Features\Schema\Migrations\2.diff.sql" />
-    <EmbeddedResource Include="Features\Schema\Migrations\1.sql" />
-    <None Remove="Features\Schema\Migrations\2.sql" />
-    <EmbeddedResource Include="Features\Schema\Migrations\2.sql" />
     <GenerateFilesInputs Include="Features\Schema\Migrations\2.sql" />
     <GenerateFilesInputs Include="Features\Schema\Migrations\3.sql" />
     <Generated Include="Features\Schema\Model\VLatest.Generated.cs">
@@ -42,6 +32,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Folder Include="Features\Schema\Migrations\" />
     <Folder Include="Features\Schema\Model\" />
     <Folder Include="Properties" />
   </ItemGroup>

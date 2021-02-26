@@ -9,6 +9,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using EnsureThat;
 using Microsoft.Data.SqlClient;
+using Microsoft.Health.SqlServer.Extensions;
 using Microsoft.SqlServer.Management.Common;
 using Microsoft.SqlServer.Management.Smo;
 
@@ -33,7 +34,7 @@ namespace Microsoft.Health.SqlServer.Features.Schema.Manager
 
             using (var connection = await _sqlConnectionFactory.GetSqlConnectionAsync(cancellationToken: cancellationToken))
             {
-                await connection.OpenAsync(cancellationToken);
+                await connection.TryOpenAsync(cancellationToken);
                 ServerConnection serverConnection = new ServerConnection(connection);
 
                 try
@@ -65,7 +66,7 @@ namespace Microsoft.Health.SqlServer.Features.Schema.Manager
 
             using (var connection = await _sqlConnectionFactory.GetSqlConnectionAsync(cancellationToken: cancellationToken))
             {
-                await connection.OpenAsync(cancellationToken);
+                await connection.TryOpenAsync(cancellationToken);
 
                 var deleteQuery = "DELETE FROM dbo.SchemaVersion WHERE Version = @version AND Status = @status";
                 using (var deleteCommand = new SqlCommand(deleteQuery, connection))
@@ -83,7 +84,7 @@ namespace Microsoft.Health.SqlServer.Features.Schema.Manager
         {
             using (var connection = await _sqlConnectionFactory.GetSqlConnectionAsync(cancellationToken: cancellationToken))
             {
-                await connection.OpenAsync(cancellationToken);
+                await connection.TryOpenAsync(cancellationToken);
 
                 try
                 {
@@ -125,7 +126,7 @@ namespace Microsoft.Health.SqlServer.Features.Schema.Manager
 
             using (var connection = await _sqlConnectionFactory.GetSqlConnectionAsync(cancellationToken: cancellationToken))
             {
-                await connection.OpenAsync(cancellationToken);
+                await connection.TryOpenAsync(cancellationToken);
                 var server = new Server(new ServerConnection(connection));
 
                 server.ConnectionContext.ExecuteNonQuery(script);
@@ -139,7 +140,7 @@ namespace Microsoft.Health.SqlServer.Features.Schema.Manager
 
             using (var connection = await _sqlConnectionFactory.GetSqlConnectionAsync(cancellationToken: cancellationToken))
             {
-                await connection.OpenAsync(cancellationToken);
+                await connection.TryOpenAsync(cancellationToken);
 
                 using (var command = new SqlCommand(procedureQuery, connection))
                 {
@@ -158,7 +159,7 @@ namespace Microsoft.Health.SqlServer.Features.Schema.Manager
 
             using (var connection = await _sqlConnectionFactory.GetSqlConnectionAsync(cancellationToken: cancellationToken))
             {
-                await connection.OpenAsync(cancellationToken);
+                await connection.TryOpenAsync(cancellationToken);
 
                 using (var command = new SqlCommand(procedureQuery, connection))
                 {

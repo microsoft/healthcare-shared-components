@@ -23,6 +23,7 @@ namespace Microsoft.Health.SqlServer.Tests.Integration
             Config = new SqlServerDataStoreConfiguration
             {
                 ConnectionString = $"server=(local);Initial Catalog={DatabaseName};Integrated Security=true",
+                AllowDatabaseCreation = true,
             };
 
             ConnectionStringProvider = Substitute.For<ISqlConnectionStringProvider>();
@@ -39,7 +40,7 @@ namespace Microsoft.Health.SqlServer.Tests.Integration
 
         protected SqlServerDataStoreConfiguration Config { get; set; }
 
-        public async Task InitializeAsync()
+        public virtual async Task InitializeAsync()
         {
             SqlConnectionStringBuilder connectionBuilder = new SqlConnectionStringBuilder(Config.ConnectionString);
             connectionBuilder.InitialCatalog = "master";
@@ -49,20 +50,32 @@ namespace Microsoft.Health.SqlServer.Tests.Integration
             await Connection.ChangeDatabaseAsync(DatabaseName);
         }
 
-        public async Task DisposeAsync()
+        public virtual async Task DisposeAsync()
         {
             await Connection.ChangeDatabaseAsync("master");
-            using (var canCreateDatabaseCommand = new SqlCommand($"ALTER DATABASE {DatabaseName} SET SINGLE_USER WITH ROLLBACK IMMEDIATE; DROP DATABASE {DatabaseName};", Connection))
+            await DeleteDatabaseAsync(DatabaseName);
+            await Connection.CloseAsync();
+        }
+
+        protected async Task DeleteDatabaseAsync(string dbName)
+        {
+            using (var canCreateDatabaseCommand = new SqlCommand($"ALTER DATABASE {dbName} SET SINGLE_USER WITH ROLLBACK IMMEDIATE; DROP DATABASE {dbName};", Connection))
             {
                 int result = await canCreateDatabaseCommand.ExecuteNonQueryAsync(CancellationToken.None);
                 if (result > 0)
                 {
-                    Output.WriteLine($"Clean up of {DatabaseName} failed with result code {result}");
+                    Output.WriteLine($"Clean up of {dbName} failed with result code {result}");
                     Assert.False(true);
                 }
             }
+        }
 
-            await Connection.CloseAsync();
+        protected async Task<SqlConnection> GetSqlConnection()
+        {
+            SqlConnectionStringBuilder connectionBuilder = new SqlConnectionStringBuilder(Config.ConnectionString);
+            var result = new SqlConnection(connectionBuilder.ToString());
+            await result.OpenAsync();
+            return result;
         }
     }
 }

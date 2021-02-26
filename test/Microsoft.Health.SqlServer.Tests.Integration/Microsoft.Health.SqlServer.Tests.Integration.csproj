@@ -18,4 +18,16 @@
     <ProjectReference Include="..\..\src\Microsoft.Health.SqlServer\Microsoft.Health.SqlServer.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Features\Schema\Migrations\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="..\Microsoft.Health.SqlServer.Web\Features\Schema\Migrations\1.sql" Link="Features\Schema\Migrations\1.sql" />
+    <EmbeddedResource Include="..\Microsoft.Health.SqlServer.Web\Features\Schema\Migrations\2.diff.sql" Link="Features\Schema\Migrations\2.diff.sql" />
+    <EmbeddedResource Include="..\Microsoft.Health.SqlServer.Web\Features\Schema\Migrations\2.sql" Link="Features\Schema\Migrations\2.sql" />
+    <EmbeddedResource Include="..\Microsoft.Health.SqlServer.Web\Features\Schema\Migrations\3.diff.sql" Link="Features\Schema\Migrations\3.diff.sql" />
+    <EmbeddedResource Include="..\Microsoft.Health.SqlServer.Web\Features\Schema\Migrations\3.sql" Link="Features\Schema\Migrations\3.sql" />
+  </ItemGroup>
+
 </Project>

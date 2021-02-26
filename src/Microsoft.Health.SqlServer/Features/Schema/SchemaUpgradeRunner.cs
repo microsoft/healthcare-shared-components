@@ -10,6 +10,7 @@ using EnsureThat;
 using MediatR;
 using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.Logging;
+using Microsoft.Health.SqlServer.Extensions;
 using Microsoft.Health.SqlServer.Features.Schema.Extensions;
 using Microsoft.Health.SqlServer.Features.Schema.Manager;
 
@@ -60,7 +61,7 @@ namespace Microsoft.Health.SqlServer.Features.Schema
 
             await CompleteSchemaVersionAsync(version, cancellationToken);
 
-            _mediator.NotifySchemaUpgradedAsync(version, applyFullSchemaSnapshot).Wait();
+            await _mediator.NotifySchemaUpgradedAsync(version, applyFullSchemaSnapshot);
             _logger.LogInformation("Completed applying schema {version}", version);
         }
 
@@ -92,7 +93,7 @@ namespace Microsoft.Health.SqlServer.Features.Schema
                 upsertCommand.Parameters.AddWithValue("@version", schemaVersion);
                 upsertCommand.Parameters.AddWithValue("@status", status);
 
-                await connection.OpenAsync(cancellationToken);
+                await connection.TryOpenAsync(cancellationToken);
                 await upsertCommand.ExecuteNonQueryAsync(cancellationToken);
             }
         }
