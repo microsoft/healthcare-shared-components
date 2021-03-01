@@ -22,4 +22,4 @@ jobs:
     - name: Build with dotnet
       run: dotnet build --configuration Release
     - name: Run UnitTests with dotnet
-      run: dotnet test --configuration Release
+      run: dotnet test --configuration Release --filter FullyQualifiedName!~Integration
