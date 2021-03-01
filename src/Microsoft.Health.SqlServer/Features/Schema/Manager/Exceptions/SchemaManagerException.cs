@@ -15,5 +15,11 @@ namespace Microsoft.Health.SqlServer.Features.Schema.Manager.Exceptions
         {
             Debug.Assert(!string.IsNullOrEmpty(message), "Exception message should not be empty");
         }
+
+        public SchemaManagerException(string message, Exception innerException)
+            : base(message, innerException)
+        {
+            Debug.Assert(!string.IsNullOrEmpty(message), "Exception message should not be empty");
+        }
     }
 }

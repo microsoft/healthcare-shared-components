@@ -1,0 +1,33 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFrameworks>$(SupportedFrameworks);</TargetFrameworks>
+    <IsPackable>false</IsPackable>
+    <RootNamespace>Microsoft.Health.SqlServer.Tests.Integration</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.5.0" />
+    <PackageReference Include="NSubstitute" Version="4.2.1" />
+    <PackageReference Include="xunit" Version="2.4.0" />
+    <PackageReference Include="xunit.runner.visualstudio" Version="2.4.0" />
+    <PackageReference Include="coverlet.collector" Version="1.2.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\Microsoft.Health.SqlServer\Microsoft.Health.SqlServer.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Features\Schema\Migrations\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="..\Microsoft.Health.SqlServer.Web\Features\Schema\Migrations\1.sql" Link="Features\Schema\Migrations\1.sql" />
+    <EmbeddedResource Include="..\Microsoft.Health.SqlServer.Web\Features\Schema\Migrations\2.diff.sql" Link="Features\Schema\Migrations\2.diff.sql" />
+    <EmbeddedResource Include="..\Microsoft.Health.SqlServer.Web\Features\Schema\Migrations\2.sql" Link="Features\Schema\Migrations\2.sql" />
+    <EmbeddedResource Include="..\Microsoft.Health.SqlServer.Web\Features\Schema\Migrations\3.diff.sql" Link="Features\Schema\Migrations\3.diff.sql" />
+    <EmbeddedResource Include="..\Microsoft.Health.SqlServer.Web\Features\Schema\Migrations\3.sql" Link="Features\Schema\Migrations\3.sql" />
+  </ItemGroup>
+
+</Project>

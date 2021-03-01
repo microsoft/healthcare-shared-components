@@ -26,7 +26,7 @@ namespace SchemaManager.Core
     public class SqlSchemaManager : ISchemaManager
     {
         private SqlServerDataStoreConfiguration _sqlServerDataStoreConfiguration;
-        private BaseSchemaRunner _baseSchemaRunner;
+        private IBaseSchemaRunner _baseSchemaRunner;
         private ISchemaManagerDataStore _schemaManagerDataStore;
         private ISchemaClient _schemaClient;
         private ILogger<SqlSchemaManager> _logger;
@@ -36,7 +36,7 @@ namespace SchemaManager.Core
 
         public SqlSchemaManager(
             SqlServerDataStoreConfiguration sqlServerDataStoreConfiguration,
-            BaseSchemaRunner baseSchemaRunner,
+            IBaseSchemaRunner baseSchemaRunner,
             ISchemaManagerDataStore schemaManagerDataStore,
             ISchemaClient schemaClient,
             ILogger<SqlSchemaManager> logger)

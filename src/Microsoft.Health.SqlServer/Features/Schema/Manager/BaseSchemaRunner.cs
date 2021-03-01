@@ -80,9 +80,17 @@ namespace Microsoft.Health.SqlServer.Features.Schema.Manager
 
         private async Task InstanceSchemaRecordCreatedAsync(CancellationToken cancellationToken)
         {
-            if (!await _schemaManagerDataStore.InstanceSchemaRecordExistsAsync(cancellationToken))
+            try
             {
-                throw new SchemaManagerException(Resources.InstanceSchemaRecordErrorMessage);
+                if (!await _schemaManagerDataStore.InstanceSchemaRecordExistsAsync(cancellationToken))
+                {
+                    throw new SchemaManagerException(Resources.InstanceSchemaRecordErrorMessage);
+                }
+            }
+            catch (SqlException e) when (e.Message.Contains("Invalid object name", StringComparison.OrdinalIgnoreCase))
+            {
+                // Table doesn't exist
+                throw new SchemaManagerException(Resources.InstanceSchemaRecordTableNotFound, e);
             }
         }
 

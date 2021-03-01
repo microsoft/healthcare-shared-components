@@ -148,6 +148,9 @@
   <data name="InstanceSchemaRecordErrorMessage" xml:space="preserve">
     <value>The current version information could not be fetched from the service. Please try again.</value>
   </data>
+  <data name="InstanceSchemaRecordTableNotFound" xml:space="preserve">
+    <value>InstanceSchema table does not exist.</value>
+  </data>
   <data name="InsufficientDatabasePermissionsMessage" xml:space="preserve">
     <value>Insufficient permissions to create the database.</value>
   </data>
