@@ -151,6 +151,15 @@ namespace Microsoft.Health.SqlServer {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to InstanceSchema table does not exist..
+        /// </summary>
+        internal static string InstanceSchemaRecordTableNotFound {
+            get {
+                return ResourceManager.GetString("InstanceSchemaRecordTableNotFound", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Insufficient permissions to create the database..
         /// </summary>
         internal static string InsufficientDatabasePermissionsMessage {

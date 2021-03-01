@@ -19,13 +19,13 @@ namespace Microsoft.Health.SqlServer.Tests.Integration.Features.Schema
         }
 
         [Fact]
-        public async Task DoesDatabaseExist_DoesNotExist_ReturnsFalse()
+        public async Task DatabaseDoesNotExist_DoesDatabaseExistAsync_ReturnsFalse()
         {
             Assert.False(await SchemaInitializer.DoesDatabaseExistAsync(Connection, "doesnotexist", CancellationToken.None));
         }
 
         [Fact]
-        public async Task DoesDataBaseExist_Exists_ReturnsTrue()
+        public async Task DatabaseExists_DoesDatabaseExistAsync_ReturnsTrue()
         {
             const string dbName = "willexist";
 

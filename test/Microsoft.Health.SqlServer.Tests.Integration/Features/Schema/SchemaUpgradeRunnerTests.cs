@@ -37,7 +37,7 @@ namespace Microsoft.Health.SqlServer.Tests.Integration.Features.Schema
         }
 
         [Fact]
-        public async Task ApplyBaseSchema_Succeeds()
+        public async Task ApplyBaseSchema_DoesNotExist_Succeeds()
         {
             Assert.False(await _schemaDataStore.BaseSchemaExistsAsync(CancellationToken.None));
             await _runner.ApplyBaseSchemaAsync(CancellationToken.None);
@@ -56,19 +56,19 @@ namespace Microsoft.Health.SqlServer.Tests.Integration.Features.Schema
         public async Task ApplySchema_BaseSchemaExists_Succeeds()
         {
             await _runner.ApplyBaseSchemaAsync(CancellationToken.None);
-            await _runner.ApplySchemaAsync(1, true, CancellationToken.None);
+            await _runner.ApplySchemaAsync(1, applyFullSchemaSnapshot: true, CancellationToken.None);
             var version = await _schemaDataStore.GetCurrentSchemaVersionAsync(CancellationToken.None);
             Assert.Equal(1, version);
         }
 
-        [Fact(Skip = "Sample schemas have version insertion which causes this to fail. Unignore when test scripts fixed.")]
-        public async Task ApplySchema_UpgradeSchema_Succeeds()
+        [Fact]
+        public async Task ApplySchema_UsingDiff_Succeeds()
         {
             await _runner.ApplyBaseSchemaAsync(CancellationToken.None);
-            await _runner.ApplySchemaAsync(2, true, CancellationToken.None);
+            await _runner.ApplySchemaAsync(2, applyFullSchemaSnapshot: true, CancellationToken.None);
             var version = await _schemaDataStore.GetCurrentSchemaVersionAsync(CancellationToken.None);
             Assert.Equal(2, version);
-            await _runner.ApplySchemaAsync(2, false, CancellationToken.None);
+            await _runner.ApplySchemaAsync(3, applyFullSchemaSnapshot: false, CancellationToken.None);
             version = await _schemaDataStore.GetCurrentSchemaVersionAsync(CancellationToken.None);
             Assert.Equal(3, version);
         }
