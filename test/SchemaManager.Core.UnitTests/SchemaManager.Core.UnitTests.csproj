@@ -4,6 +4,8 @@
     <TargetFramework>netcoreapp3.1</TargetFramework>
 
     <IsPackable>false</IsPackable>
+
+    <AssemblyName>Microsoft.Health.SchemaManager.Core.UnitTests</AssemblyName>
   </PropertyGroup>
 
   <ItemGroup>

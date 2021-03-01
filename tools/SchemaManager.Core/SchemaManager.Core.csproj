@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <TargetFrameworks>$(SupportedFrameworks);</TargetFrameworks>
-    <AssemblyName>SchemaManager.Core</AssemblyName>
+    <AssemblyName>Microsoft.Health.SchemaManager.Core</AssemblyName>
     <OutputType>Library</OutputType>
   </PropertyGroup>
 
