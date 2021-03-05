@@ -102,30 +102,7 @@ namespace Microsoft.Health.SqlServer.Features.Schema.Manager
 
             SchemaInitializer.ValidateDatabaseName(databaseName);
 
-            SqlConnectionStringBuilder connectionBuilder = new SqlConnectionStringBuilder(sqlConnectionString);
-            using (var connection = new SqlConnection(connectionBuilder.ToString()))
-            {
-                bool doesDatabaseExist = await SchemaInitializer.DoesDatabaseExistAsync(connection, databaseName, cancellationToken);
-
-                // database creation is allowed
-                if (!doesDatabaseExist)
-                {
-                    _logger.LogInformation("The database does not exists.");
-
-                    bool created = await SchemaInitializer.CreateDatabaseAsync(connection, databaseName, cancellationToken);
-
-                    if (created)
-                    {
-                        _logger.LogInformation("The database is created.");
-                    }
-                    else
-                    {
-                        throw new SchemaManagerException(Resources.InsufficientDatabasePermissionsMessage);
-                    }
-
-                    connection.Close();
-                }
-            }
+            await _schemaManagerDataStore.CreateDatabaseIfNotExists(databaseName, cancellationToken);
 
             bool canInitialize = false;
 
