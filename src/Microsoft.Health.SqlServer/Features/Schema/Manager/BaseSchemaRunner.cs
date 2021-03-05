@@ -14,7 +14,7 @@ using Polly;
 
 namespace Microsoft.Health.SqlServer.Features.Schema.Manager
 {
-    public class BaseSchemaRunner
+    public class BaseSchemaRunner : IBaseSchemaRunner
     {
         private static readonly TimeSpan RetrySleepDuration = TimeSpan.FromSeconds(20);
         private const int RetryAttempts = 3;
