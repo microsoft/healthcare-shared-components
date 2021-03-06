@@ -191,8 +191,6 @@ namespace Microsoft.Health.SqlServer.Features.Schema.Manager
                     {
                         throw new SchemaManagerException(Resources.InsufficientDatabasePermissionsMessage);
                     }
-
-                    connection.Close();
                 }
             }
         }
