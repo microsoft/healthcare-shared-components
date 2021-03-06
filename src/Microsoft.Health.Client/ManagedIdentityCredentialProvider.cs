@@ -31,7 +31,7 @@ namespace Microsoft.Health.Client
             _httpClientFactory = httpClientFactory;
         }
 
-        protected override async Task<string> BearerTokenFunction(CancellationToken cancellationToken)
+        protected override async Task<string> BearerTokenFunctionAsync(CancellationToken cancellationToken)
         {
             var azureServiceTokenProvider = new AzureServiceTokenProvider(httpClientFactory: _httpClientFactory);
             return await azureServiceTokenProvider.GetAccessTokenAsync(_managedIdentityCredentialConfiguration.Resource, _managedIdentityCredentialConfiguration.TenantId, cancellationToken);

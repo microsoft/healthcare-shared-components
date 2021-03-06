@@ -27,7 +27,7 @@ namespace Microsoft.Health.Client
             CancellationToken cancellationToken)
         {
             request.Headers.Authorization =
-                new AuthenticationHeaderValue("Bearer", await _credentialProvider.GetBearerToken(cancellationToken));
+                new AuthenticationHeaderValue("Bearer", await _credentialProvider.GetBearerTokenAsync(cancellationToken));
 
             return await base.SendAsync(request, cancellationToken).ConfigureAwait(false);
         }

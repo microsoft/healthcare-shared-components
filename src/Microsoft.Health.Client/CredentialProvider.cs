@@ -18,11 +18,11 @@ namespace Microsoft.Health.Client
 
         internal DateTime TokenExpiration { get; private set; }
 
-        public async Task<string> GetBearerToken(CancellationToken cancellationToken)
+        public async Task<string> GetBearerTokenAsync(CancellationToken cancellationToken)
         {
             if (TokenExpiration < DateTime.UtcNow + _tokenTimeout)
             {
-                Token = await BearerTokenFunction(cancellationToken);
+                Token = await BearerTokenFunctionAsync(cancellationToken);
                 var decodedToken = new JsonWebToken(Token);
                 TokenExpiration = decodedToken.ValidTo;
             }
@@ -30,6 +30,6 @@ namespace Microsoft.Health.Client
             return Token;
         }
 
-        protected abstract Task<string> BearerTokenFunction(CancellationToken cancellationToken);
+        protected abstract Task<string> BearerTokenFunctionAsync(CancellationToken cancellationToken);
     }
 }

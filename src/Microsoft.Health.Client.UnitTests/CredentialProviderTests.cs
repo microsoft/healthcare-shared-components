@@ -27,7 +27,7 @@ namespace Microsoft.Health.Client.UnitTests
             Assert.Null(credentialProvider.Token);
             Assert.Equal(default, credentialProvider.TokenExpiration);
 
-            var token = await credentialProvider.GetBearerToken(cancellationToken: default);
+            var token = await credentialProvider.GetBearerTokenAsync(cancellationToken: default);
 
             Assert.Equal(token, credentialProvider.Token);
 
@@ -105,7 +105,7 @@ namespace Microsoft.Health.Client.UnitTests
             var credentialProvider = new TestCredentialProvider(initialToken);
 
             // Returns the initialToken
-            var initialResult = await credentialProvider.GetBearerToken(cancellationToken: default);
+            var initialResult = await credentialProvider.GetBearerTokenAsync(cancellationToken: default);
             Assert.Equal(initialToken, initialResult);
 
             // Update the token that would be returned if BearerTokenFunction() was called
@@ -114,7 +114,7 @@ namespace Microsoft.Health.Client.UnitTests
             credentialProvider.EncodedToken = secondToken;
 
             // Should return the initialToken since it is not within the expiration window
-            var secondResult = await credentialProvider.GetBearerToken(cancellationToken: default);
+            var secondResult = await credentialProvider.GetBearerTokenAsync(cancellationToken: default);
 
             Assert.Equal(initialResult, secondResult);
         }
@@ -127,7 +127,7 @@ namespace Microsoft.Health.Client.UnitTests
             var credentialProvider = new TestCredentialProvider(initialToken);
 
             // Returns the initialToken
-            var initialResult = await credentialProvider.GetBearerToken(cancellationToken: default);
+            var initialResult = await credentialProvider.GetBearerTokenAsync(cancellationToken: default);
             Assert.Equal(initialToken, initialResult);
 
             // Update the token that will be returned since the initial token is within the expiration window
@@ -136,7 +136,7 @@ namespace Microsoft.Health.Client.UnitTests
             credentialProvider.EncodedToken = secondToken;
 
             // Should return the initialToken since it is not within the expiration window
-            var secondResult = await credentialProvider.GetBearerToken(cancellationToken: default);
+            var secondResult = await credentialProvider.GetBearerTokenAsync(cancellationToken: default);
 
             Assert.Equal(secondToken, secondResult);
             Assert.NotEqual(initialResult, secondResult);

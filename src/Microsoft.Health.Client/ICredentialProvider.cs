@@ -10,6 +10,6 @@ namespace Microsoft.Health.Client
 {
     public interface ICredentialProvider
     {
-        Task<string> GetBearerToken(CancellationToken cancellationToken = default);
+        Task<string> GetBearerTokenAsync(CancellationToken cancellationToken = default);
     }
 }
