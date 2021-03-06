@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 using EnsureThat;
 using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.Logging;
+using Microsoft.Health.SqlServer.Extensions;
 using Microsoft.Health.SqlServer.Features.Schema.Manager.Exceptions;
 using Polly;
 
@@ -102,7 +103,7 @@ namespace Microsoft.Health.SqlServer.Features.Schema.Manager
 
             SchemaInitializer.ValidateDatabaseName(databaseName);
 
-            await _schemaManagerDataStore.CreateDatabaseIfNotExists(databaseName, cancellationToken);
+            await CreateDatabaseIfNotExists(databaseName, cancellationToken);
 
             bool canInitialize = false;
 
@@ -115,6 +116,31 @@ namespace Microsoft.Health.SqlServer.Features.Schema.Manager
             if (!canInitialize)
             {
                 throw new SchemaManagerException(Resources.InsufficientTablesPermissionsMessage);
+            }
+        }
+
+        private async Task CreateDatabaseIfNotExists(string databaseName, CancellationToken cancellationToken)
+        {
+            using (var connection = await _sqlConnectionFactory.GetSqlConnectionAsync(cancellationToken: cancellationToken))
+            {
+                await connection.TryOpenAsync(cancellationToken);
+
+                bool doesDatabaseExist = await SchemaInitializer.DoesDatabaseExistAsync(connection, databaseName, cancellationToken);
+                if (!doesDatabaseExist)
+                {
+                    _logger.LogInformation("The database does not exists.");
+
+                    bool created = await SchemaInitializer.CreateDatabaseAsync(connection, databaseName, cancellationToken);
+
+                    if (created)
+                    {
+                        _logger.LogInformation("The database is created.");
+                    }
+                    else
+                    {
+                        throw new SchemaManagerException(Resources.InsufficientDatabasePermissionsMessage);
+                    }
+                }
             }
         }
     }

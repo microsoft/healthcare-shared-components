@@ -9,9 +9,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using EnsureThat;
 using Microsoft.Data.SqlClient;
-using Microsoft.Extensions.Logging;
 using Microsoft.Health.SqlServer.Extensions;
-using Microsoft.Health.SqlServer.Features.Schema.Manager.Exceptions;
 using Microsoft.SqlServer.Management.Common;
 using Microsoft.SqlServer.Management.Smo;
 
@@ -19,13 +17,13 @@ namespace Microsoft.Health.SqlServer.Features.Schema.Manager
 {
     public class SchemaManagerDataStore : ISchemaManagerDataStore
     {
-        private readonly ISqlConnectionFactory _sqlConnectionFactory;
-        private readonly ILogger<SchemaManagerDataStore> _logger;
+        private ISqlConnectionFactory _sqlConnectionFactory;
 
-        public SchemaManagerDataStore(ISqlConnectionFactory sqlConnectionFactory, ILogger<SchemaManagerDataStore> logger)
+        public SchemaManagerDataStore(ISqlConnectionFactory sqlConnectionFactory)
         {
-            _sqlConnectionFactory = EnsureArg.IsNotNull(sqlConnectionFactory, nameof(sqlConnectionFactory));
-            _logger = EnsureArg.IsNotNull(logger, nameof(logger));
+            EnsureArg.IsNotNull(sqlConnectionFactory);
+
+            _sqlConnectionFactory = sqlConnectionFactory;
         }
 
         /// <inheritdoc />
@@ -166,31 +164,6 @@ namespace Microsoft.Health.SqlServer.Features.Schema.Manager
                 using (var command = new SqlCommand(procedureQuery, connection))
                 {
                     return (int)await command.ExecuteScalarAsync() != 0;
-                }
-            }
-        }
-
-        public async Task CreateDatabaseIfNotExists(string databaseName, CancellationToken cancellationToken)
-        {
-            using (var connection = await _sqlConnectionFactory.GetSqlConnectionAsync(cancellationToken: cancellationToken))
-            {
-                await connection.TryOpenAsync(cancellationToken);
-
-                bool doesDatabaseExist = await SchemaInitializer.DoesDatabaseExistAsync(connection, databaseName, cancellationToken);
-                if (!doesDatabaseExist)
-                {
-                    _logger.LogInformation("The database does not exists.");
-
-                    bool created = await SchemaInitializer.CreateDatabaseAsync(connection, databaseName, cancellationToken);
-
-                    if (created)
-                    {
-                        _logger.LogInformation("The database is created.");
-                    }
-                    else
-                    {
-                        throw new SchemaManagerException(Resources.InsufficientDatabasePermissionsMessage);
-                    }
                 }
             }
         }

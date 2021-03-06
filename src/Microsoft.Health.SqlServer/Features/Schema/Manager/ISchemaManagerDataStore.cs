@@ -50,12 +50,5 @@ namespace Microsoft.Health.SqlServer.Features.Schema.Manager
         /// </summary>
         /// <param name="cancellationToken">A cancellation token</param>
         Task<bool> InstanceSchemaRecordExistsAsync(CancellationToken cancellationToken);
-
-        /// <summary>
-        /// Creates database if not exists. It needs required permissions.
-        /// </summary>
-        /// <param name="database">A database name.</param>
-        /// <param name="cancellationToken">A cancellation token</param>
-        Task CreateDatabaseIfNotExists(string database, CancellationToken cancellationToken);
     }
 }
