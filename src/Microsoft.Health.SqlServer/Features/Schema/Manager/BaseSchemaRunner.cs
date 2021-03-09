@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 using EnsureThat;
 using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.Logging;
+using Microsoft.Health.SqlServer.Extensions;
 using Microsoft.Health.SqlServer.Features.Schema.Manager.Exceptions;
 using Polly;
 
@@ -102,12 +103,29 @@ namespace Microsoft.Health.SqlServer.Features.Schema.Manager
 
             SchemaInitializer.ValidateDatabaseName(databaseName);
 
-            SqlConnectionStringBuilder connectionBuilder = new SqlConnectionStringBuilder(sqlConnectionString);
-            using (var connection = new SqlConnection(connectionBuilder.ToString()))
-            {
-                bool doesDatabaseExist = await SchemaInitializer.DoesDatabaseExistAsync(connection, databaseName, cancellationToken);
+            await CreateDatabaseIfNotExists(databaseName, cancellationToken);
 
-                // database creation is allowed
+            bool canInitialize = false;
+
+            // now switch to the target database
+            using (var connection = await _sqlConnectionFactory.GetSqlConnectionAsync(cancellationToken: cancellationToken))
+            {
+                canInitialize = await SchemaInitializer.CheckDatabasePermissionsAsync(connection, cancellationToken);
+            }
+
+            if (!canInitialize)
+            {
+                throw new SchemaManagerException(Resources.InsufficientTablesPermissionsMessage);
+            }
+        }
+
+        private async Task CreateDatabaseIfNotExists(string databaseName, CancellationToken cancellationToken)
+        {
+            using (var connection = await _sqlConnectionFactory.GetSqlConnectionAsync(cancellationToken: cancellationToken))
+            {
+                await connection.TryOpenAsync(cancellationToken);
+
+                bool doesDatabaseExist = await SchemaInitializer.DoesDatabaseExistAsync(connection, databaseName, cancellationToken);
                 if (!doesDatabaseExist)
                 {
                     _logger.LogInformation("The database does not exists.");
@@ -122,22 +140,7 @@ namespace Microsoft.Health.SqlServer.Features.Schema.Manager
                     {
                         throw new SchemaManagerException(Resources.InsufficientDatabasePermissionsMessage);
                     }
-
-                    connection.Close();
                 }
-            }
-
-            bool canInitialize = false;
-
-            // now switch to the target database
-            using (var connection = await _sqlConnectionFactory.GetSqlConnectionAsync(cancellationToken: cancellationToken))
-            {
-                canInitialize = await SchemaInitializer.CheckDatabasePermissionsAsync(connection, cancellationToken);
-            }
-
-            if (!canInitialize)
-            {
-                throw new SchemaManagerException(Resources.InsufficientTablesPermissionsMessage);
             }
         }
     }
