@@ -5,4 +5,15 @@ updates:
   - package-ecosystem: "nuget"
     directory: "/"
     schedule:
-      interval: "weekly"
+      interval: "daily"
+      time: "08:00"
+      timezone: "America/Los_Angeles"
+    open-pull-requests-limit: 30
+
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "daily"
+      time: "08:00"
+      timezone: "America/Los_Angeles"
+    open-pull-requests-limit: 30
