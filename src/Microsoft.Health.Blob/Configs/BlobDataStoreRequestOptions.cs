@@ -13,6 +13,8 @@ namespace Microsoft.Health.Blob.Configs
 
         public int ServerTimeoutInMinutes { get; set; } = 2;
 
-        public int DownloadMaximumConcurrency { get; set; } = 1;
+        public int DownloadMaximumConcurrency { get; set; } = 5;
+
+        public int UploadMaximumConcurrency { get; set; } = 5;
     }
 }
