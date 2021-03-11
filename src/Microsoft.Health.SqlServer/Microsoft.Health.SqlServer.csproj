@@ -24,7 +24,7 @@
     <PackageReference Include="Microsoft.Extensions.Logging" Version="$(SdkPackageVersion)" />
     <PackageReference Include="Microsoft.Extensions.Configuration.Binder" Version="$(SdkPackageVersion)" />
     <PackageReference Include="Microsoft.IO.RecyclableMemoryStream" Version="1.4.1" />
-    <PackageReference Include="Microsoft.SqlServer.SqlManagementObjects" Version="161.41011.9" />
+    <PackageReference Include="Microsoft.SqlServer.SqlManagementObjects" Version="161.46041.41" />
     <PackageReference Include="Polly" Version="7.2.1" />
     <PackageReference Include="Polly.Contrib.WaitAndRetry" Version="1.1.1" />
     <PackageReference Include="Microsoft.Data.SqlClient" Version="2.1.2" />
