@@ -4,6 +4,7 @@
 // -------------------------------------------------------------------------------------------------
 
 using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.CommandLine;
 using System.CommandLine.Invocation;
@@ -49,7 +50,7 @@ namespace SchemaManager.Commands
                           Console.WindowHeight,
                           true);
 
-            var currentVersions = await _schemaManager.GetCurrentSchema(connectionString, server, cancellationToken);
+            IList<CurrentVersion> currentVersions = await _schemaManager.GetCurrentSchema(connectionString, server, cancellationToken).ConfigureAwait(false);
 
             var tableView = new TableView<CurrentVersion>
             {
@@ -73,11 +74,8 @@ namespace SchemaManager.Commands
                 mode: invocationContext.BindingContext.OutputMode(),
                 resetAfterRender: true);
 
-            using (var screen = new ScreenView(renderer: consoleRenderer))
-            {
-                screen.Child = tableView;
-                screen.Render(region);
-            }
+            using var screen = new ScreenView(renderer: consoleRenderer) { Child = tableView };
+            screen.Render(region);
         }
     }
 }

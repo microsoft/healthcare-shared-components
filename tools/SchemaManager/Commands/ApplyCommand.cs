@@ -56,7 +56,7 @@ namespace SchemaManager.Commands
                 return;
             }
 
-            await _schemaManager.ApplySchema(connectionString, server, exclusiveType, cancellationToken);
+            await _schemaManager.ApplySchema(connectionString, server, exclusiveType, cancellationToken).ConfigureAwait(false);
         }
 
         private bool EnsureForce()

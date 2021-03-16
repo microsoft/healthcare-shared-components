@@ -6,6 +6,7 @@
 using System.Collections.Generic;
 using System.CommandLine;
 using System.Linq;
+using EnsureThat;
 
 namespace SchemaManager.Validators
 {
@@ -18,8 +19,12 @@ namespace SchemaManager.Validators
         /// <param name="mutuallyExclusiveOptions">The list of mutually exclusive options</param>
         /// <param name="validationErrorMessage">The message to show if only one of the option is not present</param>
         /// <returns>A string to show the users if there is a validation error</returns>
-        public static string Validate(SymbolResult symbol, List<Option> mutuallyExclusiveOptions, string validationErrorMessage)
+        public static string Validate(SymbolResult symbol, IEnumerable<Option> mutuallyExclusiveOptions, string validationErrorMessage)
         {
+            EnsureArg.IsNotNull(symbol, nameof(symbol));
+            EnsureArg.IsNotNull(mutuallyExclusiveOptions, nameof(mutuallyExclusiveOptions));
+            EnsureArg.IsNotNull(validationErrorMessage, nameof(validationErrorMessage));
+
             int count = 0;
 
             foreach (Option mutuallyExclusiveOption in mutuallyExclusiveOptions)

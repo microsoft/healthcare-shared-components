@@ -7,6 +7,7 @@ using System;
 using System.Buffers;
 using System.Data;
 using System.Data.SqlTypes;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using EnsureThat;
 using Microsoft.Data.SqlClient;
@@ -92,6 +93,7 @@ namespace Microsoft.Health.SqlServer.Features.Schema.Model
 
         public abstract T Read(SqlDataReader reader, int ordinal);
 
+        [SuppressMessage("Naming", "CA1716:Identifiers should not match keywords", Justification = "Method name will not change at this time.")]
         public abstract void Set(SqlDataRecord record, int ordinal, T value);
     }
 

@@ -42,7 +42,7 @@ namespace SchemaManager.Core.UnitTests
         {
             _client.GetCurrentVersionInformationAsync(Arg.Any<CancellationToken>()).ReturnsForAnyArgs(new List<CurrentVersion> { new CurrentVersion(1, "Complete", new List<string> { "server1" }) });
 
-            var current = await _sqlSchemaManager.GetCurrentSchema("connectionString", new Uri("https://localhost/"));
+            IList<CurrentVersion> current = await _sqlSchemaManager.GetCurrentSchema("connectionString", new Uri("https://localhost/"));
 
             Assert.NotNull(current);
             Assert.Single(current);
@@ -56,7 +56,7 @@ namespace SchemaManager.Core.UnitTests
         {
             _client.GetCurrentVersionInformationAsync(Arg.Any<CancellationToken>()).ReturnsForAnyArgs(new List<CurrentVersion> { });
 
-            var current = await _sqlSchemaManager.GetCurrentSchema("connectionString", new Uri("https://localhost/"));
+            IList<CurrentVersion> current = await _sqlSchemaManager.GetCurrentSchema("connectionString", new Uri("https://localhost/"));
 
             Assert.NotNull(current);
             Assert.Empty(current);
@@ -68,7 +68,7 @@ namespace SchemaManager.Core.UnitTests
         public async Task GetAvailableSchema_SingleList_Succeeds()
         {
             _client.GetAvailabilityAsync(Arg.Any<CancellationToken>()).ReturnsForAnyArgs(new List<AvailableVersion> { new AvailableVersion(1, "_script/1.sql", "_script/1.diff.sql") });
-            var available = await _sqlSchemaManager.GetAvailableSchema(new Uri("https://localhost/"));
+            IList<AvailableVersion> available = await _sqlSchemaManager.GetAvailableSchema(new Uri("https://localhost/"));
 
             Assert.NotNull(available);
             Assert.Single(available);
@@ -81,7 +81,7 @@ namespace SchemaManager.Core.UnitTests
         public async Task GetAvailableSchema_ContainsVersionZero_RemovesZero()
         {
             _client.GetAvailabilityAsync(Arg.Any<CancellationToken>()).ReturnsForAnyArgs(new List<AvailableVersion> { new AvailableVersion(0, "_script/0.sql", "_script/0.diff.sql"), new AvailableVersion(1, "_script/1.sql", "_script/1.diff.sql") });
-            var available = await _sqlSchemaManager.GetAvailableSchema(new Uri("https://localhost/"));
+            IList<AvailableVersion> available = await _sqlSchemaManager.GetAvailableSchema(new Uri("https://localhost/"));
 
             Assert.NotNull(available);
             Assert.Single(available);

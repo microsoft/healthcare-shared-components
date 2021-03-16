@@ -4,7 +4,6 @@
 // -------------------------------------------------------------------------------------------------
 
 using System.Collections.Generic;
-using Microsoft.Health.Development.IdentityProvider.Configuration;
 
 namespace Microsoft.Health.Development.IdentityProvider.Configuration
 {

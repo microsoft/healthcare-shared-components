@@ -131,6 +131,7 @@ namespace Microsoft.Health.Development.IdentityProvider.Registration
         /// <returns>The same configuration builder.</returns>
         public static IConfigurationBuilder AddDevelopmentAuthEnvironmentIfConfigured(this IConfigurationBuilder configurationBuilder, IConfigurationRoot existingConfiguration, string serverKey)
         {
+            EnsureArg.IsNotNull(configurationBuilder, nameof(configurationBuilder));
             EnsureArg.IsNotNull(existingConfiguration, nameof(existingConfiguration));
             EnsureArg.IsNotNullOrWhiteSpace(serverKey, nameof(serverKey));
 
@@ -154,7 +155,7 @@ namespace Microsoft.Health.Development.IdentityProvider.Registration
         {
             private readonly string _filePath;
             private readonly IConfigurationRoot _existingConfiguration;
-            private string _serverKey;
+            private readonly string _serverKey;
 
             public DevelopmentAuthEnvironmentConfigurationSource(string filePath, IConfigurationRoot existingConfiguration, string serverKey)
             {
@@ -190,7 +191,7 @@ namespace Microsoft.Health.Development.IdentityProvider.Registration
 
                 private const string DevelopmentIdpEnabledKey = "DevelopmentIdentityProvider:Enabled";
 
-                private string _serverKey;
+                private readonly string _serverKey;
 
                 public Provider(JsonConfigurationSource source, IConfigurationRoot existingConfiguration, string serverKey)
                     : base(source)

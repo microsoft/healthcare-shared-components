@@ -3,12 +3,6 @@
 // Licensed under the MIT License (MIT). See LICENSE in the repo root for license information.
 // -------------------------------------------------------------------------------------------------
 
-namespace Microsoft.Health.SqlServer.Web.Features.Schema
-{
-    public enum SchemaVersion
-    {
-        Unknown = 0,
-        Version1 = 1,
-        Version2 = 2,
-    }
-}
+using System;
+
+[assembly: CLSCompliant(false)]
