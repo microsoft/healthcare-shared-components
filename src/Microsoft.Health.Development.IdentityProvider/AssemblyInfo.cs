@@ -4,9 +4,5 @@
 // -------------------------------------------------------------------------------------------------
 
 using System;
-using System.Resources;
-using System.Runtime.CompilerServices;
 
 [assembly: CLSCompliant(false)]
-[assembly: NeutralResourcesLanguage("en-us")]
-[assembly: InternalsVisibleTo("Microsoft.Health.Client.UnitTests")]

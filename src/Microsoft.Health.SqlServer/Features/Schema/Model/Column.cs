@@ -8,6 +8,7 @@ using System.Buffers;
 using System.Data;
 using System.Data.SqlTypes;
 using System.IO;
+using EnsureThat;
 using Microsoft.Data.SqlClient;
 using Microsoft.Data.SqlClient.Server;
 using Microsoft.Health.SqlServer.Features.Storage;
@@ -54,7 +55,11 @@ namespace Microsoft.Health.SqlServer.Features.Schema.Model
 
         public SqlMetaData Metadata { get; }
 
-        public static implicit operator string(Column column) => column.ToString();
+        public static implicit operator string(Column column)
+        {
+            EnsureArg.IsNotNull(column, nameof(column));
+            return column.ToString();
+        }
 
         public override string ToString() => Metadata.Name;
     }
@@ -104,6 +109,7 @@ namespace Microsoft.Health.SqlServer.Features.Schema.Model
 
         public override void Set(SqlDataRecord record, int ordinal, int value)
         {
+            EnsureArg.IsNotNull(record, nameof(record));
             record.SetInt32(ordinal, value);
         }
     }
@@ -122,6 +128,7 @@ namespace Microsoft.Health.SqlServer.Features.Schema.Model
 
         public override void Set(SqlDataRecord record, int ordinal, long value)
         {
+            EnsureArg.IsNotNull(record, nameof(record));
             record.SetInt64(ordinal, value);
         }
     }
@@ -140,6 +147,7 @@ namespace Microsoft.Health.SqlServer.Features.Schema.Model
 
         public override void Set(SqlDataRecord record, int ordinal, bool value)
         {
+            EnsureArg.IsNotNull(record, nameof(record));
             record.SetBoolean(ordinal, value);
         }
     }
@@ -158,6 +166,7 @@ namespace Microsoft.Health.SqlServer.Features.Schema.Model
 
         public override void Set(SqlDataRecord record, int ordinal, DateTime value)
         {
+            EnsureArg.IsNotNull(record, nameof(record));
             record.SetDateTime(ordinal, value);
         }
     }
@@ -176,6 +185,8 @@ namespace Microsoft.Health.SqlServer.Features.Schema.Model
 
         public override void Set(SqlDataRecord record, int ordinal, DateTime? value)
         {
+            EnsureArg.IsNotNull(record, nameof(record));
+
             if (value == null)
             {
                 record.SetDBNull(ordinal);
@@ -201,6 +212,7 @@ namespace Microsoft.Health.SqlServer.Features.Schema.Model
 
         public override void Set(SqlDataRecord record, int ordinal, DateTimeOffset value)
         {
+            EnsureArg.IsNotNull(record, nameof(record));
             record.SetDateTimeOffset(ordinal, value);
         }
     }
@@ -225,6 +237,7 @@ namespace Microsoft.Health.SqlServer.Features.Schema.Model
 
         public override void Set(SqlDataRecord record, int ordinal, decimal value)
         {
+            EnsureArg.IsNotNull(record, nameof(record));
             record.SetDecimal(ordinal, value);
         }
     }
@@ -243,6 +256,7 @@ namespace Microsoft.Health.SqlServer.Features.Schema.Model
 
         public override void Set(SqlDataRecord record, int ordinal, double value)
         {
+            EnsureArg.IsNotNull(record, nameof(record));
             record.SetDouble(ordinal, value);
         }
     }
@@ -261,6 +275,7 @@ namespace Microsoft.Health.SqlServer.Features.Schema.Model
 
         public override void Set(SqlDataRecord record, int ordinal, short value)
         {
+            EnsureArg.IsNotNull(record, nameof(record));
             record.SetInt16(ordinal, value);
         }
     }
@@ -279,6 +294,7 @@ namespace Microsoft.Health.SqlServer.Features.Schema.Model
 
         public override void Set(SqlDataRecord record, int ordinal, byte value)
         {
+            EnsureArg.IsNotNull(record, nameof(record));
             record.SetByte(ordinal, value);
         }
     }
@@ -297,6 +313,8 @@ namespace Microsoft.Health.SqlServer.Features.Schema.Model
 
         public override void Set(SqlDataRecord record, int ordinal, int? value)
         {
+            EnsureArg.IsNotNull(record, nameof(record));
+
             if (value.HasValue)
             {
                 record.SetInt32(ordinal, value.Value);
@@ -322,6 +340,8 @@ namespace Microsoft.Health.SqlServer.Features.Schema.Model
 
         public override void Set(SqlDataRecord record, int ordinal, long? value)
         {
+            EnsureArg.IsNotNull(record, nameof(record));
+
             if (value.HasValue)
             {
                 record.SetInt64(ordinal, value.Value);
@@ -347,6 +367,8 @@ namespace Microsoft.Health.SqlServer.Features.Schema.Model
 
         public override void Set(SqlDataRecord record, int ordinal, bool? value)
         {
+            EnsureArg.IsNotNull(record, nameof(record));
+
             if (value.HasValue)
             {
                 record.SetBoolean(ordinal, value.Value);
@@ -372,6 +394,8 @@ namespace Microsoft.Health.SqlServer.Features.Schema.Model
 
         public override void Set(SqlDataRecord record, int ordinal, DateTime? value)
         {
+            EnsureArg.IsNotNull(record, nameof(record));
+
             if (value.HasValue)
             {
                 record.SetDateTime(ordinal, value.Value);
@@ -397,6 +421,8 @@ namespace Microsoft.Health.SqlServer.Features.Schema.Model
 
         public override void Set(SqlDataRecord record, int ordinal, DateTimeOffset? value)
         {
+            EnsureArg.IsNotNull(record, nameof(record));
+
             if (value.HasValue)
             {
                 record.SetDateTimeOffset(ordinal, value.Value);
@@ -428,6 +454,8 @@ namespace Microsoft.Health.SqlServer.Features.Schema.Model
 
         public override void Set(SqlDataRecord record, int ordinal, decimal? value)
         {
+            EnsureArg.IsNotNull(record, nameof(record));
+
             if (value.HasValue)
             {
                 record.SetDecimal(ordinal, value.Value);
@@ -453,6 +481,8 @@ namespace Microsoft.Health.SqlServer.Features.Schema.Model
 
         public override void Set(SqlDataRecord record, int ordinal, double? value)
         {
+            EnsureArg.IsNotNull(record, nameof(record));
+
             if (value.HasValue)
             {
                 record.SetDouble(ordinal, value.Value);
@@ -478,6 +508,8 @@ namespace Microsoft.Health.SqlServer.Features.Schema.Model
 
         public override void Set(SqlDataRecord record, int ordinal, short? value)
         {
+            EnsureArg.IsNotNull(record, nameof(record));
+
             if (value.HasValue)
             {
                 record.SetInt16(ordinal, value.Value);
@@ -503,6 +535,8 @@ namespace Microsoft.Health.SqlServer.Features.Schema.Model
 
         public override void Set(SqlDataRecord record, int ordinal, byte? value)
         {
+            EnsureArg.IsNotNull(record, nameof(record));
+
             if (value.HasValue)
             {
                 record.SetByte(ordinal, value.Value);
@@ -542,6 +576,8 @@ namespace Microsoft.Health.SqlServer.Features.Schema.Model
 
         public override void Set(SqlDataRecord record, int ordinal, byte[] value)
         {
+            EnsureArg.IsNotNull(record, nameof(record));
+            EnsureArg.IsNotNull(value, nameof(value));
             record.SetBytes(ordinal, fieldOffset: 0, value, bufferOffset: 0, value.Length);
         }
     }
@@ -558,6 +594,8 @@ namespace Microsoft.Health.SqlServer.Features.Schema.Model
 
         public override byte[] Read(SqlDataReader reader, int ordinal)
         {
+            EnsureArg.IsNotNull(reader, nameof(reader));
+
             byte[] bytes = new byte[Length];
 
             if (Nullable && reader.IsDBNull(ordinal))
@@ -573,6 +611,8 @@ namespace Microsoft.Health.SqlServer.Features.Schema.Model
 
         public override void Set(SqlDataRecord record, int ordinal, byte[] value)
         {
+            EnsureArg.IsNotNull(record, nameof(record));
+
             if (value != null)
             {
                 record.SetBytes(ordinal, fieldOffset: 0, value, bufferOffset: 0, value.Length);
@@ -586,7 +626,7 @@ namespace Microsoft.Health.SqlServer.Features.Schema.Model
 
     public abstract class StringColumn : Column<string>
     {
-        public StringColumn(string name, SqlDbType type, bool nullable, int length, string collation = null)
+        protected StringColumn(string name, SqlDbType type, bool nullable, int length, string collation = null)
             : base(name, type, nullable, length)
         {
             Collation = collation;
@@ -605,11 +645,14 @@ namespace Microsoft.Health.SqlServer.Features.Schema.Model
 
         public override string Read(SqlDataReader reader, int ordinal)
         {
+            EnsureArg.IsNotNull(reader, nameof(reader));
             return Nullable && reader.IsDBNull(ordinal) ? null : reader.GetString(Metadata.Name, ordinal);
         }
 
         public override void Set(SqlDataRecord record, int ordinal, string value)
         {
+            EnsureArg.IsNotNull(record, nameof(record));
+
             if (value != null)
             {
                 record.SetString(ordinal, value);
@@ -656,6 +699,8 @@ namespace Microsoft.Health.SqlServer.Features.Schema.Model
 
         public override void Set(SqlDataRecord record, int ordinal, Stream value)
         {
+            EnsureArg.IsNotNull(record, nameof(record));
+
             if (value != null)
             {
                 int length = (int)value.Length;

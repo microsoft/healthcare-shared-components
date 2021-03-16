@@ -4,6 +4,7 @@
 // -------------------------------------------------------------------------------------------------
 
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using EnsureThat;
 using Microsoft.Extensions.DependencyInjection;
@@ -24,12 +25,15 @@ namespace Microsoft.Health.Api.Features.HealthChecks
             _serviceProvider = serviceProvider;
         }
 
+        [SuppressMessage("Reliability", "CA2000:Dispose objects before losing scope", Justification = "CachedHealthCheck lasts the lifetime of the service.")]
         public void PostConfigure(string name, HealthCheckServiceOptions options)
         {
+            EnsureArg.IsNotNull(options, nameof(options));
+
             HealthCheckRegistration[] list = options.Registrations.ToArray();
             options.Registrations.Clear();
 
-            var logger = _serviceProvider.GetRequiredService<ILogger<CachedHealthCheck>>();
+            ILogger<CachedHealthCheck> logger = _serviceProvider.GetRequiredService<ILogger<CachedHealthCheck>>();
 
             foreach (HealthCheckRegistration registration in list)
             {

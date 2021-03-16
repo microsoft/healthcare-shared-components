@@ -6,6 +6,7 @@
 using System;
 using System.Diagnostics;
 using System.IO;
+using EnsureThat;
 using Microsoft.Data.SqlClient;
 
 namespace Microsoft.Health.SqlServer.Features.Storage
@@ -18,108 +19,126 @@ namespace Microsoft.Health.SqlServer.Features.Storage
     {
         public static bool GetBoolean(this SqlDataReader dataReader, string fieldName, int fieldOrdinal)
         {
+            EnsureArg.IsNotNull(dataReader, nameof(dataReader));
             CheckFieldNameAndType(dataReader, fieldName, fieldOrdinal, typeof(bool));
             return dataReader.GetBoolean(fieldOrdinal);
         }
 
         public static byte GetByte(this SqlDataReader dataReader, string fieldName, int fieldOrdinal)
         {
+            EnsureArg.IsNotNull(dataReader, nameof(dataReader));
             CheckFieldNameAndType(dataReader, fieldName, fieldOrdinal, typeof(byte));
             return dataReader.GetByte(fieldOrdinal);
         }
 
         public static long GetBytes(this SqlDataReader dataReader, string fieldName, int fieldOrdinal, long fieldOffset, byte[] buffer, int bufferOffset, int length)
         {
+            EnsureArg.IsNotNull(dataReader, nameof(dataReader));
             CheckFieldNameAndType(dataReader, fieldName, fieldOrdinal, typeof(byte[]));
             return dataReader.GetBytes(fieldOrdinal, fieldOffset, buffer, bufferOffset, length);
         }
 
         public static Stream GetStream(this SqlDataReader dataReader, string fieldName, int fieldOrdinal)
         {
+            EnsureArg.IsNotNull(dataReader, nameof(dataReader));
             CheckFieldNameAndType(dataReader, fieldName, fieldOrdinal, typeof(byte[]));
             return dataReader.GetStream(fieldOrdinal);
         }
 
         public static long GetChars(this SqlDataReader dataReader, string fieldName, int fieldOrdinal, long fieldoffset, char[] buffer, int bufferOffset, int length)
         {
+            EnsureArg.IsNotNull(dataReader, nameof(dataReader));
             CheckFieldNameAndType(dataReader, fieldName, fieldOrdinal, typeof(long));
             return dataReader.GetChars(fieldOrdinal, fieldoffset, buffer, bufferOffset, length);
         }
 
         public static DateTime GetDateTime(this SqlDataReader dataReader, string fieldName, int fieldOrdinal)
         {
+            EnsureArg.IsNotNull(dataReader, nameof(dataReader));
             CheckFieldNameAndType(dataReader, fieldName, fieldOrdinal, typeof(DateTime));
             return dataReader.GetDateTime(fieldOrdinal);
         }
 
         public static DateTimeOffset GetDateTimeOffset(this SqlDataReader dataReader, string fieldName, int fieldOrdinal)
         {
+            EnsureArg.IsNotNull(dataReader, nameof(dataReader));
             CheckFieldNameAndType(dataReader, fieldName, fieldOrdinal, typeof(DateTimeOffset));
             return dataReader.GetDateTimeOffset(fieldOrdinal);
         }
 
         public static decimal GetDecimal(this SqlDataReader dataReader, string fieldName, int fieldOrdinal)
         {
+            EnsureArg.IsNotNull(dataReader, nameof(dataReader));
             CheckFieldNameAndType(dataReader, fieldName, fieldOrdinal, typeof(decimal));
             return dataReader.GetDecimal(fieldOrdinal);
         }
 
         public static double GetDouble(this SqlDataReader dataReader, string fieldName, int fieldOrdinal)
         {
+            EnsureArg.IsNotNull(dataReader, nameof(dataReader));
             CheckFieldNameAndType(dataReader, fieldName, fieldOrdinal, typeof(double));
             return dataReader.GetDouble(fieldOrdinal);
         }
 
         public static Type GetFieldType(this SqlDataReader dataReader, string fieldName, int fieldOrdinal)
         {
+            EnsureArg.IsNotNull(dataReader, nameof(dataReader));
             CheckFieldName(dataReader, fieldName, fieldOrdinal);
             return dataReader.GetFieldType(fieldOrdinal);
         }
 
         public static float GetFloat(this SqlDataReader dataReader, string fieldName, int fieldOrdinal)
         {
+            EnsureArg.IsNotNull(dataReader, nameof(dataReader));
             CheckFieldNameAndType(dataReader, fieldName, fieldOrdinal, typeof(float));
             return dataReader.GetFloat(fieldOrdinal);
         }
 
         public static Guid GetGuid(this SqlDataReader dataReader, string fieldName, int fieldOrdinal)
         {
+            EnsureArg.IsNotNull(dataReader, nameof(dataReader));
             CheckFieldNameAndType(dataReader, fieldName, fieldOrdinal, typeof(Guid));
             return dataReader.GetGuid(fieldOrdinal);
         }
 
         public static short GetInt16(this SqlDataReader dataReader, string fieldName, int fieldOrdinal)
         {
+            EnsureArg.IsNotNull(dataReader, nameof(dataReader));
             CheckFieldNameAndType(dataReader, fieldName, fieldOrdinal, typeof(short));
             return dataReader.GetInt16(fieldOrdinal);
         }
 
         public static int GetInt32(this SqlDataReader dataReader, string fieldName, int fieldOrdinal)
         {
+            EnsureArg.IsNotNull(dataReader, nameof(dataReader));
             CheckFieldNameAndType(dataReader, fieldName, fieldOrdinal, typeof(int));
             return dataReader.GetInt32(fieldOrdinal);
         }
 
         public static long GetInt64(this SqlDataReader dataReader, string fieldName, int fieldOrdinal)
         {
+            EnsureArg.IsNotNull(dataReader, nameof(dataReader));
             CheckFieldNameAndType(dataReader, fieldName, fieldOrdinal, typeof(long));
             return dataReader.GetInt64(fieldOrdinal);
         }
 
         public static string GetString(this SqlDataReader dataReader, string fieldName, int fieldOrdinal)
         {
+            EnsureArg.IsNotNull(dataReader, nameof(dataReader));
             CheckFieldNameAndType(dataReader, fieldName, fieldOrdinal, typeof(string));
             return dataReader.GetString(fieldOrdinal);
         }
 
         public static object GetValue(this SqlDataReader dataReader, string fieldName, int fieldOrdinal)
         {
+            EnsureArg.IsNotNull(dataReader, nameof(dataReader));
             CheckFieldName(dataReader, fieldName, fieldOrdinal);
             return dataReader.GetValue(fieldOrdinal);
         }
 
         public static bool IsDBNull(this SqlDataReader dataReader, string fieldName, int fieldOrdinal)
         {
+            EnsureArg.IsNotNull(dataReader, nameof(dataReader));
             CheckFieldName(dataReader, fieldName, fieldOrdinal);
             return dataReader.IsDBNull(fieldOrdinal);
         }

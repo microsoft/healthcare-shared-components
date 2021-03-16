@@ -23,10 +23,12 @@ namespace Microsoft.Health.Api.Features.Headers
 
         public async Task Invoke(HttpContext context)
         {
+            EnsureArg.IsNotNull(context, nameof(context));
+
             context.Response.OnStarting(SecurityHeadersHelper.SetSecurityHeaders, state: context);
 
             // Call the next delegate/middleware in the pipeline
-            await _next(context);
+            await _next(context).ConfigureAwait(false);
         }
     }
 }

@@ -4,6 +4,7 @@
 // -------------------------------------------------------------------------------------------------
 
 using System;
+using EnsureThat;
 
 namespace Microsoft.Health.SqlServer
 {
@@ -16,6 +17,8 @@ namespace Microsoft.Health.SqlServer
         /// <returns>The same string builder.</returns>
         public static IndentedStringBuilder AppendLineIfNotConsecutive(this IndentedStringBuilder indentedStringBuilder)
         {
+            EnsureArg.IsNotNull(indentedStringBuilder, nameof(indentedStringBuilder));
+
             var newLine = Environment.NewLine;
 
             if (indentedStringBuilder.Length < newLine.Length)
@@ -44,6 +47,7 @@ namespace Microsoft.Health.SqlServer
         /// <returns>The scope</returns>
         public static IndentedStringBuilder.DelimitedScope BeginDelimitedWhereClause(this IndentedStringBuilder indentedStringBuilder)
         {
+            EnsureArg.IsNotNull(indentedStringBuilder, nameof(indentedStringBuilder));
             return indentedStringBuilder.BeginDelimitedScope(
                 sb =>
                 {
@@ -64,6 +68,7 @@ namespace Microsoft.Health.SqlServer
 
         public static IndentedStringBuilder.DelimitedScope BeginDelimitedOnClause(this IndentedStringBuilder indentedStringBuilder)
         {
+            EnsureArg.IsNotNull(indentedStringBuilder, nameof(indentedStringBuilder));
             return indentedStringBuilder.BeginDelimitedScope(
                 sb =>
                 {
@@ -84,6 +89,7 @@ namespace Microsoft.Health.SqlServer
 
         public static IndentedStringBuilder.DelimitedScope BeginDelimitedClause(this IndentedStringBuilder indentedStringBuilder, string delimiter)
         {
+            EnsureArg.IsNotNull(indentedStringBuilder, nameof(indentedStringBuilder));
             return indentedStringBuilder.BeginDelimitedScope(
                 sb =>
                 {
@@ -114,6 +120,7 @@ namespace Microsoft.Health.SqlServer
         /// <returns>The scope</returns>
         public static IndentedStringBuilder.DelimitedScope BeginAndedDelimitedScope(this IndentedStringBuilder indentedStringBuilder)
         {
+            EnsureArg.IsNotNull(indentedStringBuilder, nameof(indentedStringBuilder));
             return indentedStringBuilder.BeginDelimitedScope(
                 sb =>
                 {
@@ -144,6 +151,7 @@ namespace Microsoft.Health.SqlServer
         /// <returns>The scope</returns>
         public static IndentedStringBuilder.DelimitedScope BeginOredDelimitedScope(this IndentedStringBuilder indentedStringBuilder)
         {
+            EnsureArg.IsNotNull(indentedStringBuilder, nameof(indentedStringBuilder));
             return indentedStringBuilder.BeginDelimitedScope(
                 sb =>
                 {

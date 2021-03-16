@@ -4,6 +4,7 @@
 // -------------------------------------------------------------------------------------------------
 
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Threading;
 using System.Threading.Tasks;
 using EnsureThat;
@@ -40,6 +41,7 @@ namespace Microsoft.Health.SqlServer
         /// synchronization so only one running task will exist at a time.
         /// </summary>
         /// <returns>A task representing the completion of the initialization operation.</returns>
+        [SuppressMessage("Maintainability", "CA1508:Avoid dead conditional code", Justification = "Task reference may be updated by another thread.")]
         public async ValueTask EnsureInitialized()
         {
             if (IsInitialized)
@@ -49,7 +51,7 @@ namespace Microsoft.Health.SqlServer
 
             if (_task == null)
             {
-                await _semaphore.WaitAsync();
+                await _semaphore.WaitAsync().ConfigureAwait(false);
 
                 try
                 {
@@ -66,7 +68,7 @@ namespace Microsoft.Health.SqlServer
 
             if (_task.IsFaulted)
             {
-                await _semaphore.WaitAsync();
+                await _semaphore.WaitAsync().ConfigureAwait(false);
 
                 try
                 {

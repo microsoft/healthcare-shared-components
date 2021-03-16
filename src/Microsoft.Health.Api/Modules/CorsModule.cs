@@ -21,7 +21,7 @@ namespace Microsoft.Health.Api.Modules
 
         public CorsModule(IApiConfiguration apiConfiguration)
         {
-            EnsureArg.IsNotNull(apiConfiguration.Cors, nameof(apiConfiguration));
+            EnsureArg.IsNotNull(apiConfiguration?.Cors, nameof(apiConfiguration));
 
             _corsConfiguration = apiConfiguration.Cors;
         }
@@ -32,7 +32,7 @@ namespace Microsoft.Health.Api.Modules
         {
             EnsureArg.IsNotNull(services, nameof(services));
 
-            var corsPolicyBuilder = new CorsPolicyBuilder()
+            CorsPolicyBuilder corsPolicyBuilder = new CorsPolicyBuilder()
                 .WithOrigins(_corsConfiguration.Origins.ToArray())
                 .WithHeaders(_corsConfiguration.Headers.ToArray())
                 .WithMethods(_corsConfiguration.Methods.ToArray());

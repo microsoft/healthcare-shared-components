@@ -17,7 +17,7 @@ namespace Microsoft.Health.SqlServer.Features.Schema.Manager
 {
     public class SchemaManagerDataStore : ISchemaManagerDataStore
     {
-        private ISqlConnectionFactory _sqlConnectionFactory;
+        private readonly ISqlConnectionFactory _sqlConnectionFactory;
 
         public SchemaManagerDataStore(ISqlConnectionFactory sqlConnectionFactory)
         {
@@ -32,29 +32,27 @@ namespace Microsoft.Health.SqlServer.Features.Schema.Manager
             EnsureArg.IsNotNull(script, nameof(script));
             EnsureArg.IsGte(version, 1);
 
-            using (var connection = await _sqlConnectionFactory.GetSqlConnectionAsync(cancellationToken: cancellationToken))
+            using SqlConnection connection = await _sqlConnectionFactory.GetSqlConnectionAsync(cancellationToken: cancellationToken).ConfigureAwait(false);
+            await connection.TryOpenAsync(cancellationToken).ConfigureAwait(false);
+            var serverConnection = new ServerConnection(connection);
+
+            try
             {
-                await connection.TryOpenAsync(cancellationToken);
-                ServerConnection serverConnection = new ServerConnection(connection);
+                var server = new Server(serverConnection);
 
-                try
-                {
-                    var server = new Server(serverConnection);
+                serverConnection.BeginTransaction();
 
-                    serverConnection.BeginTransaction();
+                server.ConnectionContext.ExecuteNonQuery(script);
 
-                    server.ConnectionContext.ExecuteNonQuery(script);
+                await UpsertSchemaVersionAsync(connection, version, SchemaVersionStatus.Completed.ToString(), cancellationToken).ConfigureAwait(false);
 
-                    await UpsertSchemaVersionAsync(connection, version, SchemaVersionStatus.Completed.ToString(), cancellationToken);
-
-                    serverConnection.CommitTransaction();
-                }
-                catch (Exception e) when (e is SqlException || e is ExecutionFailureException)
-                {
-                    serverConnection.RollBackTransaction();
-                    await UpsertSchemaVersionAsync(connection, version, SchemaVersionStatus.Failed.ToString(), cancellationToken);
-                    throw;
-                }
+                serverConnection.CommitTransaction();
+            }
+            catch (Exception e) when (e is SqlException || e is ExecutionFailureException)
+            {
+                serverConnection.RollBackTransaction();
+                await UpsertSchemaVersionAsync(connection, version, SchemaVersionStatus.Failed.ToString(), cancellationToken).ConfigureAwait(false);
+                throw;
             }
         }
 
@@ -64,59 +62,52 @@ namespace Microsoft.Health.SqlServer.Features.Schema.Manager
             EnsureArg.IsNotNull(status, nameof(status));
             EnsureArg.IsGte(version, 1);
 
-            using (var connection = await _sqlConnectionFactory.GetSqlConnectionAsync(cancellationToken: cancellationToken))
-            {
-                await connection.TryOpenAsync(cancellationToken);
+            using SqlConnection connection = await _sqlConnectionFactory.GetSqlConnectionAsync(cancellationToken: cancellationToken).ConfigureAwait(false);
+            await connection.TryOpenAsync(cancellationToken).ConfigureAwait(false);
 
-                var deleteQuery = "DELETE FROM dbo.SchemaVersion WHERE Version = @version AND Status = @status";
-                using (var deleteCommand = new SqlCommand(deleteQuery, connection))
-                {
-                    deleteCommand.Parameters.AddWithValue("@version", version);
-                    deleteCommand.Parameters.AddWithValue("@status", status);
+            using var deleteCommand = new SqlCommand("DELETE FROM dbo.SchemaVersion WHERE Version = @version AND Status = @status", connection);
+            deleteCommand.Parameters.AddWithValue("@version", version);
+            deleteCommand.Parameters.AddWithValue("@status", status);
 
-                    await deleteCommand.ExecuteNonQueryAsync(cancellationToken);
-                }
-            }
+            await deleteCommand.ExecuteNonQueryAsync(cancellationToken).ConfigureAwait(false);
         }
 
         /// <inheritdoc />
         public async Task<int> GetCurrentSchemaVersionAsync(CancellationToken cancellationToken)
         {
-            using (var connection = await _sqlConnectionFactory.GetSqlConnectionAsync(cancellationToken: cancellationToken))
+            using SqlConnection connection = await _sqlConnectionFactory.GetSqlConnectionAsync(cancellationToken: cancellationToken).ConfigureAwait(false);
+            await connection.TryOpenAsync(cancellationToken).ConfigureAwait(false);
+
+            try
             {
-                await connection.TryOpenAsync(cancellationToken);
-
-                try
+                using var selectCommand = new SqlCommand("dbo.SelectCurrentSchemaVersion", connection)
                 {
-                    using (var selectCommand = new SqlCommand("dbo.SelectCurrentSchemaVersion", connection))
-                    {
-                        selectCommand.CommandType = CommandType.StoredProcedure;
+                    CommandType = CommandType.StoredProcedure,
+                };
 
-                        object current = await selectCommand.ExecuteScalarAsync(cancellationToken);
-                        return (current == null || Convert.IsDBNull(current)) ? 0 : (int)current;
-                    }
-                }
-                catch (SqlException e) when (string.Equals(e.Message, Resources.CurrentSchemaVersionStoredProcedureNotFound, StringComparison.OrdinalIgnoreCase))
-                {
-                    return 0;
-                }
+                object current = await selectCommand.ExecuteScalarAsync(cancellationToken).ConfigureAwait(false);
+                return (current == null || Convert.IsDBNull(current)) ? 0 : (int)current;
+            }
+            catch (SqlException e) when (string.Equals(e.Message, Resources.CurrentSchemaVersionStoredProcedureNotFound, StringComparison.OrdinalIgnoreCase))
+            {
+                return 0;
             }
         }
 
-        private async Task UpsertSchemaVersionAsync(SqlConnection connection, int version, string status, CancellationToken cancellationToken)
+        private static async Task UpsertSchemaVersionAsync(SqlConnection connection, int version, string status, CancellationToken cancellationToken)
         {
             EnsureArg.IsNotNull(connection, nameof(connection));
             EnsureArg.IsNotNull(status, nameof(status));
             EnsureArg.IsGte(version, 1);
 
-            using (var upsertCommand = new SqlCommand("dbo.UpsertSchemaVersion", connection))
+            using var upsertCommand = new SqlCommand("dbo.UpsertSchemaVersion", connection)
             {
-                upsertCommand.CommandType = CommandType.StoredProcedure;
-                upsertCommand.Parameters.AddWithValue("@version", version);
-                upsertCommand.Parameters.AddWithValue("@status", status);
+                CommandType = CommandType.StoredProcedure,
+            };
+            upsertCommand.Parameters.AddWithValue("@version", version);
+            upsertCommand.Parameters.AddWithValue("@status", status);
 
-                await upsertCommand.ExecuteNonQueryAsync(cancellationToken);
-            }
+            await upsertCommand.ExecuteNonQueryAsync(cancellationToken).ConfigureAwait(false);
         }
 
         /// <inheritdoc />
@@ -124,13 +115,11 @@ namespace Microsoft.Health.SqlServer.Features.Schema.Manager
         {
             EnsureArg.IsNotNull(script, nameof(script));
 
-            using (var connection = await _sqlConnectionFactory.GetSqlConnectionAsync(cancellationToken: cancellationToken))
-            {
-                await connection.TryOpenAsync(cancellationToken);
-                var server = new Server(new ServerConnection(connection));
+            using SqlConnection connection = await _sqlConnectionFactory.GetSqlConnectionAsync(cancellationToken: cancellationToken).ConfigureAwait(false);
+            await connection.TryOpenAsync(cancellationToken).ConfigureAwait(false);
+            var server = new Server(new ServerConnection(connection));
 
-                server.ConnectionContext.ExecuteNonQuery(script);
-            }
+            server.ConnectionContext.ExecuteNonQuery(script);
         }
 
         /// <inheritdoc />
@@ -138,18 +127,14 @@ namespace Microsoft.Health.SqlServer.Features.Schema.Manager
         {
             var procedureQuery = "SELECT COUNT(*) FROM sys.objects WHERE name = @name and type = @type";
 
-            using (var connection = await _sqlConnectionFactory.GetSqlConnectionAsync(cancellationToken: cancellationToken))
-            {
-                await connection.TryOpenAsync(cancellationToken);
+            using SqlConnection connection = await _sqlConnectionFactory.GetSqlConnectionAsync(cancellationToken: cancellationToken).ConfigureAwait(false);
+            await connection.TryOpenAsync(cancellationToken).ConfigureAwait(false);
 
-                using (var command = new SqlCommand(procedureQuery, connection))
-                {
-                    command.Parameters.AddWithValue("@name", "SelectCurrentVersionsInformation");
-                    command.Parameters.AddWithValue("@type", 'P');
+            using var command = new SqlCommand(procedureQuery, connection);
+            command.Parameters.AddWithValue("@name", "SelectCurrentVersionsInformation");
+            command.Parameters.AddWithValue("@type", 'P');
 
-                    return (int)await command.ExecuteScalarAsync(cancellationToken) != 0;
-                }
-            }
+            return (int)await command.ExecuteScalarAsync(cancellationToken).ConfigureAwait(false) != 0;
         }
 
         /// <inheritdoc />
@@ -157,15 +142,11 @@ namespace Microsoft.Health.SqlServer.Features.Schema.Manager
         {
             var procedureQuery = "SELECT COUNT(*) FROM dbo.InstanceSchema";
 
-            using (var connection = await _sqlConnectionFactory.GetSqlConnectionAsync(cancellationToken: cancellationToken))
-            {
-                await connection.TryOpenAsync(cancellationToken);
+            using SqlConnection connection = await _sqlConnectionFactory.GetSqlConnectionAsync(cancellationToken: cancellationToken).ConfigureAwait(false);
+            await connection.TryOpenAsync(cancellationToken).ConfigureAwait(false);
 
-                using (var command = new SqlCommand(procedureQuery, connection))
-                {
-                    return (int)await command.ExecuteScalarAsync() != 0;
-                }
-            }
+            using var command = new SqlCommand(procedureQuery, connection);
+            return (int)await command.ExecuteScalarAsync(cancellationToken).ConfigureAwait(false) != 0;
         }
     }
 }

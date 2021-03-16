@@ -9,7 +9,7 @@ using EnsureThat;
 namespace Microsoft.Health.Api.Features.Audit
 {
     [AttributeUsage(AttributeTargets.Method)]
-    public class AuditEventTypeAttribute : Attribute
+    public sealed class AuditEventTypeAttribute : Attribute
     {
         public AuditEventTypeAttribute(string auditEventType)
         {

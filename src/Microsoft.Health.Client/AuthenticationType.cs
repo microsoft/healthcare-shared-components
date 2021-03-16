@@ -7,6 +7,7 @@ namespace Microsoft.Health.Client
 {
     public enum AuthenticationType
     {
+        None = 0,
         ManagedIdentity = 1,
         OAuth2ClientCredential = 2,
         OAuth2UserPasswordCredential = 3,

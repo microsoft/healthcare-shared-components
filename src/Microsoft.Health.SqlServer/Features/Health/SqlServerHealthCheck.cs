@@ -10,7 +10,6 @@ using EnsureThat;
 using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Logging;
-using Microsoft.Health.SqlServer.Configs;
 
 namespace Microsoft.Health.SqlServer.Features.Health
 {
@@ -19,17 +18,14 @@ namespace Microsoft.Health.SqlServer.Features.Health
     /// </summary>
     public class SqlServerHealthCheck : IHealthCheck
     {
-        private readonly SqlServerDataStoreConfiguration _configuration;
         private readonly ILogger<SqlServerHealthCheck> _logger;
         private readonly ISqlConnectionFactory _sqlConnectionFactory;
 
-        public SqlServerHealthCheck(SqlServerDataStoreConfiguration configuration, ISqlConnectionFactory sqlConnectionFactory, ILogger<SqlServerHealthCheck> logger)
+        public SqlServerHealthCheck(ISqlConnectionFactory sqlConnectionFactory, ILogger<SqlServerHealthCheck> logger)
         {
-            EnsureArg.IsNotNull(configuration, nameof(configuration));
             EnsureArg.IsNotNull(sqlConnectionFactory, nameof(sqlConnectionFactory));
             EnsureArg.IsNotNull(logger, nameof(logger));
 
-            _configuration = configuration;
             _sqlConnectionFactory = sqlConnectionFactory;
             _logger = logger;
         }
@@ -38,17 +34,15 @@ namespace Microsoft.Health.SqlServer.Features.Health
         {
             try
             {
-                using (var connection = await _sqlConnectionFactory.GetSqlConnectionAsync(cancellationToken: cancellationToken))
-                using (SqlCommand command = connection.CreateCommand())
-                {
-                    await connection.OpenAsync(cancellationToken);
+                using SqlConnection connection = await _sqlConnectionFactory.GetSqlConnectionAsync(cancellationToken: cancellationToken).ConfigureAwait(false);
+                using SqlCommand command = connection.CreateCommand();
+                await connection.OpenAsync(cancellationToken).ConfigureAwait(false);
 
-                    command.CommandText = "select @@DBTS";
+                command.CommandText = "select @@DBTS";
 
-                    await command.ExecuteScalarAsync(cancellationToken);
+                await command.ExecuteScalarAsync(cancellationToken).ConfigureAwait(false);
 
-                    return HealthCheckResult.Healthy("Successfully connected to the data store.");
-                }
+                return HealthCheckResult.Healthy("Successfully connected to the data store.");
             }
             catch (Exception ex)
             {

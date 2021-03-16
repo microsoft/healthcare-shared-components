@@ -31,9 +31,10 @@ namespace Microsoft.Health.SqlServer.Features.Storage
 
         public SqlParameter AddParameter(Column column, object value)
         {
-            var key = (column.Metadata.SqlDbType, column.Metadata.MaxLength, column.Metadata.Precision, column.Metadata.Scale, value);
+            EnsureArg.IsNotNull(column, nameof(column));
+            (SqlDbType, long, byte, byte, object) key = (column.Metadata.SqlDbType, column.Metadata.MaxLength, column.Metadata.Precision, column.Metadata.Scale, value);
 
-            if (!_lookup.TryGetValue(key, out var parameter))
+            if (!_lookup.TryGetValue(key, out SqlParameter parameter))
             {
                 parameter = _parameters.Add(
                     new SqlParameter(

@@ -30,10 +30,7 @@ namespace Microsoft.Health.Core
             _stopwatch.Start();
         }
 
-        public TimeSpan GetElapsedTime()
-        {
-            return _stopwatch.Elapsed;
-        }
+        public TimeSpan ElapsedTime => _stopwatch.Elapsed;
 
         public void Dispose()
         {

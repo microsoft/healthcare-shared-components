@@ -42,7 +42,7 @@ namespace Microsoft.Health.Blob.Features.Storage
         public Task StartAsync(CancellationToken cancellationToken)
         {
             // The result is ignored and will be awaited in EnsureInitialized(). Exceptions are logged within DocumentClientInitializer.
-            _ = _initializationOperation.EnsureInitialized();
+            _ = _initializationOperation.EnsureInitialized().AsTask();
 
             return Task.CompletedTask;
         }
@@ -55,7 +55,7 @@ namespace Microsoft.Health.Blob.Features.Storage
         /// can be called again to retry the operation.
         /// </summary>
         /// <returns>A task representing the initialization operation.</returns>
-        public async Task EnsureInitialized() => await _initializationOperation.EnsureInitialized();
+        public async Task EnsureInitialized() => await _initializationOperation.EnsureInitialized().ConfigureAwait(false);
 
         /// <inheritdoc />
         public void Dispose()
@@ -76,7 +76,7 @@ namespace Microsoft.Health.Blob.Features.Storage
         {
             if (!_initializationOperation.IsInitialized)
             {
-                _initializationOperation.EnsureInitialized().GetAwaiter().GetResult();
+                _initializationOperation.EnsureInitialized().AsTask().GetAwaiter().GetResult();
             }
 
             return _blobServiceClient;
