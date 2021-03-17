@@ -9,20 +9,17 @@ namespace Microsoft.Health.SqlServer
 {
     internal static class Identifier
     {
-        // Unicode Letter
-        // Decimal Number
-        // @, $, #, _
         private static readonly Regex NameRegex = new Regex(
-            @"$[\p{L}#_]+[\p{L}\p{Nd}@$#_]*^",
+            @"^[\p{L}#_]+[\p{L}\p{Nd}@$#_]*$",
             RegexOptions.Compiled);
 
         // Any closing bracket must be escaped
         private static readonly Regex EscapedBracketRegex = new Regex(
-            @"$\[(?:[^\]]|(?:\]\]))+\]^",
+            @"^\[(?:[^\]]|(?:\]\]))+\]$",
             RegexOptions.Compiled);
 
         private static readonly Regex EscapedQuoteRegex = new Regex(
-            @"$\[(?:[^""]|(?:""""))+\]^",
+            @"^""(?:[^""]|(?:""""))+""$",
             RegexOptions.Compiled);
 
         public static bool IsValidDatabase(string name)

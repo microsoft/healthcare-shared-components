@@ -20,8 +20,11 @@ namespace Microsoft.Health.SqlServer.UnitTests.Features
 
         public DefaultSqlConnectionTests()
         {
-            var sqlServerDataStoreConfiguration = new SqlServerDataStoreConfiguration();
-            sqlServerDataStoreConfiguration.ConnectionString = $"server={ServerName};Initial Catalog={DatabaseName};Integrated Security=true";
+            var sqlServerDataStoreConfiguration = new SqlServerDataStoreConfiguration
+            {
+                ConnectionString = $"server={ServerName};Initial Catalog={DatabaseName};Integrated Security=true",
+            };
+
             _sqlConnectionFactory = new DefaultSqlConnectionFactory(new DefaultSqlConnectionStringProvider(sqlServerDataStoreConfiguration));
         }
 

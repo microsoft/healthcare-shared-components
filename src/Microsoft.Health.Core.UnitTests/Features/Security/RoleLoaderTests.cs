@@ -10,7 +10,6 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Health.Core.Configs;
 using Microsoft.Health.Core.Exceptions;
@@ -185,7 +184,8 @@ namespace Microsoft.Health.Core.UnitTests.Features.Security
         [Fact]
         public async Task GivenValidDataActions_WhenSpecifiedAsRoleActions_AreRecognized()
         {
-            var actionNames = Enum.GetValues(typeof(DataActions)).Cast<DataActions>()
+            IEnumerable<DataActions> actionNames = Enum.GetValues(typeof(DataActions))
+                .Cast<DataActions>()
                 .Where(a => a != DataActions.All && a != DataActions.None);
 
             var roles = new
@@ -194,7 +194,7 @@ namespace Microsoft.Health.Core.UnitTests.Features.Security
                     new
                     {
                         name = $"role{a}",
-                        dataActions = new[] { char.ToLower(a.ToString()[0]) + a.ToString().Substring(1) },
+                        dataActions = new[] { char.ToLower(a.ToString()[0]) + a.ToString()[1..] },
                         notDataActions = new string[] { },
                         scopes = new[] { "/" },
                     }).ToArray(),
@@ -217,8 +217,7 @@ namespace Microsoft.Health.Core.UnitTests.Features.Security
 
         private static async Task<AuthorizationConfiguration<DataActions>> LoadAsync(object roles)
         {
-            IFileProvider fileProvider = Substitute.For<IFileProvider>();
-            var hostEnvironment = Substitute.For<IHostEnvironment>();
+            IHostEnvironment hostEnvironment = Substitute.For<IHostEnvironment>();
             hostEnvironment.ContentRootFileProvider
                 .GetFileInfo("roles.json")
                 .CreateReadStream()
