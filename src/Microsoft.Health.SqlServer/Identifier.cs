@@ -7,6 +7,8 @@ using System.Text.RegularExpressions;
 
 namespace Microsoft.Health.SqlServer
 {
+    // The logic for determining valid identifiers comes from the MS docs here:
+    // https://docs.microsoft.com/en-us/sql/relational-databases/databases/database-identifiers?view=sql-server-ver15
     internal static class Identifier
     {
         private static readonly Regex NameRegex = new Regex(
@@ -22,6 +24,7 @@ namespace Microsoft.Health.SqlServer
             @"^""(?:[^""]|(?:""""))+""$",
             RegexOptions.Compiled);
 
+        // Given we use a "CREATE DATABASE" command, variables that are prefixed with "@" are disallowed
         public static bool IsValidDatabase(string name)
         {
             if (string.IsNullOrWhiteSpace(name))
