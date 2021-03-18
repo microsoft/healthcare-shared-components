@@ -6,12 +6,12 @@
 using System;
 using System.Net;
 using System.Net.Http;
+using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Options;
 using Microsoft.Health.Client.Exceptions;
-using Moq;
-using Moq.Protected;
+using NSubstitute;
 using Xunit;
 
 namespace Microsoft.Health.Client.UnitTests
@@ -21,7 +21,7 @@ namespace Microsoft.Health.Client.UnitTests
         [Fact]
         public async Task GivenAnNonSetToken_WhenGetBearerTokenCalled_ThenBearerTokenFunctionIsCalled()
         {
-            var expirationTime = DateTime.UtcNow + TimeSpan.FromDays(1);
+            DateTime expirationTime = DateTime.UtcNow + TimeSpan.FromDays(1);
 
             var credentialProvider = new TestCredentialProvider(JwtTokenHelpers.GenerateToken(expirationTime));
             Assert.Null(credentialProvider.Token);
@@ -38,22 +38,18 @@ namespace Microsoft.Health.Client.UnitTests
         [Fact]
         public async Task InvalidOAuth2ClientCredential_RetrieveToken_ShouldThrowError()
         {
-            var mockHandler = new Mock<HttpMessageHandler>();
             var response = new HttpResponseMessage
             {
                 StatusCode = HttpStatusCode.BadRequest,
                 Content = new StringContent(@"{""error"": ""This is an error!""}"),
             };
 
-            mockHandler
-               .Protected()
-               .Setup<Task<HttpResponseMessage>>(
-                  "SendAsync",
-                  ItExpr.IsAny<HttpRequestMessage>(),
-                  ItExpr.IsAny<CancellationToken>())
-               .ReturnsAsync(response);
+            HttpMessageHandler mockHandler = GetMockMessageHandler(
+                Arg.Any<HttpRequestMessage>(),
+                Arg.Any<CancellationToken>(),
+                response);
 
-            var httpClient = new HttpClient(mockHandler.Object);
+            var httpClient = new HttpClient(mockHandler);
 
             var credentialConfiguration = new OAuth2ClientCredentialConfiguration(
                         new Uri("https://fakehost/connect/token"),
@@ -68,22 +64,18 @@ namespace Microsoft.Health.Client.UnitTests
         [Fact]
         public async Task InvalidOAuth2UserPasswordCredential_RetrieveToken_ShouldThrowError()
         {
-            var mockHandler = new Mock<HttpMessageHandler>();
             var response = new HttpResponseMessage
             {
                 StatusCode = HttpStatusCode.BadRequest,
                 Content = new StringContent(@"{""error"": ""This is an error!""}"),
             };
 
-            mockHandler
-               .Protected()
-               .Setup<Task<HttpResponseMessage>>(
-                  "SendAsync",
-                  ItExpr.IsAny<HttpRequestMessage>(),
-                  ItExpr.IsAny<CancellationToken>())
-               .ReturnsAsync(response);
+            HttpMessageHandler mockHandler = GetMockMessageHandler(
+                Arg.Any<HttpRequestMessage>(),
+                Arg.Any<CancellationToken>(),
+                response);
 
-            var httpClient = new HttpClient(mockHandler.Object);
+            var httpClient = new HttpClient(mockHandler);
 
             var credentialConfiguration = new OAuth2UserPasswordCredentialConfiguration(
                         new Uri("https://fakehost/connect/token"),
@@ -100,7 +92,7 @@ namespace Microsoft.Health.Client.UnitTests
         [Fact]
         public async Task GivenANonExpiredToken_WhenGetBearerTokenCalled_ThenSameBearerTokenIsReturned()
         {
-            var initialExpiration = DateTime.UtcNow + TimeSpan.FromDays(1);
+            DateTime initialExpiration = DateTime.UtcNow + TimeSpan.FromDays(1);
             var initialToken = JwtTokenHelpers.GenerateToken(initialExpiration);
             var credentialProvider = new TestCredentialProvider(initialToken);
 
@@ -109,7 +101,7 @@ namespace Microsoft.Health.Client.UnitTests
             Assert.Equal(initialToken, initialResult);
 
             // Update the token that would be returned if BearerTokenFunction() was called
-            var updatedExpiration = DateTime.UtcNow + TimeSpan.FromDays(1);
+            DateTime updatedExpiration = DateTime.UtcNow + TimeSpan.FromDays(1);
             var secondToken = JwtTokenHelpers.GenerateToken(updatedExpiration);
             credentialProvider.EncodedToken = secondToken;
 
@@ -122,7 +114,7 @@ namespace Microsoft.Health.Client.UnitTests
         [Fact]
         public async Task GivenAnExpiringToken_WhenGetBearerTokenCalled_ThenNewBearerTokenIsReturned()
         {
-            var initialExpiration = DateTime.UtcNow + TimeSpan.FromMinutes(4);
+            DateTime initialExpiration = DateTime.UtcNow + TimeSpan.FromMinutes(4);
             var initialToken = JwtTokenHelpers.GenerateToken(initialExpiration);
             var credentialProvider = new TestCredentialProvider(initialToken);
 
@@ -131,7 +123,7 @@ namespace Microsoft.Health.Client.UnitTests
             Assert.Equal(initialToken, initialResult);
 
             // Update the token that will be returned since the initial token is within the expiration window
-            var updatedExpiration = DateTime.UtcNow + TimeSpan.FromDays(1);
+            DateTime updatedExpiration = DateTime.UtcNow + TimeSpan.FromDays(1);
             var secondToken = JwtTokenHelpers.GenerateToken(updatedExpiration);
             credentialProvider.EncodedToken = secondToken;
 
@@ -140,6 +132,18 @@ namespace Microsoft.Health.Client.UnitTests
 
             Assert.Equal(secondToken, secondResult);
             Assert.NotEqual(initialResult, secondResult);
+        }
+
+        private static HttpMessageHandler GetMockMessageHandler(HttpRequestMessage requestMessage, CancellationToken cancellationToken, HttpResponseMessage responseMessage)
+        {
+            HttpMessageHandler mockHandler = Substitute.For<HttpMessageHandler>();
+
+            typeof(HttpMessageHandler)
+                .GetMethod("SendAsync", BindingFlags.Instance | BindingFlags.NonPublic)
+                .Invoke(mockHandler, new object[] { requestMessage, cancellationToken })
+                .Returns(Task.FromResult(responseMessage));
+
+            return mockHandler;
         }
     }
 }
