@@ -19,7 +19,6 @@ namespace Microsoft.Health.SqlServer.Features.Schema.Manager
     public class SchemaClient : ISchemaClient, IDisposable
     {
         private readonly HttpClient _httpClient;
-        private const string Slash = "/";
 
         public SchemaClient()
         {
@@ -36,8 +35,7 @@ namespace Microsoft.Health.SqlServer.Features.Schema.Manager
 
         public async Task<List<CurrentVersion>> GetCurrentVersionInformationAsync(CancellationToken cancellationToken)
         {
-            const string currentUrl = Slash + KnownRoutes.SchemaRoot + Slash + KnownRoutes.Current;
-            HttpResponseMessage response = await _httpClient.GetAsync(RelativeUrl(currentUrl), cancellationToken).ConfigureAwait(false);
+            HttpResponseMessage response = await _httpClient.GetAsync(KnownRoutes.RootedCurrentUri, cancellationToken).ConfigureAwait(false);
             if (response.IsSuccessStatusCode)
             {
 #if NET5_0_OR_GREATER
@@ -72,8 +70,7 @@ namespace Microsoft.Health.SqlServer.Features.Schema.Manager
 
         public async Task<CompatibleVersion> GetCompatibilityAsync(CancellationToken cancellationToken)
         {
-            const string compatibilityUrl = Slash + KnownRoutes.SchemaRoot + Slash + KnownRoutes.Compatibility;
-            HttpResponseMessage response = await _httpClient.GetAsync(RelativeUrl(compatibilityUrl), cancellationToken).ConfigureAwait(false);
+            HttpResponseMessage response = await _httpClient.GetAsync(KnownRoutes.RootedCompatibilityUri, cancellationToken).ConfigureAwait(false);
             if (response.IsSuccessStatusCode)
             {
 #if NET5_0_OR_GREATER
@@ -91,8 +88,7 @@ namespace Microsoft.Health.SqlServer.Features.Schema.Manager
 
         public async Task<List<AvailableVersion>> GetAvailabilityAsync(CancellationToken cancellationToken)
         {
-            const string availabilityUrl = Slash + KnownRoutes.SchemaRoot + Slash + KnownRoutes.Versions;
-            HttpResponseMessage response = await _httpClient.GetAsync(RelativeUrl(availabilityUrl), cancellationToken).ConfigureAwait(false);
+            HttpResponseMessage response = await _httpClient.GetAsync(KnownRoutes.RootedVersionsUri, cancellationToken).ConfigureAwait(false);
             if (response.IsSuccessStatusCode)
             {
 #if NET5_0_OR_GREATER
@@ -123,11 +119,6 @@ namespace Microsoft.Health.SqlServer.Features.Schema.Manager
             {
                 throw new SchemaManagerException(string.Format(CultureInfo.InvariantCulture, Resources.ScriptNotFound, response.StatusCode));
             }
-        }
-
-        private static Uri RelativeUrl(string url)
-        {
-            return new Uri(url, UriKind.Relative);
         }
 
         public void Dispose()

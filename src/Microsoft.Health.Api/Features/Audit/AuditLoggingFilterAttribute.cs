@@ -13,7 +13,7 @@ namespace Microsoft.Health.Api.Features.Audit
 {
     [AttributeUsage(AttributeTargets.Class)]
     [SuppressMessage("Design", "CA1019:Define accessors for attribute arguments", Justification = "Derived classes will choose what to expose publicly.")]
-    [SuppressMessage("Performance", "CA1813:Avoid unsealed attributes", Justification = "This attribute to meant to be extended.")]
+    [SuppressMessage("Performance", "CA1813:Avoid unsealed attributes", Justification = "This attribute is meant to be extended.")]
     public class AuditLoggingFilterAttribute : ActionFilterAttribute
     {
         public AuditLoggingFilterAttribute(

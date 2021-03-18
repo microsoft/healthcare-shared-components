@@ -43,8 +43,7 @@ namespace Microsoft.Health.SqlServer.Tests.Integration
 
         public virtual async Task InitializeAsync()
         {
-            SqlConnectionStringBuilder connectionBuilder = new SqlConnectionStringBuilder(Config.ConnectionString);
-            connectionBuilder.InitialCatalog = "master";
+            var connectionBuilder = new SqlConnectionStringBuilder(Config.ConnectionString) { InitialCatalog = "master" };
             Connection = new SqlConnection(connectionBuilder.ToString());
             await Connection.OpenAsync();
             await SchemaInitializer.CreateDatabaseAsync(Connection, DatabaseName, CancellationToken.None);
@@ -71,26 +70,24 @@ namespace Microsoft.Health.SqlServer.Tests.Integration
 
         protected async Task DeleteDatabaseAsync(string dbName)
         {
-            using (var deleteDatabaseCommand = new SqlCommand($"ALTER DATABASE {dbName} SET SINGLE_USER WITH ROLLBACK IMMEDIATE; DROP DATABASE {dbName};", Connection))
+            using var deleteDatabaseCommand = new SqlCommand($"ALTER DATABASE {dbName} SET SINGLE_USER WITH ROLLBACK IMMEDIATE; DROP DATABASE {dbName};", Connection);
+            if (Connection.Database == dbName)
             {
-                if (Connection.Database == dbName)
-                {
-                    Output.WriteLine($"Switching from '{dbName}' to master prior to delete.");
-                    await Connection.ChangeDatabaseAsync("master", CancellationToken.None);
-                }
+                Output.WriteLine($"Switching from '{dbName}' to master prior to delete.");
+                await Connection.ChangeDatabaseAsync("master", CancellationToken.None);
+            }
 
-                int result = await deleteDatabaseCommand.ExecuteNonQueryAsync(CancellationToken.None);
-                if (result != -1)
-                {
-                    Output.WriteLine($"Clean up of {dbName} failed with result code {result}.");
-                    Assert.False(true);
-                }
+            int result = await deleteDatabaseCommand.ExecuteNonQueryAsync(CancellationToken.None);
+            if (result != -1)
+            {
+                Output.WriteLine($"Clean up of {dbName} failed with result code {result}.");
+                Assert.False(true);
             }
         }
 
         protected async Task<SqlConnection> GetSqlConnection()
         {
-            SqlConnectionStringBuilder connectionBuilder = new SqlConnectionStringBuilder(Config.ConnectionString);
+            var connectionBuilder = new SqlConnectionStringBuilder(Config.ConnectionString);
             var result = new SqlConnection(connectionBuilder.ToString());
             await result.OpenAsync();
             return result;
