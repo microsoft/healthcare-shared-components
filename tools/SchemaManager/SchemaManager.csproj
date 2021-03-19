@@ -13,7 +13,7 @@
     <PackageReference Include="Ensure.That" Version="10.0.0" />
     <PackageReference Include="Microsoft.Azure.Services.AppAuthentication" Version="1.6.1" />
     <PackageReference Include="Microsoft.Extensions.Logging.Console" Version="5.0.0" />
-    <PackageReference Include="Microsoft.SqlServer.SqlManagementObjects" Version="161.41011.9" />
+    <PackageReference Include="Microsoft.SqlServer.SqlManagementObjects" Version="161.46041.41" />
     <PackageReference Include="Newtonsoft.Json" Version="12.0.3" />
     <PackageReference Include="Polly" Version="7.2.1" />
     <PackageReference Include="System.CommandLine.Experimental" Version="0.2.0-alpha.19174.3" />
