@@ -62,7 +62,7 @@ namespace Microsoft.Health.Api.Features.Audit
             return null;
         }
 
-        Task IHostedService.StartAsync(CancellationToken cancellationToken)
+        public Task StartAsync(CancellationToken cancellationToken)
         {
             _attributeDictionary = _actionDescriptorCollectionProvider.ActionDescriptors.Items
                 .OfType<ControllerActionDescriptor>()

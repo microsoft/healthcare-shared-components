@@ -3,6 +3,7 @@
 // Licensed under the MIT License (MIT). See LICENSE in the repo root for license information.
 // -------------------------------------------------------------------------------------------------
 
+using EnsureThat;
 using Microsoft.Data.SqlClient;
 
 namespace Microsoft.Health.SqlServer.Extensions
@@ -19,6 +20,8 @@ namespace Microsoft.Health.SqlServer.Extensions
         /// </remarks>
         public static bool IsTransient(this SqlException exception)
         {
+            EnsureArg.IsNotNull(exception, nameof(exception));
+
             // Enumerate through all errors found in the exception.
             foreach (SqlError err in exception.Errors)
             {

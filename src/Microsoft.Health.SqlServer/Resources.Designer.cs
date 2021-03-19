@@ -178,6 +178,15 @@ namespace Microsoft.Health.SqlServer {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to {0} is an invalid SQL identifier for a database..
+        /// </summary>
+        internal static string InvalidDatabaseIdentifier {
+            get {
+                return ResourceManager.GetString("InvalidDatabaseIdentifier", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to The SQL operation has failed..
         /// </summary>
         internal static string OperationFailed {

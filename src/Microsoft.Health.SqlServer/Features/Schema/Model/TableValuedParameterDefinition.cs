@@ -29,7 +29,7 @@ namespace Microsoft.Health.SqlServer.Features.Schema.Model
             _tableTypeName = tableTypeName;
         }
 
-        private SqlMetaData[] ColumnMetadata => _columnMetadata ?? (_columnMetadata = Columns.Select(c => c.Metadata).ToArray());
+        private SqlMetaData[] ColumnMetadata => _columnMetadata ??= Columns.Select(c => c.Metadata).ToArray();
 
         /// <summary>
         /// Gets the columns that make up the table type. In order.
@@ -40,6 +40,8 @@ namespace Microsoft.Health.SqlServer.Features.Schema.Model
 
         public override SqlParameter AddParameter(SqlParameterCollection parameters, IEnumerable<TRow> value)
         {
+            EnsureArg.IsNotNull(parameters, nameof(parameters));
+
             // An empty TVP is required to be null.
 
             value = value.NullIfEmpty();
@@ -55,7 +57,7 @@ namespace Microsoft.Health.SqlServer.Features.Schema.Model
         private IEnumerable<SqlDataRecord> ToDataRecordEnumerable(IEnumerable<TRow> rows)
         {
             var sqlDataRecord = new SqlDataRecord(ColumnMetadata);
-            foreach (var row in rows)
+            foreach (TRow row in rows)
             {
                 FillSqlDataRecord(sqlDataRecord, row);
 

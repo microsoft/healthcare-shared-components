@@ -14,8 +14,9 @@ namespace Microsoft.Health.SqlServer.UnitTests
         [Fact]
         public void GivenAnIndentedStringBuilder_WhenUsingIndentedScopes_KeepsTrackOfIndentation()
         {
-            var sb = new IndentedStringBuilder(new StringBuilder())
-                .AppendLine("class Foo").AppendLine("{");
+            IndentedStringBuilder sb = new IndentedStringBuilder(new StringBuilder())
+                .AppendLine("class Foo")
+                .AppendLine("{");
 
             using (sb.Indent())
             {

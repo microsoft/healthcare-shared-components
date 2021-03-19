@@ -157,6 +157,10 @@
   <data name="InsufficientTablesPermissionsMessage" xml:space="preserve">
     <value>Insufficient permissions to create tables in the database.</value>
   </data>
+  <data name="InvalidDatabaseIdentifier" xml:space="preserve">
+    <value>{0} is an invalid SQL identifier for a database.</value>
+    <comment>{0} is the database identifier</comment>
+  </data>
   <data name="OperationFailed" xml:space="preserve">
     <value>The SQL operation has failed.</value>
   </data>

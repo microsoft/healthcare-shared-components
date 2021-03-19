@@ -47,29 +47,29 @@ namespace Microsoft.Health.SqlServer.Features.Schema
 
         public async Task ExecuteAsync(SchemaInformation schemaInformation, string instanceName, CancellationToken cancellationToken)
         {
+            EnsureArg.IsNotNull(schemaInformation, nameof(schemaInformation));
+
             _logger.LogInformation($"Polling started at {Clock.UtcNow}");
 
             while (!cancellationToken.IsCancellationRequested)
             {
                 try
                 {
-                    using (var scope = _serviceProvider.CreateScope())
+                    using IServiceScope scope = _serviceProvider.CreateScope();
+                    ISchemaDataStore schemaDataStore = scope.ServiceProvider.GetRequiredService<ISchemaDataStore>();
+
+                    int? previous = schemaInformation.Current;
+                    schemaInformation.Current = await schemaDataStore.UpsertInstanceSchemaInformationAsync(instanceName, schemaInformation, cancellationToken).ConfigureAwait(false);
+
+                    // If there was a change in the schema version and this isn't the base schema
+                    if (schemaInformation.Current != previous && schemaInformation.Current > 0)
                     {
-                        var schemaDataStore = scope.ServiceProvider.GetRequiredService<ISchemaDataStore>();
+                        var isFullSchemaSnapshot = previous == 0;
 
-                        int? previous = schemaInformation.Current;
-                        schemaInformation.Current = await schemaDataStore.UpsertInstanceSchemaInformationAsync(instanceName, schemaInformation, cancellationToken);
-
-                        // If there was a change in the schema version and this isn't the base schema
-                        if (schemaInformation.Current != previous && schemaInformation.Current > 0)
-                        {
-                            var isFullSchemaSnapshot = previous == 0;
-
-                            await _mediator.NotifySchemaUpgradedAsync((int)schemaInformation.Current, isFullSchemaSnapshot);
-                        }
-
-                        await schemaDataStore.DeleteExpiredInstanceSchemaAsync(cancellationToken);
+                        await _mediator.NotifySchemaUpgradedAsync((int)schemaInformation.Current, isFullSchemaSnapshot).ConfigureAwait(false);
                     }
+
+                    await schemaDataStore.DeleteExpiredInstanceSchemaAsync(cancellationToken).ConfigureAwait(false);
                 }
                 catch (Exception ex)
                 {
@@ -79,7 +79,7 @@ namespace Microsoft.Health.SqlServer.Features.Schema
 
                 try
                 {
-                    await Task.Delay(TimeSpan.FromSeconds(_sqlServerDataStoreConfiguration.SchemaOptions.JobPollingFrequencyInSeconds), cancellationToken);
+                    await Task.Delay(TimeSpan.FromSeconds(_sqlServerDataStoreConfiguration.SchemaOptions.JobPollingFrequencyInSeconds), cancellationToken).ConfigureAwait(false);
                 }
                 catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
                 {

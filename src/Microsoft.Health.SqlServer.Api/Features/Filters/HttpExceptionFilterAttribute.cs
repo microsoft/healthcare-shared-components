@@ -14,7 +14,7 @@ using Newtonsoft.Json.Linq;
 
 namespace Microsoft.Health.SqlServer.Api.Features.Filters
 {
-    internal class HttpExceptionFilterAttribute : ActionFilterAttribute
+    internal sealed class HttpExceptionFilterAttribute : ActionFilterAttribute
     {
         public override void OnActionExecuted(ActionExecutedContext context)
         {

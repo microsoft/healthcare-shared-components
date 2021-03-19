@@ -15,6 +15,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Health.Extensions
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{404C6C33-DB00-4182-BD90-F10A8B17C321}"
 	ProjectSection(SolutionItems) = preProject
+		.editorconfig = .editorconfig
 		Directory.Build.props = Directory.Build.props
 		global.json = global.json
 	EndProjectSection
@@ -63,7 +64,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SchemaManager.Core", "tools
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SchemaManager.Core.UnitTests", "test\SchemaManager.Core.UnitTests\SchemaManager.Core.UnitTests.csproj", "{0BEB2EE3-DBC3-4DC4-BB01-141DBFFED8D2}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.Health.SqlServer.Tests.Integration", "test\Microsoft.Health.SqlServer.Tests.Integration\Microsoft.Health.SqlServer.Tests.Integration.csproj", "{5429C3A8-3429-43EA-BA05-E347CB4D1F61}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Health.SqlServer.Tests.Integration", "test\Microsoft.Health.SqlServer.Tests.Integration\Microsoft.Health.SqlServer.Tests.Integration.csproj", "{5429C3A8-3429-43EA-BA05-E347CB4D1F61}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -203,7 +204,7 @@ Global
 		{5429C3A8-3429-43EA-BA05-E347CB4D1F61} = {CCD9FF99-E177-446E-B9E5-9F570FD96A34}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
-		RESX_SortFileContentOnSave = True
 		SolutionGuid = {562bbd07-1817-4af5-ab66-8837cf849248}
+		RESX_SortFileContentOnSave = True
 	EndGlobalSection
 EndGlobal

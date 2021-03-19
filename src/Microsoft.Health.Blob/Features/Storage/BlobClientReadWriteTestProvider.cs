@@ -38,22 +38,20 @@ namespace Microsoft.Health.Blob.Features.Storage
             BlobContainerClient blobContainer = client.GetBlobContainerClient(blobContainerConfiguration.ContainerName);
             BlockBlobClient blob = blobContainer.GetBlockBlobClient(TestBlobName);
 
+            using var content = new MemoryStream(Encoding.UTF8.GetBytes(TestBlobContent));
             await blob.UploadAsync(
-                new MemoryStream(Encoding.UTF8.GetBytes(TestBlobContent)),
-                new BlobHttpHeaders()
-                {
-                    ContentType = "text/plain",
-                });
-            await DownloadBlobContentAsync(blob, cancellationToken);
+                content,
+                new BlobHttpHeaders { ContentType = "text/plain" },
+                cancellationToken: cancellationToken).ConfigureAwait(false);
+            await DownloadBlobContentAsync(blob, cancellationToken).ConfigureAwait(false);
         }
 
         private async Task<byte[]> DownloadBlobContentAsync(BlockBlobClient blob, CancellationToken cancellationToken)
         {
-            await using (MemoryStream stream = _recyclableMemoryStreamManager.GetStream())
-            {
-                await blob.DownloadToAsync(stream, cancellationToken);
-                return stream.ToArray();
-            }
+            await using MemoryStream stream = _recyclableMemoryStreamManager.GetStream();
+
+            await blob.DownloadToAsync(stream, cancellationToken).ConfigureAwait(false);
+            return stream.ToArray();
         }
     }
 }

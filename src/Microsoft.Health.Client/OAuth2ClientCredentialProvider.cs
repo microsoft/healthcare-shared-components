@@ -46,9 +46,13 @@ namespace Microsoft.Health.Client
             };
 
             using var formContent = new FormUrlEncodedContent(formData);
-            using HttpResponseMessage tokenResponse = await _httpClient.PostAsync(_oAuth2ClientCredentialConfiguration.TokenUri, formContent, cancellationToken);
+            using HttpResponseMessage tokenResponse = await _httpClient.PostAsync(_oAuth2ClientCredentialConfiguration.TokenUri, formContent, cancellationToken).ConfigureAwait(false);
 
-            var openIdConnectMessage = new OpenIdConnectMessage(await tokenResponse.Content.ReadAsStringAsync());
+#if NET5_0_OR_GREATER
+            var openIdConnectMessage = new OpenIdConnectMessage(await tokenResponse.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false));
+#else
+            var openIdConnectMessage = new OpenIdConnectMessage(await tokenResponse.Content.ReadAsStringAsync().ConfigureAwait(false));
+#endif
             if (tokenResponse.StatusCode == System.Net.HttpStatusCode.BadRequest)
             {
                 throw new FailToRetrieveTokenException(openIdConnectMessage.ErrorDescription);

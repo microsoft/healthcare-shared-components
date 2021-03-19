@@ -4,6 +4,7 @@
 // -------------------------------------------------------------------------------------------------
 
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Threading;
 using System.Threading.Tasks;
 using EnsureThat;
@@ -18,13 +19,20 @@ namespace Microsoft.Health.Core
     public class RetryableInitializationOperation : IDisposable
     {
         private readonly Func<Task> _operation;
+        private readonly bool _continueOnCapturedContext;
         private SemaphoreSlim _semaphore = new SemaphoreSlim(1, 1);
         private Task _task;
 
         public RetryableInitializationOperation(Func<Task> operation)
+            : this(operation, false)
+        {
+        }
+
+        public RetryableInitializationOperation(Func<Task> operation, bool continueOnCapturedContext)
         {
             EnsureArg.IsNotNull(operation, nameof(operation));
             _operation = operation;
+            _continueOnCapturedContext = continueOnCapturedContext;
         }
 
         /// <summary>
@@ -40,6 +48,7 @@ namespace Microsoft.Health.Core
         /// synchronization so only one running task will exist at a time.
         /// </summary>
         /// <returns>A task representing the completion of the initialization operation.</returns>
+        [SuppressMessage("Maintainability", "CA1508:Avoid dead conditional code", Justification = "Task reference may be updated by another thread.")]
         public async ValueTask EnsureInitialized()
         {
             if (IsInitialized)
@@ -49,7 +58,7 @@ namespace Microsoft.Health.Core
 
             if (_task == null)
             {
-                await _semaphore.WaitAsync();
+                await _semaphore.WaitAsync().ConfigureAwait(_continueOnCapturedContext);
 
                 try
                 {
@@ -66,7 +75,7 @@ namespace Microsoft.Health.Core
 
             if (_task.IsFaulted)
             {
-                await _semaphore.WaitAsync();
+                await _semaphore.WaitAsync().ConfigureAwait(_continueOnCapturedContext);
 
                 try
                 {
@@ -82,7 +91,7 @@ namespace Microsoft.Health.Core
                 }
             }
 
-            await _task;
+            await _task.ConfigureAwait(_continueOnCapturedContext);
         }
 
         protected virtual void Dispose(bool disposing)

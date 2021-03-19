@@ -4,7 +4,6 @@
 // -------------------------------------------------------------------------------------------------
 
 using System;
-using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
 using EnsureThat;
@@ -33,14 +32,18 @@ namespace Microsoft.Health.SqlServer.Api.Features.Schema
             _schemaJobWorker = schemaJobWorker;
             _sqlServerDataStoreConfiguration = sqlServerDataStoreConfiguration;
             _schemaInformation = schemaInformation;
-            _instanceName = Guid.NewGuid() + "-" + Process.GetCurrentProcess().Id.ToString();
+#if NET5_0_OR_GREATER
+            _instanceName = Guid.NewGuid() + "-" + Environment.ProcessId;
+#else
+            _instanceName = Guid.NewGuid() + "-" + System.Diagnostics.Process.GetCurrentProcess().Id;
+#endif
         }
 
-        protected override async Task ExecuteAsync(CancellationToken cancellationToken)
+        protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
             if (!_sqlServerDataStoreConfiguration.SchemaOptions.AutomaticUpdatesEnabled)
             {
-                await _schemaJobWorker.ExecuteAsync(_schemaInformation, _instanceName, cancellationToken);
+                await _schemaJobWorker.ExecuteAsync(_schemaInformation, _instanceName, stoppingToken).ConfigureAwait(false);
             }
         }
     }

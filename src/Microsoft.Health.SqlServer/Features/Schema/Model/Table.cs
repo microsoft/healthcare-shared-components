@@ -21,7 +21,11 @@ namespace Microsoft.Health.SqlServer.Features.Schema.Model
 
         public string TableName { get; }
 
-        public static implicit operator string(Table t) => t.ToString();
+        public static implicit operator string(Table t)
+        {
+            EnsureArg.IsNotNull(t, nameof(t));
+            return t.ToString();
+        }
 
         public override string ToString() => TableName;
     }

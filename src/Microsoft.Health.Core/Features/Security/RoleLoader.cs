@@ -4,6 +4,7 @@
 // -------------------------------------------------------------------------------------------------
 
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.IO;
 using System.Linq;
@@ -33,20 +34,19 @@ namespace Microsoft.Health.Core.Features.Security
         where TDataActions : Enum
     {
         private readonly AuthorizationConfiguration<TDataActions> _authorizationConfiguration;
-        private readonly IHostEnvironment _hostEnvironment;
         private readonly Microsoft.Extensions.FileProviders.IFileProvider _fileProvider;
 
-        public RoleLoader(AuthorizationConfiguration<TDataActions> authorizationConfiguration, IHostEnvironment hostEnvironment)
+        protected RoleLoader(AuthorizationConfiguration<TDataActions> authorizationConfiguration, IHostEnvironment hostEnvironment)
         {
             EnsureArg.IsNotNull(authorizationConfiguration, nameof(authorizationConfiguration));
             EnsureArg.IsNotNull(hostEnvironment, nameof(hostEnvironment));
             EnsureArg.IsNotNull(hostEnvironment.ContentRootFileProvider, nameof(hostEnvironment.ContentRootFileProvider));
 
             _authorizationConfiguration = authorizationConfiguration;
-            _hostEnvironment = hostEnvironment;
             _fileProvider = hostEnvironment.ContentRootFileProvider;
         }
 
+        [SuppressMessage("Reliability", "CA2000:Dispose objects before losing scope", Justification = "JSchemaValidatingReader effectively disposes by invoking Close() on the enclosed reader.")]
         public Task StartAsync(CancellationToken cancellationToken)
         {
             using Stream schemaContents = GetType().Assembly.GetManifestResourceStream(GetType(), "roles.schema.json");
@@ -62,7 +62,7 @@ namespace Microsoft.Health.Core.Features.Security
             };
 
             validatingReader.ValidationEventHandler += (sender, args) =>
-                throw new InvalidDefinitionException(string.Format(Resources.ErrorValidatingRoles, args.Message));
+                throw new InvalidDefinitionException(string.Format(CultureInfo.InvariantCulture, Resources.ErrorValidatingRoles, args.Message));
 
             RolesContract rolesContract = jsonSerializer.Deserialize<RolesContract>(validatingReader);
 
@@ -71,10 +71,11 @@ namespace Microsoft.Health.Core.Features.Security
             // validate that names are all unique
             foreach (IGrouping<string, Role<TDataActions>> grouping in _authorizationConfiguration.Roles.GroupBy(r => r.Name))
             {
-                if (grouping.Count() > 1)
+                int groupingCount = grouping.Count();
+                if (groupingCount > 1)
                 {
                     throw new InvalidDefinitionException(
-                        string.Format(CultureInfo.CurrentCulture, Resources.DuplicateRoleNames, grouping.Count(), grouping.Key));
+                        string.Format(CultureInfo.InvariantCulture, Resources.DuplicateRoleNames, groupingCount, grouping.Key));
                 }
             }
 

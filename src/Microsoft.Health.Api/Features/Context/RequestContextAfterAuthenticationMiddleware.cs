@@ -28,14 +28,17 @@ namespace Microsoft.Health.Api.Features.Context
 
         public async Task Invoke(HttpContext context, RequestContextAccessor<TRequestContext> requestContextAccessor)
         {
+            EnsureArg.IsNotNull(context, nameof(context));
+
             // Now the authentication is completed successfully, sets the user.
             if (context.User != null)
             {
+                EnsureArg.IsNotNull(requestContextAccessor, nameof(requestContextAccessor));
                 requestContextAccessor.RequestContext.Principal = context.User;
             }
 
             // Call the next delegate/middleware in the pipeline
-            await _next(context);
+            await _next(context).ConfigureAwait(false);
         }
     }
 }

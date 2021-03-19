@@ -34,10 +34,10 @@ namespace Microsoft.Health.SqlServer.UnitTests
         public void GivenASqlMetadataInstanceWithSpecifiedScaleAndPrecisionInCommaCulture_WhenGettingMinAndMaxValues_ReturnsCorrectValues()
         {
             var sqlMetaData = new SqlMetaData("foo", SqlDbType.Decimal, precision: 10, scale: 3);
-            CultureInfo culture = (CultureInfo)CultureInfo.InvariantCulture.Clone();
+            var culture = (CultureInfo)CultureInfo.InvariantCulture.Clone();
             culture.NumberFormat.NumberDecimalSeparator = ",";
             culture.NumberFormat.NumberGroupSeparator = ".";
-            var originalCulture = Thread.CurrentThread.CurrentCulture;
+            CultureInfo originalCulture = Thread.CurrentThread.CurrentCulture;
             Thread.CurrentThread.CurrentCulture = culture;
             Assert.Equal(-9999999.999M, SqlMetadataUtilities.GetMinValueForDecimalColumn(sqlMetaData));
             Assert.Equal(9999999.999M, SqlMetadataUtilities.GetMaxValueForDecimalColumn(sqlMetaData));

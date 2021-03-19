@@ -19,47 +19,33 @@ namespace Microsoft.Health.SqlServer.Features.Schema
             string folder = $"{typeof(TSchemaVersionEnum).Namespace}.Migrations";
             string resourceName = applyFullSchemaSnapshot ? $"{folder}.{version}.sql" : $"{folder}.{version}.diff.sql";
 
-            using (Stream stream = Assembly.GetAssembly(typeof(TSchemaVersionEnum)).GetManifestResourceStream(resourceName))
+            using Stream stream = Assembly.GetAssembly(typeof(TSchemaVersionEnum)).GetManifestResourceStream(resourceName);
+            if (stream == null)
             {
-                if (stream == null)
-                {
-                    throw new FileNotFoundException(Resources.ScriptNotFound);
-                }
-
-                using (var reader = new StreamReader(stream))
-                {
-                    return reader.ReadToEnd();
-                }
+                throw new FileNotFoundException(Resources.ScriptNotFound);
             }
+
+            using var reader = new StreamReader(stream);
+            return reader.ReadToEnd();
         }
 
-        public async Task<byte[]> GetScriptAsBytesAsync(int version, CancellationToken cancellationToken)
+        public Task<byte[]> GetScriptAsBytesAsync(int version, CancellationToken cancellationToken)
+            => ScriptAsBytesAsync($"{typeof(TSchemaVersionEnum).Namespace}.Migrations.{version}.sql", cancellationToken);
+
+        public Task<byte[]> GetDiffScriptAsBytesAsync(int version, CancellationToken cancellationToken)
+            => ScriptAsBytesAsync($"{typeof(TSchemaVersionEnum).Namespace}.Migrations.{version}.diff.sql", cancellationToken);
+
+        private static async Task<byte[]> ScriptAsBytesAsync(string resourceName, CancellationToken cancellationToken)
         {
-            string resourceName = $"{typeof(TSchemaVersionEnum).Namespace}.Migrations.{version}.sql";
-
-            return await ScriptAsBytesAsync(resourceName, cancellationToken);
-        }
-
-        public async Task<byte[]> GetDiffScriptAsBytesAsync(int version, CancellationToken cancellationToken)
-        {
-            string resourceName = $"{typeof(TSchemaVersionEnum).Namespace}.Migrations.{version}.diff.sql";
-
-            return await ScriptAsBytesAsync(resourceName, cancellationToken);
-        }
-
-        private async Task<byte[]> ScriptAsBytesAsync(string resourceName, CancellationToken cancellationToken)
-        {
-            using (Stream fileStream = Assembly.GetAssembly(typeof(TSchemaVersionEnum)).GetManifestResourceStream(resourceName))
+            using Stream fileStream = Assembly.GetAssembly(typeof(TSchemaVersionEnum)).GetManifestResourceStream(resourceName);
+            if (fileStream == null)
             {
-                if (fileStream == null)
-                {
-                    throw new FileNotFoundException(Resources.ScriptNotFound);
-                }
-
-                var scriptBytes = new byte[fileStream.Length];
-                await fileStream.ReadAsync(scriptBytes, 0, scriptBytes.Length, cancellationToken);
-                return scriptBytes;
+                throw new FileNotFoundException(Resources.ScriptNotFound);
             }
+
+            var scriptBytes = new byte[fileStream.Length];
+            await fileStream.ReadAsync(scriptBytes.AsMemory(0, scriptBytes.Length), cancellationToken).ConfigureAwait(false);
+            return scriptBytes;
         }
     }
 }

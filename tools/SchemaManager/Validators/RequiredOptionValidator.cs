@@ -5,6 +5,7 @@
 
 using System.CommandLine;
 using System.Linq;
+using EnsureThat;
 
 namespace SchemaManager.Validators
 {
@@ -19,6 +20,9 @@ namespace SchemaManager.Validators
         /// <returns>A string to show the users if there is a validation error</returns>
         public static string Validate(SymbolResult symbol, Option requiredOption, string validationErrorMessage)
         {
+            EnsureArg.IsNotNull(symbol, nameof(symbol));
+            EnsureArg.IsNotNull(requiredOption, nameof(requiredOption));
+
             if (requiredOption.Aliases.Any(alias => symbol.Children.Contains(alias)))
             {
                 return null;

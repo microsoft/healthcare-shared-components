@@ -10,7 +10,7 @@ namespace Microsoft.Health.SqlServer.Features.Schema.Manager.Model
 {
     public class CurrentVersion
     {
-        public CurrentVersion(int id, string status, List<string> servers)
+        public CurrentVersion(int id, string status, IReadOnlyList<string> servers)
         {
             EnsureArg.IsNotNullOrWhiteSpace(status, nameof(status));
             EnsureArg.IsNotNull(servers, nameof(servers));
@@ -24,6 +24,6 @@ namespace Microsoft.Health.SqlServer.Features.Schema.Manager.Model
 
         public string Status { get; }
 
-        public List<string> Servers { get; }
+        public IReadOnlyList<string> Servers { get; }
     }
 }

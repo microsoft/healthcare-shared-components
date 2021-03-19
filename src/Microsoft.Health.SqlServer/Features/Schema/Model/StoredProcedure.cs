@@ -21,7 +21,11 @@ namespace Microsoft.Health.SqlServer.Features.Schema.Model
 
         public string ProcedureName { get; }
 
-        public static implicit operator string(StoredProcedure p) => p.ToString();
+        public static implicit operator string(StoredProcedure p)
+        {
+            EnsureArg.IsNotNull(p, nameof(p));
+            return p.ToString();
+        }
 
         public override string ToString() => ProcedureName;
     }

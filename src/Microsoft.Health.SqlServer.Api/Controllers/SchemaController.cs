@@ -15,6 +15,7 @@ using Microsoft.Health.SqlServer.Api.Features.Filters;
 using Microsoft.Health.SqlServer.Features.Routing;
 using Microsoft.Health.SqlServer.Features.Schema;
 using Microsoft.Health.SqlServer.Features.Schema.Extensions;
+using Microsoft.Health.SqlServer.Features.Schema.Messages.Get;
 
 namespace Microsoft.Health.SqlServer.Api.Controllers
 {
@@ -49,7 +50,7 @@ namespace Microsoft.Health.SqlServer.Api.Controllers
         public ActionResult AvailableVersions()
         {
             _logger.LogInformation("Attempting to get available schemas");
-            var urlHelper = _urlHelperFactory.GetUrlHelper(ControllerContext);
+            IUrlHelper urlHelper = _urlHelperFactory.GetUrlHelper(ControllerContext);
 
             var availableSchemas = new List<object>();
             var currentVersion = _schemaInformation.Current ?? 1;
@@ -75,7 +76,7 @@ namespace Microsoft.Health.SqlServer.Api.Controllers
         public async Task<ActionResult> CurrentVersionAsync()
         {
             _logger.LogInformation("Attempting to get current schemas");
-            var currentVersionResponse = await _mediator.GetCurrentVersionAsync(HttpContext.RequestAborted);
+            GetCurrentVersionResponse currentVersionResponse = await _mediator.GetCurrentVersionAsync(HttpContext.RequestAborted).ConfigureAwait(false);
             return new JsonResult(currentVersionResponse.CurrentVersions);
         }
 
@@ -86,7 +87,7 @@ namespace Microsoft.Health.SqlServer.Api.Controllers
         {
             _logger.LogInformation($"Attempting to get script for schema version: {id}");
             string fileName = $"{id}.sql";
-            return File(await _scriptProvider.GetScriptAsBytesAsync(id, HttpContext.RequestAborted), "application/sql", fileName);
+            return File(await _scriptProvider.GetScriptAsBytesAsync(id, HttpContext.RequestAborted).ConfigureAwait(false), "application/sql", fileName);
         }
 
         [HttpGet]
@@ -96,7 +97,7 @@ namespace Microsoft.Health.SqlServer.Api.Controllers
         {
             _logger.LogInformation($"Attempting to get diff script for schema version: {id}");
             string fileName = $"{id}.diff.sql";
-            return File(await _scriptProvider.GetDiffScriptAsBytesAsync(id, HttpContext.RequestAborted), "application/sql", fileName);
+            return File(await _scriptProvider.GetDiffScriptAsBytesAsync(id, HttpContext.RequestAborted).ConfigureAwait(false), "application/sql", fileName);
         }
 
         [HttpGet]
@@ -105,7 +106,7 @@ namespace Microsoft.Health.SqlServer.Api.Controllers
         public async Task<ActionResult> CompatibilityAsync()
         {
             _logger.LogInformation("Attempting to get compatibility");
-            var compatibleResponse = await _mediator.GetCompatibleVersionAsync(HttpContext.RequestAborted);
+            GetCompatibilityVersionResponse compatibleResponse = await _mediator.GetCompatibleVersionAsync(HttpContext.RequestAborted).ConfigureAwait(false);
             return new JsonResult(compatibleResponse.CompatibleVersions);
         }
     }

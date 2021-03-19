@@ -46,7 +46,7 @@ namespace Microsoft.Health.Api.Features.HealthChecks
 
             try
             {
-                await _semaphore.WaitAsync(cancellationToken);
+                await _semaphore.WaitAsync(cancellationToken).ConfigureAwait(false);
             }
             catch (OperationCanceledException oce) when (cancellationToken.IsCancellationRequested)
             {
@@ -66,7 +66,7 @@ namespace Microsoft.Health.Api.Features.HealthChecks
                     try
                     {
                         IHealthCheck check = _healthCheck.Invoke(scope.ServiceProvider);
-                        _lastResult = await check.CheckHealthAsync(context, cancellationToken);
+                        _lastResult = await check.CheckHealthAsync(context, cancellationToken).ConfigureAwait(false);
                         _lastChecked = Clock.UtcNow;
                     }
                     catch (Exception ex)

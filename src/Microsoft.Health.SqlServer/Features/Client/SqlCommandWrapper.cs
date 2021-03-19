@@ -5,6 +5,7 @@
 
 using System;
 using System.Data;
+using System.Diagnostics.CodeAnalysis;
 using System.Threading;
 using System.Threading.Tasks;
 using EnsureThat;
@@ -55,6 +56,7 @@ namespace Microsoft.Health.SqlServer.Features.Client
         /// <summary>
         /// <see cref="SqlCommand.CommandText"/>.
         /// </summary>
+        [SuppressMessage("Security", "CA2100:Review SQL queries for security vulnerabilities", Justification = "Property is simply a wrapper for SqlCommand.CommandText.")]
         public string CommandText
         {
             get => _sqlCommand.CommandText;

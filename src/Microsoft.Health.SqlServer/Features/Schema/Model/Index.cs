@@ -21,7 +21,11 @@ namespace Microsoft.Health.SqlServer.Features.Schema.Model
 
         public string IndexName { get; }
 
-        public static implicit operator string(Index i) => i.ToString();
+        public static implicit operator string(Index i)
+        {
+            EnsureArg.IsNotNull(i, nameof(i));
+            return i.ToString();
+        }
 
         public override string ToString() => IndexName;
     }

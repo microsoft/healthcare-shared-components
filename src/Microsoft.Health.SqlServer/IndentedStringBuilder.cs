@@ -58,6 +58,8 @@ namespace Microsoft.Health.SqlServer
         /// <returns>This instance</returns>
         public IndentedStringBuilder Append(Column column, string tableAlias)
         {
+            EnsureArg.IsNotNull(column, nameof(column));
+
             if (!string.IsNullOrEmpty(tableAlias))
             {
                 Append(tableAlias).Append('.');
@@ -85,6 +87,8 @@ namespace Microsoft.Health.SqlServer
         /// <returns>This instance</returns>
         public IndentedStringBuilder AppendLine(Column column, string tableAlias)
         {
+            EnsureArg.IsNotNull(column, nameof(column));
+
             if (!string.IsNullOrEmpty(tableAlias))
             {
                 Append(tableAlias).Append('.');
@@ -103,6 +107,9 @@ namespace Microsoft.Health.SqlServer
         /// <returns>This instance</returns>
         public IndentedStringBuilder AppendDelimited<T>(string delimiter, IEnumerable<T> items, Action<IndentedStringBuilder, T> writer)
         {
+            EnsureArg.IsNotNull(items, nameof(items));
+            EnsureArg.IsNotNull(writer, nameof(writer));
+
             bool first = true;
             foreach (T item in items)
             {
@@ -131,6 +138,10 @@ namespace Microsoft.Health.SqlServer
         /// <returns>This instance</returns>
         public IndentedStringBuilder AppendDelimited<T>(Action<IndentedStringBuilder> applyDelimiter, IEnumerable<T> items, Action<IndentedStringBuilder, T> writer)
         {
+            EnsureArg.IsNotNull(applyDelimiter, nameof(applyDelimiter));
+            EnsureArg.IsNotNull(items, nameof(items));
+            EnsureArg.IsNotNull(writer, nameof(writer));
+
             bool first = true;
             foreach (T item in items)
             {
@@ -179,6 +190,8 @@ namespace Microsoft.Health.SqlServer
 
             public IndentedScope(IndentedStringBuilder sb)
             {
+                EnsureArg.IsNotNull(sb, nameof(sb));
+
                 _sb = sb;
                 _sb.IndentLevel++;
             }
@@ -201,6 +214,8 @@ namespace Microsoft.Health.SqlServer
 
             public DelimitedScope(IndentedStringBuilder sb, Action<IndentedStringBuilder> applyPrefix, Action<IndentedStringBuilder> applyDelimiter, Action<IndentedStringBuilder> applyPostfix)
             {
+                EnsureArg.IsNotNull(sb, nameof(sb));
+
                 _sb = sb;
                 _applyPrefix = applyPrefix;
                 _applyDelimiter = applyDelimiter;

@@ -3,6 +3,7 @@
 // Licensed under the MIT License (MIT). See LICENSE in the repo root for license information.
 // -------------------------------------------------------------------------------------------------
 
+using System;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Health.SqlServer.Features.Schema;
@@ -16,6 +17,13 @@ namespace Microsoft.Health.SqlServer.Tests.Integration.Features.Schema
         public SchemaInitializerTests(ITestOutputHelper outputHelper)
             : base(outputHelper)
         {
+        }
+
+        [Fact]
+        public async Task InvalidDatabaseName_CreateDatabaseAsync_ThrowsException()
+        {
+            await Assert.ThrowsAsync<ArgumentException>(
+                () => SchemaInitializer.CreateDatabaseAsync(Connection, "[something] DROP DATABASE Production --", CancellationToken.None));
         }
 
         [Fact]

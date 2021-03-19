@@ -3,6 +3,7 @@
 // Licensed under the MIT License (MIT). See LICENSE in the repo root for license information.
 // -------------------------------------------------------------------------------------------------
 
+using EnsureThat;
 using Microsoft.Data.SqlClient;
 using Microsoft.Health.SqlServer.Features.Schema.Model;
 
@@ -213,6 +214,7 @@ namespace Microsoft.Health.SqlServer.Features.Storage
 
         public static T Read<T>(this SqlDataReader reader, Column<T> column, int ordinal)
         {
+            EnsureArg.IsNotNull(column, nameof(column));
             return column.Read(reader, ordinal);
         }
     }

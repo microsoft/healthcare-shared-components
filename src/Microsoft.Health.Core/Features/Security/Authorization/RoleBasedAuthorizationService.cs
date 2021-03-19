@@ -5,7 +5,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Globalization;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Security.Claims;
@@ -44,13 +43,13 @@ namespace Microsoft.Health.Core.Features.Security.Authorization
 
         private static Func<TDataActions, ulong> CreateConvertToULongFunc()
         {
-            var parameterExpression = Expression.Parameter(typeof(TDataActions));
+            ParameterExpression parameterExpression = Expression.Parameter(typeof(TDataActions));
             return Expression.Lambda<Func<TDataActions, ulong>>(Expression.Convert(parameterExpression, typeof(ulong)), parameterExpression).Compile();
         }
 
         private static Func<ulong, TDataActions> CreateConvertToTDataActionFunc()
         {
-            var parameterExpression = Expression.Parameter(typeof(ulong));
+            ParameterExpression parameterExpression = Expression.Parameter(typeof(ulong));
             return Expression.Lambda<Func<ulong, TDataActions>>(Expression.Convert(parameterExpression, typeof(TDataActions)), parameterExpression).Compile();
         }
 
