@@ -15,7 +15,7 @@ namespace Microsoft.Health.SqlServer.Features.Client
     /// <summary>
     /// A wrapper around <see cref="SqlCommand"/> to provide automatic retries for transient errors.
     /// </summary>
-    internal class RetrySqlCommandWrapper : SqlCommandWrapper
+    public class RetrySqlCommandWrapper : SqlCommandWrapper
     {
         private readonly SqlCommandWrapper _sqlCommandWrapper;
         private readonly IAsyncPolicy _retryPolicy;
