@@ -11,7 +11,7 @@ namespace Microsoft.Health.SqlServer.Features.Client
     /// <summary>
     /// Provides functionality for creating a logger for the <see cref="Polly"/> retry policy.
     /// </summary>
-    internal interface IPollyRetryLoggerFactory
+    public interface IPollyRetryLoggerFactory
     {
         /// <summary>
         /// Creates a logger.
