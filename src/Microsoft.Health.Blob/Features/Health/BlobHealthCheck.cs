@@ -61,13 +61,13 @@ namespace Microsoft.Health.Blob.Features.Health
             {
                 await _testProvider.PerformTestAsync(_client, _configuration, _blobContainerConfiguration, cancellationToken).ConfigureAwait(false);
 
-                return HealthCheckResult.Healthy("Successfully connected to the blob data store.");
+                return HealthCheckResult.Healthy("Successfully connected.");
             }
             catch (Exception ex)
             {
                 _logger.LogWarning(ex, "Failed to connect to the blob data store.");
 
-                return HealthCheckResult.Unhealthy("Failed to connect to the blob data store.");
+                return HealthCheckResult.Unhealthy("Failed to connect.");
             }
         }
     }

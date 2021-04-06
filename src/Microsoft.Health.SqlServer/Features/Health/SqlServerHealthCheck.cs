@@ -42,12 +42,13 @@ namespace Microsoft.Health.SqlServer.Features.Health
 
                 await command.ExecuteScalarAsync(cancellationToken).ConfigureAwait(false);
 
-                return HealthCheckResult.Healthy("Successfully connected to the data store.");
+                return HealthCheckResult.Healthy("Successfully connected.");
             }
             catch (Exception ex)
             {
                 _logger.LogWarning(ex, "Failed to connect to the data store.");
-                return HealthCheckResult.Unhealthy("Failed to connect to the data store.");
+
+                return HealthCheckResult.Unhealthy("Failed to connect.");
             }
         }
     }

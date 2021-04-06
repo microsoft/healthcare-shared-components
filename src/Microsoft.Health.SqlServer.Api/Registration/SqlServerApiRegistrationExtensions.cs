@@ -24,7 +24,7 @@ namespace Microsoft.Health.SqlServer.Api.Registration
 
             services
                 .AddHealthChecks()
-                .AddCheck<SqlServerHealthCheck>(nameof(SqlServerHealthCheck));
+                .AddCheck<SqlServerHealthCheck>("DataStoreHealthCheck");
 
             services.Add<CompatibilityVersionHandler>()
                 .Transient()
