@@ -20,7 +20,7 @@
     <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="$(SdkPackageVersion)" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="$(SdkPackageVersion)" />
     <PackageReference Include="Microsoft.Extensions.Options" Version="$(SdkPackageVersion)" />
-    <PackageReference Include="System.Text.Encodings.Web" Version="4.7.2" PrivateAssets="All" />
+    <PackageReference Include="System.Text.Encodings.Web" Version="5.0.1" PrivateAssets="All" />
   </ItemGroup>
 
   <ItemGroup>
