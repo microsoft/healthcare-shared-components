@@ -72,7 +72,7 @@ namespace Microsoft.Health.Extensions.BuildTimeCodeGenerator.Sql
                                                 Literal(schemaQualifiedTableTypeName))),
                                     }))))
                             .WithBody(Block()))
-                    .AddMembers(node.Definition.ColumnDefinitions.Select(CreatePropertyForColumn).ToArray())
+                    .AddMembers(node.Definition.ColumnDefinitions.Select(CreatePropertyForTableColumn).ToArray())
 
                     // Add Columns property override
                     .AddMembers(
