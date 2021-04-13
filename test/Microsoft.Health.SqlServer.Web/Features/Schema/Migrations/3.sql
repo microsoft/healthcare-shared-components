@@ -66,12 +66,12 @@ CREATE UNIQUE CLUSTERED INDEX IXC_View12 ON dbo.MyView
 (
     Id,
     Name,
-    City
+    TheCity
 )
 WITH (DATA_COMPRESSION = PAGE)
 
 CREATE NONCLUSTERED INDEX IX_View12_City ON dbo.MyView
 (	
-    City
+    TheCity
 )
 WITH (DATA_COMPRESSION = PAGE)
