@@ -13,8 +13,44 @@ namespace Microsoft.Health.SqlServer.Web.Features.Schema.Model
 
     internal class VLatest
     {
+        internal readonly static MyViewView MyView = new MyViewView();
+        internal readonly static Table1Table Table1 = new Table1Table();
+        internal readonly static Table2Table Table2 = new Table2Table();
         internal readonly static InsertNumbersProcedure InsertNumbers = new InsertNumbersProcedure();
         internal readonly static MyProcedureProcedure MyProcedure = new MyProcedureProcedure();
+
+        internal class MyViewView : Table
+        {
+            internal MyViewView() : base("dbo.MyView")
+            {
+            }
+
+            internal readonly IntColumn Id = new IntColumn("Id");
+            internal readonly NVarCharColumn Name = new NVarCharColumn("Name", 20);
+            internal readonly NVarCharColumn TheCity = new NVarCharColumn("TheCity", 20);
+            internal readonly Index IXC_View12 = new Index("IXC_View12");
+            internal readonly Index IX_View12_City = new Index("IX_View12_City");
+        }
+
+        internal class Table1Table : Table
+        {
+            internal Table1Table() : base("dbo.Table1")
+            {
+            }
+
+            internal readonly IntColumn Id = new IntColumn("Id");
+            internal readonly NVarCharColumn Name = new NVarCharColumn("Name", 20);
+        }
+
+        internal class Table2Table : Table
+        {
+            internal Table2Table() : base("dbo.Table2")
+            {
+            }
+
+            internal readonly IntColumn Id = new IntColumn("Id");
+            internal readonly NVarCharColumn City = new NVarCharColumn("City", 20);
+        }
 
         internal class InsertNumbersProcedure : StoredProcedure
         {
