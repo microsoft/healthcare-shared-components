@@ -134,7 +134,7 @@ namespace Microsoft.Health.Extensions.BuildTimeCodeGenerator.Sql
 
             // find the class we generated for the table
             var tableDeclaration = (ClassDeclarationSyntax)MembersToAdd.FirstOrDefault(m => m is ClassDeclarationSyntax c && c.Identifier.ValueText == classNameForTable)
-                                   ?? throw new InvalidOperationException($"table not found");
+                                   ?? throw new InvalidOperationException($"Table '{classNameForTable}' was not found");
 
             // find the field we generated for the column
             var columnDeclaration = (FieldDeclarationSyntax)tableDeclaration.Members.FirstOrDefault(m => m is FieldDeclarationSyntax fd && fd.Declaration.Variables[0].Identifier.ValueText == tableColumnName)
