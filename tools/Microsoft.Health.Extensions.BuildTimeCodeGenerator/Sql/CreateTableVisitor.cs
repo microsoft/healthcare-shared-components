@@ -107,21 +107,6 @@ namespace Microsoft.Health.Extensions.BuildTimeCodeGenerator.Sql
             base.Visit(node);
         }
 
-        private IEnumerable<(string name, string alias)> GetTablesReferencedInView(IList<TableReference> tableReferences)
-        {
-            return tableReferences
-                .SelectMany(tr => tr switch
-                {
-                    JoinTableReference join => new[] { join.FirstTableReference, join.SecondTableReference },
-                    _ => new[] { tr },
-                })
-                .Select(tr => tr switch
-                {
-                    NamedTableReference ntr => (ntr.SchemaObject.BaseIdentifier.Value, ntr.Alias.Value),
-                    _ => throw new NotSupportedException($"Unrecognized table type '{tr.GetType().Name}' in view.")
-                });
-        }
-
         private MemberDeclarationSyntax CreatePropertyForViewColumn(SelectElement selectElement, List<(string name, string alias)> tablesInScope)
         {
             if (selectElement is not SelectScalarExpression exp)
