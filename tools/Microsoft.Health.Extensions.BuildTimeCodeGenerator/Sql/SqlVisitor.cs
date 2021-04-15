@@ -228,7 +228,7 @@ namespace Microsoft.Health.Extensions.BuildTimeCodeGenerator.Sql
             return Regex.Replace(objectName.BaseIdentifier.Value, @"_\d+$", string.Empty);
         }
 
-        protected MemberDeclarationSyntax CreatePropertyForColumn(ColumnDefinition column)
+        protected MemberDeclarationSyntax CreatePropertyForTableColumn(ColumnDefinition column)
         {
             string normalizedSqlDbType = null;
 
