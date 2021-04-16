@@ -11,7 +11,7 @@
     <PackageReference Include="Microsoft.Extensions.Options" Version="$(SdkPackageVersion)" />
     <PackageReference Include="Microsoft.IdentityModel.Clients.ActiveDirectory" Version="5.2.9" />
     <PackageReference Include="Microsoft.IdentityModel.JsonWebTokens" Version="6.10.1" />
-    <PackageReference Include="Microsoft.IdentityModel.Protocols.OpenIdConnect" Version="6.10.1" />
+    <PackageReference Include="Microsoft.IdentityModel.Protocols.OpenIdConnect" Version="6.10.2" />
     <PackageReference Include="Microsoft.IdentityModel.Tokens" Version="6.10.1" />
   </ItemGroup>
 
