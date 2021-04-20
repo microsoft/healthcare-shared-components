@@ -127,7 +127,7 @@ namespace SchemaManager.Core.UnitTests
             _client.GetAvailabilityAsync(Arg.Any<CancellationToken>()).ReturnsForAnyArgs(new List<AvailableVersion> { new AvailableVersion(1, "_script/1.sql", "_script/1.diff.sql"), new AvailableVersion(2, "_script/2.sql", "_script/2.diff.sql") });
             _client.GetCompatibilityAsync(Arg.Any<CancellationToken>()).ReturnsForAnyArgs(new CompatibleVersion(1, 2));
             _client.GetDiffScriptAsync(Arg.Is<Uri>(new Uri("_script/2.diff.sql", UriKind.Relative)), Arg.Any<CancellationToken>()).Returns("script");
-            await Assert.ThrowsAsync<InvalidOperationException>(async () => await _sqlSchemaManager.ApplySchema("connectionString", new Uri("https://localhost/"), new MutuallyExclusiveType { Latest = false, Version = 2, Next = false }));
+            await Assert.ThrowsAsync<InvalidOperationException>(() => _sqlSchemaManager.ApplySchema("connectionString", new Uri("https://localhost/"), new MutuallyExclusiveType { Latest = false, Version = 2, Next = false }));
         }
     }
 }
