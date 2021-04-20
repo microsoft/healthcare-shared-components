@@ -32,7 +32,7 @@ namespace SchemaManager.Core
         private readonly ISchemaClient _schemaClient;
         private readonly ILogger<SqlSchemaManager> _logger;
 
-        private static readonly TimeSpan RetrySleepDuration = TimeSpan.FromSeconds(20);
+        private TimeSpan _retrySleepDuration = TimeSpan.FromSeconds(20);
         private const int RetryAttempts = 3;
 
         public SqlSchemaManager(
@@ -79,7 +79,7 @@ namespace SchemaManager.Core
                 availableVersions = await Policy.Handle<SchemaManagerException>()
                 .WaitAndRetryAsync(
                     retryCount: RetryAttempts,
-                    sleepDurationProvider: (retryCount) => RetrySleepDuration,
+                    sleepDurationProvider: (retryCount) => _retrySleepDuration,
                     onRetry: (exception, retryCount) =>
                     {
                         _logger.LogError(exception, string.Format(CultureInfo.InvariantCulture, Resources.RetryCurrentSchemaVersion, attemptCount++, RetryAttempts));
@@ -132,7 +132,7 @@ namespace SchemaManager.Core
                     await Policy.Handle<SchemaManagerException>()
                         .WaitAndRetryAsync(
                             retryCount: RetryAttempts,
-                            sleepDurationProvider: (retryCount) => RetrySleepDuration,
+                            sleepDurationProvider: (retryCount) => _retrySleepDuration,
                             onRetry: (exception, retryCount) =>
                             {
                                 _logger.LogError(exception, string.Format(CultureInfo.InvariantCulture, Resources.RetryCurrentVersions, attemptCount++, RetryAttempts));
@@ -148,12 +148,12 @@ namespace SchemaManager.Core
             catch (Exception ex) when (ex is SchemaManagerException || ex is InvalidOperationException)
             {
                 _logger.LogError(ex, ex.Message);
-                return;
+                throw;
             }
             catch (HttpRequestException ex)
             {
                 _logger.LogError(ex, string.Format(CultureInfo.InvariantCulture, Resources.RequestFailedMessage, server));
-                return;
+                throw;
             }
             catch (Exception ex)
             {
