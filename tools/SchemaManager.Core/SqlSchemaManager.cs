@@ -142,7 +142,12 @@ namespace SchemaManager.Core
 
                     string script = await GetScriptAsync(executingVersion, availableVersion.ScriptUri, token, availableVersion.DiffUri).ConfigureAwait(false);
 
-                    await UpgradeSchemaAsync(executingVersion, script, token).ConfigureAwait(false);
+                    // check if the record for given version exists in failed status
+                    await _schemaManagerDataStore.DeleteSchemaVersionAsync(executingVersion, SchemaVersionStatus.Failed.ToString(), token).ConfigureAwait(false);
+
+                    await _schemaManagerDataStore.ExecuteScriptAndCompleteSchemaVersionAsync(script, executingVersion, token).ConfigureAwait(false);
+
+                    _logger.LogInformation(string.Format(CultureInfo.InvariantCulture, Resources.SchemaMigrationSuccessMessage, executingVersion));
                 }
             }
             catch (Exception ex) when (ex is SchemaManagerException || ex is InvalidOperationException)
@@ -267,10 +272,10 @@ namespace SchemaManager.Core
 
         private async Task UpgradeSchemaAsync(int version, string script, CancellationToken cancellationToken)
         {
-            // check if the record for given version exists in failed status
+            // check if the record for given version exists in started or failed status
             await _schemaManagerDataStore.DeleteSchemaVersionAsync(version, SchemaVersionStatus.Failed.ToString(), cancellationToken).ConfigureAwait(false);
 
-            await _schemaManagerDataStore.ExecuteScriptAndCompleteSchemaVersionAsync(script, version, cancellationToken).ConfigureAwait(false);
+            await _schemaManagerDataStore.ExecuteScriptAndCompleteSchemaVersionTransactionAsync(script, version, cancellationToken).ConfigureAwait(false);
 
             _logger.LogInformation(string.Format(CultureInfo.InvariantCulture, Resources.SchemaMigrationSuccessMessage, version));
         }

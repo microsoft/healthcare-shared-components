@@ -27,7 +27,7 @@ namespace Microsoft.Health.SqlServer.Features.Schema.Manager
         }
 
         /// <inheritdoc />
-        public async Task ExecuteScriptAndCompleteSchemaVersionAsync(string script, int version, CancellationToken cancellationToken)
+        public async Task ExecuteScriptAndCompleteSchemaVersionTransactionAsync(string script, int version, CancellationToken cancellationToken)
         {
             EnsureArg.IsNotNull(script, nameof(script));
             EnsureArg.IsGte(version, 1);
@@ -51,6 +51,31 @@ namespace Microsoft.Health.SqlServer.Features.Schema.Manager
             catch (Exception e) when (e is SqlException || e is ExecutionFailureException)
             {
                 serverConnection.RollBackTransaction();
+                await UpsertSchemaVersionAsync(connection, version, SchemaVersionStatus.Failed.ToString(), cancellationToken).ConfigureAwait(false);
+                throw;
+            }
+        }
+
+        /// <inheritdoc />
+        public async Task ExecuteScriptAndCompleteSchemaVersionAsync(string script, int version, CancellationToken cancellationToken)
+        {
+            EnsureArg.IsNotNull(script, nameof(script));
+            EnsureArg.IsGte(version, 1);
+
+            using SqlConnection connection = await _sqlConnectionFactory.GetSqlConnectionAsync(cancellationToken: cancellationToken).ConfigureAwait(false);
+            await connection.TryOpenAsync(cancellationToken).ConfigureAwait(false);
+            var serverConnection = new ServerConnection(connection);
+
+            try
+            {
+                var server = new Server(serverConnection);
+
+                server.ConnectionContext.ExecuteNonQuery(script);
+
+                await UpsertSchemaVersionAsync(connection, version, SchemaVersionStatus.Completed.ToString(), cancellationToken).ConfigureAwait(false);
+            }
+            catch (Exception e) when (e is SqlException || e is ExecutionFailureException)
+            {
                 await UpsertSchemaVersionAsync(connection, version, SchemaVersionStatus.Failed.ToString(), cancellationToken).ConfigureAwait(false);
                 throw;
             }
