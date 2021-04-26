@@ -10,10 +10,12 @@ using System.Globalization;
 using System.Threading;
 using System.Threading.Tasks;
 using EnsureThat;
+using MediatR;
 using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Health.SqlServer.Configs;
+using Microsoft.Health.SqlServer.Features.Schema.Extensions;
 
 namespace Microsoft.Health.SqlServer.Features.Schema
 {
@@ -30,22 +32,17 @@ namespace Microsoft.Health.SqlServer.Features.Schema
         private readonly ILogger<SchemaInitializer> _logger;
         private readonly ISqlConnectionFactory _sqlConnectionFactory;
         private readonly ISqlConnectionStringProvider _sqlConnectionStringProvider;
+        private readonly IMediator _mediator;
 
-        public SchemaInitializer(SqlServerDataStoreConfiguration sqlServerDataStoreConfiguration, SchemaUpgradeRunner schemaUpgradeRunner, SchemaInformation schemaInformation, ISqlConnectionFactory sqlConnectionFactory, ISqlConnectionStringProvider sqlConnectionStringProvider, ILogger<SchemaInitializer> logger)
+        public SchemaInitializer(SqlServerDataStoreConfiguration sqlServerDataStoreConfiguration, SchemaUpgradeRunner schemaUpgradeRunner, SchemaInformation schemaInformation, ISqlConnectionFactory sqlConnectionFactory, ISqlConnectionStringProvider sqlConnectionStringProvider, IMediator mediator, ILogger<SchemaInitializer> logger)
         {
-            EnsureArg.IsNotNull(sqlServerDataStoreConfiguration, nameof(sqlServerDataStoreConfiguration));
-            EnsureArg.IsNotNull(schemaUpgradeRunner, nameof(schemaUpgradeRunner));
-            EnsureArg.IsNotNull(schemaInformation, nameof(schemaInformation));
-            EnsureArg.IsNotNull(sqlConnectionFactory, nameof(sqlConnectionFactory));
-            EnsureArg.IsNotNull(sqlConnectionStringProvider, nameof(sqlConnectionStringProvider));
-            EnsureArg.IsNotNull(logger, nameof(logger));
-
-            _sqlServerDataStoreConfiguration = sqlServerDataStoreConfiguration;
-            _schemaUpgradeRunner = schemaUpgradeRunner;
-            _schemaInformation = schemaInformation;
-            _sqlConnectionFactory = sqlConnectionFactory;
-            _sqlConnectionStringProvider = sqlConnectionStringProvider;
-            _logger = logger;
+            _sqlServerDataStoreConfiguration = EnsureArg.IsNotNull(sqlServerDataStoreConfiguration, nameof(sqlServerDataStoreConfiguration));
+            _schemaUpgradeRunner = EnsureArg.IsNotNull(schemaUpgradeRunner, nameof(schemaUpgradeRunner));
+            _schemaInformation = EnsureArg.IsNotNull(schemaInformation, nameof(schemaInformation));
+            _sqlConnectionFactory = EnsureArg.IsNotNull(sqlConnectionFactory, nameof(sqlConnectionFactory));
+            _sqlConnectionStringProvider = EnsureArg.IsNotNull(sqlConnectionStringProvider, nameof(sqlConnectionStringProvider));
+            _mediator = EnsureArg.IsNotNull(mediator, nameof(mediator));
+            _logger = EnsureArg.IsNotNull(logger, nameof(logger));
         }
 
         public async Task InitializeAsync(bool forceIncrementalSchemaUpgrade = false, CancellationToken cancellationToken = default)
@@ -80,6 +77,8 @@ namespace Microsoft.Health.SqlServer.Features.Schema
                     }
 
                     await GetCurrentSchemaVersionAsync(cancellationToken).ConfigureAwait(false);
+
+                    await _mediator.NotifySchemaUpgradedAsync((int)_schemaInformation.Current, true);
                 }
 
                 // If the current schema version needs to be upgraded
@@ -94,6 +93,8 @@ namespace Microsoft.Health.SqlServer.Features.Schema
                 }
 
                 await GetCurrentSchemaVersionAsync(cancellationToken).ConfigureAwait(false);
+
+                await _mediator.NotifySchemaUpgradedAsync((int)_schemaInformation.Current, false);
             }
         }
 
