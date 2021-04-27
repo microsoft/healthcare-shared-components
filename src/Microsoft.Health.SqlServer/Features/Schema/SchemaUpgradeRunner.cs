@@ -7,11 +7,9 @@ using System.Data;
 using System.Threading;
 using System.Threading.Tasks;
 using EnsureThat;
-using MediatR;
 using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.Logging;
 using Microsoft.Health.SqlServer.Extensions;
-using Microsoft.Health.SqlServer.Features.Schema.Extensions;
 using Microsoft.Health.SqlServer.Features.Schema.Manager;
 
 namespace Microsoft.Health.SqlServer.Features.Schema
@@ -20,7 +18,6 @@ namespace Microsoft.Health.SqlServer.Features.Schema
     {
         private readonly IScriptProvider _scriptProvider;
         private readonly IBaseScriptProvider _baseScriptProvider;
-        private readonly IMediator _mediator;
         private readonly ILogger<SchemaUpgradeRunner> _logger;
         private readonly ISqlConnectionFactory _sqlConnectionFactory;
         private ISchemaManagerDataStore _schemaManagerDataStore;
@@ -28,21 +25,18 @@ namespace Microsoft.Health.SqlServer.Features.Schema
         public SchemaUpgradeRunner(
             IScriptProvider scriptProvider,
             IBaseScriptProvider baseScriptProvider,
-            IMediator mediator,
             ILogger<SchemaUpgradeRunner> logger,
             ISqlConnectionFactory sqlConnectionFactory,
             ISchemaManagerDataStore schemaManagerDataStore)
         {
             EnsureArg.IsNotNull(scriptProvider, nameof(scriptProvider));
             EnsureArg.IsNotNull(baseScriptProvider, nameof(baseScriptProvider));
-            EnsureArg.IsNotNull(mediator, nameof(mediator));
             EnsureArg.IsNotNull(logger, nameof(logger));
             EnsureArg.IsNotNull(sqlConnectionFactory, nameof(sqlConnectionFactory));
             EnsureArg.IsNotNull(schemaManagerDataStore, nameof(schemaManagerDataStore));
 
             _scriptProvider = scriptProvider;
             _baseScriptProvider = baseScriptProvider;
-            _mediator = mediator;
             _logger = logger;
             _sqlConnectionFactory = sqlConnectionFactory;
             _schemaManagerDataStore = schemaManagerDataStore;
@@ -61,7 +55,6 @@ namespace Microsoft.Health.SqlServer.Features.Schema
 
             await CompleteSchemaVersionAsync(version, cancellationToken);
 
-            await _mediator.NotifySchemaUpgradedAsync(version, applyFullSchemaSnapshot);
             _logger.LogInformation("Completed applying schema {version}", version);
         }
 
