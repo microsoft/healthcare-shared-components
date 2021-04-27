@@ -11,7 +11,15 @@ namespace Microsoft.Health.SqlServer.Features.Schema.Manager
     public interface ISchemaManagerDataStore
     {
         /// <summary>
-        /// Execute the script and status update of the given version in SchemaVersion table under a transaction
+        /// Execute the Sql script in a transaction
+        /// </summary>
+        /// <param name="script">The script to execute</param>
+        /// <param name="version">The version to update its status</param>
+        /// <param name="cancellationToken">A cancellation token</param>
+        Task ExecuteScriptAndCompleteSchemaVersionTransactionAsync(string script, int version, CancellationToken cancellationToken);
+
+        /// <summary>
+        /// Execute the Sql script
         /// </summary>
         /// <param name="script">The script to execute</param>
         /// <param name="version">The version to update its status</param>

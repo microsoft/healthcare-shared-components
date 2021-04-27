@@ -101,7 +101,25 @@ namespace SchemaManager.Core.UnitTests
             _client.GetCompatibilityAsync(Arg.Any<CancellationToken>()).ReturnsForAnyArgs(new CompatibleVersion(1, 2));
             _client.GetDiffScriptAsync(Arg.Is<Uri>(new Uri("_script/2.diff.sql", UriKind.Relative)), Arg.Any<CancellationToken>()).Returns("script");
             await _sqlSchemaManager.ApplySchema("connectionString", new Uri("https://localhost/"), new MutuallyExclusiveType { Latest = false, Version = 2, Next = false });
-            await _schemaManagerDataStore.Received().ExecuteScriptAndCompleteSchemaVersionAsync(Arg.Is("script"), Arg.Is(2), Arg.Any<CancellationToken>());
+            await _schemaManagerDataStore.DidNotReceive().ExecuteScriptAndCompleteSchemaVersionTransactionAsync(Arg.Is("script"), Arg.Is(2), Arg.Any<CancellationToken>());
+            await _schemaManagerDataStore.Received(1).ExecuteScriptAndCompleteSchemaVersionAsync(Arg.Is("script"), Arg.Is(2), Arg.Any<CancellationToken>());
+        }
+
+        [Fact]
+        public async Task ApplySchema_UsingSnapshotScript_Succeeds()
+        {
+            var list1 = new List<AvailableVersion> { new AvailableVersion(0, "_script/0.sql", "_script/0.diff.sql"), new AvailableVersion(1, "_script/1.sql", "_script/1.diff.sql"), new AvailableVersion(2, "_script/2.sql", "_script/2.diff.sql") };
+            var list2 = new List<AvailableVersion> { new AvailableVersion(0, "_script/0.sql", "_script/0.diff.sql"), new AvailableVersion(1, "_script/1.sql", "_script/1.diff.sql"), new AvailableVersion(2, "_script/2.sql", "_script/2.diff.sql") };
+            _schemaManagerDataStore.GetCurrentSchemaVersionAsync(default).ReturnsForAnyArgs(Task.FromResult(0));
+            _client.GetCurrentVersionInformationAsync(Arg.Any<CancellationToken>()).ReturnsForAnyArgs(new List<CurrentVersion> { });
+            _client.GetAvailabilityAsync(Arg.Any<CancellationToken>()).ReturnsForAnyArgs(list1, list2);
+            _client.GetScriptAsync(Arg.Is(new Uri("_script/2.sql", UriKind.Relative)), Arg.Any<CancellationToken>()).Returns("script");
+            _client.GetCompatibilityAsync(Arg.Any<CancellationToken>()).ReturnsForAnyArgs(new CompatibleVersion(1, 2));
+
+            await _sqlSchemaManager.ApplySchema("connectionString", new Uri("https://localhost/"), new MutuallyExclusiveType { Version = 2 });
+
+            await _schemaManagerDataStore.Received(1).ExecuteScriptAndCompleteSchemaVersionTransactionAsync(Arg.Is("script"), Arg.Is(2), Arg.Any<CancellationToken>());
+            await _schemaManagerDataStore.DidNotReceive().ExecuteScriptAndCompleteSchemaVersionAsync(Arg.Is("script"), Arg.Is(2), Arg.Any<CancellationToken>());
         }
 
         [Fact]
