@@ -89,12 +89,13 @@ namespace Microsoft.Health.SqlServer.Features.Schema
                     for (int i = current + 1; i <= _schemaInformation.MaximumSupportedVersion; i++)
                     {
                         await _schemaUpgradeRunner.ApplySchemaAsync(version: i, applyFullSchemaSnapshot: false, cancellationToken).ConfigureAwait(false);
+
+                        // we need to ensure that the schema upgrade notification is sent after updating the _schemaInformation.Current for each upgraded version
+                        await GetCurrentSchemaVersionAsync(cancellationToken).ConfigureAwait(false);
+
+                        await _mediator.NotifySchemaUpgradedAsync((int)_schemaInformation.Current, false);
                     }
                 }
-
-                await GetCurrentSchemaVersionAsync(cancellationToken).ConfigureAwait(false);
-
-                await _mediator.NotifySchemaUpgradedAsync((int)_schemaInformation.Current, false);
             }
         }
 
