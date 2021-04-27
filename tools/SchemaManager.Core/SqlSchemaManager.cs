@@ -117,7 +117,7 @@ namespace SchemaManager.Core
                     _logger.LogInformation(string.Format(CultureInfo.InvariantCulture, Resources.SchemaMigrationStartedMessage, availableVersions.Last().Id));
 
                     string script = await GetScriptAsync(1, availableVersions.Last().ScriptUri, token).ConfigureAwait(false);
-                    await UpgradeSchemaAsync(availableVersions.Last().Id, script, token).ConfigureAwait(false);
+                    await InitializeSchemaAsync(availableVersions.Last().Id, script, token).ConfigureAwait(false);
                     return;
                 }
 
@@ -270,7 +270,7 @@ namespace SchemaManager.Core
             return await _schemaClient.GetDiffScriptAsync(new Uri(diffUri, UriKind.Relative), cancellationToken).ConfigureAwait(false);
         }
 
-        private async Task UpgradeSchemaAsync(int version, string script, CancellationToken cancellationToken)
+        private async Task InitializeSchemaAsync(int version, string script, CancellationToken cancellationToken)
         {
             // check if the record for given version exists in started or failed status
             await _schemaManagerDataStore.DeleteSchemaVersionAsync(version, SchemaVersionStatus.Failed.ToString(), cancellationToken).ConfigureAwait(false);
