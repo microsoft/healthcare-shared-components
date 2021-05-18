@@ -151,6 +151,15 @@ namespace SchemaManager.Core {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to The current schema version is already greater than or equals to the target schema version..
+        /// </summary>
+        internal static string TargetVersionLesserThanCurrentVersion {
+            get {
+                return ResourceManager.GetString("TargetVersionLesserThanCurrentVersion", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to The schema version &quot;{0}&quot; is not compatible..
         /// </summary>
         internal static string VersionIncompatibilityMessage {
