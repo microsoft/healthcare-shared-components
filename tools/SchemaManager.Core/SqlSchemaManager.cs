@@ -99,6 +99,11 @@ namespace SchemaManager.Core
                 var targetVersion = type.Next == true ? availableVersions.First().Id :
                                                                  type.Latest == true ? availableVersions.Last().Id :
                                                                                                         type.Version;
+                if (availableVersions.First().Id > targetVersion)
+                {
+                    _logger.LogError(Resources.TargetVersionLesserThanCurrentVersion);
+                    return;
+                }
 
                 availableVersions = availableVersions.Where(availableVersion => availableVersion.Id <= targetVersion)
                     .ToList();

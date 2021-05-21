@@ -145,5 +145,20 @@ namespace SchemaManager.Core.UnitTests
             _client.GetDiffScriptAsync(Arg.Is<Uri>(new Uri("_script/2.diff.sql", UriKind.Relative)), Arg.Any<CancellationToken>()).Returns("script");
             await Assert.ThrowsAsync<InvalidOperationException>(() => _sqlSchemaManager.ApplySchema("connectionString", new Uri("https://localhost/"), new MutuallyExclusiveType { Latest = false, Version = 2, Next = false }));
         }
+
+        [Fact]
+        public async Task ApplySchema_TargetVersionIsLessThanOrEqualsToTheTheCurrentSchemaVersion_ShouldNotThrowException()
+        {
+            _schemaManagerDataStore.GetCurrentSchemaVersionAsync(default).ReturnsForAnyArgs(Task.FromResult(2));
+            _client.GetCurrentVersionInformationAsync(Arg.Any<CancellationToken>()).ReturnsForAnyArgs(new List<CurrentVersion> { new CurrentVersion(2, "completed", new List<string> { "2323" }) });
+            _client.GetAvailabilityAsync(Arg.Any<CancellationToken>()).ReturnsForAnyArgs(new List<AvailableVersion> { new AvailableVersion(2, "_script/2.sql", "_script/2.diff.sql"), new AvailableVersion(3, "_script/3.sql", "_script/3.diff.sql") });
+            _client.GetCompatibilityAsync(Arg.Any<CancellationToken>()).ReturnsForAnyArgs(new CompatibleVersion(1, 3));
+            _client.GetDiffScriptAsync(Arg.Is<Uri>(new Uri("_script/2.diff.sql", UriKind.Relative)), Arg.Any<CancellationToken>()).Returns("script");
+
+            await _sqlSchemaManager.ApplySchema("connectionString", new Uri("https://localhost/"), new MutuallyExclusiveType { Latest = false, Version = 2, Next = false });
+
+            await _schemaManagerDataStore.DidNotReceive().ExecuteScriptAndCompleteSchemaVersionTransactionAsync(Arg.Is("script"), Arg.Is(2), Arg.Any<CancellationToken>());
+            await _schemaManagerDataStore.DidNotReceive().ExecuteScriptAndCompleteSchemaVersionAsync(Arg.Is("script"), Arg.Is(2), Arg.Any<CancellationToken>());
+        }
     }
 }
