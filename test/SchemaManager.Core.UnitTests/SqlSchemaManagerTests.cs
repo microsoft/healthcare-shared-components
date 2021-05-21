@@ -157,7 +157,6 @@ namespace SchemaManager.Core.UnitTests
 
             await _sqlSchemaManager.ApplySchema("connectionString", new Uri("https://localhost/"), new MutuallyExclusiveType { Latest = false, Version = 2, Next = false });
 
-            await _schemaManagerDataStore.DidNotReceive().ExecuteScriptAndCompleteSchemaVersionTransactionAsync(Arg.Is("script"), Arg.Is(2), Arg.Any<CancellationToken>());
             await _schemaManagerDataStore.DidNotReceive().ExecuteScriptAndCompleteSchemaVersionAsync(Arg.Is("script"), Arg.Is(2), Arg.Any<CancellationToken>());
         }
     }
