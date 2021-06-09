@@ -96,11 +96,12 @@ It is recommended to add If Not Exists or appropriate idempotent check for SQL o
 
 ### Alter Stored Procedure in later schema version
 
-Generally, it is advised not to alter the SPs(Stored procedures) in the later schema version. Rather create SPs with the name <old SP Name>_<incremetingNumber> (i.e. UpsertResource_1) for the backward compatibility
-     - Let's say current schema version is x. Due to any reason, if the schema migration failed halfway through after the SP is altered, the fhir-server would use the altered SP while being on schema version 'x'. So we want to avoid that by creating new SP and this new SP would be referred in the code if the schema version >= x+1.
+Generally, it is advised not to alter the SPs(Stored procedures) in the later schema version. Rather create SPs with the name `<old SP Name>_<incrementingNumber>` (i.e. UpsertResource_1) for the backward compatibility
+     
+- Let's say current schema version is x. Due to any reason, if the schema migration failed halfway through after the SP is altered, the fhir-server would use the altered SP while being on schema version 'x'. So we want to avoid that by creating new SP and this new SP would be referred in the code if the schema version >= x+1.
 
 ## Add columns to existing tables
-If we need to add columns to existing tables, then wherever possible, we should add nullable column to the existing table for the backward compatibility. If for any specific scenario, we can't make column nullable then we should add default value to the existing rows.
+If we need to add columns to the existing tables, then wherever possible, we should add nullable column to the existing table for the backward compatibility. If for any specific scenario, the new column can't be nullable then we should add default value to the existing rows.
 
 ## Schema Initialization
 
