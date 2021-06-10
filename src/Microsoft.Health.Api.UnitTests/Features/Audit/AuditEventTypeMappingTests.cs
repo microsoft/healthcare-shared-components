@@ -26,8 +26,10 @@ namespace Microsoft.Health.Api.UnitTests.Features.Audit
         private const string AnonymousMethodName = nameof(MockController.Anonymous);
         private const string AudittedMethodName = nameof(MockController.Auditted);
         private const string MultipleRoutesMethodName = nameof(MockController.MultipleRoutes);
+        private const string SameNameMethodName = nameof(MockController.SameName);
         private const string NoAttributeMethodName = nameof(MockController.NoAttribute);
         private const string AuditEventType = "audit";
+        private const string AnotherAuditEventType = "anotherAudit";
 
         private readonly IActionDescriptorCollectionProvider _actionDescriptorCollectionProvider = Substitute.For<IActionDescriptorCollectionProvider>();
         private readonly AuditEventTypeMapping _auditEventTypeMapping;
@@ -104,6 +106,35 @@ namespace Microsoft.Health.Api.UnitTests.Features.Audit
             Assert.Throws<MissingAuditEventTypeMappingException>(() => _auditEventTypeMapping.GetAuditEventType("test", "action"));
         }
 
+        [Fact]
+        public void GivenTwoMethodsWithTheSameNameAndDifferentAuditEvents_WhenMappingIsCreated_ThenDuplicateActionForAuditEventExceptionShouldBeThrown()
+        {
+            Type mockControllerType = typeof(MockController);
+
+            var actionDescriptors = new List<ActionDescriptor>()
+            {
+                new ControllerActionDescriptor()
+                {
+                    ControllerName = ControllerName,
+                    ActionName = SameNameMethodName,
+                    MethodInfo = mockControllerType.GetMethod(SameNameMethodName, new Type[] { typeof(int) }),
+                },
+                new ControllerActionDescriptor()
+                {
+                    ControllerName = ControllerName,
+                    ActionName = SameNameMethodName,
+                    MethodInfo = mockControllerType.GetMethod(SameNameMethodName, new Type[] { typeof(string) }),
+                },
+            };
+
+            var actionDescriptorCollection = new ActionDescriptorCollection(actionDescriptors, 1);
+            _actionDescriptorCollectionProvider.ActionDescriptors.Returns(actionDescriptorCollection);
+
+            var eventTypeMapping = new AuditEventTypeMapping(_actionDescriptorCollectionProvider);
+
+            Assert.ThrowsAsync<DuplicateActionForAuditEventException>(() => ((IHostedService)eventTypeMapping).StartAsync(CancellationToken.None));
+        }
+
         private class MockController : Controller
         {
             [AllowAnonymous]
@@ -116,6 +147,12 @@ namespace Microsoft.Health.Api.UnitTests.Features.Audit
             [Route("another/route")]
             [AuditEventType(AuditEventType)]
             public IActionResult MultipleRoutes() => new OkResult();
+
+            [AuditEventType(AuditEventType)]
+            public IActionResult SameName(int x) => new OkResult();
+
+            [AuditEventType(AnotherAuditEventType)]
+            public IActionResult SameName(string y) => new OkResult();
 
             public IActionResult NoAttribute() => new OkResult();
         }

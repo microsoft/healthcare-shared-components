@@ -75,9 +75,19 @@ namespace Microsoft.Health.Api.Features.Audit
                 })
                 .Where(item => item.Attribute != null)
                 .Distinct()
+                .GroupBy(item => (item.ControllerName, item.ActionName))
+                .Select(item =>
+                {
+                    if (item.Count() != 1)
+                    {
+                        throw new DuplicateActionForAuditEventException(item.Key.ControllerName, item.Key.ActionName);
+                    }
+
+                    return item;
+                })
                 .ToDictionary(
-                    item => (item.ControllerName, item.ActionName),
-                    item => item.Attribute);
+                    item => item.Key,
+                    item => item.First().Attribute);
 
             return Task.CompletedTask;
         }
