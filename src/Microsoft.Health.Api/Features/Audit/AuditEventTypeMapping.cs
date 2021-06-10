@@ -74,6 +74,7 @@ namespace Microsoft.Health.Api.Features.Audit
                     return (ad.ControllerName, ad.ActionName, Attribute: attribute);
                 })
                 .Where(item => item.Attribute != null)
+                .Distinct()
                 .ToDictionary(
                     item => (item.ControllerName, item.ActionName),
                     item => item.Attribute);

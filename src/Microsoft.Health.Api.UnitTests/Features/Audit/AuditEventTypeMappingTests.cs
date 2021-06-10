@@ -25,6 +25,7 @@ namespace Microsoft.Health.Api.UnitTests.Features.Audit
         private const string ControllerName = nameof(MockController);
         private const string AnonymousMethodName = nameof(MockController.Anonymous);
         private const string AudittedMethodName = nameof(MockController.Auditted);
+        private const string MultipleRoutesMethodName = nameof(MockController.MultipleRoutes);
         private const string NoAttributeMethodName = nameof(MockController.NoAttribute);
         private const string AuditEventType = "audit";
 
@@ -55,6 +56,18 @@ namespace Microsoft.Health.Api.UnitTests.Features.Audit
                     ActionName = NoAttributeMethodName,
                     MethodInfo = mockControllerType.GetMethod(NoAttributeMethodName),
                 },
+                new ControllerActionDescriptor()
+                {
+                    ControllerName = ControllerName,
+                    ActionName = MultipleRoutesMethodName,
+                    MethodInfo = mockControllerType.GetMethod(MultipleRoutesMethodName),
+                },
+                new ControllerActionDescriptor()
+                {
+                    ControllerName = ControllerName,
+                    ActionName = MultipleRoutesMethodName,
+                    MethodInfo = mockControllerType.GetMethod(MultipleRoutesMethodName),
+                },
                 new PageActionDescriptor()
                 {
                 },
@@ -77,6 +90,7 @@ namespace Microsoft.Health.Api.UnitTests.Features.Audit
         [Theory]
         [InlineData(ControllerName, AnonymousMethodName, null)]
         [InlineData(ControllerName, AudittedMethodName, AuditEventType)]
+        [InlineData(ControllerName, MultipleRoutesMethodName, AuditEventType)]
         public void GivenControllerNameAndActionName_WhenGetAuditEventTypeIsCalled_ThenAuditEventTypeShouldBeReturned(string controllerName, string actionName, string expectedAuditEventType)
         {
             string actualAuditEventType = _auditEventTypeMapping.GetAuditEventType(controllerName, actionName);
@@ -97,6 +111,11 @@ namespace Microsoft.Health.Api.UnitTests.Features.Audit
 
             [AuditEventType(AuditEventType)]
             public IActionResult Auditted() => new OkResult();
+
+            [Route("some/route")]
+            [Route("another/route")]
+            [AuditEventType(AuditEventType)]
+            public IActionResult MultipleRoutes() => new OkResult();
 
             public IActionResult NoAttribute() => new OkResult();
         }
