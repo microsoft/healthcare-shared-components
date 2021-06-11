@@ -64,6 +64,7 @@ namespace Microsoft.Health.Api.Features.Audit
 
         public Task StartAsync(CancellationToken cancellationToken)
         {
+            // TODO: check that different actions are not using the same audit type
             _attributeDictionary = _actionDescriptorCollectionProvider.ActionDescriptors.Items
                 .OfType<ControllerActionDescriptor>()
                 .Select(ad =>
@@ -75,19 +76,22 @@ namespace Microsoft.Health.Api.Features.Audit
                 })
                 .Where(item => item.Attribute != null)
                 .Distinct()
-                .GroupBy(item => (item.ControllerName, item.ActionName))
-                .Select(item =>
-                {
-                    if (item.Count() != 1)
+                .GroupBy(
+                    x => (x.ControllerName, x.ActionName),
+                    x => x.Attribute,
+                    (key, values) =>
                     {
-                        throw new DuplicateActionForAuditEventException(item.Key.ControllerName, item.Key.ActionName);
-                    }
+                        List<Attribute> attributes = values.ToList();
+                        if (attributes.Count > 1)
+                        {
+                            throw new DuplicateActionForAuditEventException(key.ControllerName, key.ActionName);
+                        }
 
-                    return item;
-                })
+                        return (key, attributes[0]);
+                    })
                 .ToDictionary(
-                    item => item.Key,
-                    item => item.First().Attribute);
+                    item => item.key,
+                    item => item.Item2);
 
             return Task.CompletedTask;
         }

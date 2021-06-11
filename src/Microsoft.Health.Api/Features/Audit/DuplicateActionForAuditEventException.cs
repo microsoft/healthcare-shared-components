@@ -9,6 +9,20 @@ namespace Microsoft.Health.Api.Features.Audit
 {
     public class DuplicateActionForAuditEventException : Exception
     {
+        public DuplicateActionForAuditEventException()
+        {
+        }
+
+        public DuplicateActionForAuditEventException(string message)
+            : base(message)
+        {
+        }
+
+        public DuplicateActionForAuditEventException(string message, Exception inner)
+            : base(message, inner)
+        {
+        }
+
         public DuplicateActionForAuditEventException(string controllerName, string actionName)
             : base(string.Format(Resources.DuplicateActionForAuditEvent, controllerName, actionName))
         {
