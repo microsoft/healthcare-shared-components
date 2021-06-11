@@ -70,6 +70,15 @@ namespace Microsoft.Health.Api {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to A duplicate controller/action was found with different audit events. Controller: {0}, Action: {1}. Try using distinct action names inside the same controller..
+        /// </summary>
+        internal static string DuplicateActionForAuditEvent {
+            get {
+                return ResourceManager.GetString("DuplicateActionForAuditEvent", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Failed while running health check..
         /// </summary>
         internal static string FailedHealthCheckMessage {
