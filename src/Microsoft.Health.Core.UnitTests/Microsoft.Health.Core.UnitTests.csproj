@@ -27,4 +27,8 @@
     <ProjectReference Include="..\Microsoft.Health.Core\Microsoft.Health.Core.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Features\Events\" />
+  </ItemGroup>
+
 </Project>
