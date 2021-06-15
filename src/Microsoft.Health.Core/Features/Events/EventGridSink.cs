@@ -34,12 +34,12 @@ namespace Microsoft.Health.Core.Features.Events
 
         private async Task SendEventAsync(EventGridEvent eventGridEvent)
         {
-            await _client.SendEventAsync(eventGridEvent);
+            await _client.SendEventAsync(eventGridEvent).ConfigureAwait(false);
         }
 
         private async Task SendEventsAsync(IEnumerable<EventGridEvent> eventGridEvents)
         {
-           await _client.SendEventsAsync(eventGridEvents);
+           await _client.SendEventsAsync(eventGridEvents).ConfigureAwait(false);
         }
 
         /// <inheritdoc />
@@ -52,7 +52,7 @@ namespace Microsoft.Health.Core.Features.Events
                 Topic = data.Topic, EventTime = data.EventTime, Id = data.Id,
             };
 
-            await SendEventAsync(eventGridEvent);
+            await SendEventAsync(eventGridEvent).ConfigureAwait(false);
         }
 
         /// <inheritdoc />
@@ -66,7 +66,7 @@ namespace Microsoft.Health.Core.Features.Events
                     Topic = item.Topic, EventTime = item.EventTime, Id = item.Id,
                 }).ToList();
 
-            await SendEventsAsync(events);
+            await SendEventsAsync(events).ConfigureAwait(false);
         }
     }
 }

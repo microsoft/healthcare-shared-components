@@ -16,13 +16,6 @@ namespace Microsoft.Health.Core.UnitTests.Features.Events
     public class EventPublisherTests
     {
         /// <summary>
-        /// Initializes a new instance of the <see cref="EventPublisherTests"/> class.
-        /// </summary>
-        public EventPublisherTests()
-        {
-        }
-
-        /// <summary>
         /// TestCreateEventPublisherWithNullEndPoint.
         /// </summary>
         [Fact]
