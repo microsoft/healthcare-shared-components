@@ -18,7 +18,7 @@ namespace Microsoft.Health.Core.Features.Events
     /// </summary>
     /// <typeparam name="T">T of Type IEvent.</typeparam>
     public class EventGridSink<T> : ISink<T>
-        where T : IEvent
+        where T : class, IEvent
     {
         private readonly IEventGridPublisher _client;
 
@@ -45,6 +45,8 @@ namespace Microsoft.Health.Core.Features.Events
         /// <inheritdoc />
         public async Task WriteAsync(T data)
         {
+            EnsureArg.IsNotNull(data, nameof(data));
+
             var eventGridEvent = new EventGridEvent(data.Subject, data.EventType, data.DataVersion, data.Data)
             {
                 Topic = data.Topic, EventTime = data.EventTime, Id = data.Id,

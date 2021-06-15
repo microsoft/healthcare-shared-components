@@ -16,12 +16,12 @@ namespace Microsoft.Health.Abstractions.Data
     public interface ISource<T>
     {
         /// <summary>
-        /// Fetch records from underlying source that matches type T.
+        /// Read records from underlying source that matches type T.
         /// </summary>
         /// <param name="startId">Start Index of records.</param>
         /// <param name="pageSize">Page Size of records to fetch.</param>
         /// <param name="cancellationToken">Cancellation Token.</param>
         /// <returns>IReadOnlyCollection of T.</returns>
-        Task<IReadOnlyCollection<T>> FetchRecordsAsync(long startId, int pageSize, CancellationToken cancellationToken);
+        Task<IReadOnlyCollection<T>> GetRecordsAsync(long startId, int pageSize, CancellationToken cancellationToken);
     }
 }

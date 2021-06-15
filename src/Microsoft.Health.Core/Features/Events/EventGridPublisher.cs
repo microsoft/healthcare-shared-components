@@ -11,6 +11,7 @@ using System.Threading.Tasks;
 using Azure;
 using Azure.Core.Pipeline;
 using Azure.Messaging.EventGrid;
+using EnsureThat;
 using Microsoft.Health.Abstractions.Features.Events;
 
 namespace Microsoft.Health.Core.Features.Events
@@ -29,6 +30,9 @@ namespace Microsoft.Health.Core.Features.Events
         /// <param name="key">access key</param>
         public EventGridPublisher(Uri endpoint, string key)
         {
+            EnsureArg.IsNotNull(endpoint, nameof(endpoint));
+            EnsureArg.IsNotNull(key, nameof(key));
+
             _client = new EventGridPublisherClient(endpoint, new AzureKeyCredential(key));
         }
 
@@ -40,6 +44,10 @@ namespace Microsoft.Health.Core.Features.Events
         /// <param name="keyCredentialName">string</param>
         public EventGridPublisher(Uri endpoint, HttpClient httpClient, string keyCredentialName)
         {
+            EnsureArg.IsNotNull(endpoint, nameof(endpoint));
+            EnsureArg.IsNotNull(httpClient, nameof(httpClient));
+            EnsureArg.IsNotNull(keyCredentialName, nameof(keyCredentialName));
+
             var options = new EventGridPublisherClientOptions
             {
                 Transport = new HttpClientTransport(httpClient),
@@ -52,6 +60,8 @@ namespace Microsoft.Health.Core.Features.Events
             EventGridEvent eventGridEvent,
             CancellationToken cancellationToken = default)
         {
+            EnsureArg.IsNotNull(eventGridEvent, nameof(eventGridEvent));
+
             return await _client.SendEventAsync(eventGridEvent, cancellationToken).ConfigureAwait(false);
         }
 
@@ -60,6 +70,8 @@ namespace Microsoft.Health.Core.Features.Events
             IEnumerable<EventGridEvent> eventGridEvents,
             CancellationToken cancellationToken = default)
         {
+            EnsureArg.IsNotNull(eventGridEvents, nameof(eventGridEvents));
+
             return await _client.SendEventsAsync(eventGridEvents, cancellationToken).ConfigureAwait(false);
         }
     }
