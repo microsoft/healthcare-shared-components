@@ -20,9 +20,8 @@ namespace Microsoft.Health.Abstractions.Data
         /// </summary>
         /// <param name="startId">Start Index of records.</param>
         /// <param name="pageSize">Page Size of records to fetch.</param>
-        /// <param name="delayMilliseconds">Optional delay.</param>
         /// <param name="cancellationToken">Cancellation Token.</param>
         /// <returns>IReadOnlyCollection of T.</returns>
-        Task<IReadOnlyCollection<T>> FetchRecordsAsync(long startId, int pageSize, int? delayMilliseconds, CancellationToken cancellationToken);
+        Task<IReadOnlyCollection<T>> FetchRecordsAsync(long startId, int pageSize, CancellationToken cancellationToken);
     }
 }
