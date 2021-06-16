@@ -20,9 +20,9 @@ namespace Microsoft.Health.Core.UnitTests.Features.Events
     /// </summary>
     public class EventGridSinkTests
     {
-        private readonly EventGridSink<IEvent> _eventGridSink;
+        private readonly EventGridSink _eventGridSink;
         private readonly IEventGridPublisher _publisher;
-        private readonly EventData _testEventData;
+        private readonly EventGridEvent _testEventData;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="EventGridSinkTests"/> class.
@@ -30,14 +30,15 @@ namespace Microsoft.Health.Core.UnitTests.Features.Events
         public EventGridSinkTests()
         {
             _publisher = Substitute.For<IEventGridPublisher>();
-            _eventGridSink = new EventGridSink<IEvent>(_publisher);
-            _testEventData = new EventData
+            _eventGridSink = new EventGridSink(_publisher);
+            _testEventData =
+                new EventGridEvent(
+                    "test",
+                    "testEvent",
+                    "1",
+                    new BinaryData("testing"))
             {
                 Topic = "Test Topic",
-                DataVersion = "1",
-                EventType = "testEvent",
-                Subject = "test",
-                Data = new BinaryData(data: "testing"),
                 Id = Guid.NewGuid().ToString(),
                 EventTime = DateTimeOffset.UtcNow,
             };
@@ -49,9 +50,9 @@ namespace Microsoft.Health.Core.UnitTests.Features.Events
         [Fact]
         public void TestSendEvents()
         {
-            var eventsData = new List<IEvent> { _testEventData };
+            var eventsData = new List<EventGridEvent> { _testEventData };
 
-            _ = _eventGridSink.WriteAsync(data: new ReadOnlyCollection<IEvent>(list: eventsData));
+            _ = _eventGridSink.WriteAsync(data: new ReadOnlyCollection<EventGridEvent>(list: eventsData));
 
             _ = _publisher
                 .Received()

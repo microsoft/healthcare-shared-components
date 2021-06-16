@@ -4,7 +4,6 @@
 // -------------------------------------------------------------------------------------------------
 
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 using Azure.Messaging.EventGrid;
 using EnsureThat;
@@ -16,14 +15,12 @@ namespace Microsoft.Health.Core.Features.Events
     /// <summary>
     /// EventGridSink.
     /// </summary>
-    /// <typeparam name="T">T of Type IEvent.</typeparam>
-    public class EventGridSink<T> : ISink<T>
-        where T : class, IEvent
+    public class EventGridSink : ISink<EventGridEvent>
     {
         private readonly IEventGridPublisher _eventGridPublisher;
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="EventGridSink{T}"/> class.
+        /// Initializes a new instance of the <see cref="EventGridSink"/> class.
         /// </summary>
         /// <param name="publisher">IEventGridPublisher</param>
         public EventGridSink(IEventGridPublisher publisher)
@@ -43,34 +40,19 @@ namespace Microsoft.Health.Core.Features.Events
         }
 
         /// <inheritdoc />
-        public async Task WriteAsync(T data)
+        public async Task WriteAsync(EventGridEvent data)
         {
             EnsureArg.IsNotNull(data, nameof(data));
 
-            var eventGridEvent = new EventGridEvent(data.Subject, data.EventType, data.DataVersion, data.Data)
-            {
-                Topic = data.Topic,
-                EventTime = data.EventTime,
-                Id = data.Id,
-            };
-
-            await SendEventAsync(eventGridEvent).ConfigureAwait(false);
+            await SendEventAsync(data).ConfigureAwait(false);
         }
 
         /// <inheritdoc />
-        public async Task WriteAsync(IReadOnlyCollection<T> data)
+        public async Task WriteAsync(IReadOnlyCollection<EventGridEvent> data)
         {
             EnsureArg.IsNotNull(data, nameof(data));
 
-            var events = data.Select(item =>
-                new EventGridEvent(item.Subject, item.EventType, item.DataVersion, item.Data)
-                {
-                    Topic = item.Topic,
-                    EventTime = item.EventTime,
-                    Id = item.Id,
-                }).ToList();
-
-            await SendEventsAsync(events).ConfigureAwait(false);
+            await SendEventsAsync(data).ConfigureAwait(false);
         }
     }
 }
