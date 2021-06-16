@@ -15,7 +15,7 @@ namespace Microsoft.Health.Core.Features.Events
     /// <summary>
     /// EventGridSink.
     /// </summary>
-    public class EventGridSink : ISink<EventGridEvent>
+    public class EventGridSink : IChangeFeedSink<EventGridEvent>
     {
         private readonly IEventGridPublisher _eventGridPublisher;
 

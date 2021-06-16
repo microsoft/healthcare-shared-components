@@ -10,10 +10,10 @@ using System.Threading.Tasks;
 namespace Microsoft.Health.Abstractions.Data
 {
     /// <summary>
-    /// Used as the source for Data of type T.
+    /// Used as the source for change feed Data of type T.
     /// </summary>
     /// <typeparam name="T">Records of Type T</typeparam>
-    public interface ISource<T>
+    public interface IChangeFeedSource<T>
     {
         /// <summary>
         /// Read records from underlying source that matches type T.
