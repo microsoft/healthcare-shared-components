@@ -20,7 +20,7 @@ namespace Microsoft.Health.Core.Features.Events
     public class EventGridSink<T> : ISink<T>
         where T : class, IEvent
     {
-        private readonly IEventGridPublisher _client;
+        private readonly IEventGridPublisher _eventGridPublisher;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="EventGridSink{T}"/> class.
@@ -29,17 +29,17 @@ namespace Microsoft.Health.Core.Features.Events
         public EventGridSink(IEventGridPublisher publisher)
         {
             EnsureArg.IsNotNull(publisher, nameof(publisher));
-            _client = publisher;
+            _eventGridPublisher = publisher;
         }
 
         private async Task SendEventAsync(EventGridEvent eventGridEvent)
         {
-            await _client.SendEventAsync(eventGridEvent).ConfigureAwait(false);
+            await _eventGridPublisher.SendEventAsync(eventGridEvent).ConfigureAwait(false);
         }
 
         private async Task SendEventsAsync(IEnumerable<EventGridEvent> eventGridEvents)
         {
-           await _client.SendEventsAsync(eventGridEvents).ConfigureAwait(false);
+           await _eventGridPublisher.SendEventsAsync(eventGridEvents).ConfigureAwait(false);
         }
 
         /// <inheritdoc />
@@ -49,7 +49,9 @@ namespace Microsoft.Health.Core.Features.Events
 
             var eventGridEvent = new EventGridEvent(data.Subject, data.EventType, data.DataVersion, data.Data)
             {
-                Topic = data.Topic, EventTime = data.EventTime, Id = data.Id,
+                Topic = data.Topic,
+                EventTime = data.EventTime,
+                Id = data.Id,
             };
 
             await SendEventAsync(eventGridEvent).ConfigureAwait(false);
@@ -63,7 +65,9 @@ namespace Microsoft.Health.Core.Features.Events
             var events = data.Select(item =>
                 new EventGridEvent(item.Subject, item.EventType, item.DataVersion, item.Data)
                 {
-                    Topic = item.Topic, EventTime = item.EventTime, Id = item.Id,
+                    Topic = item.Topic,
+                    EventTime = item.EventTime,
+                    Id = item.Id,
                 }).ToList();
 
             await SendEventsAsync(events).ConfigureAwait(false);
