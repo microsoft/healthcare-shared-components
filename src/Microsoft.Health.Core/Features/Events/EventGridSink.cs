@@ -36,7 +36,7 @@ namespace Microsoft.Health.Core.Features.Events
 
         private async Task SendEventsAsync(IEnumerable<EventGridEvent> eventGridEvents)
         {
-           await _eventGridPublisher.SendEventsAsync(eventGridEvents).ConfigureAwait(false);
+            await _eventGridPublisher.SendEventsAsync(eventGridEvents).ConfigureAwait(false);
         }
 
         /// <inheritdoc />
