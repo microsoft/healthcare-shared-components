@@ -5,10 +5,9 @@
 
 using System;
 using System.Net.Http;
-using Microsoft.Health.Core.Features.Events;
 using Xunit;
 
-namespace Microsoft.Health.Core.UnitTests.Features.Events
+namespace Microsoft.Health.EventGrid.UnitTests.Events
 {
     /// <summary>
     /// EventPublisherTests.

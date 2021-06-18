@@ -8,11 +8,10 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using Azure.Messaging.EventGrid;
-using Microsoft.Health.Core.Features.Events;
 using NSubstitute;
 using Xunit;
 
-namespace Microsoft.Health.Core.UnitTests.Features.Events
+namespace Microsoft.Health.EventGrid.UnitTests.Events
 {
     /// <summary>
     /// EventGridSinkTests.

@@ -13,7 +13,7 @@ using Azure.Core.Pipeline;
 using Azure.Messaging.EventGrid;
 using EnsureThat;
 
-namespace Microsoft.Health.Core.Features.Events
+namespace Microsoft.Health.EventGrid
 {
     /// <summary>
     /// EventGridPublisher.

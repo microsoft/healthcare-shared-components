@@ -9,7 +9,7 @@ using Azure.Messaging.EventGrid;
 using EnsureThat;
 using Microsoft.Health.Abstractions.Data;
 
-namespace Microsoft.Health.Core.Features.Events
+namespace Microsoft.Health.EventGrid
 {
     /// <summary>
     /// EventGridSink.
