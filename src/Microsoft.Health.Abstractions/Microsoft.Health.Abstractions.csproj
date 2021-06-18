@@ -6,8 +6,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Azure.Messaging.EventGrid" Version="4.3.0" />
-    <PackageReference Include="System.Memory.Data" Version="1.0.2" />
   </ItemGroup>
 
   <ItemGroup>
@@ -23,6 +21,10 @@
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
       <Generator>ResXFileCodeGenerator</Generator>
     </EmbeddedResource>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Features\Events\" />
   </ItemGroup>
 
 </Project>
