@@ -12,7 +12,6 @@ using Azure;
 using Azure.Core.Pipeline;
 using Azure.Messaging.EventGrid;
 using EnsureThat;
-using Microsoft.Health.Abstractions.Features.Events;
 
 namespace Microsoft.Health.Core.Features.Events
 {

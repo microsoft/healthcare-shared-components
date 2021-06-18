@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 using Azure;
 using Azure.Messaging.EventGrid;
 
-namespace Microsoft.Health.Abstractions.Features.Events
+namespace Microsoft.Health.Core.Features.Events
 {
     /// <summary>
     /// Abstraction for the Azure.Messaging.EventGridPublisherClient

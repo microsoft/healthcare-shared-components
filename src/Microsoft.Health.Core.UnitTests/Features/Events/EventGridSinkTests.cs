@@ -8,7 +8,6 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using Azure.Messaging.EventGrid;
-using Microsoft.Health.Abstractions.Features.Events;
 using Microsoft.Health.Core.Features.Events;
 using NSubstitute;
 using Xunit;

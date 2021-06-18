@@ -8,7 +8,6 @@ using System.Threading.Tasks;
 using Azure.Messaging.EventGrid;
 using EnsureThat;
 using Microsoft.Health.Abstractions.Data;
-using Microsoft.Health.Abstractions.Features.Events;
 
 namespace Microsoft.Health.Core.Features.Events
 {
@@ -29,22 +28,12 @@ namespace Microsoft.Health.Core.Features.Events
             _eventGridPublisher = publisher;
         }
 
-        private async Task SendEventAsync(EventGridEvent eventGridEvent)
-        {
-            await _eventGridPublisher.SendEventAsync(eventGridEvent).ConfigureAwait(false);
-        }
-
-        private async Task SendEventsAsync(IEnumerable<EventGridEvent> eventGridEvents)
-        {
-            await _eventGridPublisher.SendEventsAsync(eventGridEvents).ConfigureAwait(false);
-        }
-
         /// <inheritdoc />
         public async Task WriteAsync(EventGridEvent data)
         {
             EnsureArg.IsNotNull(data, nameof(data));
 
-            await SendEventAsync(data).ConfigureAwait(false);
+            await _eventGridPublisher.SendEventAsync(data).ConfigureAwait(false);
         }
 
         /// <inheritdoc />
@@ -52,7 +41,7 @@ namespace Microsoft.Health.Core.Features.Events
         {
             EnsureArg.IsNotNull(data, nameof(data));
 
-            await SendEventsAsync(data).ConfigureAwait(false);
+            await _eventGridPublisher.SendEventsAsync(data).ConfigureAwait(false);
         }
     }
 }
