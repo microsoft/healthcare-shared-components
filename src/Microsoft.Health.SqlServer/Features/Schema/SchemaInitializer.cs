@@ -23,7 +23,7 @@ namespace Microsoft.Health.SqlServer.Features.Schema
     /// EXPERIMENTAL - Initializes the sql schema and brings the schema up to the min supported version.
     /// The purpose of this it to enable easy scenarios during development and will likely be removed later.
     /// </summary>
-    public class SchemaInitializer : IHostedService
+    public class SchemaInitializer : IHostedServiceWrap
     {
         private const string MasterDatabase = "master";
         private readonly SqlServerDataStoreConfiguration _sqlServerDataStoreConfiguration;

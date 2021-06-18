@@ -22,7 +22,8 @@ namespace Microsoft.Health.SqlServer.Registration
         public static IServiceCollection AddSqlServerBase<TSchemaVersionEnum>(
             this IServiceCollection services,
             IConfiguration configurationRoot,
-            Action<SqlServerDataStoreConfiguration> configureAction = null)
+            Action<SqlServerDataStoreConfiguration> configureAction = null,
+            bool useAlternativeHostedService = false)
             where TSchemaVersionEnum : Enum
         {
             var config = new SqlServerDataStoreConfiguration();
@@ -50,10 +51,20 @@ namespace Microsoft.Health.SqlServer.Registration
                 .Singleton()
                 .AsSelf();
 
-            services.Add<SchemaInitializer>()
-                .Singleton()
-                .AsSelf()
-                .AsService<IHostedService>();
+            if (useAlternativeHostedService)
+            {
+                services.Add<SchemaInitializer>()
+                    .Singleton()
+                    .AsSelf()
+                    .AsService<IAlternativeHostedService>();
+            }
+            else
+            {
+                services.Add<SchemaInitializer>()
+                    .Singleton()
+                    .AsSelf()
+                    .AsService<IHostedService>();
+            }
 
             services.Add<ScriptProvider<TSchemaVersionEnum>>()
                 .Singleton()
