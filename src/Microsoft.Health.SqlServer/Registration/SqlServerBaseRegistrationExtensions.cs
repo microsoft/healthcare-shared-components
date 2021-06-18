@@ -56,7 +56,7 @@ namespace Microsoft.Health.SqlServer.Registration
                 services.Add<SchemaInitializer>()
                     .Singleton()
                     .AsSelf()
-                    .AsService<IAlternativeHostedService>();
+                    .AsService<IHostedServiceWrap>();
             }
             else
             {
