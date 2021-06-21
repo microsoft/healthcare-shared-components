@@ -22,7 +22,7 @@ namespace Microsoft.Health.Abstractions.Data
         Task WriteAsync(T data);
 
         /// <summary>
-        /// WRite a collection of type T.
+        /// Write a collection of type T.
         /// </summary>
         /// <param name="data">Data of type T.</param>
         /// <returns>Task.</returns>
