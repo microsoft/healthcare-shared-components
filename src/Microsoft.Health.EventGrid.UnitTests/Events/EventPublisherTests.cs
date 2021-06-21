@@ -18,7 +18,7 @@ namespace Microsoft.Health.EventGrid.UnitTests.Events
         /// TestCreateEventPublisherWithNullEndPoint.
         /// </summary>
         [Fact]
-        public void CreateEventPublisherWithNullEndPoint_ShowThrowArgumentNullException()
+        public void CreateEventPublisherWithNullEndPoint_ShouldThrowArgumentNullException()
         {
             Assert.Throws<ArgumentNullException>(() =>
             {
@@ -35,7 +35,7 @@ namespace Microsoft.Health.EventGrid.UnitTests.Events
         /// TestCreateEventPublisherWithNullAccessKey.
         /// </summary>
         [Fact]
-        public void CreateEventPublisherWithNullAccessKey_ShowThrowArgumentNullException()
+        public void CreateEventPublisherWithNullAccessKey_ShouldThrowArgumentNullException()
         {
             Assert.Throws<ArgumentNullException>(() =>
             {
@@ -54,7 +54,7 @@ namespace Microsoft.Health.EventGrid.UnitTests.Events
         /// Test CreateEventPublisherWithNull httpClient.
         /// </summary>
         [Fact]
-        public void CreateEventPublisherWithNullHttpClient_ShowThrowArgumentNullException()
+        public void CreateEventPublisherWithNullHttpClient_ShouldThrowArgumentNullException()
         {
             Assert.Throws<ArgumentNullException>(() =>
             {
