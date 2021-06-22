@@ -11,6 +11,6 @@ namespace Microsoft.Health.Checkpoints
     {
         Task<ICheckpoint> GetCheckpointAsync(string checkpointIdentifier);
 
-        Task SetCheckpointAsync(ICheckpoint checkpoint);
+        Task<ICheckpoint> SetCheckpointAsync(ICheckpoint checkpoint);
     }
 }

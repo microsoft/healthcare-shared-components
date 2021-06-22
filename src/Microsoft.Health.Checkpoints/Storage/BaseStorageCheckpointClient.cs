@@ -7,76 +7,120 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
+using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
 using Azure;
 using Azure.Storage.Blobs;
 using Azure.Storage.Blobs.Models;
 using EnsureThat;
+using Microsoft.Extensions.Logging;
 
 namespace Microsoft.Health.Checkpoints.Storage
 {
     public class BaseStorageCheckpointClient : ICheckpointClient
     {
         private BlobContainerClient _storageClient;
+        private ILogger<BaseStorageCheckpointClient> _logger;
+        private const string _lastProcessedDateTime = "LastProcessedDateTime";
+        private const string _lastProcessedIdentifier = "LastProcessedIdentifier";
 
-        public BaseStorageCheckpointClient(BlobContainerClient containerClient)
+        public BaseStorageCheckpointClient(BlobContainerClient containerClient, ILogger<BaseStorageCheckpointClient> logger)
         {
             EnsureArg.IsNotNull(containerClient);
 
             _storageClient = containerClient;
+            _logger = logger;
         }
 
-        public virtual Task<ICheckpoint> GetCheckpointAsync(string checkpointIdentifier)
+        public virtual async Task<ICheckpoint> GetCheckpointAsync(string checkpointIdentifier)
         {
-            Task<ICheckpoint> GetCheckpointAsync()
+            EnsureArg.IsNotNullOrEmpty(checkpointIdentifier, nameof(checkpointIdentifier));
+
+            ICheckpoint checkpoint = new Checkpoint();
+
+            try
             {
-                ICheckpoint checkpoint = new Checkpoint();
+                var resultSegment = _storageClient.GetBlobsAsync(
+                                        traits: BlobTraits.Metadata,
+                                        states: BlobStates.All,
+                                        prefix: checkpointIdentifier,
+                                        cancellationToken: CancellationToken.None)
+                                        .AsPages();
 
-                foreach (BlobItem blob in _storageClient.GetBlobs(traits: BlobTraits.Metadata, states: BlobStates.All, prefix: checkpointIdentifier, cancellationToken: CancellationToken.None))
+                await foreach (Page<BlobItem> blobPage in resultSegment)
                 {
-                    DateTimeOffset lastEventTimestamp = DateTime.MinValue;
-
-                    if (blob.Metadata.TryGetValue("LastProcessedDt", out var dt))
+                    if (blobPage.Values.Count == 0)
                     {
-                        DateTimeOffset.TryParse(dt, null, DateTimeStyles.AssumeUniversal, out lastEventTimestamp);
-                        checkpoint.LastProcessedDt = lastEventTimestamp;
+                        _logger.LogWarning($"No blob found for identifier {checkpointIdentifier}");
                     }
 
-                    if (blob.Metadata.TryGetValue("LastProcessedId", out var id))
+                    if (blobPage.Values.Count > 1)
                     {
-                        checkpoint.LastProcessedId = id;
+                        _logger.LogWarning($"Multiple blobs found for identifier {checkpointIdentifier}");
                     }
 
-                    checkpoint.Identifier = checkpointIdentifier;
+                    foreach (BlobItem blobItem in blobPage.Values)
+                    {
+                        DateTimeOffset lastEventTimestamp = DateTime.MinValue;
+
+                        if (blobItem.Metadata.TryGetValue(_lastProcessedDateTime, out var dt))
+                        {
+                            DateTimeOffset.TryParse(dt, null, DateTimeStyles.AssumeUniversal, out lastEventTimestamp);
+                            checkpoint.LastProcessedDateTime = lastEventTimestamp;
+                        }
+
+                        if (blobItem.Metadata.TryGetValue(_lastProcessedIdentifier, out var id))
+                        {
+                            checkpoint.LastProcessedIdentifier = id;
+                        }
+
+                        if (checkpoint.LastProcessedDateTime == DateTime.MinValue || checkpoint.LastProcessedIdentifier == null)
+                        {
+                            _logger.LogWarning($"No valid checkpoint found for {checkpointIdentifier}. Using default checkpoint of {checkpoint.LastProcessedDateTime}");
+                        }
+
+                        checkpoint.ETag = (ETag)blobItem.Properties.ETag;
+                        checkpoint.Identifier = checkpointIdentifier;
+                    }
                 }
-
-                return Task.FromResult(checkpoint);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, ex.Message);
+                throw;
             }
 
-            return GetCheckpointAsync();
+            return checkpoint;
         }
 
-        public virtual async Task SetCheckpointAsync(ICheckpoint checkpoint)
+        public virtual async Task<ICheckpoint> SetCheckpointAsync(ICheckpoint checkpoint)
         {
             EnsureArg.IsNotNull(checkpoint);
             EnsureArg.IsNotNullOrWhiteSpace(checkpoint.Identifier);
 
-            var lastProcessedDt = EnsureArg.IsNotNullOrWhiteSpace(checkpoint.LastProcessedDt.DateTime.ToString("MM/dd/yyyy hh:mm:ss.fff tt"), nameof(checkpoint.LastProcessedDt));
-            var lastProcessedId = checkpoint.LastProcessedId;
+            var lastProcessedDateTime = EnsureArg.IsNotNullOrWhiteSpace(checkpoint.LastProcessedDateTime.DateTime.ToString("MM/dd/yyyy hh:mm:ss.fff tt"), nameof(checkpoint.LastProcessedDateTime));
+            var lastProcessedIdentifier = checkpoint.LastProcessedIdentifier;
 
             var blobName = checkpoint.Identifier;
             var blobClient = _storageClient.GetBlobClient(blobName);
 
             var metadata = new Dictionary<string, string>()
             {
-                { "LastProcessedDt",  lastProcessedDt },
-                { "LastProcessedId",  lastProcessedId },
+                { _lastProcessedDateTime,  lastProcessedDateTime },
+                { _lastProcessedIdentifier,  lastProcessedIdentifier },
             };
 
             try
             {
-                await blobClient.SetMetadataAsync(metadata);
+                var blobRequestOptions = new BlobRequestConditions();
+                blobRequestOptions.IfMatch = checkpoint.ETag;
+                BlobInfo result = await blobClient.SetMetadataAsync(metadata, blobRequestOptions);
+                checkpoint.ETag = result.ETag;
+            }
+            catch (RequestFailedException ex) when (ex.Status == (int)HttpStatusCode.PreconditionFailed)
+            {
+                _logger.LogWarning("The checkpoint's ETag does not match ETag provided.");
             }
             catch (RequestFailedException ex) when ((ex.ErrorCode == BlobErrorCode.BlobNotFound) || (ex.ErrorCode == BlobErrorCode.ContainerNotFound))
             {
@@ -85,6 +129,12 @@ namespace Microsoft.Health.Checkpoints.Storage
                     await blobClient.UploadAsync(blobContent, metadata: metadata).ConfigureAwait(false);
                 }
             }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, ex.Message);
+            }
+
+            return checkpoint;
         }
     }
 }

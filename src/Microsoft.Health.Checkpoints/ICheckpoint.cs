@@ -9,10 +9,14 @@ namespace Microsoft.Health.Checkpoints
 {
     public interface ICheckpoint
     {
+        string Partition { get; set; }
+
         string Identifier { get; set; }
 
-        DateTimeOffset LastProcessedDt { get; set; }
+        Azure.ETag ETag { get; set; }
 
-        string LastProcessedId { get; set; }
+        DateTimeOffset LastProcessedDateTime { get; set; }
+
+        string LastProcessedIdentifier { get; set; }
     }
 }
