@@ -18,14 +18,14 @@ using Microsoft.Extensions.Logging;
 
 namespace Microsoft.Health.Checkpoints.Storage
 {
-    public class BaseStorageCheckpointClient : ICheckpointClient
+    public class StorageCheckpointClient : ICheckpointClient
     {
         private BlobContainerClient _storageClient;
-        private ILogger<BaseStorageCheckpointClient> _logger;
+        private ILogger<StorageCheckpointClient> _logger;
         private const string _lastProcessedDateTime = "LastProcessedDateTime";
         private const string _lastProcessedIdentifier = "LastProcessedIdentifier";
 
-        public BaseStorageCheckpointClient(BlobContainerClient containerClient, ILogger<BaseStorageCheckpointClient> logger)
+        public StorageCheckpointClient(BlobContainerClient containerClient, ILogger<StorageCheckpointClient> logger)
         {
             EnsureArg.IsNotNull(containerClient);
 
@@ -33,8 +33,9 @@ namespace Microsoft.Health.Checkpoints.Storage
             _logger = logger;
         }
 
-        public virtual async Task<ICheckpoint> GetCheckpointAsync(string checkpointIdentifier)
+        public virtual async Task<ICheckpoint> GetCheckpointAsync(string partition, string checkpointIdentifier)
         {
+            EnsureArg.IsNotNullOrEmpty(partition, nameof(partition));
             EnsureArg.IsNotNullOrEmpty(checkpointIdentifier, nameof(checkpointIdentifier));
 
             ICheckpoint checkpoint = new Checkpoint();
@@ -44,7 +45,7 @@ namespace Microsoft.Health.Checkpoints.Storage
                 var resultSegment = _storageClient.GetBlobsAsync(
                                         traits: BlobTraits.Metadata,
                                         states: BlobStates.All,
-                                        prefix: checkpointIdentifier,
+                                        prefix: $"{partition}/{checkpointIdentifier}",
                                         cancellationToken: CancellationToken.None)
                                         .AsPages();
 
@@ -80,7 +81,7 @@ namespace Microsoft.Health.Checkpoints.Storage
                             _logger.LogWarning($"No valid checkpoint found for {checkpointIdentifier}. Using default checkpoint of {checkpoint.LastProcessedDateTime}");
                         }
 
-                        checkpoint.ETag = (ETag)blobItem.Properties.ETag;
+                        checkpoint.ETag = blobItem.Properties.ETag.ToString();
                         checkpoint.Identifier = checkpointIdentifier;
                     }
                 }
@@ -97,12 +98,13 @@ namespace Microsoft.Health.Checkpoints.Storage
         public virtual async Task<ICheckpoint> SetCheckpointAsync(ICheckpoint checkpoint)
         {
             EnsureArg.IsNotNull(checkpoint);
+            EnsureArg.IsNotNullOrWhiteSpace(checkpoint.Partition);
             EnsureArg.IsNotNullOrWhiteSpace(checkpoint.Identifier);
 
             var lastProcessedDateTime = EnsureArg.IsNotNullOrWhiteSpace(checkpoint.LastProcessedDateTime.DateTime.ToString("MM/dd/yyyy hh:mm:ss.fff tt"), nameof(checkpoint.LastProcessedDateTime));
             var lastProcessedIdentifier = checkpoint.LastProcessedIdentifier;
 
-            var blobName = checkpoint.Identifier;
+            var blobName = $"{checkpoint.Partition}/{checkpoint.Identifier}";
             var blobClient = _storageClient.GetBlobClient(blobName);
 
             var metadata = new Dictionary<string, string>()
@@ -114,9 +116,9 @@ namespace Microsoft.Health.Checkpoints.Storage
             try
             {
                 var blobRequestOptions = new BlobRequestConditions();
-                blobRequestOptions.IfMatch = checkpoint.ETag;
+                blobRequestOptions.IfMatch = new ETag(checkpoint.ETag);
                 BlobInfo result = await blobClient.SetMetadataAsync(metadata, blobRequestOptions);
-                checkpoint.ETag = result.ETag;
+                checkpoint.ETag = result.ETag.ToString();
             }
             catch (RequestFailedException ex) when (ex.Status == (int)HttpStatusCode.PreconditionFailed)
             {
@@ -126,7 +128,8 @@ namespace Microsoft.Health.Checkpoints.Storage
             {
                 using (var blobContent = new MemoryStream(Array.Empty<byte>()))
                 {
-                    await blobClient.UploadAsync(blobContent, metadata: metadata).ConfigureAwait(false);
+                    BlobContentInfo result = await blobClient.UploadAsync(blobContent, metadata: metadata).ConfigureAwait(false);
+                    checkpoint.ETag = result.ETag.ToString();
                 }
             }
             catch (Exception ex)

@@ -9,7 +9,7 @@ namespace Microsoft.Health.Checkpoints
 {
     public interface ICheckpointClient
     {
-        Task<ICheckpoint> GetCheckpointAsync(string checkpointIdentifier);
+        Task<ICheckpoint> GetCheckpointAsync(string partition, string checkpointIdentifier);
 
         Task<ICheckpoint> SetCheckpointAsync(ICheckpoint checkpoint);
     }

@@ -13,7 +13,7 @@ namespace Microsoft.Health.Checkpoints
 
         string Identifier { get; set; }
 
-        Azure.ETag ETag { get; set; }
+        string ETag { get; set; }
 
         DateTimeOffset LastProcessedDateTime { get; set; }
 
