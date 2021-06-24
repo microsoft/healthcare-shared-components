@@ -45,14 +45,14 @@ namespace Microsoft.Health.Checkpoints.Storage
                                     traits: BlobTraits.Metadata,
                                     states: BlobStates.All,
                                     prefix: blobName,
-                                    cancellationToken: CancellationToken.None)
+                                    cancellationToken: token)
                                     .AsPages();
 
             await foreach (Page<BlobItem> blobPage in resultSegment)
             {
                 if (blobPage.Values.Count == 0)
                 {
-                    _logger.LogInformation($"No blob found for blob name {blobName}");
+                    _logger.LogInformation("No blob found for blob name {blobName}.", blobName);
                     return null;
                 }
 
@@ -67,7 +67,7 @@ namespace Microsoft.Health.Checkpoints.Storage
                     string lastProcessedIdentifier;
                     if (blobItem.Metadata.TryGetValue(_lastProcessedDateTime, out lastProcessedDateTime))
                     {
-                        DateTimeOffset.TryParse(lastProcessedDateTime, null, DateTimeStyles.AssumeUniversal, out DateTimeOffset lastEventTimestamp);
+                        DateTimeOffset.TryParse(lastProcessedDateTime, null, DateTimeStyles.RoundtripKind, out DateTimeOffset lastEventTimestamp);
                         checkpoint.LastProcessedDateTime = lastEventTimestamp;
                     }
 
@@ -78,7 +78,7 @@ namespace Microsoft.Health.Checkpoints.Storage
 
                     if (string.IsNullOrWhiteSpace(lastProcessedDateTime) && string.IsNullOrWhiteSpace(lastProcessedIdentifier))
                     {
-                        _logger.LogInformation($"No valid checkpoint found for {blobName}.");
+                        _logger.LogInformation("No valid checkpoint found for {blobName}.", blobName);
                         return null;
                     }
 
@@ -97,7 +97,7 @@ namespace Microsoft.Health.Checkpoints.Storage
             EnsureArg.IsNotNullOrWhiteSpace(checkpoint.Partition);
             EnsureArg.IsNotNullOrWhiteSpace(checkpoint.Identifier);
 
-            var lastProcessedDateTime = checkpoint.LastProcessedDateTime.ToString("MM/dd/yyyy hh:mm:ss.fff tt");
+            var lastProcessedDateTime = checkpoint.LastProcessedDateTime.ToString("o");
             var lastProcessedIdentifier = checkpoint.LastProcessedIdentifier;
 
             var blobName = GetBlobName(checkpoint.Partition, checkpoint.Identifier);
