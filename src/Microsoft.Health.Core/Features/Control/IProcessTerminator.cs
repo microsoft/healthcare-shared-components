@@ -4,7 +4,6 @@
 // -------------------------------------------------------------------------------------------------
 
 using System.Threading;
-using System.Threading.Tasks;
 
 namespace Microsoft.Health.Core.Features.Control
 {
@@ -15,11 +14,5 @@ namespace Microsoft.Health.Core.Features.Control
         /// </summary>
         /// <param name="cancellationToken">A cancellation token.</param>
         public void Terminate(CancellationToken cancellationToken);
-
-        /// <summary>
-        /// Called before terminating the current process.
-        /// </summary>
-        /// <param name="cancellationToken">A cancellation token.</param>
-        public Task OnBeforeTerminate(CancellationToken cancellationToken);
     }
 }

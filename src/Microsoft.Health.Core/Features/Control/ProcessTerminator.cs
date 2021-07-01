@@ -34,7 +34,7 @@ namespace Microsoft.Health.Core.Features.Control
             _lifetime.StopApplication();
         }
 
-        public virtual Task OnBeforeTerminate(CancellationToken cancellationToken)
+        protected virtual Task OnBeforeTerminate(CancellationToken cancellationToken)
         {
             return Task.CompletedTask;
         }
