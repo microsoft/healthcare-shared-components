@@ -33,5 +33,10 @@ namespace Microsoft.Health.SqlServer.Configs
         /// Updates the schema migration options
         /// </summary>
         public SqlServerSchemaOptions SchemaOptions { get; set; } = new SqlServerSchemaOptions();
+
+        /// <summary>
+        /// If set, Instructs the serivce to terminate when its schema reaches the specified version.
+        /// </summary>
+        public int? TerminateWhenSchemaVersionUpdatedTo { get; set; }
     }
 }
