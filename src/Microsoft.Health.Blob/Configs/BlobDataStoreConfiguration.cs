@@ -7,6 +7,8 @@ namespace Microsoft.Health.Blob.Configs
 {
     public class BlobDataStoreConfiguration
     {
+        public const string SectionName = "BlobStore";
+
         public string ConnectionString { get; set; }
 
         public BlobDataStoreAuthenticationType AuthenticationType { get; set; } = BlobDataStoreAuthenticationType.ConnectionString;
