@@ -23,5 +23,12 @@ namespace Microsoft.Health.Abstractions.Data
         /// <param name="cancellationToken">Cancellation Token.</param>
         /// <returns>IReadOnlyCollection of T.</returns>
         Task<IReadOnlyCollection<T>> GetRecordsAsync(long startId, int pageSize, CancellationToken cancellationToken);
+
+        /// <summary>
+        /// Get resource types as a dictionary.
+        /// </summary>
+        /// <param name="cancellationToken">Cancellation Token.</param>
+        /// <returns>Returns a resource type map.</returns>
+        Task<IDictionary<short, string>> GetResourceTypeMapAsync(CancellationToken cancellationToken);
     }
 }
