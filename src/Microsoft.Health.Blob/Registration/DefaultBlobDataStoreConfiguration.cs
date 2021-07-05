@@ -11,6 +11,8 @@ namespace Microsoft.Health.Blob.Registration
 {
     internal class DefaultBlobDataStoreConfiguration : IConfigureOptions<BlobDataStoreConfiguration>
     {
+        public static DefaultBlobDataStoreConfiguration Instance { get; } = new DefaultBlobDataStoreConfiguration();
+
         public void Configure(BlobDataStoreConfiguration options)
         {
             if (string.IsNullOrEmpty(options.ConnectionString) && options.AuthenticationType == BlobDataStoreAuthenticationType.ConnectionString)

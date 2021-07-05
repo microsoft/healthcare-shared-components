@@ -7,6 +7,7 @@ using System;
 using System.Linq;
 using Azure.Storage.Blobs;
 using EnsureThat;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Options;
 using Microsoft.Health.Blob.Configs;
@@ -32,7 +33,24 @@ namespace Microsoft.Extensions.DependencyInjection
                 return services;
             }
 
-            return services.AddInitializedBlobServiceClient(configureAction);
+            services.AddSingleton(
+                provider =>
+                {
+                    var config = new BlobDataStoreConfiguration();
+                    provider
+                        .GetService<IConfiguration>()
+                        .GetSection(BlobDataStoreConfiguration.SectionName)
+                        .Bind(config);
+
+                    configureAction?.Invoke(config);
+                    DefaultBlobDataStoreConfiguration.Instance.Configure(config);
+
+                    return config;
+                });
+
+            return configureAction == null
+                ? services.AddInitializedBlobServiceClient()
+                : services.AddInitializedBlobServiceClient(configureAction);
         }
 
         /// <summary>
@@ -45,8 +63,9 @@ namespace Microsoft.Extensions.DependencyInjection
         {
             EnsureArg.IsNotNull(services, nameof(services));
 
+            services.AddOptions();
             services.TryAddEnumerable(ServiceDescriptor.Singleton<IConfigureOptions<BlobDataStoreConfiguration>>(new DefaultBlobDataStoreConfiguration()));
-            services.TryAddSingleton(p => BlobClientFactory.Create(p.GetRequiredService<BlobDataStoreConfiguration>()));
+            services.TryAddSingleton(p => BlobClientFactory.Create(p.GetRequiredService<IOptions<BlobDataStoreConfiguration>>().Value));
 
             return services;
         }
@@ -82,10 +101,13 @@ namespace Microsoft.Extensions.DependencyInjection
 
             services.TryAddEnumerable(ServiceDescriptor.Singleton<IConfigureOptions<BlobDataStoreConfiguration>>(new DefaultBlobDataStoreConfiguration()));
 
-            // Register BlobClientProvider and re-use the same implementation instance across multiple services
+            // Register BlobClientProvider and re-use the same implementation instance across multiple services.
+            // Note that declaring the factory as a variable will also ensure the implementation type in the
+            // ServiceDescriptor is correctly BlobClientProvider instead of the service type
+            Func<IServiceProvider, BlobClientProvider> factory = p => p.GetRequiredService<BlobClientProvider>();
             services.TryAddSingleton<BlobClientProvider>();
-            services.TryAddSingleton<IRequireInitializationOnFirstRequest>(p => p.GetRequiredService<BlobClientProvider>());
-            services.AddHostedService(p => p.GetRequiredService<BlobClientProvider>());
+            services.TryAddSingleton<IRequireInitializationOnFirstRequest>(factory);
+            services.AddHostedService(factory);
 
             services.TryAddSingleton(p => p.GetRequiredService<BlobClientProvider>().CreateBlobClient());
             services.TryAddSingleton<IBlobClientTestProvider, BlobClientReadWriteTestProvider>();

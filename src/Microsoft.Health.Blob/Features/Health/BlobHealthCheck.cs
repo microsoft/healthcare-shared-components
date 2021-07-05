@@ -35,21 +35,21 @@ namespace Microsoft.Health.Blob.Features.Health
         /// <param name="logger">The logger.</param>
         public BlobHealthCheck(
             BlobServiceClient client,
-            BlobDataStoreConfiguration configuration,
+            IOptions<BlobDataStoreConfiguration> configuration,
             IOptionsSnapshot<BlobContainerConfiguration> namedBlobContainerConfigurationAccessor,
             string containerConfigurationName,
             IBlobClientTestProvider testProvider,
             ILogger<BlobHealthCheck> logger)
         {
             EnsureArg.IsNotNull(client, nameof(client));
-            EnsureArg.IsNotNull(configuration, nameof(configuration));
+            EnsureArg.IsNotNull(configuration?.Value, nameof(configuration));
             EnsureArg.IsNotNull(namedBlobContainerConfigurationAccessor, nameof(namedBlobContainerConfigurationAccessor));
             EnsureArg.IsNotNullOrWhiteSpace(containerConfigurationName, nameof(containerConfigurationName));
             EnsureArg.IsNotNull(testProvider, nameof(testProvider));
             EnsureArg.IsNotNull(logger, nameof(logger));
 
             _client = client;
-            _configuration = configuration;
+            _configuration = configuration.Value;
             _blobContainerConfiguration = namedBlobContainerConfigurationAccessor.Get(containerConfigurationName);
             _testProvider = testProvider;
             _logger = logger;

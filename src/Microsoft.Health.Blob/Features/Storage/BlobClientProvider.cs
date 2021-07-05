@@ -11,6 +11,7 @@ using Azure.Storage.Blobs;
 using EnsureThat;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using Microsoft.Health.Blob.Configs;
 using Microsoft.Health.Core;
 using Microsoft.Health.Extensions.DependencyInjection;
@@ -23,20 +24,20 @@ namespace Microsoft.Health.Blob.Features.Storage
         private readonly RetryableInitializationOperation _initializationOperation;
 
         public BlobClientProvider(
-            BlobDataStoreConfiguration blobDataStoreConfiguration,
+            IOptions<BlobDataStoreConfiguration> blobDataStoreConfiguration,
             IBlobClientInitializer blobClientInitializer,
             ILogger<BlobClientProvider> logger,
             IEnumerable<IBlobContainerInitializer> collectionInitializers)
         {
-            EnsureArg.IsNotNull(blobDataStoreConfiguration, nameof(blobDataStoreConfiguration));
+            EnsureArg.IsNotNull(blobDataStoreConfiguration?.Value, nameof(blobDataStoreConfiguration));
             EnsureArg.IsNotNull(blobClientInitializer, nameof(blobClientInitializer));
             EnsureArg.IsNotNull(logger, nameof(logger));
             EnsureArg.IsNotNull(collectionInitializers, nameof(collectionInitializers));
 
-            _blobServiceClient = blobClientInitializer.CreateBlobClient(blobDataStoreConfiguration);
+            _blobServiceClient = blobClientInitializer.CreateBlobClient(blobDataStoreConfiguration.Value);
 
             _initializationOperation = new RetryableInitializationOperation(
-                () => blobClientInitializer.InitializeDataStoreAsync(_blobServiceClient, blobDataStoreConfiguration, collectionInitializers));
+                () => blobClientInitializer.InitializeDataStoreAsync(_blobServiceClient, blobDataStoreConfiguration.Value, collectionInitializers));
         }
 
         public Task StartAsync(CancellationToken cancellationToken)
