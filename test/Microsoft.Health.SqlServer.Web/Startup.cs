@@ -7,6 +7,7 @@ using MediatR;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Health.Core.Features.Control;
 using Microsoft.Health.Extensions.DependencyInjection;
 using Microsoft.Health.SqlServer.Api.Features;
 using Microsoft.Health.SqlServer.Api.Registration;
@@ -34,7 +35,7 @@ namespace Microsoft.Health.SqlServer.Web
 
             services.AddSqlServerBase<SchemaVersion>(Configuration);
             services.AddSqlServerApi();
-
+            services.AddSingleton<IProcessTerminator, ProcessTerminator>();
             services.AddMediatR(typeof(CompatibilityVersionHandler).Assembly);
 
             services.Add(provider => new SchemaInformation((int)SchemaVersion.Version1, (int)SchemaVersion.Version2))
