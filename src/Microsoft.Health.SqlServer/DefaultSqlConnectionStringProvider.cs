@@ -6,6 +6,7 @@
 using System.Threading;
 using System.Threading.Tasks;
 using EnsureThat;
+using Microsoft.Extensions.Options;
 using Microsoft.Health.SqlServer.Configs;
 
 namespace Microsoft.Health.SqlServer
@@ -17,9 +18,9 @@ namespace Microsoft.Health.SqlServer
     {
         private readonly SqlServerDataStoreConfiguration _sqlServerDataStoreConfiguration;
 
-        public DefaultSqlConnectionStringProvider(SqlServerDataStoreConfiguration sqlServerDataStoreConfiguration)
+        public DefaultSqlConnectionStringProvider(IOptions<SqlServerDataStoreConfiguration> sqlServerDataStoreConfiguration)
         {
-            _sqlServerDataStoreConfiguration = EnsureArg.IsNotNull(sqlServerDataStoreConfiguration, nameof(sqlServerDataStoreConfiguration));
+            _sqlServerDataStoreConfiguration = EnsureArg.IsNotNull(sqlServerDataStoreConfiguration?.Value, nameof(sqlServerDataStoreConfiguration));
         }
 
         /// <inheritdoc />

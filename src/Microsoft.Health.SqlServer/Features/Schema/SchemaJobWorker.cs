@@ -10,6 +10,7 @@ using EnsureThat;
 using MediatR;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using Microsoft.Health.Core;
 using Microsoft.Health.SqlServer.Configs;
 using Microsoft.Health.SqlServer.Features.Schema.Extensions;
@@ -30,17 +31,17 @@ namespace Microsoft.Health.SqlServer.Features.Schema
 
         public SchemaJobWorker(
             IServiceProvider services,
-            SqlServerDataStoreConfiguration sqlServerDataStoreConfiguration,
+            IOptions<SqlServerDataStoreConfiguration> sqlServerDataStoreConfiguration,
             IMediator mediator,
             ILogger<SchemaJobWorker> logger)
         {
             EnsureArg.IsNotNull(services, nameof(services));
-            EnsureArg.IsNotNull(sqlServerDataStoreConfiguration, nameof(sqlServerDataStoreConfiguration));
+            EnsureArg.IsNotNull(sqlServerDataStoreConfiguration?.Value, nameof(sqlServerDataStoreConfiguration));
             EnsureArg.IsNotNull(mediator, nameof(mediator));
             EnsureArg.IsNotNull(logger, nameof(logger));
 
             _serviceProvider = services;
-            _sqlServerDataStoreConfiguration = sqlServerDataStoreConfiguration;
+            _sqlServerDataStoreConfiguration = sqlServerDataStoreConfiguration.Value;
             _mediator = mediator;
             _logger = logger;
         }

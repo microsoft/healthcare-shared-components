@@ -9,6 +9,7 @@ using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.Extensions.Options;
 using Microsoft.Health.SqlServer.Configs;
 using Microsoft.Health.SqlServer.Features.Schema.Manager;
 using Microsoft.Health.SqlServer.Features.Schema.Manager.Exceptions;
@@ -36,7 +37,7 @@ namespace SchemaManager.Core.UnitTests
 
             _baseSchemaRunner.EnsureBaseSchemaExistsAsync(default).ReturnsForAnyArgs(Task.FromResult(true));
             _baseSchemaRunner.EnsureInstanceSchemaRecordExistsAsync(default).ReturnsForAnyArgs(Task.FromResult(true));
-            _sqlSchemaManager = new SqlSchemaManager(_configuration, _baseSchemaRunner, _schemaManagerDataStore, _client, NullLogger<SqlSchemaManager>.Instance);
+            _sqlSchemaManager = new SqlSchemaManager(Options.Create(_configuration), _baseSchemaRunner, _schemaManagerDataStore, _client, NullLogger<SqlSchemaManager>.Instance);
         }
 
         [Fact]

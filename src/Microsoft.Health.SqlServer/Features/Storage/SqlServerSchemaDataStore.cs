@@ -11,6 +11,7 @@ using System.Threading.Tasks;
 using EnsureThat;
 using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using Microsoft.Health.SqlServer.Configs;
 using Microsoft.Health.SqlServer.Features.Client;
 using Microsoft.Health.SqlServer.Features.Exceptions;
@@ -27,15 +28,15 @@ namespace Microsoft.Health.SqlServer.Features.Storage
 
         public SqlServerSchemaDataStore(
             SqlConnectionWrapperFactory sqlConnectionWrapperFactory,
-            SqlServerDataStoreConfiguration sqlServerDataStoreConfiguration,
+            IOptions<SqlServerDataStoreConfiguration> sqlServerDataStoreConfiguration,
             ILogger<SqlServerSchemaDataStore> logger)
         {
             EnsureArg.IsNotNull(sqlConnectionWrapperFactory, nameof(sqlConnectionWrapperFactory));
-            EnsureArg.IsNotNull(sqlServerDataStoreConfiguration, nameof(sqlServerDataStoreConfiguration));
+            EnsureArg.IsNotNull(sqlServerDataStoreConfiguration?.Value, nameof(sqlServerDataStoreConfiguration));
             EnsureArg.IsNotNull(logger, nameof(logger));
 
             _sqlConnectionWrapperFactory = sqlConnectionWrapperFactory;
-            _configuration = sqlServerDataStoreConfiguration;
+            _configuration = sqlServerDataStoreConfiguration.Value;
             _logger = logger;
         }
 

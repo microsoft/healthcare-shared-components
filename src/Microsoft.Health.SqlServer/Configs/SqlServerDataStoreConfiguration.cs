@@ -7,6 +7,14 @@ namespace Microsoft.Health.SqlServer.Configs
 {
     public class SqlServerDataStoreConfiguration
     {
+        /// <summary>
+        /// The default section name used in configurations.
+        /// </summary>
+        public const string SectionName = "SqlServer";
+
+        /// <summary>
+        /// The SQL Server connection string.
+        /// </summary>
         public string ConnectionString { get; set; }
 
         /// <summary>

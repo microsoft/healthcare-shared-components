@@ -14,6 +14,7 @@ using MediatR;
 using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using Microsoft.Health.SqlServer.Configs;
 using Microsoft.Health.SqlServer.Features.Schema.Extensions;
 
@@ -34,9 +35,9 @@ namespace Microsoft.Health.SqlServer.Features.Schema
         private readonly ISqlConnectionStringProvider _sqlConnectionStringProvider;
         private readonly IMediator _mediator;
 
-        public SchemaInitializer(SqlServerDataStoreConfiguration sqlServerDataStoreConfiguration, SchemaUpgradeRunner schemaUpgradeRunner, SchemaInformation schemaInformation, ISqlConnectionFactory sqlConnectionFactory, ISqlConnectionStringProvider sqlConnectionStringProvider, IMediator mediator, ILogger<SchemaInitializer> logger)
+        public SchemaInitializer(IOptions<SqlServerDataStoreConfiguration> sqlServerDataStoreConfiguration, SchemaUpgradeRunner schemaUpgradeRunner, SchemaInformation schemaInformation, ISqlConnectionFactory sqlConnectionFactory, ISqlConnectionStringProvider sqlConnectionStringProvider, IMediator mediator, ILogger<SchemaInitializer> logger)
         {
-            _sqlServerDataStoreConfiguration = EnsureArg.IsNotNull(sqlServerDataStoreConfiguration, nameof(sqlServerDataStoreConfiguration));
+            _sqlServerDataStoreConfiguration = EnsureArg.IsNotNull(sqlServerDataStoreConfiguration?.Value, nameof(sqlServerDataStoreConfiguration));
             _schemaUpgradeRunner = EnsureArg.IsNotNull(schemaUpgradeRunner, nameof(schemaUpgradeRunner));
             _schemaInformation = EnsureArg.IsNotNull(schemaInformation, nameof(schemaInformation));
             _sqlConnectionFactory = EnsureArg.IsNotNull(sqlConnectionFactory, nameof(sqlConnectionFactory));

@@ -10,7 +10,6 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Health.SqlServer;
-using Microsoft.Health.SqlServer.Configs;
 using Microsoft.Health.SqlServer.Features.Schema.Manager;
 using SchemaManager.Core;
 
@@ -45,7 +44,7 @@ namespace SchemaManager
             services.AddCliCommands();
 
             // Add SqlServer services
-            services.AddSingleton<SqlServerDataStoreConfiguration>();
+            services.AddOptions();
             services.AddSingleton<ISqlConnectionFactory, DefaultSqlConnectionFactory>();
             services.AddSingleton<ISqlConnectionStringProvider, DefaultSqlConnectionStringProvider>();
             services.AddSingleton<IBaseSchemaRunner, BaseSchemaRunner>();

@@ -13,6 +13,7 @@ using System.Threading.Tasks;
 using EnsureThat;
 using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using Microsoft.Health.SqlServer.Configs;
 using Microsoft.Health.SqlServer.Features.Schema;
 using Microsoft.Health.SqlServer.Features.Schema.Manager;
@@ -36,13 +37,13 @@ namespace SchemaManager.Core
         private const int RetryAttempts = 3;
 
         public SqlSchemaManager(
-            SqlServerDataStoreConfiguration sqlServerDataStoreConfiguration,
+            IOptions<SqlServerDataStoreConfiguration> sqlServerDataStoreConfiguration,
             IBaseSchemaRunner baseSchemaRunner,
             ISchemaManagerDataStore schemaManagerDataStore,
             ISchemaClient schemaClient,
             ILogger<SqlSchemaManager> logger)
         {
-            _sqlServerDataStoreConfiguration = EnsureArg.IsNotNull(sqlServerDataStoreConfiguration, nameof(sqlServerDataStoreConfiguration));
+            _sqlServerDataStoreConfiguration = EnsureArg.IsNotNull(sqlServerDataStoreConfiguration?.Value, nameof(sqlServerDataStoreConfiguration));
             _baseSchemaRunner = EnsureArg.IsNotNull(baseSchemaRunner, nameof(baseSchemaRunner));
             _schemaManagerDataStore = EnsureArg.IsNotNull(schemaManagerDataStore, nameof(schemaManagerDataStore));
             _schemaClient = EnsureArg.IsNotNull(schemaClient, nameof(schemaClient));

@@ -7,6 +7,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.Data.SqlClient;
+using Microsoft.Extensions.Options;
 using Microsoft.Health.SqlServer.Configs;
 using Microsoft.Health.SqlServer.Features.Client;
 using NSubstitute;
@@ -43,7 +44,7 @@ namespace Microsoft.Health.SqlServer.UnitTests.Features.Client
             _pollyRetryLoggerFactory.Create().Returns(onRetryCapture);
 
             _sqlServerTransientFaultRetryPolicyFactory = new SqlServerTransientFaultRetryPolicyFactory(
-                _sqlServerDataStoreConfiguration,
+                Options.Create(_sqlServerDataStoreConfiguration),
                 _pollyRetryLoggerFactory);
 
             _asyncPolicy = _sqlServerTransientFaultRetryPolicyFactory.Create();
