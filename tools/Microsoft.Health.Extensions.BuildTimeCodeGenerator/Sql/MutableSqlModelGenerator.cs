@@ -11,7 +11,7 @@ using static Microsoft.CodeAnalysis.CSharp.SyntaxFactory;
 namespace Microsoft.Health.Extensions.BuildTimeCodeGenerator.Sql
 {
     /// <summary>
-    /// Generates a class with members based on CREATE TABLE and CREATE PROCEDURE statements in a .sql file.
+    /// Generates a class with members based on CREATE TABLE, CREATE PROCEDURE AND CREATE OR ALTER PROCEDURE statements in a .sql file.
     /// </summary>
     public class MutableSqlModelGenerator : SqlModelGenerator
     {
@@ -24,7 +24,7 @@ namespace Microsoft.Health.Extensions.BuildTimeCodeGenerator.Sql
             }
         }
 
-        protected override SqlVisitor[] Visitors => new SqlVisitor[] { new CreateTableVisitor(), new CreateProcedureVisitor() };
+        protected override SqlVisitor[] Visitors => new SqlVisitor[] { new CreateTableVisitor(), new CreateProcedureVisitor(), new CreateOrAlterProcedureVisitor() };
 
         protected override MemberDeclarationSyntax[] WrapMembers(MemberDeclarationSyntax[] members, string containingTypeName)
         {

@@ -14,7 +14,7 @@ using static Microsoft.CodeAnalysis.CSharp.SyntaxFactory;
 namespace Microsoft.Health.Extensions.BuildTimeCodeGenerator.Sql
 {
     /// <summary>
-    /// Base class for generating C# types based on the CREATE TABLE, CREATE TABLE TYPE, and CREATE PROCEDURE statements in one or more .sql files.
+    /// Base class for generating C# types based on the CREATE TABLE, CREATE TABLE TYPE, CREATE PROCEDURE AND CREATE OR ALTER PROCEDURE statements in one or more .sql files.
     /// </summary>
     public abstract class SqlModelGenerator : ICodeGenerator
     {
