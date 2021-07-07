@@ -12,7 +12,6 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Options;
 using Microsoft.Health.Blob.Configs;
 using Microsoft.Health.Blob.Features.Storage;
-using Microsoft.Health.Blob.Registration;
 using Microsoft.Health.Extensions.DependencyInjection;
 using Microsoft.IO;
 using Xunit;
@@ -38,7 +37,7 @@ namespace Microsoft.Health.Blob.UnitTests.Registration
 
             // New
             Assert.True(services.ContainsSingleton<IPostConfigureOptions<BlobDataStoreConfiguration>>());
-            Assert.True(services.ContainsSingleton<IConfigureOptions<BlobDataStoreConfiguration>, ConfigureBlobClientFromConfigurationOptions>());
+            Assert.True(services.ContainsTransient<IConfigureOptions<BlobDataStoreConfiguration>>());
 
             // Backward Compatability
             Assert.True(services.ContainsSingleton<BlobDataStoreConfiguration>());
@@ -54,6 +53,20 @@ namespace Microsoft.Health.Blob.UnitTests.Registration
             Assert.True(services.ContainsSingleton<BlobServiceClient>());
         }
 
+        [Fact]
+        public void GivenEmptyServiceCollection_AddBlobContainerInitialization_ThenAddNewServices()
+        {
+            var services = new ServiceCollection();
+            services.AddBlobContainerInitialization();
+
+            Assert.True(services.ContainsSingleton<BlobClientProvider>());
+            Assert.True(services.ContainsSingleton<IHostedService, BlobClientProvider>());
+            Assert.True(services.ContainsSingleton<IRequireInitializationOnFirstRequest, BlobClientProvider>());
+            Assert.True(services.ContainsSingleton<IBlobClientTestProvider, BlobClientReadWriteTestProvider>());
+            Assert.True(services.ContainsSingleton<IBlobClientInitializer, BlobClientInitializer>());
+            Assert.True(services.ContainsSingleton<RecyclableMemoryStreamManager>());
+        }
+
         [Theory]
         [InlineData(null, BlobDataStoreAuthenticationType.ConnectionString, BlobLocalEmulator.ConnectionString)]
         [InlineData("foo", BlobDataStoreAuthenticationType.ConnectionString, "foo")]
@@ -63,14 +76,6 @@ namespace Microsoft.Health.Blob.UnitTests.Registration
             BlobDataStoreAuthenticationType authenticationType,
             string expectedConnectionString)
         {
-            IConfiguration config = new ConfigurationBuilder()
-                .AddInMemoryCollection(
-                    new KeyValuePair<string, string>[]
-                    {
-                        KeyValuePair.Create("BlobStore:RequestOptions:ExponentialRetryMaxAttempts", "1"),
-                    })
-                .Build();
-
             var services = new ServiceCollection();
             services.AddBlobServiceClient(
                 c =>

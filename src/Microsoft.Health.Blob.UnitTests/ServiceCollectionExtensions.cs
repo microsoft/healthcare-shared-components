@@ -12,21 +12,31 @@ namespace Microsoft.Health.Blob.UnitTests
 {
     internal static class ServiceCollectionExtensions
     {
-        public static bool ContainsSingleton<TService>(this IServiceCollection services)
-        {
-            EnsureArg.IsNotNull(services);
+        public static bool ContainsTransient<TService>(this IServiceCollection services)
+            => services.ContainsService<TService>(ServiceLifetime.Transient);
 
-            return services.Any(x =>
-                x.Lifetime == ServiceLifetime.Singleton &&
-                x.ServiceType == typeof(TService));
-        }
+        public static bool ContainsTransient<TService, TImplementation>(this IServiceCollection services)
+            => services.ContainsService<TService, TImplementation>(ServiceLifetime.Transient);
+
+        public static bool ContainsSingleton<TService>(this IServiceCollection services)
+            => services.ContainsService<TService>(ServiceLifetime.Singleton);
 
         public static bool ContainsSingleton<TService, TImplementation>(this IServiceCollection services)
+            => services.ContainsService<TService, TImplementation>(ServiceLifetime.Singleton);
+
+        public static bool ContainsService<TService>(this IServiceCollection services, ServiceLifetime lifetime)
+        {
+            EnsureArg.IsNotNull(services);
+
+            return services.Any(x => x.Lifetime == lifetime && x.ServiceType == typeof(TService));
+        }
+
+        public static bool ContainsService<TService, TImplementation>(this IServiceCollection services, ServiceLifetime lifetime)
         {
             EnsureArg.IsNotNull(services);
 
             return services.Any(x =>
-                x.Lifetime == ServiceLifetime.Singleton &&
+                x.Lifetime == lifetime &&
                 x.ServiceType == typeof(TService) &&
                 GetImplementationType(x) == typeof(TImplementation));
         }
