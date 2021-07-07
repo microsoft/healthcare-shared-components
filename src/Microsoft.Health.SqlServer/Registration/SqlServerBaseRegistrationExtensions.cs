@@ -23,21 +23,21 @@ namespace Microsoft.Health.SqlServer.Registration
 {
     public static class SqlServerBaseRegistrationExtensions
     {
-        [Obsolete("Please use " + nameof(AddSqlServerConnection) + " and " + nameof(AddSqlServerVersioningService) + " instead.")]
+        [Obsolete("Please use " + nameof(AddSqlServerConnection) + " and " + nameof(AddSqlServerManagement) + " instead.")]
         public static IServiceCollection AddSqlServerBase<TSchemaVersionEnum>(
             this IServiceCollection services,
             IConfiguration configurationRoot,
             Action<SqlServerDataStoreConfiguration> configureAction = null)
             where TSchemaVersionEnum : Enum
         {
-            services.AddSqlServerConnection(
-                config =>
-                {
-                    configurationRoot?.GetSection(SqlServerDataStoreConfiguration.SectionName).Bind(config);
-                    configureAction?.Invoke(config);
-                });
-
-            services.AddSqlServerVersioningService<TSchemaVersionEnum>();
+            services
+                .AddSqlServerConnection(
+                    config =>
+                    {
+                        configurationRoot?.GetSection(SqlServerDataStoreConfiguration.SectionName).Bind(config);
+                        configureAction?.Invoke(config);
+                    })
+                .AddSqlServerManagement<TSchemaVersionEnum>();
 
             // Add more services for backward compatibility
             services.TryAddScoped(p => p.GetRequiredService<ISchemaDataStore>() as SqlServerSchemaDataStore);
@@ -54,7 +54,7 @@ namespace Microsoft.Health.SqlServer.Registration
         }
 
         /// <summary>
-        ///  Adds a collection of services for connecting to SQL Server to the specified <see cref="IServiceCollection"/>.
+        /// Adds a collection of services for connecting to SQL Server to the specified <see cref="IServiceCollection"/>.
         /// </summary>
         /// <param name="services">The <see cref="IServiceCollection"/> to be updated.</param>
         /// <returns>The <paramref name="services"/> for additional method invocations.</returns>
@@ -91,12 +91,13 @@ namespace Microsoft.Health.SqlServer.Registration
             services.TryAddSingleton<IPollyRetryLoggerFactory, PollyRetryLoggerFactory>();
             services.TryAddSingleton<ISqlServerTransientFaultRetryPolicyFactory, SqlServerTransientFaultRetryPolicyFactory>();
             services.TryAddSingleton<SqlCommandWrapperFactory, RetrySqlCommandWrapperFactory>();
+            services.TryAddSingleton<IReadOnlySchemaManagerDataStore, SchemaManagerDataStore>();
 
             return services;
         }
 
         /// <summary>
-        ///  Adds a collection of services for connecting to SQL Server to the specified <see cref="IServiceCollection"/>.
+        /// Adds a collection of services for connecting to SQL Server to the specified <see cref="IServiceCollection"/>.
         /// </summary>
         /// <param name="services">The <see cref="IServiceCollection"/> to be updated.</param>
         /// <param name="configure">A delegate for configuring the <see cref="SqlServerDataStoreConfiguration"/>.</param>
@@ -116,7 +117,8 @@ namespace Microsoft.Health.SqlServer.Registration
         }
 
         /// <summary>
-        ///  Adds a hosted service for updating the application's SQL database to the specified <see cref="IServiceCollection"/>.
+        /// Adds an <see cref="IHostedService"/> to the specified <see cref="IServiceCollection"/>
+        /// for managing the configured SQL application database.
         /// </summary>
         /// <typeparam name="TVersion">The type of the version enumeration.</typeparam>
         /// <param name="services">The <see cref="IServiceCollection"/> to be updated.</param>
@@ -124,7 +126,7 @@ namespace Microsoft.Health.SqlServer.Registration
         /// <exception cref="ArgumentNullException">
         /// <paramref name="services"/> is <see langword="null"/>.
         /// </exception>
-        public static IServiceCollection AddSqlServerVersioningService<TVersion>(this IServiceCollection services)
+        public static IServiceCollection AddSqlServerManagement<TVersion>(this IServiceCollection services)
             where TVersion : Enum
         {
             EnsureArg.IsNotNull(services, nameof(services));
@@ -133,9 +135,18 @@ namespace Microsoft.Health.SqlServer.Registration
             services.TryAddSingleton<SchemaJobWorker>();
             services.TryAddSingleton<IScriptProvider, ScriptProvider<TVersion>>();
             services.TryAddSingleton<IBaseScriptProvider, BaseScriptProvider>();
-            services.TryAddSingleton<ISchemaManagerDataStore, SchemaManagerDataStore>();
             services.TryAddSingleton<SchemaUpgradeRunner>();
             services.AddHostedService<SchemaInitializer>();
+
+            // Re-use the existing SchemaManagerDataStore
+            services.TryAddSingleton<ISchemaManagerDataStore>(
+                p =>
+                {
+                    var schemaManagerDataStore = p.GetService<IReadOnlySchemaManagerDataStore>() as SchemaManagerDataStore;
+                    return schemaManagerDataStore != null
+                        ? schemaManagerDataStore
+                        : new SchemaManagerDataStore(p.GetRequiredService<ISqlConnectionFactory>());
+                });
 
             return services;
         }

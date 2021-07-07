@@ -35,7 +35,7 @@ namespace Microsoft.Health.SqlServer.Web
 
             services
                 .AddSqlServerConnection(c => Configuration.GetSection(SqlServerDataStoreConfiguration.SectionName).Bind(c))
-                .AddSqlServerVersioningService<SchemaVersion>()
+                .AddSqlServerManagement<SchemaVersion>()
                 .AddSqlServerApi();
 
             services.AddMediatR(typeof(CompatibilityVersionHandler).Assembly);

@@ -45,7 +45,7 @@ namespace Microsoft.Health.SqlServer.UnitTests.Registration
             Assert.True(services.ContainsSingleton<IBaseScriptProvider, BaseScriptProvider>());
             Assert.True(services.ContainsSingleton<IHostedService, SchemaInitializer>());
             Assert.True(services.ContainsSingleton<IPollyRetryLoggerFactory, PollyRetryLoggerFactory>());
-            Assert.True(services.ContainsSingleton<ISchemaManagerDataStore, SchemaManagerDataStore>());
+            Assert.True(services.ContainsSingleton<ISchemaManagerDataStore>());
             Assert.True(services.ContainsSingleton<IScriptProvider, ScriptProvider<ExampleVersion>>());
             Assert.True(services.ContainsSingleton<ISqlConnectionFactory>());
             Assert.True(services.ContainsSingleton<ISqlConnectionStringProvider, DefaultSqlConnectionStringProvider>());
@@ -79,19 +79,20 @@ namespace Microsoft.Health.SqlServer.UnitTests.Registration
             Assert.True(services.ContainsSingleton<ISqlConnectionStringProvider, DefaultSqlConnectionStringProvider>());
             Assert.True(services.ContainsSingleton<ISqlServerTransientFaultRetryPolicyFactory, SqlServerTransientFaultRetryPolicyFactory>());
             Assert.True(services.ContainsSingleton<SqlCommandWrapperFactory, RetrySqlCommandWrapperFactory>());
+            Assert.True(services.ContainsSingleton<IReadOnlySchemaManagerDataStore, SchemaManagerDataStore>());
         }
 
         [Fact]
-        public void GivenEmptyServiceCollection_WhenAddingSqlServerVersioningService_ThenAddNewServices()
+        public void GivenEmptyServiceCollection_WhenAddingSqlServerManagement_ThenAddNewServices()
         {
             var services = new ServiceCollection();
-            services.AddSqlServerVersioningService<ExampleVersion>();
+            services.AddSqlServerManagement<ExampleVersion>();
 
             Assert.True(services.ContainsScoped<ISchemaDataStore, SqlServerSchemaDataStore>());
 
             Assert.True(services.ContainsSingleton<IBaseScriptProvider, BaseScriptProvider>());
             Assert.True(services.ContainsSingleton<IHostedService, SchemaInitializer>());
-            Assert.True(services.ContainsSingleton<ISchemaManagerDataStore, SchemaManagerDataStore>());
+            Assert.True(services.ContainsSingleton<ISchemaManagerDataStore>());
             Assert.True(services.ContainsSingleton<IScriptProvider, ScriptProvider<ExampleVersion>>());
             Assert.True(services.ContainsSingleton<SchemaJobWorker>());
             Assert.True(services.ContainsSingleton<SchemaUpgradeRunner>());
