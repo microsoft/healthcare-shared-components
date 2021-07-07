@@ -56,7 +56,14 @@ namespace Microsoft.Extensions.DependencyInjection
             EnsureArg.IsNotNull(services, nameof(services));
 
             services.AddOptions();
-            services.TryAddEnumerable(ServiceDescriptor.Singleton<IPostConfigureOptions<BlobDataStoreConfiguration>>(new DefaultBlobDataStoreConfiguration()));
+            services.PostConfigure<BlobDataStoreConfiguration>(
+                options =>
+                {
+                    if (string.IsNullOrEmpty(options.ConnectionString) && options.AuthenticationType == BlobDataStoreAuthenticationType.ConnectionString)
+                    {
+                        options.ConnectionString = BlobLocalEmulator.ConnectionString;
+                    }
+                });
             services.TryAddSingleton(p => BlobClientFactory.Create(p.GetRequiredService<IOptions<BlobDataStoreConfiguration>>().Value));
 
             return new BlobClientBuilder(services);

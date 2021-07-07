@@ -37,7 +37,7 @@ namespace Microsoft.Health.Blob.UnitTests.Registration
             Assert.True(services.ContainsSingleton<RecyclableMemoryStreamManager>());
 
             // New
-            Assert.True(services.ContainsSingleton<IPostConfigureOptions<BlobDataStoreConfiguration>, DefaultBlobDataStoreConfiguration>());
+            Assert.True(services.ContainsSingleton<IPostConfigureOptions<BlobDataStoreConfiguration>>());
             Assert.True(services.ContainsSingleton<IConfigureOptions<BlobDataStoreConfiguration>, ConfigureBlobClientFromConfigurationOptions>());
 
             // Backward Compatability
@@ -50,8 +50,42 @@ namespace Microsoft.Health.Blob.UnitTests.Registration
             var services = new ServiceCollection();
             services.AddBlobServiceClient();
 
-            Assert.True(services.ContainsSingleton<IPostConfigureOptions<BlobDataStoreConfiguration>, DefaultBlobDataStoreConfiguration>());
+            Assert.True(services.ContainsSingleton<IPostConfigureOptions<BlobDataStoreConfiguration>>());
             Assert.True(services.ContainsSingleton<BlobServiceClient>());
+        }
+
+        [Theory]
+        [InlineData(null, BlobDataStoreAuthenticationType.ConnectionString, BlobLocalEmulator.ConnectionString)]
+        [InlineData("foo", BlobDataStoreAuthenticationType.ConnectionString, "foo")]
+        [InlineData(null, BlobDataStoreAuthenticationType.ManagedIdentity, null)]
+        public void GivenConfigurationDelegate_WhenAddingBlobServiceClient_ThenUpdateConfigWithDefaults(
+            string actualConnectionString,
+            BlobDataStoreAuthenticationType authenticationType,
+            string expectedConnectionString)
+        {
+            IConfiguration config = new ConfigurationBuilder()
+                .AddInMemoryCollection(
+                    new KeyValuePair<string, string>[]
+                    {
+                        KeyValuePair.Create("BlobStore:RequestOptions:ExponentialRetryMaxAttempts", "1"),
+                    })
+                .Build();
+
+            var services = new ServiceCollection();
+            services.AddBlobServiceClient(
+                c =>
+                {
+                    c.ConnectionString = actualConnectionString;
+                    c.AuthenticationType = authenticationType;
+                });
+
+            BlobDataStoreConfiguration actual = services
+                .BuildServiceProvider()
+                .GetRequiredService<IOptions<BlobDataStoreConfiguration>>()
+                .Value;
+
+            Assert.Equal(expectedConnectionString, actual.ConnectionString);
+            Assert.Equal(authenticationType, actual.AuthenticationType);
         }
 
         [Fact]

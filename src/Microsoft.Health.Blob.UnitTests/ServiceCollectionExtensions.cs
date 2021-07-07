@@ -13,7 +13,13 @@ namespace Microsoft.Health.Blob.UnitTests
     internal static class ServiceCollectionExtensions
     {
         public static bool ContainsSingleton<TService>(this IServiceCollection services)
-            => services.ContainsSingleton<TService, TService>();
+        {
+            EnsureArg.IsNotNull(services);
+
+            return services.Any(x =>
+                x.Lifetime == ServiceLifetime.Singleton &&
+                x.ServiceType == typeof(TService));
+        }
 
         public static bool ContainsSingleton<TService, TImplementation>(this IServiceCollection services)
         {
