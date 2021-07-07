@@ -3,20 +3,17 @@
 // Licensed under the MIT License (MIT). See LICENSE in the repo root for license information.
 // -------------------------------------------------------------------------------------------------
 
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Options;
 using Microsoft.Health.Blob.Configs;
-using Microsoft.Health.Blob.Features.Storage;
 
 namespace Microsoft.Health.Blob.Registration
 {
-    internal class DefaultBlobDataStoreConfiguration : IPostConfigureOptions<BlobDataStoreConfiguration>
+    internal class ConfigureBlobClientFromConfigurationOptions : ConfigureFromConfigurationOptions<BlobDataStoreConfiguration>
     {
-        public void PostConfigure(string name, BlobDataStoreConfiguration options)
+        public ConfigureBlobClientFromConfigurationOptions(IConfiguration config)
+            : base(config.GetSection(BlobDataStoreConfiguration.SectionName))
         {
-            if (string.IsNullOrEmpty(options.ConnectionString) && options.AuthenticationType == BlobDataStoreAuthenticationType.ConnectionString)
-            {
-                options.ConnectionString = BlobLocalEmulator.ConnectionString;
-            }
         }
     }
 }

@@ -30,7 +30,7 @@ namespace Microsoft.Health.Blob.UnitTests.Registration
                 ConnectionString = actualConnectionString,
             };
 
-            DefaultBlobDataStoreConfiguration.Instance.Configure(config);
+            new DefaultBlobDataStoreConfiguration().PostConfigure(null, config);
 
             Assert.Equal(expectedConnectionString, config.ConnectionString);
         }
@@ -41,7 +41,7 @@ namespace Microsoft.Health.Blob.UnitTests.Registration
             var services = new ServiceCollection();
 
             services.AddOptions();
-            services.TryAddEnumerable(ServiceDescriptor.Singleton<IConfigureOptions<BlobDataStoreConfiguration>>(new DefaultBlobDataStoreConfiguration()));
+            services.TryAddEnumerable(ServiceDescriptor.Singleton<IPostConfigureOptions<BlobDataStoreConfiguration>>(new DefaultBlobDataStoreConfiguration()));
 
             BlobDataStoreConfiguration actual = services
                 .BuildServiceProvider()
