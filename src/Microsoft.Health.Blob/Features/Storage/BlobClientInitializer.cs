@@ -6,7 +6,6 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using Azure.Identity;
 using Azure.Storage.Blobs;
 using EnsureThat;
 using Microsoft.Extensions.Logging;
@@ -34,21 +33,7 @@ namespace Microsoft.Health.Blob.Features.Storage
             EnsureArg.IsNotNull(configuration, nameof(configuration));
 
             _logger.LogInformation("Creating BlobClient instance");
-
-            // Configure the blob client default request options and retry logic
-            var blobClientOptions = new BlobClientOptions();
-            blobClientOptions.Retry.MaxRetries = configuration.RequestOptions.ExponentialRetryMaxAttempts;
-            blobClientOptions.Retry.Mode = Azure.Core.RetryMode.Exponential;
-            blobClientOptions.Retry.Delay = TimeSpan.FromSeconds(configuration.RequestOptions.ExponentialRetryBackoffDeltaInSeconds);
-            blobClientOptions.Retry.NetworkTimeout = TimeSpan.FromMinutes(configuration.RequestOptions.ServerTimeoutInMinutes);
-
-            if (configuration.AuthenticationType == BlobDataStoreAuthenticationType.ManagedIdentity)
-            {
-                var defaultCredentials = new DefaultAzureCredential();
-                return new BlobServiceClient(new Uri(configuration.ConnectionString), defaultCredentials, blobClientOptions);
-            }
-
-            return new BlobServiceClient(configuration.ConnectionString, blobClientOptions);
+            return BlobClientFactory.Create(configuration);
         }
 
         /// <inheritdoc />
