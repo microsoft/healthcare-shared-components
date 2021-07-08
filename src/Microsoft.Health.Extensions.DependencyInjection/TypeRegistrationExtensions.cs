@@ -225,5 +225,19 @@ namespace Microsoft.Health.Extensions.DependencyInjection
 
             return registrations.Do(x => x.AsSelf());
         }
+
+        /// <summary>
+        /// Specify additional metadata with the registration
+        /// </summary>
+        /// <param name="registrations">The registrations.</param>
+        /// <param name="metadataResolver">Function that returns metadata about the registration</param>
+        /// <returns>The registration builder</returns>
+        public static IEnumerable<TypeRegistrationBuilder> WithMetadata(this IEnumerable<TypeRegistrationBuilder> registrations, Func<Type, object> metadataResolver)
+        {
+            EnsureArg.IsNotNull(registrations, nameof(registrations));
+            EnsureArg.IsNotNull(metadataResolver, nameof(metadataResolver));
+
+            return registrations.Do(x => x.WithMetadata(metadataResolver));
+        }
     }
 }

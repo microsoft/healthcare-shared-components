@@ -11,7 +11,7 @@ using Xunit;
 
 namespace Microsoft.Health.Extensions.DependencyInjection.UnitTests
 {
-    public class ServiceControllerExtensionsTests
+    public class ServiceCollectionExtensionsTests
     {
         [Fact]
         public void GivenAnAssembly_WhenScanningForModules_ThenNewModulesShouldBeLoaded()
