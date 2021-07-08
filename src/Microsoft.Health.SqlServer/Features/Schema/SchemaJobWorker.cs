@@ -41,11 +41,7 @@ namespace Microsoft.Health.SqlServer.Features.Schema
             EnsureArg.IsNotNull(sqlServerDataStoreConfiguration, nameof(sqlServerDataStoreConfiguration));
             EnsureArg.IsNotNull(mediator, nameof(mediator));
             EnsureArg.IsNotNull(logger, nameof(logger));
-
-            if (sqlServerDataStoreConfiguration.TerminateWhenSchemaVersionUpdatedTo.HasValue)
-            {
-                EnsureArg.IsNotNull(processTerminator, nameof(processTerminator));
-            }
+            EnsureArg.IsNotNull(processTerminator, nameof(processTerminator));
 
             _serviceProvider = services;
             _sqlServerDataStoreConfiguration = sqlServerDataStoreConfiguration;
