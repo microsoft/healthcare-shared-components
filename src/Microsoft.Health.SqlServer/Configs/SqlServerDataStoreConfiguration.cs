@@ -38,11 +38,5 @@ namespace Microsoft.Health.SqlServer.Configs
         /// If set, Instructs the service to terminate when its schema reaches the specified version.
         /// </summary>
         public int? TerminateWhenSchemaVersionUpdatedTo { get; set; }
-
-        /// <summary>
-        /// true: registers ProcessTerminator
-        /// false: registers NoOpProcessTerminator
-        /// </summary>
-        public bool RegisterProcessTerminator { get; set; }
     }
 }

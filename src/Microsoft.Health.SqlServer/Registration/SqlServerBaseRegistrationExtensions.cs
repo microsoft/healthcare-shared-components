@@ -47,7 +47,7 @@ namespace Microsoft.Health.SqlServer.Registration
                 .AsSelf()
                 .AsImplementedInterfaces();
 
-            if (config.RegisterProcessTerminator)
+            if (config.TerminateWhenSchemaVersionUpdatedTo.HasValue)
             {
                 services.AddSingleton<IProcessTerminator, ProcessTerminator>();
             }
