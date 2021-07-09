@@ -49,18 +49,6 @@ namespace Microsoft.Health.Blob.UnitTests.Registration
             Assert.True(services.ContainsSingleton<BlobServiceClient>());
         }
 
-        [Fact]
-        public void GivenEmptyServiceCollection_AddBlobContainerInitialization_ThenAddNewServices()
-        {
-            var services = new ServiceCollection();
-            services.AddBlobDataStore();
-
-            Assert.True(services.ContainsSingleton<IHostedService, BlobHostedService>());
-            Assert.True(services.ContainsSingleton<IBlobClientTestProvider, BlobClientReadWriteTestProvider>());
-            Assert.True(services.ContainsSingleton<IBlobInitializer, BlobInitializer>());
-            Assert.True(services.ContainsSingleton<RecyclableMemoryStreamManager>());
-        }
-
         [Theory]
         [InlineData(null, BlobDataStoreAuthenticationType.ConnectionString, BlobLocalEmulator.ConnectionString)]
         [InlineData("foo", BlobDataStoreAuthenticationType.ConnectionString, "foo")]
