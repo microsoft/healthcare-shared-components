@@ -57,7 +57,6 @@ namespace Microsoft.Extensions.DependencyInjection
         /// </summary>
         /// <param name="services">The <see cref="IServiceCollection"/> to be updated.</param>
         /// <param name="configure">A delegate for configuring the <see cref="BlobDataStoreConfiguration"/>.</param>/// <returns>The <paramref name="services"/> for additional method invocations.</returns>
-        /// <returns>The <paramref name="services"/> for additional method invocations.</returns>
         /// <exception cref="ArgumentNullException">
         /// <paramref name="services"/> is <see langword="null"/>.
         /// </exception>
