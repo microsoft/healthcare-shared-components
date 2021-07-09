@@ -14,8 +14,10 @@ using MediatR;
 using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using Microsoft.Health.SqlServer.Configs;
 using Microsoft.Health.SqlServer.Features.Schema.Extensions;
+using Microsoft.Health.SqlServer.Features.Schema.Manager;
 
 namespace Microsoft.Health.SqlServer.Features.Schema
 {
@@ -27,6 +29,7 @@ namespace Microsoft.Health.SqlServer.Features.Schema
     {
         private const string MasterDatabase = "master";
         private readonly SqlServerDataStoreConfiguration _sqlServerDataStoreConfiguration;
+        private readonly IReadOnlySchemaManagerDataStore _schemaManagerDataStore;
         private readonly SchemaUpgradeRunner _schemaUpgradeRunner;
         private readonly SchemaInformation _schemaInformation;
         private readonly ILogger<SchemaInitializer> _logger;
@@ -34,9 +37,18 @@ namespace Microsoft.Health.SqlServer.Features.Schema
         private readonly ISqlConnectionStringProvider _sqlConnectionStringProvider;
         private readonly IMediator _mediator;
 
-        public SchemaInitializer(SqlServerDataStoreConfiguration sqlServerDataStoreConfiguration, SchemaUpgradeRunner schemaUpgradeRunner, SchemaInformation schemaInformation, ISqlConnectionFactory sqlConnectionFactory, ISqlConnectionStringProvider sqlConnectionStringProvider, IMediator mediator, ILogger<SchemaInitializer> logger)
+        public SchemaInitializer(
+            IOptions<SqlServerDataStoreConfiguration> sqlServerDataStoreConfiguration,
+            IReadOnlySchemaManagerDataStore schemaManagerDataStore,
+            SchemaUpgradeRunner schemaUpgradeRunner,
+            SchemaInformation schemaInformation,
+            ISqlConnectionFactory sqlConnectionFactory,
+            ISqlConnectionStringProvider sqlConnectionStringProvider,
+            IMediator mediator,
+            ILogger<SchemaInitializer> logger)
         {
-            _sqlServerDataStoreConfiguration = EnsureArg.IsNotNull(sqlServerDataStoreConfiguration, nameof(sqlServerDataStoreConfiguration));
+            _sqlServerDataStoreConfiguration = EnsureArg.IsNotNull(sqlServerDataStoreConfiguration?.Value, nameof(sqlServerDataStoreConfiguration));
+            _schemaManagerDataStore = EnsureArg.IsNotNull(schemaManagerDataStore, nameof(schemaManagerDataStore));
             _schemaUpgradeRunner = EnsureArg.IsNotNull(schemaUpgradeRunner, nameof(schemaUpgradeRunner));
             _schemaInformation = EnsureArg.IsNotNull(schemaInformation, nameof(schemaInformation));
             _sqlConnectionFactory = EnsureArg.IsNotNull(sqlConnectionFactory, nameof(sqlConnectionFactory));
@@ -101,22 +113,14 @@ namespace Microsoft.Health.SqlServer.Features.Schema
 
         private async Task GetCurrentSchemaVersionAsync(CancellationToken cancellationToken)
         {
-            using SqlConnection connection = await _sqlConnectionFactory.GetSqlConnectionAsync(cancellationToken: cancellationToken).ConfigureAwait(false);
-            await connection.OpenAsync(cancellationToken).ConfigureAwait(false);
-
-            const string tableName = "dbo.SchemaVersion";
-
-            // Since now the status is made consistent as 'completed', we might have to check for 'complete' as well for the previous version's status
-            using SqlCommand selectCommand = connection.CreateCommand();
-            selectCommand.CommandText = "SELECT MAX(Version) FROM " + tableName + " WHERE Status = 'complete' OR Status = 'completed'";
-
-            try
+            int version = await _schemaManagerDataStore.GetCurrentSchemaVersionAsync(cancellationToken);
+            if (version != 0)
             {
-                _schemaInformation.Current = await selectCommand.ExecuteScalarAsync(cancellationToken).ConfigureAwait(false) as int?;
+                _schemaInformation.Current = version;
             }
-            catch (SqlException e) when (e.Message is "Invalid object name 'dbo.SchemaVersion'.")
+            else
             {
-                _logger.LogInformation($"The table {tableName} does not exists. It must be new database");
+                _logger.LogInformation("No version found. It must be new database");
             }
         }
 

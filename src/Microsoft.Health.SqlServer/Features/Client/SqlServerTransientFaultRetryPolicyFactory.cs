@@ -7,6 +7,7 @@ using System;
 using System.Collections.Generic;
 using EnsureThat;
 using Microsoft.Data.SqlClient;
+using Microsoft.Extensions.Options;
 using Microsoft.Health.SqlServer.Configs;
 using Microsoft.Health.SqlServer.Extensions;
 using Polly;
@@ -22,13 +23,13 @@ namespace Microsoft.Health.SqlServer.Features.Client
         private readonly IAsyncPolicy _retryPolicy;
 
         public SqlServerTransientFaultRetryPolicyFactory(
-            SqlServerDataStoreConfiguration sqlServerDataStoreConfiguration,
+            IOptions<SqlServerDataStoreConfiguration> sqlServerDataStoreConfiguration,
             IPollyRetryLoggerFactory pollyRetryLoggerFactory)
         {
-            EnsureArg.IsNotNull(sqlServerDataStoreConfiguration, nameof(sqlServerDataStoreConfiguration));
+            EnsureArg.IsNotNull(sqlServerDataStoreConfiguration?.Value, nameof(sqlServerDataStoreConfiguration));
             EnsureArg.IsNotNull(pollyRetryLoggerFactory, nameof(pollyRetryLoggerFactory));
 
-            SqlServerTransientFaultRetryPolicyConfiguration transientFaultRetryPolicyConfiguration = sqlServerDataStoreConfiguration.TransientFaultRetryPolicy;
+            SqlServerTransientFaultRetryPolicyConfiguration transientFaultRetryPolicyConfiguration = sqlServerDataStoreConfiguration.Value.TransientFaultRetryPolicy;
 
             IEnumerable<TimeSpan> sleepDurations = Backoff.ExponentialBackoff(
                 transientFaultRetryPolicyConfiguration.InitialDelay,

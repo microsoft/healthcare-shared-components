@@ -5,6 +5,7 @@
 
 using System.Threading.Tasks;
 using Microsoft.Data.SqlClient;
+using Microsoft.Extensions.Options;
 using Microsoft.Health.SqlServer.Configs;
 using Xunit;
 
@@ -25,7 +26,7 @@ namespace Microsoft.Health.SqlServer.UnitTests.Features
                 ConnectionString = $"server={ServerName};Initial Catalog={DatabaseName};Integrated Security=true",
             };
 
-            _sqlConnectionFactory = new DefaultSqlConnectionFactory(new DefaultSqlConnectionStringProvider(sqlServerDataStoreConfiguration));
+            _sqlConnectionFactory = new DefaultSqlConnectionFactory(new DefaultSqlConnectionStringProvider(Options.Create(sqlServerDataStoreConfiguration)));
         }
 
         [Fact]

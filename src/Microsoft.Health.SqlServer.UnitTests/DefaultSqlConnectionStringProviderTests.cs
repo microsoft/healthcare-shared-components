@@ -6,6 +6,7 @@
 using System;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Options;
 using Microsoft.Health.SqlServer.Configs;
 using Xunit;
 
@@ -26,7 +27,7 @@ namespace Microsoft.Health.SqlServer.UnitTests.Features
         public async Task GivenValidSqlServerDataStoreConfiguration_GetSqlConnectionString_ReturnsConnectionString(string sqlConnectionString)
         {
             var sqlServerDataStoreConfiguration = new SqlServerDataStoreConfiguration() { ConnectionString = sqlConnectionString };
-            ISqlConnectionStringProvider sqlConnectionStringProvider = new DefaultSqlConnectionStringProvider(sqlServerDataStoreConfiguration);
+            ISqlConnectionStringProvider sqlConnectionStringProvider = new DefaultSqlConnectionStringProvider(Options.Create(sqlServerDataStoreConfiguration));
 
             Assert.Equal(sqlConnectionString, await sqlConnectionStringProvider.GetSqlConnectionString(CancellationToken.None));
         }

@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace Microsoft.Health.SqlServer.Features.Schema.Manager
 {
-    public interface ISchemaManagerDataStore
+    public interface ISchemaManagerDataStore : IReadOnlySchemaManagerDataStore
     {
         /// <summary>
         /// Execute the Sql script
@@ -25,12 +25,6 @@ namespace Microsoft.Health.SqlServer.Features.Schema.Manager
         /// <param name="status">The schema status</param>
         /// <param name="cancellationToken">A cancellation token</param>
         Task DeleteSchemaVersionAsync(int version, string status, CancellationToken cancellationToken);
-
-        /// <summary>
-        /// Retreives the current schema version information
-        /// </summary>
-        /// <param name="cancellationToken">A cancellation token</param>
-        Task<int> GetCurrentSchemaVersionAsync(CancellationToken cancellationToken);
 
         /// <summary>
         /// Executes the given script

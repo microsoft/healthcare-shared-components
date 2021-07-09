@@ -5,6 +5,7 @@
 
 using System.Threading.Tasks;
 using Microsoft.Data.SqlClient;
+using Microsoft.Extensions.Options;
 using Microsoft.Health.SqlServer.Configs;
 using NSubstitute;
 using Xunit;
@@ -26,10 +27,14 @@ namespace Microsoft.Health.SqlServer.UnitTests
             var accessTokenHandler = Substitute.For<IAccessTokenHandler>();
             accessTokenHandler.GetAccessTokenAsync(AzureResource).Returns(Task.FromResult(TestAccessToken));
 
-            SqlServerDataStoreConfiguration sqlServerDataStoreConfiguration = new SqlServerDataStoreConfiguration();
-            sqlServerDataStoreConfiguration.ConnectionString = $"Server={ServerName};Database={DatabaseName};";
-            sqlServerDataStoreConfiguration.AuthenticationType = SqlServerAuthenticationType.ManagedIdentity;
-            _sqlConnectionFactory = new ManagedIdentitySqlConnectionFactory(new DefaultSqlConnectionStringProvider(sqlServerDataStoreConfiguration), accessTokenHandler);
+            SqlServerDataStoreConfiguration sqlServerDataStoreConfiguration = new SqlServerDataStoreConfiguration
+            {
+                ConnectionString = $"Server={ServerName};Database={DatabaseName};",
+                AuthenticationType = SqlServerAuthenticationType.ManagedIdentity,
+            };
+
+            _sqlConnectionFactory = new ManagedIdentitySqlConnectionFactory(
+                new DefaultSqlConnectionStringProvider(Options.Create(sqlServerDataStoreConfiguration)), accessTokenHandler);
         }
 
         [Fact]

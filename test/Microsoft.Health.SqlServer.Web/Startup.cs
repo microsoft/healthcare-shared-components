@@ -10,6 +10,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Health.Extensions.DependencyInjection;
 using Microsoft.Health.SqlServer.Api.Features;
 using Microsoft.Health.SqlServer.Api.Registration;
+using Microsoft.Health.SqlServer.Configs;
 using Microsoft.Health.SqlServer.Features.Schema;
 using Microsoft.Health.SqlServer.Registration;
 using Microsoft.Health.SqlServer.Web.Features.Schema;
@@ -32,8 +33,11 @@ namespace Microsoft.Health.SqlServer.Web
                 .AddMvc(options => { options.EnableEndpointRouting = false; })
                 .AddNewtonsoftJson();
 
-            services.AddSqlServerBase<SchemaVersion>(Configuration);
-            services.AddSqlServerApi();
+            services
+                .AddSqlServerConnection(c => Configuration.GetSection(SqlServerDataStoreConfiguration.SectionName).Bind(c))
+                .AddSqlServerManagement<SchemaVersion>()
+                .AddSqlServerApi();
+
             services.AddMediatR(typeof(CompatibilityVersionHandler).Assembly);
 
             services.Add(provider => new SchemaInformation((int)SchemaVersion.Version1, (int)SchemaVersion.Version2))
