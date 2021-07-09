@@ -9,7 +9,6 @@ using Azure.Storage.Blobs;
 using EnsureThat;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection.Extensions;
-using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Options;
 using Microsoft.Health.Blob.Configs;
 using Microsoft.Health.Blob.Features.Storage;
@@ -92,7 +91,7 @@ namespace Microsoft.Extensions.DependencyInjection
         private static IServiceCollection AddBlobContainerInitialization(this IServiceCollection services)
         {
             services.TryAddSingleton<IBlobInitializer, BlobInitializer>();
-            services.TryAddSingleton<IHostedService, BlobHostedService>();
+            services.AddHostedService<BlobHostedService>();
             services.TryAddSingleton<IBlobClientTestProvider, BlobClientReadWriteTestProvider>();
             services.TryAddSingleton<RecyclableMemoryStreamManager>();
 

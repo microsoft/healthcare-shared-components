@@ -24,6 +24,7 @@ namespace Microsoft.Health.Blob.Features.Storage
     public class BlobHostedService : IHostedService
     {
         private readonly IBlobInitializer _blobInitializer;
+        private readonly ILogger<BlobHostedService> _logger;
         private readonly BlobDataStoreConfiguration _blobDataStoreConfiguration;
         private readonly IEnumerable<IBlobContainerInitializer> _collectionInitializers;
 
@@ -39,6 +40,7 @@ namespace Microsoft.Health.Blob.Features.Storage
             EnsureArg.IsNotNull(blobDataStoreConfigurationOption?.Value, nameof(blobDataStoreConfigurationOption));
 
             _blobInitializer = blobInitializer;
+            _logger = logger;
             _blobDataStoreConfiguration = blobDataStoreConfigurationOption.Value;
             _collectionInitializers = collectionInitializers;
         }
@@ -56,6 +58,8 @@ namespace Microsoft.Health.Blob.Features.Storage
                    .WrapAsync(retryPolicy)
                    .ExecuteAsync((token) => _blobInitializer.InitializeDataStoreAsync(_collectionInitializers), cancellationToken)
                    .ConfigureAwait(false);
+
+            _logger.LogInformation("Blob containers initialized");
         }
 
         public Task StopAsync(CancellationToken cancellationToken) => Task.CompletedTask;
