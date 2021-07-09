@@ -16,5 +16,9 @@ namespace Microsoft.Health.Blob.Configs
         public int DownloadMaximumConcurrency { get; set; } = 5;
 
         public int UploadMaximumConcurrency { get; set; } = 5;
+
+        public int InitialConnectMaxWaitInMinutes { get; set; } = 6;
+
+        public int InitialConnectWaitBeforeRetryInSeconds { get; set; } = 15;
     }
 }

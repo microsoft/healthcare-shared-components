@@ -12,7 +12,6 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Options;
 using Microsoft.Health.Blob.Configs;
 using Microsoft.Health.Blob.Features.Storage;
-using Microsoft.Health.Extensions.DependencyInjection;
 using Microsoft.IO;
 using Xunit;
 
@@ -21,18 +20,15 @@ namespace Microsoft.Health.Blob.UnitTests.Registration
     public class BlobClientRegistrationExtensionsTest
     {
         [Fact]
-        [Obsolete]
         public void GivenEmptyServiceCollection_WhenAddingBlobDataStore_ThenAddNewServices()
         {
             var services = new ServiceCollection();
             services.AddBlobDataStore();
 
-            Assert.True(services.ContainsSingleton<BlobClientProvider>());
-            Assert.True(services.ContainsSingleton<IHostedService, BlobClientProvider>());
-            Assert.True(services.ContainsSingleton<IRequireInitializationOnFirstRequest, BlobClientProvider>());
+            Assert.True(services.ContainsSingleton<IHostedService, BlobHostedService>());
             Assert.True(services.ContainsSingleton<BlobServiceClient, BlobServiceClient>());
             Assert.True(services.ContainsSingleton<IBlobClientTestProvider, BlobClientReadWriteTestProvider>());
-            Assert.True(services.ContainsSingleton<IBlobClientInitializer, BlobClientInitializer>());
+            Assert.True(services.ContainsSingleton<IBlobInitializer, BlobInitializer>());
             Assert.True(services.ContainsSingleton<RecyclableMemoryStreamManager>());
 
             // New
@@ -47,7 +43,7 @@ namespace Microsoft.Health.Blob.UnitTests.Registration
         public void GivenEmptyServiceCollection_WhenAddingBlobServiceClient_ThenAddNewServices()
         {
             var services = new ServiceCollection();
-            services.AddBlobServiceClient();
+            services.AddBlobDataStore(false);
 
             Assert.True(services.ContainsSingleton<IPostConfigureOptions<BlobDataStoreConfiguration>>());
             Assert.True(services.ContainsSingleton<BlobServiceClient>());
@@ -57,13 +53,11 @@ namespace Microsoft.Health.Blob.UnitTests.Registration
         public void GivenEmptyServiceCollection_AddBlobContainerInitialization_ThenAddNewServices()
         {
             var services = new ServiceCollection();
-            services.AddBlobContainerInitialization();
+            services.AddBlobDataStore();
 
-            Assert.True(services.ContainsSingleton<BlobClientProvider>());
-            Assert.True(services.ContainsSingleton<IHostedService, BlobClientProvider>());
-            Assert.True(services.ContainsSingleton<IRequireInitializationOnFirstRequest, BlobClientProvider>());
+            Assert.True(services.ContainsSingleton<IHostedService, BlobHostedService>());
             Assert.True(services.ContainsSingleton<IBlobClientTestProvider, BlobClientReadWriteTestProvider>());
-            Assert.True(services.ContainsSingleton<IBlobClientInitializer, BlobClientInitializer>());
+            Assert.True(services.ContainsSingleton<IBlobInitializer, BlobInitializer>());
             Assert.True(services.ContainsSingleton<RecyclableMemoryStreamManager>());
         }
 
@@ -76,8 +70,11 @@ namespace Microsoft.Health.Blob.UnitTests.Registration
             BlobDataStoreAuthenticationType authenticationType,
             string expectedConnectionString)
         {
+            IConfiguration config = new ConfigurationBuilder().Build();
             var services = new ServiceCollection();
-            services.AddBlobServiceClient(
+            services.AddSingleton(config);
+            services.AddBlobDataStore(
+                false,
                 c =>
                 {
                     c.ConnectionString = actualConnectionString;
@@ -107,7 +104,7 @@ namespace Microsoft.Health.Blob.UnitTests.Registration
 
             var services = new ServiceCollection();
             services.AddSingleton(config);
-            services.AddBlobDataStore(c => c.RequestOptions.ServerTimeoutInMinutes = 100);
+            services.AddBlobDataStore(true, c => c.RequestOptions.ServerTimeoutInMinutes = 100);
 
             BlobDataStoreConfiguration actual = services
                 .BuildServiceProvider()
@@ -135,7 +132,7 @@ namespace Microsoft.Health.Blob.UnitTests.Registration
 
             var services = new ServiceCollection();
             services.AddSingleton(config);
-            services.AddBlobDataStore(c => c.RequestOptions.DownloadMaximumConcurrency = 2);
+            services.AddBlobDataStore(true, c => c.RequestOptions.DownloadMaximumConcurrency = 2);
 
             BlobDataStoreConfiguration actual = services
                 .BuildServiceProvider()

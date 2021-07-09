@@ -29,10 +29,9 @@ namespace Microsoft.Health.Blob.Features.Storage
             _recyclableMemoryStreamManager = recyclableMemoryStreamManager;
         }
 
-        public async Task PerformTestAsync(BlobServiceClient client, BlobDataStoreConfiguration configuration, BlobContainerConfiguration blobContainerConfiguration, CancellationToken cancellationToken = default)
+        public async Task PerformTestAsync(BlobServiceClient client, BlobContainerConfiguration blobContainerConfiguration, CancellationToken cancellationToken = default)
         {
             EnsureArg.IsNotNull(client, nameof(client));
-            EnsureArg.IsNotNull(configuration, nameof(configuration));
             EnsureArg.IsNotNull(blobContainerConfiguration, nameof(blobContainerConfiguration));
 
             BlobContainerClient blobContainer = client.GetBlobContainerClient(blobContainerConfiguration.ContainerName);

@@ -18,13 +18,11 @@ namespace Microsoft.Health.Blob.UnitTests.Features.Health
 
         public TestBlobHealthCheck(
             BlobServiceClient client,
-            IOptions<BlobDataStoreConfiguration> configuration,
             IOptionsSnapshot<BlobContainerConfiguration> namedBlobContainerConfigurationAccessor,
             IBlobClientTestProvider testProvider,
             ILogger<TestBlobHealthCheck> logger)
             : base(
                   client,
-                  configuration,
                   namedBlobContainerConfigurationAccessor,
                   TestBlobHealthCheckName,
                   testProvider,

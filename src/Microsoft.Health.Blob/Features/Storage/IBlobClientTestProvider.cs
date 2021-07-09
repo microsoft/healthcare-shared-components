@@ -12,6 +12,6 @@ namespace Microsoft.Health.Blob.Features.Storage
 {
     public interface IBlobClientTestProvider
     {
-        Task PerformTestAsync(BlobServiceClient client, BlobDataStoreConfiguration configuration, BlobContainerConfiguration blobContainerConfiguration, CancellationToken cancellationToken = default);
+        Task PerformTestAsync(BlobServiceClient client, BlobContainerConfiguration blobContainerConfiguration, CancellationToken cancellationToken = default);
     }
 }
