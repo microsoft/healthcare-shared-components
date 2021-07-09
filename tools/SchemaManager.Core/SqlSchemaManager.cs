@@ -71,11 +71,23 @@ namespace SchemaManager.Core
                 // since the Schema job polls and upserts at the specified interval in the service.
                 await _baseSchemaRunner.EnsureInstanceSchemaRecordExistsAsync(token).ConfigureAwait(false);
 
-                var availableVersions = (await GetAvailableSchema(server, token).ConfigureAwait(false)).ToList();
+                int attemptCount = 1;
+                int retryCountForHttpRequestException = 18;
+
+                var availableVersions = await Policy.Handle<HttpRequestException>()
+                .WaitAndRetryAsync(
+                    retryCount: retryCountForHttpRequestException,   // approx. 3 mins wait time for the service to responds to requests
+                    sleepDurationProvider: (retryCount) => TimeSpan.FromSeconds(10),
+                    onRetry: (exception, retryCount) =>
+                    {
+                        _logger.LogError(exception, string.Format(CultureInfo.InvariantCulture, Resources.RetryCurrentSchemaVersion, attemptCount++, retryCountForHttpRequestException));
+                    })
+                .ExecuteAsync(token => GetAvailableSchema(server, token), token)
+                .ConfigureAwait(false);
 
                 // If the user hits apply command multiple times in a row, then the service schema job might not poll the updated available versions
                 // so there are retries to give it a fair amount of time.
-                int attemptCount = 1;
+                attemptCount = 1;
 
                 availableVersions = await Policy.Handle<SchemaManagerException>()
                 .WaitAndRetryAsync(
