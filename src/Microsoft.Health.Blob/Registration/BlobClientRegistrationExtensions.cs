@@ -21,7 +21,7 @@ namespace Microsoft.Extensions.DependencyInjection
     /// </summary>
     public static class BlobClientRegistrationExtensions
     {
-        public static IServiceCollection AddBlobDataStore(this IServiceCollection services, bool initializeContainers = true, Action<BlobDataStoreConfiguration> configureAction = null)
+        public static IServiceCollection AddBlobDataStore(this IServiceCollection services, Action<BlobDataStoreConfiguration> configureAction = null)
         {
             EnsureArg.IsNotNull(services, nameof(services));
 
@@ -42,7 +42,30 @@ namespace Microsoft.Extensions.DependencyInjection
                 optionsBuilder.Configure(configureAction);
             }
 
-            optionsBuilder
+            services.AddBlobServiceClient();
+
+            // Add the configuration directly for backwards compatibility along with other services
+            services.TryAddSingleton(p => p.GetRequiredService<IOptions<BlobDataStoreConfiguration>>().Value);
+
+            services.AddBlobContainerInitialization();
+
+            return services;
+        }
+
+        /// <summary>
+        /// Adds a singleton <see cref="BlobServiceClient"/> to the specified <see cref="IServiceCollection"/>.
+        /// </summary>
+        /// <param name="services">The <see cref="IServiceCollection"/> to be updated.</param>
+        /// <param name="configure">A delegate for configuring the <see cref="BlobDataStoreConfiguration"/>.</param>/// <returns>The <paramref name="services"/> for additional method invocations.</returns>
+        /// <exception cref="ArgumentNullException">
+        /// <paramref name="services"/> is <see langword="null"/>.
+        /// </exception>
+        public static IServiceCollection AddBlobServiceClient(this IServiceCollection services, Action<BlobDataStoreConfiguration> configure = null)
+        {
+            EnsureArg.IsNotNull(services, nameof(services));
+
+            services
+                .AddOptions<BlobDataStoreConfiguration>()
                 .PostConfigure(
                     options =>
                     {
@@ -52,31 +75,8 @@ namespace Microsoft.Extensions.DependencyInjection
                         }
                     });
 
-            // Add the configuration directly for backwards compatibility along with other services
-            services.TryAddSingleton(p => p.GetRequiredService<IOptions<BlobDataStoreConfiguration>>().Value);
-
-            services.AddBlobServiceClient();
-
-            if (initializeContainers)
-            {
-                services.AddBlobContainerInitialization();
-            }
-
-            return services;
-        }
-
-        /// <summary>
-        /// Adds a singleton <see cref="BlobServiceClient"/> to the specified <see cref="IServiceCollection"/>.
-        /// </summary>
-        /// <param name="services">The <see cref="IServiceCollection"/> to be updated.</param>
-        /// <returns>The <paramref name="services"/> for additional method invocations.</returns>
-        /// <exception cref="ArgumentNullException">
-        /// <paramref name="services"/> is <see langword="null"/>.
-        /// </exception>
-        private static IServiceCollection AddBlobServiceClient(this IServiceCollection services)
-        {
-             services.TryAddSingleton(p => BlobClientFactory.Create(p.GetRequiredService<IOptions<BlobDataStoreConfiguration>>().Value));
-             return services;
+            services.TryAddSingleton(p => BlobClientFactory.Create(p.GetRequiredService<IOptions<BlobDataStoreConfiguration>>().Value));
+            return configure == null ? services : services.Configure(configure);
         }
 
         /// <summary>
