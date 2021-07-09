@@ -34,7 +34,7 @@ namespace Microsoft.Health.Blob.UnitTests.Features.Health
 
             _healthCheck = new TestBlobHealthCheck(
                 _client,
-                _configuration,
+                Options.Create(_configuration),
                 optionsSnapshot,
                 _testProvider,
                 NullLogger<TestBlobHealthCheck>.Instance);

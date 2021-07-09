@@ -11,8 +11,10 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.Health.Abstractions.Features.Transactions;
+using Microsoft.Health.Core.Features.Control;
 using Microsoft.Health.SqlServer.Configs;
 using Microsoft.Health.SqlServer.Features.Client;
 using Microsoft.Health.SqlServer.Features.Schema;
@@ -137,6 +139,16 @@ namespace Microsoft.Health.SqlServer.Registration
             services.TryAddSingleton<IBaseScriptProvider, BaseScriptProvider>();
             services.TryAddSingleton<SchemaUpgradeRunner>();
             services.AddHostedService<SchemaInitializer>();
+
+            // Resolve IProcessTerminator based on the configuration
+            services.TryAddSingleton<IProcessTerminator>(
+                p =>
+                {
+                    SqlServerDataStoreConfiguration config = p.GetRequiredService<IOptions<SqlServerDataStoreConfiguration>>().Value;
+                    return config.TerminateWhenSchemaVersionUpdatedTo.HasValue
+                        ? new ProcessTerminator(p.GetRequiredService<IHostApplicationLifetime>())
+                        : new NoOpProcessTerminator(p.GetRequiredService<ILogger<NoOpProcessTerminator>>());
+                });
 
             // Re-use the existing SchemaManagerDataStore
             services.TryAddSingleton<ISchemaManagerDataStore>(

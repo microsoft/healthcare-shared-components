@@ -12,6 +12,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.Health.Core;
+using Microsoft.Health.Core.Features.Control;
 using Microsoft.Health.SqlServer.Configs;
 using Microsoft.Health.SqlServer.Features.Schema.Extensions;
 
@@ -27,22 +28,26 @@ namespace Microsoft.Health.SqlServer.Features.Schema
         private readonly IServiceProvider _serviceProvider;
         private readonly SqlServerDataStoreConfiguration _sqlServerDataStoreConfiguration;
         private readonly IMediator _mediator;
+        private readonly IProcessTerminator _processTerminator;
         private readonly ILogger _logger;
 
         public SchemaJobWorker(
             IServiceProvider services,
             IOptions<SqlServerDataStoreConfiguration> sqlServerDataStoreConfiguration,
             IMediator mediator,
+            IProcessTerminator processTerminator,
             ILogger<SchemaJobWorker> logger)
         {
             EnsureArg.IsNotNull(services, nameof(services));
             EnsureArg.IsNotNull(sqlServerDataStoreConfiguration?.Value, nameof(sqlServerDataStoreConfiguration));
             EnsureArg.IsNotNull(mediator, nameof(mediator));
             EnsureArg.IsNotNull(logger, nameof(logger));
+            EnsureArg.IsNotNull(processTerminator, nameof(processTerminator));
 
             _serviceProvider = services;
             _sqlServerDataStoreConfiguration = sqlServerDataStoreConfiguration.Value;
             _mediator = mediator;
+            _processTerminator = processTerminator;
             _logger = logger;
         }
 
@@ -71,6 +76,11 @@ namespace Microsoft.Health.SqlServer.Features.Schema
                     }
 
                     await schemaDataStore.DeleteExpiredInstanceSchemaAsync(cancellationToken).ConfigureAwait(false);
+
+                    if (_sqlServerDataStoreConfiguration.TerminateWhenSchemaVersionUpdatedTo.HasValue && _sqlServerDataStoreConfiguration.TerminateWhenSchemaVersionUpdatedTo.Value == schemaInformation.Current)
+                    {
+                        _processTerminator.Terminate(cancellationToken);
+                    }
                 }
                 catch (Exception ex)
                 {
