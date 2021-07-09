@@ -13,34 +13,25 @@ using Microsoft.Health.Blob.Configs;
 
 namespace Microsoft.Health.Blob.Features.Storage
 {
-    internal class BlobClientInitializer : IBlobClientInitializer
+    internal class BlobInitializer : IBlobInitializer
     {
+        private readonly BlobServiceClient _client;
         private readonly IBlobClientTestProvider _testProvider;
-        private readonly ILogger<BlobClientInitializer> _logger;
+        private readonly ILogger<BlobInitializer> _logger;
 
-        public BlobClientInitializer(IBlobClientTestProvider testProvider, ILogger<BlobClientInitializer> logger)
+        public BlobInitializer(BlobServiceClient client, IBlobClientTestProvider testProvider, ILogger<BlobInitializer> logger)
         {
+            EnsureArg.IsNotNull(client, nameof(client));
             EnsureArg.IsNotNull(logger, nameof(logger));
             EnsureArg.IsNotNull(testProvider, nameof(testProvider));
-
+            _client = client;
             _testProvider = testProvider;
             _logger = logger;
         }
 
         /// <inheritdoc />
-        public BlobServiceClient CreateBlobClient(BlobDataStoreConfiguration configuration)
+        public async Task InitializeDataStoreAsync(IEnumerable<IBlobContainerInitializer> containerInitializers)
         {
-            EnsureArg.IsNotNull(configuration, nameof(configuration));
-
-            _logger.LogInformation("Creating BlobClient instance");
-            return BlobClientFactory.Create(configuration);
-        }
-
-        /// <inheritdoc />
-        public async Task InitializeDataStoreAsync(BlobServiceClient client, BlobDataStoreConfiguration configuration, IEnumerable<IBlobContainerInitializer> containerInitializers)
-        {
-            EnsureArg.IsNotNull(client, nameof(client));
-            EnsureArg.IsNotNull(configuration, nameof(configuration));
             EnsureArg.IsNotNull(containerInitializers, nameof(containerInitializers));
 
             try
@@ -49,7 +40,7 @@ namespace Microsoft.Health.Blob.Features.Storage
 
                 foreach (IBlobContainerInitializer collectionInitializer in containerInitializers)
                 {
-                    await collectionInitializer.InitializeContainerAsync(client);
+                    await collectionInitializer.InitializeContainerAsync(_client);
                 }
 
                 _logger.LogInformation("Blob Storage and containers successfully initialized");
@@ -62,17 +53,15 @@ namespace Microsoft.Health.Blob.Features.Storage
         }
 
         /// <inheritdoc />
-        public async Task OpenBlobClientAsync(BlobServiceClient client, BlobDataStoreConfiguration configuration, BlobContainerConfiguration blobContainerConfiguration)
+        public async Task OpenBlobClientAsync(BlobContainerConfiguration blobContainerConfiguration)
         {
-            EnsureArg.IsNotNull(client, nameof(client));
-            EnsureArg.IsNotNull(configuration, nameof(configuration));
             EnsureArg.IsNotNull(blobContainerConfiguration, nameof(blobContainerConfiguration));
 
             _logger.LogInformation("Opening blob client connection to container {containerName}", blobContainerConfiguration.ContainerName);
 
             try
             {
-                await _testProvider.PerformTestAsync(client, configuration, blobContainerConfiguration);
+                await _testProvider.PerformTestAsync(_client, blobContainerConfiguration);
 
                 _logger.LogInformation("Established blob client connection to container {containerName}", blobContainerConfiguration.ContainerName);
             }

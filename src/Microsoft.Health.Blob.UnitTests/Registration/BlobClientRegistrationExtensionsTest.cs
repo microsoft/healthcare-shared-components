@@ -2,8 +2,6 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License (MIT). See LICENSE in the repo root for license information.
 // -------------------------------------------------------------------------------------------------
-
-using System;
 using System.Collections.Generic;
 using Azure.Storage.Blobs;
 using Microsoft.Extensions.Configuration;
@@ -12,7 +10,6 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Options;
 using Microsoft.Health.Blob.Configs;
 using Microsoft.Health.Blob.Features.Storage;
-using Microsoft.Health.Extensions.DependencyInjection;
 using Microsoft.IO;
 using Xunit;
 
@@ -21,18 +18,15 @@ namespace Microsoft.Health.Blob.UnitTests.Registration
     public class BlobClientRegistrationExtensionsTest
     {
         [Fact]
-        [Obsolete]
         public void GivenEmptyServiceCollection_WhenAddingBlobDataStore_ThenAddNewServices()
         {
             var services = new ServiceCollection();
             services.AddBlobDataStore();
 
-            Assert.True(services.ContainsSingleton<BlobClientProvider>());
-            Assert.True(services.ContainsSingleton<IHostedService, BlobClientProvider>());
-            Assert.True(services.ContainsSingleton<IRequireInitializationOnFirstRequest, BlobClientProvider>());
+            Assert.True(services.ContainsSingleton<IHostedService, BlobHostedService>());
             Assert.True(services.ContainsSingleton<BlobServiceClient, BlobServiceClient>());
             Assert.True(services.ContainsSingleton<IBlobClientTestProvider, BlobClientReadWriteTestProvider>());
-            Assert.True(services.ContainsSingleton<IBlobClientInitializer, BlobClientInitializer>());
+            Assert.True(services.ContainsSingleton<IBlobInitializer, BlobInitializer>());
             Assert.True(services.ContainsSingleton<RecyclableMemoryStreamManager>());
 
             // New
@@ -53,20 +47,6 @@ namespace Microsoft.Health.Blob.UnitTests.Registration
             Assert.True(services.ContainsSingleton<BlobServiceClient>());
         }
 
-        [Fact]
-        public void GivenEmptyServiceCollection_AddBlobContainerInitialization_ThenAddNewServices()
-        {
-            var services = new ServiceCollection();
-            services.AddBlobContainerInitialization();
-
-            Assert.True(services.ContainsSingleton<BlobClientProvider>());
-            Assert.True(services.ContainsSingleton<IHostedService, BlobClientProvider>());
-            Assert.True(services.ContainsSingleton<IRequireInitializationOnFirstRequest, BlobClientProvider>());
-            Assert.True(services.ContainsSingleton<IBlobClientTestProvider, BlobClientReadWriteTestProvider>());
-            Assert.True(services.ContainsSingleton<IBlobClientInitializer, BlobClientInitializer>());
-            Assert.True(services.ContainsSingleton<RecyclableMemoryStreamManager>());
-        }
-
         [Theory]
         [InlineData(null, BlobDataStoreAuthenticationType.ConnectionString, BlobLocalEmulator.ConnectionString)]
         [InlineData("foo", BlobDataStoreAuthenticationType.ConnectionString, "foo")]
@@ -76,7 +56,9 @@ namespace Microsoft.Health.Blob.UnitTests.Registration
             BlobDataStoreAuthenticationType authenticationType,
             string expectedConnectionString)
         {
+            IConfiguration config = new ConfigurationBuilder().Build();
             var services = new ServiceCollection();
+            services.AddSingleton(config);
             services.AddBlobServiceClient(
                 c =>
                 {
@@ -94,7 +76,6 @@ namespace Microsoft.Health.Blob.UnitTests.Registration
         }
 
         [Fact]
-        [Obsolete]
         public void GivenNoConnectionString_WhenAddingBlobDataStore_ThenUpdateConfig()
         {
             IConfiguration config = new ConfigurationBuilder()
@@ -121,7 +102,6 @@ namespace Microsoft.Health.Blob.UnitTests.Registration
         }
 
         [Fact]
-        [Obsolete]
         public void GivenConnectionString_WhenAddingBlobDataStore_ThenUpdateConfig()
         {
             IConfiguration config = new ConfigurationBuilder()

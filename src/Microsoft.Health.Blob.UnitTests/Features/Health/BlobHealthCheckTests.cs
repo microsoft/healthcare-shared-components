@@ -22,7 +22,6 @@ namespace Microsoft.Health.Blob.UnitTests.Features.Health
     {
         private readonly BlobServiceClient _client = Substitute.For<BlobServiceClient>(new Uri("https://www.microsoft.com/"), null);
         private readonly IBlobClientTestProvider _testProvider = Substitute.For<IBlobClientTestProvider>();
-        private readonly BlobDataStoreConfiguration _configuration = new BlobDataStoreConfiguration { };
         private readonly BlobContainerConfiguration _containerConfiguration = new BlobContainerConfiguration { ContainerName = "mycont" };
 
         private readonly TestBlobHealthCheck _healthCheck;
@@ -34,7 +33,6 @@ namespace Microsoft.Health.Blob.UnitTests.Features.Health
 
             _healthCheck = new TestBlobHealthCheck(
                 _client,
-                Options.Create(_configuration),
                 optionsSnapshot,
                 _testProvider,
                 NullLogger<TestBlobHealthCheck>.Instance);
@@ -51,7 +49,7 @@ namespace Microsoft.Health.Blob.UnitTests.Features.Health
         [Fact]
         public async Task GivenBlobDataStoreIsNotAvailable_WhenHealthIsChecked_ThenUnhealthyStateShouldBeReturned()
         {
-            _testProvider.PerformTestAsync(default, default, _containerConfiguration).ThrowsForAnyArgs<HttpRequestException>();
+            _testProvider.PerformTestAsync(default, _containerConfiguration).ThrowsForAnyArgs<HttpRequestException>();
             HealthCheckResult result = await _healthCheck.CheckHealthAsync(new HealthCheckContext());
 
             Assert.Equal(HealthStatus.Unhealthy, result.Status);

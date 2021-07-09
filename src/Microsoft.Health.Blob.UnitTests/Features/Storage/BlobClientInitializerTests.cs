@@ -7,7 +7,6 @@ using System;
 using System.Collections.Generic;
 using Azure.Storage.Blobs;
 using Microsoft.Extensions.Logging.Abstractions;
-using Microsoft.Health.Blob.Configs;
 using Microsoft.Health.Blob.Features.Storage;
 using NSubstitute;
 using Xunit;
@@ -18,14 +17,13 @@ namespace Microsoft.Health.Blob.UnitTests.Features.Storage
     {
         private const string TestContainerName1 = "testcontainer1";
         private const string TestContainerName2 = "testcontainer2";
-        private readonly IBlobClientInitializer _blobClientInitializer;
+        private readonly IBlobInitializer _blobInitializer;
         private readonly BlobServiceClient _blobClient;
         private readonly IBlobContainerInitializer _containerInitializer1;
         private readonly IBlobContainerInitializer _containerInitializer2;
         private readonly List<IBlobContainerInitializer> _collectionInitializers;
         private readonly BlobContainerClient _blobContainerClient1;
         private readonly BlobContainerClient _blobContainerClient2;
-        private readonly BlobDataStoreConfiguration _blobDataStoreConfiguration = new BlobDataStoreConfiguration { };
 
         public BlobClientInitializerTests()
         {
@@ -37,7 +35,7 @@ namespace Microsoft.Health.Blob.UnitTests.Features.Storage
             _blobClient.GetBlobContainerClient(TestContainerName1).Returns(_blobContainerClient1);
             _blobClient.GetBlobContainerClient(TestContainerName2).Returns(_blobContainerClient2);
 
-            _blobClientInitializer = new BlobClientInitializer(blobClientTestProvider, NullLogger<BlobClientInitializer>.Instance);
+            _blobInitializer = new BlobInitializer(_blobClient, blobClientTestProvider, NullLogger<BlobInitializer>.Instance);
             _containerInitializer1 = Substitute.For<BlobContainerInitializer>(TestContainerName1, NullLogger<BlobContainerInitializer>.Instance);
             _containerInitializer2 = Substitute.For<BlobContainerInitializer>(TestContainerName2, NullLogger<BlobContainerInitializer>.Instance);
             _collectionInitializers = new List<IBlobContainerInitializer> { _containerInitializer1, _containerInitializer2 };
@@ -46,7 +44,7 @@ namespace Microsoft.Health.Blob.UnitTests.Features.Storage
         [Fact]
         public async void GivenMultipleCollections_WhenInitializing_ThenEachContainerInitializeMethodIsCalled()
         {
-            await _blobClientInitializer.InitializeDataStoreAsync(_blobClient, _blobDataStoreConfiguration, _collectionInitializers);
+            await _blobInitializer.InitializeDataStoreAsync(_collectionInitializers);
 
             await _containerInitializer1.Received(1).InitializeContainerAsync(_blobClient);
             await _containerInitializer2.Received(1).InitializeContainerAsync(_blobClient);
@@ -55,7 +53,7 @@ namespace Microsoft.Health.Blob.UnitTests.Features.Storage
         [Fact]
         public async void GivenAConfiguration_WhenInitializing_ThenCreateContainerIfNotExistsIsCalled()
         {
-            await _blobClientInitializer.InitializeDataStoreAsync(_blobClient, _blobDataStoreConfiguration, _collectionInitializers);
+            await _blobInitializer.InitializeDataStoreAsync(_collectionInitializers);
 
             await _blobContainerClient1.Received(1).CreateIfNotExistsAsync();
             await _blobContainerClient2.Received(1).CreateIfNotExistsAsync();
