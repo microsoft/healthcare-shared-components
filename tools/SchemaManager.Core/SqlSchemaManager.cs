@@ -80,7 +80,7 @@ namespace SchemaManager.Core
                     sleepDurationProvider: (retryCount) => TimeSpan.FromSeconds(10),
                     onRetry: (exception, retryCount) =>
                     {
-                        _logger.LogError(exception, string.Format(CultureInfo.InvariantCulture, Resources.RetryCurrentSchemaVersion, attemptCount++, retryCountForHttpRequestException));
+                        _logger.LogError(exception, string.Format(CultureInfo.InvariantCulture, Resources.RetryHttpRequestException, attemptCount++, retryCountForHttpRequestException));
                     })
                 .ExecuteAsync(token => GetAvailableSchema(server, token), token)
                 .ConfigureAwait(false);

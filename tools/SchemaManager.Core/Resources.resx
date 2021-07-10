@@ -143,6 +143,10 @@
     <value>Attempt {0} of {1} to verify if all the instances are running the previous version.</value>
     <comment>(0) is retry attempt, {1} is total retries</comment>
   </data>
+  <data name="RetryHttpRequestException" xml:space="preserve">
+    <value>Attempt {0} of {1} to wait for the server to get started.</value>
+    <comment>(0) is retry attempt, {1} is total number of retries.</comment>
+  </data>
   <data name="SchemaMigrationStartedMessage" xml:space="preserve">
     <value>Schema migration is started for the version : {0}.</value>
     <comment>{0} is a version.</comment>

@@ -124,6 +124,15 @@ namespace SchemaManager.Core {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Attempt {0} of {1} to wait for the server to get started..
+        /// </summary>
+        internal static string RetryHttpRequestException {
+            get {
+                return ResourceManager.GetString("RetryHttpRequestException", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Schema migration is started for the version : {0}..
         /// </summary>
         internal static string SchemaMigrationStartedMessage {
