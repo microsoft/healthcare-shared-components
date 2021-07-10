@@ -34,5 +34,10 @@ namespace Microsoft.Health.SqlServer.Features.Storage
         /// An optimistic concurrency precondition failed
         /// </summary>
         public const int PreconditionFailed = CustomErrorCodeBase + 412;
+
+        /// <summary>
+        /// DBNetlib error value for timeout
+        /// </summary>
+        public const int TimeoutExpired = -2;
     }
 }
