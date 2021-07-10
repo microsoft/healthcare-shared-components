@@ -38,6 +38,6 @@ namespace Microsoft.Health.SqlServer.Features.Storage
         /// <summary>
         /// DBNetlib error value for timeout
         /// </summary>
-        public const int TimeoutExpired = -2;
+        public const short TimeoutExpired = -2;
     }
 }
