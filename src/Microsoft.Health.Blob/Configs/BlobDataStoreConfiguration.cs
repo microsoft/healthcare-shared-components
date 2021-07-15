@@ -14,5 +14,10 @@ namespace Microsoft.Health.Blob.Configs
         public BlobDataStoreAuthenticationType AuthenticationType { get; set; } = BlobDataStoreAuthenticationType.ConnectionString;
 
         public BlobDataStoreRequestOptions RequestOptions { get; } = new BlobDataStoreRequestOptions();
+
+        /// <summary>
+        /// If set, the app ID of the user assigned managed identity to use when connecting to azure storage, if AUthenticationType == ManagedIdentity.
+        /// </summary>
+        public string UserAssignedManagedIdentityAppId { get; set; }
     }
 }

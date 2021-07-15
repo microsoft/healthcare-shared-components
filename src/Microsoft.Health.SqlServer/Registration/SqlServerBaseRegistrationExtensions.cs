@@ -81,7 +81,19 @@ namespace Microsoft.Health.SqlServer.Registration
 
             // The following are only used in case of managed identity
             services.AddSingleton<IAccessTokenHandler, ManagedIdentityAccessTokenHandler>();
-            services.AddSingleton<AzureServiceTokenProvider>();
+            services.AddSingleton<AzureServiceTokenProvider>(p =>
+            {
+                SqlServerDataStoreConfiguration config = p.GetRequiredService<IOptions<SqlServerDataStoreConfiguration>>().Value;
+
+                string tokenProviderConnectionString = null;
+
+                if (!string.IsNullOrEmpty(config.UserAssignedManagedIdentityAppId))
+                {
+                    tokenProviderConnectionString = $"RunAs=App;AppId={config.UserAssignedManagedIdentityAppId}";
+                }
+
+                return new AzureServiceTokenProvider(connectionString: tokenProviderConnectionString);
+            });
 
             // Services to facilitate SQL connections
             // TODO: Does SqlTransactionHandler need to be registered directly? Should usage change to ITransactionHandler?

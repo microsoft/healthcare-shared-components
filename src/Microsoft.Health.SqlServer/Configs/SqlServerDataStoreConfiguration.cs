@@ -46,5 +46,10 @@ namespace Microsoft.Health.SqlServer.Configs
         /// If set, Instructs the service to terminate when its schema reaches the specified version.
         /// </summary>
         public int? TerminateWhenSchemaVersionUpdatedTo { get; set; }
+
+        /// <summary>
+        /// If set, the app ID of the user assigned managed identity to use when connecting to SQL, if AUthenticationType == ManagedIdentity.
+        /// </summary>
+        public string UserAssignedManagedIdentityAppId { get; set; }
     }
 }
