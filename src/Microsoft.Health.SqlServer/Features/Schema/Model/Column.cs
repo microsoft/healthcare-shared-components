@@ -301,6 +301,25 @@ namespace Microsoft.Health.SqlServer.Features.Schema.Model
         }
     }
 
+    public class UniqueIdentifierColumn : Column<Guid>
+    {
+        public UniqueIdentifierColumn(string name)
+            : base(name, SqlDbType.UniqueIdentifier, false)
+        {
+        }
+
+        public override Guid Read(SqlDataReader reader, int ordinal)
+        {
+            return reader.GetGuid(Metadata.Name, ordinal);
+        }
+
+        public override void Set(SqlDataRecord record, int ordinal, Guid value)
+        {
+            EnsureArg.IsNotNull(record, nameof(record));
+            record.SetGuid(ordinal, value);
+        }
+    }
+
     public class NullableIntColumn : Column<int?>
     {
         public NullableIntColumn(string name)
@@ -542,6 +561,33 @@ namespace Microsoft.Health.SqlServer.Features.Schema.Model
             if (value.HasValue)
             {
                 record.SetByte(ordinal, value.Value);
+            }
+            else
+            {
+                record.SetDBNull(ordinal);
+            }
+        }
+    }
+
+    public class NullableUniqueIdentifierColumn : Column<Guid?>
+    {
+        public NullableUniqueIdentifierColumn(string name)
+            : base(name, SqlDbType.UniqueIdentifier, true)
+        {
+        }
+
+        public override Guid? Read(SqlDataReader reader, int ordinal)
+        {
+            return reader.IsDBNull(Metadata.Name, ordinal) ? default(Guid?) : reader.GetGuid(Metadata.Name, ordinal);
+        }
+
+        public override void Set(SqlDataRecord record, int ordinal, Guid? value)
+        {
+            EnsureArg.IsNotNull(record, nameof(record));
+
+            if (value.HasValue)
+            {
+                record.SetGuid(ordinal, value.Value);
             }
             else
             {
