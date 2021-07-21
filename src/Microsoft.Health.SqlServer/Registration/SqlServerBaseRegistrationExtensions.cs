@@ -87,9 +87,9 @@ namespace Microsoft.Health.SqlServer.Registration
 
                 string tokenProviderConnectionString = null;
 
-                if (!string.IsNullOrEmpty(config.UserAssignedManagedIdentityAppId))
+                if (!string.IsNullOrEmpty(config.ManagedIdentityClientId))
                 {
-                    tokenProviderConnectionString = $"RunAs=App;AppId={config.UserAssignedManagedIdentityAppId}";
+                    tokenProviderConnectionString = $"RunAs=App;AppId={config.ManagedIdentityClientId}";
                 }
 
                 return new AzureServiceTokenProvider(connectionString: tokenProviderConnectionString);

@@ -48,8 +48,8 @@ namespace Microsoft.Health.SqlServer.Configs
         public int? TerminateWhenSchemaVersionUpdatedTo { get; set; }
 
         /// <summary>
-        /// If set, the app ID of the user assigned managed identity to use when connecting to SQL, if AUthenticationType == ManagedIdentity.
+        /// If set, the client id of the managed identity to use when connecting to SQL, if AuthenticationType == ManagedIdentity.
         /// </summary>
-        public string UserAssignedManagedIdentityAppId { get; set; }
+        public string ManagedIdentityClientId { get; set; }
     }
 }
