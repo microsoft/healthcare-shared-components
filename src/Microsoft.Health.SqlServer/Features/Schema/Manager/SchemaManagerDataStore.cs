@@ -42,11 +42,11 @@ namespace Microsoft.Health.SqlServer.Features.Schema.Manager
 
                 server.ConnectionContext.ExecuteNonQuery(script);
 
-                await UpsertSchemaVersionAsync(connection, version, SchemaVersionStatus.Completed.ToString(), cancellationToken).ConfigureAwait(false);
+                await UpsertSchemaVersionAsync(connection, version, SchemaVersionStatus.completed.ToString(), cancellationToken).ConfigureAwait(false);
             }
             catch (Exception e) when (e is SqlException || e is ExecutionFailureException)
             {
-                await UpsertSchemaVersionAsync(connection, version, SchemaVersionStatus.Failed.ToString(), cancellationToken).ConfigureAwait(false);
+                await UpsertSchemaVersionAsync(connection, version, SchemaVersionStatus.failed.ToString(), cancellationToken).ConfigureAwait(false);
                 throw;
             }
         }

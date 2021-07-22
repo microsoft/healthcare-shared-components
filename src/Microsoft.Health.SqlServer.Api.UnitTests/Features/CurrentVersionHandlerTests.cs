@@ -56,7 +56,7 @@ namespace Microsoft.Health.SqlServer.Api.UnitTests.Features
 
             Assert.Equal(mockCurrentVersions.Count, currentVersionsResponse.Count);
             Assert.Equal(1, currentVersionsResponse[0].Id);
-            Assert.Equal(SchemaVersionStatus.Completed, currentVersionsResponse[0].Status);
+            Assert.Equal(SchemaVersionStatus.completed, currentVersionsResponse[0].Status);
             Assert.Equal(2, currentVersionsResponse[0].Servers.Count);
         }
 

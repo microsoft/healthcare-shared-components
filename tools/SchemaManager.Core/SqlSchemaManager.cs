@@ -286,7 +286,7 @@ namespace SchemaManager.Core
         private async Task ApplySchemaInternalAsync(int version, string script, CancellationToken cancellationToken)
         {
             // check if the record for given version exists in started or failed status
-            await _schemaManagerDataStore.DeleteSchemaVersionAsync(version, SchemaVersionStatus.Failed.ToString(), cancellationToken).ConfigureAwait(false);
+            await _schemaManagerDataStore.DeleteSchemaVersionAsync(version, SchemaVersionStatus.failed.ToString(), cancellationToken).ConfigureAwait(false);
 
             await _schemaManagerDataStore.ExecuteScriptAndCompleteSchemaVersionAsync(script, version, cancellationToken).ConfigureAwait(false);
 
