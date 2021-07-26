@@ -5,6 +5,7 @@
 
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Health.SqlServer.Features.Schema;
 using Microsoft.Health.SqlServer.Features.Schema.Manager;
@@ -47,8 +48,8 @@ namespace Microsoft.Health.SqlServer.Tests.Integration.Features.Schema
         public async Task ApplySchema_BaseSchemaDoesNotExist_Fails()
         {
             Assert.False(await _schemaDataStore.BaseSchemaExistsAsync(CancellationToken.None));
-            var outerException = await Assert.ThrowsAsync<ExecutionFailureException>(() => _runner.ApplySchemaAsync(1, true, CancellationToken.None));
-            Assert.Contains("Invalid object name 'dbo.SchemaVersion'", outerException.InnerException.Message);
+            var outerException = await Assert.ThrowsAsync<SqlException>(() => _runner.ApplySchemaAsync(1, true, CancellationToken.None));
+            Assert.Contains("Could not find stored procedure 'dbo.UpsertSchemaVersion'.", outerException.Message);
         }
 
         [Fact]

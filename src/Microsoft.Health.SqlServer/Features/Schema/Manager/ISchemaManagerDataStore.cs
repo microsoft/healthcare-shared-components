@@ -15,8 +15,9 @@ namespace Microsoft.Health.SqlServer.Features.Schema.Manager
         /// </summary>
         /// <param name="script">The script to execute</param>
         /// <param name="version">The version to update its status</param>
+        /// <param name="applyFullSchemaSnapshot">A flag to know if its a full schema snapshot</param>
         /// <param name="cancellationToken">A cancellation token</param>
-        Task ExecuteScriptAndCompleteSchemaVersionAsync(string script, int version, CancellationToken cancellationToken);
+        Task ExecuteScriptAndCompleteSchemaVersionAsync(string script, int version, bool applyFullSchemaSnapshot, CancellationToken cancellationToken);
 
         /// <summary>
         /// Deletes the row for given version and status in the SchemaVersion table

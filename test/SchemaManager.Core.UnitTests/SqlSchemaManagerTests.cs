@@ -102,7 +102,7 @@ namespace SchemaManager.Core.UnitTests
             _client.GetCompatibilityAsync(Arg.Any<CancellationToken>()).ReturnsForAnyArgs(new CompatibleVersion(1, 2));
             _client.GetDiffScriptAsync(Arg.Is<Uri>(new Uri("_script/2.diff.sql", UriKind.Relative)), Arg.Any<CancellationToken>()).Returns("script");
             await _sqlSchemaManager.ApplySchema("connectionString", new Uri("https://localhost/"), new MutuallyExclusiveType { Latest = false, Version = 2, Next = false });
-            await _schemaManagerDataStore.Received(1).ExecuteScriptAndCompleteSchemaVersionAsync(Arg.Is("script"), Arg.Is(2), Arg.Any<CancellationToken>());
+            await _schemaManagerDataStore.Received(1).ExecuteScriptAndCompleteSchemaVersionAsync(Arg.Is("script"), Arg.Is(2), Arg.Is(false), Arg.Any<CancellationToken>());
         }
 
         [Fact]
@@ -118,7 +118,7 @@ namespace SchemaManager.Core.UnitTests
 
             await _sqlSchemaManager.ApplySchema("connectionString", new Uri("https://localhost/"), new MutuallyExclusiveType { Version = 2 });
 
-            await _schemaManagerDataStore.Received(1).ExecuteScriptAndCompleteSchemaVersionAsync(Arg.Is("script"), Arg.Is(2), Arg.Any<CancellationToken>());
+            await _schemaManagerDataStore.Received(1).ExecuteScriptAndCompleteSchemaVersionAsync(Arg.Is("script"), Arg.Is(2), Arg.Is(true), Arg.Any<CancellationToken>());
         }
 
         [Fact]
@@ -158,7 +158,7 @@ namespace SchemaManager.Core.UnitTests
 
             await _sqlSchemaManager.ApplySchema("connectionString", new Uri("https://localhost/"), new MutuallyExclusiveType { Latest = false, Version = 2, Next = false });
 
-            await _schemaManagerDataStore.DidNotReceive().ExecuteScriptAndCompleteSchemaVersionAsync(Arg.Is("script"), Arg.Is(2), Arg.Any<CancellationToken>());
+            await _schemaManagerDataStore.DidNotReceive().ExecuteScriptAndCompleteSchemaVersionAsync(Arg.Is("script"), Arg.Is(2), Arg.Is(false), Arg.Any<CancellationToken>());
         }
     }
 }

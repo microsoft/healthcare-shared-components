@@ -3,6 +3,7 @@
 // Licensed under the MIT License (MIT). See LICENSE in the repo root for license information.
 // -------------------------------------------------------------------------------------------------
 
+using System;
 using System.Data;
 using System.Threading;
 using System.Threading.Tasks;
@@ -11,6 +12,7 @@ using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.Logging;
 using Microsoft.Health.SqlServer.Extensions;
 using Microsoft.Health.SqlServer.Features.Schema.Manager;
+using Microsoft.SqlServer.Management.Common;
 
 namespace Microsoft.Health.SqlServer.Features.Schema
 {
@@ -44,18 +46,26 @@ namespace Microsoft.Health.SqlServer.Features.Schema
 
         public async Task ApplySchemaAsync(int version, bool applyFullSchemaSnapshot, CancellationToken cancellationToken)
         {
-            _logger.LogInformation("Applying schema {version}", version);
-
-            if (!applyFullSchemaSnapshot)
+            try
             {
-                await InsertSchemaVersionAsync(version, cancellationToken);
+                _logger.LogInformation("Applying schema {version}", version);
+
+                if (!applyFullSchemaSnapshot)
+                {
+                    await InsertSchemaVersionAsync(version, cancellationToken);
+                }
+
+                await _schemaManagerDataStore.ExecuteScriptAsync(_scriptProvider.GetMigrationScript(version, applyFullSchemaSnapshot), cancellationToken);
+
+                await CompleteSchemaVersionAsync(version, cancellationToken);
+
+                _logger.LogInformation("Completed applying schema {version}", version);
             }
-
-            await _schemaManagerDataStore.ExecuteScriptAsync(_scriptProvider.GetMigrationScript(version, applyFullSchemaSnapshot), cancellationToken);
-
-            await CompleteSchemaVersionAsync(version, cancellationToken);
-
-            _logger.LogInformation("Completed applying schema {version}", version);
+            catch (Exception e) when (e is SqlException || e is ExecutionFailureException)
+            {
+                await FailSchemaVersionAsync(version, cancellationToken);
+                throw;
+            }
         }
 
         public async Task ApplyBaseSchemaAsync(CancellationToken cancellationToken)
@@ -75,6 +85,11 @@ namespace Microsoft.Health.SqlServer.Features.Schema
         private async Task CompleteSchemaVersionAsync(int schemaVersion, CancellationToken cancellationToken)
         {
             await UpsertSchemaVersionAsync(schemaVersion, "completed", cancellationToken);
+        }
+
+        private async Task FailSchemaVersionAsync(int schemaVersion, CancellationToken cancellationToken)
+        {
+            await UpsertSchemaVersionAsync(schemaVersion, "failed", cancellationToken);
         }
 
         private async Task UpsertSchemaVersionAsync(int schemaVersion, string status, CancellationToken cancellationToken)

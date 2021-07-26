@@ -135,7 +135,9 @@ namespace SchemaManager.Core
                     _logger.LogInformation(string.Format(CultureInfo.InvariantCulture, Resources.SchemaMigrationStartedMessage, availableVersions.Last().Id));
 
                     string script = await GetScriptAsync(1, availableVersions.Last().ScriptUri, token).ConfigureAwait(false);
-                    await ApplySchemaInternalAsync(availableVersions.Last().Id, script, token).ConfigureAwait(false);
+
+                    // full schema is not ran hence above script contains full schema -> applyFullSchemaSnapshot = true
+                    await ApplySchemaInternalAsync(availableVersions.Last().Id, script, applyFullSchemaSnapshot: true, token).ConfigureAwait(false);
                     return;
                 }
 
@@ -160,7 +162,8 @@ namespace SchemaManager.Core
 
                     string script = await GetScriptAsync(executingVersion, availableVersion.ScriptUri, token, availableVersion.DiffUri).ConfigureAwait(false);
 
-                    await ApplySchemaInternalAsync(executingVersion, script, token).ConfigureAwait(false);
+                    // here we do have a full schema ran already so just applying migrations -> applyFullSchemaSnapshot = false
+                    await ApplySchemaInternalAsync(executingVersion, script, applyFullSchemaSnapshot: false, token).ConfigureAwait(false);
                 }
             }
             catch (Exception ex) when (ex is SchemaManagerException || ex is InvalidOperationException)
@@ -283,12 +286,12 @@ namespace SchemaManager.Core
             return await _schemaClient.GetDiffScriptAsync(new Uri(diffUri, UriKind.Relative), cancellationToken).ConfigureAwait(false);
         }
 
-        private async Task ApplySchemaInternalAsync(int version, string script, CancellationToken cancellationToken)
+        private async Task ApplySchemaInternalAsync(int version, string script, bool applyFullSchemaSnapshot, CancellationToken cancellationToken)
         {
             // check if the record for given version exists in started or failed status
             await _schemaManagerDataStore.DeleteSchemaVersionAsync(version, SchemaVersionStatus.failed.ToString(), cancellationToken).ConfigureAwait(false);
 
-            await _schemaManagerDataStore.ExecuteScriptAndCompleteSchemaVersionAsync(script, version, cancellationToken).ConfigureAwait(false);
+            await _schemaManagerDataStore.ExecuteScriptAndCompleteSchemaVersionAsync(script, version, applyFullSchemaSnapshot, cancellationToken).ConfigureAwait(false);
 
             _logger.LogInformation(string.Format(CultureInfo.InvariantCulture, Resources.SchemaMigrationSuccessMessage, version));
         }

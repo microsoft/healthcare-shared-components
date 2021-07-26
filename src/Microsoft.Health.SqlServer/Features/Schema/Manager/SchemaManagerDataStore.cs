@@ -27,7 +27,7 @@ namespace Microsoft.Health.SqlServer.Features.Schema.Manager
         }
 
         /// <inheritdoc />
-        public async Task ExecuteScriptAndCompleteSchemaVersionAsync(string script, int version, CancellationToken cancellationToken)
+        public async Task ExecuteScriptAndCompleteSchemaVersionAsync(string script, int version, bool applyFullSchemaSnapshot, CancellationToken cancellationToken)
         {
             EnsureArg.IsNotNull(script, nameof(script));
             EnsureArg.IsGte(version, 1);
@@ -38,10 +38,14 @@ namespace Microsoft.Health.SqlServer.Features.Schema.Manager
 
             try
             {
+                // FullSchemaSnapshot script Inserts into SchemaVersion table with stated status
+                if (!applyFullSchemaSnapshot)
+                {
+                    await UpsertSchemaVersionAsync(connection, version, SchemaVersionStatus.started.ToString(), cancellationToken).ConfigureAwait(false);
+                }
+
                 var server = new Server(serverConnection);
-
                 server.ConnectionContext.ExecuteNonQuery(script);
-
                 await UpsertSchemaVersionAsync(connection, version, SchemaVersionStatus.completed.ToString(), cancellationToken).ConfigureAwait(false);
             }
             catch (Exception e) when (e is SqlException || e is ExecutionFailureException)
