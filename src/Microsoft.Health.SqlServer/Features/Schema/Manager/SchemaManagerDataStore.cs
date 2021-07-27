@@ -38,7 +38,7 @@ namespace Microsoft.Health.SqlServer.Features.Schema.Manager
 
             try
             {
-                // FullSchemaSnapshot script Inserts into SchemaVersion table with stated status
+                // FullSchemaSnapshot script(x.sql) inserts 'started' status into the SchemaVersion table itself.
                 if (!applyFullSchemaSnapshot)
                 {
                     await UpsertSchemaVersionAsync(connection, version, SchemaVersionStatus.started.ToString(), cancellationToken).ConfigureAwait(false);
