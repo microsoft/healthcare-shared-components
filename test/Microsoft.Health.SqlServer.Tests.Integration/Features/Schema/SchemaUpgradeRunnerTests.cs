@@ -62,9 +62,11 @@ namespace Microsoft.Health.SqlServer.Tests.Integration.Features.Schema
         }
 
         [Fact]
-        public async Task ApplySchema_UsingDiff_Succeeds()
+        public async Task ApplySchemaOnPreviouslyFailedAttempt_UsingDiff_Succeeds()
         {
             await _runner.ApplyBaseSchemaAsync(CancellationToken.None);
+            await _schemaDataStore.ExecuteScriptAsync("Insert into SchemaVersion values (2, 'started')", CancellationToken.None);
+            await Assert.ThrowsAsync<ExecutionFailureException>(async () => await _runner.ApplySchemaAsync(2, applyFullSchemaSnapshot: true, CancellationToken.None));
             await _runner.ApplySchemaAsync(2, applyFullSchemaSnapshot: true, CancellationToken.None);
             var version = await _schemaDataStore.GetCurrentSchemaVersionAsync(CancellationToken.None);
             Assert.Equal(2, version);
