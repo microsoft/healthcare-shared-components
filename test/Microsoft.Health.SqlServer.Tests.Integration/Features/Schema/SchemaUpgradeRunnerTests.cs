@@ -72,5 +72,28 @@ namespace Microsoft.Health.SqlServer.Tests.Integration.Features.Schema
             version = await _schemaDataStore.GetCurrentSchemaVersionAsync(CancellationToken.None);
             Assert.Equal(3, version);
         }
+
+        [Fact]
+        public async Task ApplyFullSchemaAndDiffScript_OnPreviouslyFailedAttempt_Succeeds()
+        {
+            await _runner.ApplyBaseSchemaAsync(CancellationToken.None);
+
+            // this is to generate an error
+            await _schemaDataStore.ExecuteScriptAsync("Insert into SchemaVersion values (2, 'started')", CancellationToken.None);
+
+            // attempt 1 : To apply schemaVersion-2 fails
+            await Assert.ThrowsAsync<ExecutionFailureException>(async () => await _runner.ApplySchemaAsync(2, applyFullSchemaSnapshot: true, CancellationToken.None));
+
+            // attempt 2 : To apply schemaVersion-2 passes
+            await _runner.ApplySchemaAsync(2, applyFullSchemaSnapshot: true, CancellationToken.None);
+            var version = await _schemaDataStore.GetCurrentSchemaVersionAsync(CancellationToken.None);
+            Assert.Equal(2, version);
+
+            // diff script for version 3 should pass even if SchemaVersion table has an entry with 'failed' status for version 3
+            await _schemaDataStore.ExecuteScriptAsync("Insert into SchemaVersion values (3, 'failed')", CancellationToken.None);
+            await _runner.ApplySchemaAsync(3, applyFullSchemaSnapshot: false, CancellationToken.None);
+            version = await _schemaDataStore.GetCurrentSchemaVersionAsync(CancellationToken.None);
+            Assert.Equal(3, version);
+        }
     }
 }
