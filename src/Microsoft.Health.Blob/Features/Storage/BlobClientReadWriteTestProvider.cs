@@ -16,6 +16,9 @@ using Microsoft.IO;
 
 namespace Microsoft.Health.Blob.Features.Storage
 {
+    /// <summary>
+    /// Verifies read and write operations on a blob storage container.
+    /// </summary>
     public class BlobClientReadWriteTestProvider : IBlobClientTestProvider
     {
         private const string TestBlobName = "_testblob_";
@@ -29,6 +32,7 @@ namespace Microsoft.Health.Blob.Features.Storage
             _recyclableMemoryStreamManager = recyclableMemoryStreamManager;
         }
 
+        /// <inheritdoc/>
         public async Task PerformTestAsync(BlobServiceClient client, BlobContainerConfiguration blobContainerConfiguration, CancellationToken cancellationToken = default)
         {
             EnsureArg.IsNotNull(client, nameof(client));

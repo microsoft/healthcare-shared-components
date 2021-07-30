@@ -56,7 +56,7 @@ namespace Microsoft.Health.Blob.Features.Storage
 
             await timeoutPolicy
                    .WrapAsync(retryPolicy)
-                   .ExecuteAsync((token) => _blobInitializer.InitializeDataStoreAsync(_collectionInitializers), cancellationToken)
+                   .ExecuteAsync((token) => _blobInitializer.InitializeDataStoreAsync(_collectionInitializers, token), cancellationToken)
                    .ConfigureAwait(false);
 
             _logger.LogInformation("Blob containers initialized");
