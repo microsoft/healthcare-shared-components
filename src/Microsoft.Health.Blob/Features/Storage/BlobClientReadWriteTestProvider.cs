@@ -32,7 +32,7 @@ namespace Microsoft.Health.Blob.Features.Storage
             _recyclableMemoryStreamManager = recyclableMemoryStreamManager;
         }
 
-        /// <inheritdoc/>
+        /// <inheritdoc />
         public async Task PerformTestAsync(BlobServiceClient client, BlobContainerConfiguration blobContainerConfiguration, CancellationToken cancellationToken = default)
         {
             EnsureArg.IsNotNull(client, nameof(client));
