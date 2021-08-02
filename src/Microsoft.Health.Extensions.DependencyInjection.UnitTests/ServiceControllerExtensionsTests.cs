@@ -27,5 +27,13 @@ namespace Microsoft.Health.Extensions.DependencyInjection.UnitTests
             var collection = Substitute.For<IServiceCollection>();
             Assert.Throws<ArgumentNullException>(() => collection.RegisterAssemblyModules(null));
         }
+
+        [Fact]
+        public void GivenNonNullModuleFilter_WhenScanningForModules_ThenItShouldBeRespected()
+        {
+            var collection = Substitute.For<IServiceCollection>();
+            collection.RegisterAssemblyModules(GetType().Assembly, moduleTypeFilter: x => x != typeof(TestModule));
+            collection.DidNotReceive().Add(Arg.Is<ServiceDescriptor>(descriptor => descriptor.ServiceType == typeof(TestComponent)));
+        }
     }
 }

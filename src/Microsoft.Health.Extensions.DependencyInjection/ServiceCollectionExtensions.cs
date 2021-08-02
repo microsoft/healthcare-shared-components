@@ -24,11 +24,23 @@ namespace Microsoft.Health.Extensions.DependencyInjection
         /// <param name="constructorParams">An array of constructor parameters that can be injected into IStartupModule on creation.</param>
         public static void RegisterAssemblyModules(this IServiceCollection collection, Assembly assembly, params object[] constructorParams)
         {
+            collection.RegisterAssemblyModules(assembly: assembly, moduleTypeFilter: null, constructorParams: constructorParams);
+        }
+
+        /// <summary>
+        /// Registers assembly modules.
+        /// </summary>
+        /// <param name="collection">The collection.</param>
+        /// <param name="assembly">The assembly.</param>
+        /// <param name="moduleTypeFilter">Filter out modules that are not be registered.</param>
+        /// <param name="constructorParams">An array of constructor parameters that can be injected into IStartupModule on creation.</param>
+        public static void RegisterAssemblyModules(this IServiceCollection collection, Assembly assembly, Func<Type, bool> moduleTypeFilter, params object[] constructorParams)
+        {
             EnsureArg.IsNotNull(collection, nameof(collection));
             EnsureArg.IsNotNull(assembly, nameof(assembly));
 
             foreach (var moduleType in assembly.GetTypes()
-                .Where(x => typeof(IStartupModule).IsAssignableFrom(x) && x.IsClass && !x.IsAbstract))
+                .Where(x => typeof(IStartupModule).IsAssignableFrom(x) && x.IsClass && !x.IsAbstract && (moduleTypeFilter == null || moduleTypeFilter.Invoke(x))))
             {
                 // For simplicity, only a single Module constructor is supported
                 var constructor = moduleType
