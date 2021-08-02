@@ -749,7 +749,7 @@ namespace Microsoft.Health.SqlServer.Features.Schema.Model
         {
             EnsureArg.IsNotNull(record, nameof(record));
 
-            // Clear old before setting new value.
+            // Clear old value before setting new value.
             record.SetDBNull(ordinal);
 
             if (value != null)
