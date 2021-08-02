@@ -45,6 +45,7 @@ namespace Microsoft.Health.Blob.Features.Storage
             _collectionInitializers = collectionInitializers;
         }
 
+        /// <inheritdoc />
         public async Task StartAsync(CancellationToken cancellationToken)
         {
             var sleepTime = TimeSpan.FromSeconds(_blobDataStoreConfiguration.RequestOptions.InitialConnectWaitBeforeRetryInSeconds);
@@ -62,6 +63,7 @@ namespace Microsoft.Health.Blob.Features.Storage
             _logger.LogInformation("Blob containers initialized");
         }
 
+        /// <inheritdoc />
         public Task StopAsync(CancellationToken cancellationToken) => Task.CompletedTask;
     }
 }

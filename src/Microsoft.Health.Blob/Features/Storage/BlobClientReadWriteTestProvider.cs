@@ -3,6 +3,7 @@
 // Licensed under the MIT License (MIT). See LICENSE in the repo root for license information.
 // -------------------------------------------------------------------------------------------------
 
+using System;
 using System.IO;
 using System.Text;
 using System.Threading;
@@ -11,6 +12,7 @@ using Azure.Storage.Blobs;
 using Azure.Storage.Blobs.Models;
 using Azure.Storage.Blobs.Specialized;
 using EnsureThat;
+using Microsoft.Extensions.Logging;
 using Microsoft.Health.Blob.Configs;
 using Microsoft.IO;
 
@@ -24,12 +26,15 @@ namespace Microsoft.Health.Blob.Features.Storage
         private const string TestBlobName = "_testblob_";
         private const string TestBlobContent = "test-data";
         private readonly RecyclableMemoryStreamManager _recyclableMemoryStreamManager;
+        private readonly ILogger<BlobClientReadWriteTestProvider> _logger;
 
-        public BlobClientReadWriteTestProvider(RecyclableMemoryStreamManager recyclableMemoryStreamManager)
+        public BlobClientReadWriteTestProvider(RecyclableMemoryStreamManager recyclableMemoryStreamManager, ILogger<BlobClientReadWriteTestProvider> logger)
         {
             EnsureArg.IsNotNull(recyclableMemoryStreamManager, nameof(recyclableMemoryStreamManager));
+            EnsureArg.IsNotNull(logger, nameof(logger));
 
             _recyclableMemoryStreamManager = recyclableMemoryStreamManager;
+            _logger = logger;
         }
 
         /// <inheritdoc />
@@ -41,12 +46,20 @@ namespace Microsoft.Health.Blob.Features.Storage
             BlobContainerClient blobContainer = client.GetBlobContainerClient(blobContainerConfiguration.ContainerName);
             BlockBlobClient blob = blobContainer.GetBlockBlobClient(TestBlobName);
 
-            using var content = new MemoryStream(Encoding.UTF8.GetBytes(TestBlobContent));
-            await blob.UploadAsync(
-                content,
-                new BlobHttpHeaders { ContentType = "text/plain" },
-                cancellationToken: cancellationToken).ConfigureAwait(false);
-            await DownloadBlobContentAsync(blob, cancellationToken).ConfigureAwait(false);
+            try
+            {
+                _logger.LogInformation("Reading and writing blob: {container}/{blob}", blobContainerConfiguration.ContainerName, TestBlobName);
+                using var content = new MemoryStream(Encoding.UTF8.GetBytes(TestBlobContent));
+                await blob.UploadAsync(
+                    content,
+                    new BlobHttpHeaders { ContentType = "text/plain" },
+                    cancellationToken: cancellationToken).ConfigureAwait(false);
+                await DownloadBlobContentAsync(blob, cancellationToken).ConfigureAwait(false);
+            }
+            catch (OperationCanceledException ex)
+            {
+                _logger.LogCritical(ex, "Reading and writing cancelled for blob: {container}/{blob}", blobContainerConfiguration.ContainerName, TestBlobName);
+            }
         }
 
         private async Task<byte[]> DownloadBlobContentAsync(BlockBlobClient blob, CancellationToken cancellationToken)

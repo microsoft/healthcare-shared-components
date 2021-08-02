@@ -16,6 +16,9 @@ using Microsoft.Health.Blob.Features.Storage;
 
 namespace Microsoft.Health.Blob.Features.Health
 {
+    /// <summary>
+    /// Performs health checks on blob storage.
+    /// </summary>
     public class BlobHealthCheck : IHealthCheck
     {
         private readonly BlobServiceClient _client;
