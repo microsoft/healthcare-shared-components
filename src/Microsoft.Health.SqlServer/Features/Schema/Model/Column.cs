@@ -749,11 +749,14 @@ namespace Microsoft.Health.SqlServer.Features.Schema.Model
         {
             EnsureArg.IsNotNull(record, nameof(record));
 
-            // Clear old value before setting new value.
-            record.SetDBNull(ordinal);
-
             if (value != null)
             {
+                if (!record.IsDBNull(ordinal))
+                {
+                    // Clear old value before setting new value.
+                    record.SetDBNull(ordinal);
+                }
+
                 int length = (int)value.Length;
                 byte[] bytes = ArrayPool<byte>.Shared.Rent(length);
 
@@ -770,6 +773,10 @@ namespace Microsoft.Health.SqlServer.Features.Schema.Model
                 {
                     ArrayPool<byte>.Shared.Return(bytes);
                 }
+            }
+            else
+            {
+                record.SetDBNull(ordinal);
             }
         }
     }
