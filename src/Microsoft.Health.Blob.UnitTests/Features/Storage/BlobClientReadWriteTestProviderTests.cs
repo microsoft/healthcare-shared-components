@@ -12,6 +12,7 @@ using Azure.Storage.Blobs.Models;
 using Azure.Storage.Blobs.Specialized;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Health.Blob.Features.Storage;
+using Microsoft.IO;
 using NSubstitute;
 using Xunit;
 
@@ -34,18 +35,18 @@ namespace Microsoft.Health.Blob.UnitTests.Features.Storage
                     return Substitute.For<Response<BlobContentInfo>>();
                 });
 
-            var blobContainerClient1 = Substitute.For<BlobContainerClient>(new Uri("https://www.microsoft.com/"), new BlobClientOptions());
-            blobContainerClient1.GetBlockBlobClient(Arg.Any<string>()).Returns(blockBlobClient);
+            var blobContainerClient = Substitute.For<BlobContainerClient>(new Uri("https://www.microsoft.com/"), new BlobClientOptions());
+            blobContainerClient.GetBlockBlobClient(Arg.Any<string>()).Returns(blockBlobClient);
 
             _blobClient = Substitute.For<BlobServiceClient>(new Uri("https://www.microsoft.com/"), null);
-            _blobClient.GetBlobContainerClient(Arg.Any<string>()).Returns(blobContainerClient1);
+            _blobClient.GetBlobContainerClient(Arg.Any<string>()).Returns(blobContainerClient);
         }
 
         [Fact]
         public async void GivenCancellation_WhenPerformingTest_ThenExceptionIsHandled()
         {
-            var testProvider = new BlobClientReadWriteTestProvider(new IO.RecyclableMemoryStreamManager(), _logger);
-            var cancellationTokenSource = new CancellationTokenSource();
+            var testProvider = new BlobClientReadWriteTestProvider(new RecyclableMemoryStreamManager(), _logger);
+            using var cancellationTokenSource = new CancellationTokenSource();
             cancellationTokenSource.Cancel();
 
             var exception = await Record.ExceptionAsync(() => testProvider.PerformTestAsync(_blobClient, new Configs.BlobContainerConfiguration(), cancellationTokenSource.Token));

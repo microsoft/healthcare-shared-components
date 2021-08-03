@@ -25,6 +25,12 @@ namespace Microsoft.Health.Blob.UnitTests.Features.Storage
         public BlobHostedServiceTests()
         {
             _blobInitializer = Substitute.For<IBlobInitializer>();
+            _blobInitializer.InitializeDataStoreAsync(Arg.Any<List<IBlobContainerInitializer>>(), Arg.Any<CancellationToken>())
+                .Returns(x =>
+                {
+                    x.Arg<CancellationToken>().ThrowIfCancellationRequested();
+                    return Task.CompletedTask;
+                });
 
             _options = Substitute.For<IOptionsSnapshot<BlobDataStoreConfiguration>>();
             _options.Value.Returns(new BlobDataStoreConfiguration());
@@ -35,15 +41,8 @@ namespace Microsoft.Health.Blob.UnitTests.Features.Storage
         [Fact]
         public async void GivenCancellation_WhenStartingService_ThenInitializationIsCancelled()
         {
-            _blobInitializer.InitializeDataStoreAsync(Arg.Any<List<IBlobContainerInitializer>>(), Arg.Any<CancellationToken>())
-                .Returns(x =>
-                {
-                    x.Arg<CancellationToken>().ThrowIfCancellationRequested();
-                    return Task.CompletedTask;
-                });
-
             var blobHostedService = new BlobHostedService(_blobInitializer, _options, NullLogger<BlobHostedService>.Instance, _collectionInitializers);
-            var cancellationTokenSource = new CancellationTokenSource();
+            using var cancellationTokenSource = new CancellationTokenSource();
             cancellationTokenSource.Cancel();
 
             await Assert.ThrowsAsync<OperationCanceledException>(() => blobHostedService.StartAsync(cancellationTokenSource.Token));

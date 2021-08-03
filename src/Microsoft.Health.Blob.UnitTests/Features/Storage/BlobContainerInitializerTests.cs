@@ -18,7 +18,7 @@ namespace Microsoft.Health.Blob.UnitTests.Features.Storage
 {
     public class BlobContainerInitializerTests
     {
-        private const string TestContainerName1 = "testcontainer1";
+        private const string TestContainerName = "testcontainer1";
         private readonly NullLogger<BlobContainerInitializer> _logger;
         private readonly BlobServiceClient _blobClient;
 
@@ -26,8 +26,8 @@ namespace Microsoft.Health.Blob.UnitTests.Features.Storage
         {
             _logger = new NullLogger<BlobContainerInitializer>();
 
-            var blobContainerClient1 = Substitute.For<BlobContainerClient>(new Uri("https://www.microsoft.com/"), new BlobClientOptions());
-            blobContainerClient1.CreateIfNotExistsAsync(cancellationToken: Arg.Any<CancellationToken>())
+            var blobContainerClient = Substitute.For<BlobContainerClient>(new Uri("https://www.microsoft.com/"), new BlobClientOptions());
+            blobContainerClient.CreateIfNotExistsAsync(cancellationToken: Arg.Any<CancellationToken>())
                 .Returns(x =>
                 {
                     x.Arg<CancellationToken>().ThrowIfCancellationRequested();
@@ -35,14 +35,14 @@ namespace Microsoft.Health.Blob.UnitTests.Features.Storage
                 });
 
             _blobClient = Substitute.For<BlobServiceClient>(new Uri("https://www.microsoft.com/"), null);
-            _blobClient.GetBlobContainerClient(TestContainerName1).Returns(blobContainerClient1);
+            _blobClient.GetBlobContainerClient(TestContainerName).Returns(blobContainerClient);
         }
 
         [Fact]
         public async void GivenCancellation_WhenInitializingContainer_ThenExceptionIsHandled()
         {
-            var blobContainerInitializer = new BlobContainerInitializer(TestContainerName1, _logger);
-            var cancellationTokenSource = new CancellationTokenSource(TimeSpan.FromMilliseconds(1));
+            var blobContainerInitializer = new BlobContainerInitializer(TestContainerName, _logger);
+            using var cancellationTokenSource = new CancellationTokenSource();
             cancellationTokenSource.Cancel();
 
             var exception = await Record.ExceptionAsync(() => blobContainerInitializer.InitializeContainerAsync(_blobClient, cancellationTokenSource.Token));
