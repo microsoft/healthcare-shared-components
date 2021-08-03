@@ -3,6 +3,7 @@
 // Licensed under the MIT License (MIT). See LICENSE in the repo root for license information.
 // -------------------------------------------------------------------------------------------------
 
+using System.Threading;
 using System.Threading.Tasks;
 using Azure.Storage.Blobs;
 using EnsureThat;
@@ -10,6 +11,9 @@ using Microsoft.Extensions.Logging;
 
 namespace Microsoft.Health.Blob.Features.Storage
 {
+    /// <summary>
+    /// Provides methods for initializing blob storage containers.
+    /// </summary>
     public class BlobContainerInitializer : IBlobContainerInitializer
     {
         private readonly string _containerName;
@@ -25,14 +29,14 @@ namespace Microsoft.Health.Blob.Features.Storage
         }
 
         /// <inheritdoc />
-        public async Task<BlobContainerClient> InitializeContainerAsync(BlobServiceClient client)
+        public async Task<BlobContainerClient> InitializeContainerAsync(BlobServiceClient client, CancellationToken cancellationToken = default)
         {
             EnsureArg.IsNotNull(client, nameof(client));
 
             BlobContainerClient container = client.GetBlobContainerClient(_containerName);
 
-            _logger.LogDebug("Creating blob container if not exits: {containerName}", _containerName);
-            await container.CreateIfNotExistsAsync();
+            _logger.LogDebug("Creating blob container if not exists: {containerName}", _containerName);
+            await container.CreateIfNotExistsAsync(cancellationToken: cancellationToken);
 
             return container;
         }

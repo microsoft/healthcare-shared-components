@@ -5,6 +5,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
 using Azure.Storage.Blobs;
 using EnsureThat;
@@ -30,7 +31,7 @@ namespace Microsoft.Health.Blob.Features.Storage
         }
 
         /// <inheritdoc />
-        public async Task InitializeDataStoreAsync(IEnumerable<IBlobContainerInitializer> containerInitializers)
+        public async Task InitializeDataStoreAsync(IEnumerable<IBlobContainerInitializer> containerInitializers, CancellationToken cancellationToken = default)
         {
             EnsureArg.IsNotNull(containerInitializers, nameof(containerInitializers));
 
@@ -40,7 +41,7 @@ namespace Microsoft.Health.Blob.Features.Storage
 
                 foreach (IBlobContainerInitializer collectionInitializer in containerInitializers)
                 {
-                    await collectionInitializer.InitializeContainerAsync(_client);
+                    await collectionInitializer.InitializeContainerAsync(_client, cancellationToken);
                 }
 
                 _logger.LogInformation("Blob Storage and containers successfully initialized");
@@ -53,7 +54,7 @@ namespace Microsoft.Health.Blob.Features.Storage
         }
 
         /// <inheritdoc />
-        public async Task OpenBlobClientAsync(BlobContainerConfiguration blobContainerConfiguration)
+        public async Task OpenBlobClientAsync(BlobContainerConfiguration blobContainerConfiguration, CancellationToken cancellationToken = default)
         {
             EnsureArg.IsNotNull(blobContainerConfiguration, nameof(blobContainerConfiguration));
 
@@ -61,7 +62,7 @@ namespace Microsoft.Health.Blob.Features.Storage
 
             try
             {
-                await _testProvider.PerformTestAsync(_client, blobContainerConfiguration);
+                await _testProvider.PerformTestAsync(_client, blobContainerConfiguration, cancellationToken);
 
                 _logger.LogInformation("Established blob client connection to container {containerName}", blobContainerConfiguration.ContainerName);
             }

@@ -11,24 +11,32 @@ using Azure.Storage.Blobs;
 using Azure.Storage.Blobs.Models;
 using Azure.Storage.Blobs.Specialized;
 using EnsureThat;
+using Microsoft.Extensions.Logging;
 using Microsoft.Health.Blob.Configs;
 using Microsoft.IO;
 
 namespace Microsoft.Health.Blob.Features.Storage
 {
+    /// <summary>
+    /// Verifies read and write operations on a blob storage container.
+    /// </summary>
     public class BlobClientReadWriteTestProvider : IBlobClientTestProvider
     {
         private const string TestBlobName = "_testblob_";
         private const string TestBlobContent = "test-data";
         private readonly RecyclableMemoryStreamManager _recyclableMemoryStreamManager;
+        private readonly ILogger<BlobClientReadWriteTestProvider> _logger;
 
-        public BlobClientReadWriteTestProvider(RecyclableMemoryStreamManager recyclableMemoryStreamManager)
+        public BlobClientReadWriteTestProvider(RecyclableMemoryStreamManager recyclableMemoryStreamManager, ILogger<BlobClientReadWriteTestProvider> logger)
         {
             EnsureArg.IsNotNull(recyclableMemoryStreamManager, nameof(recyclableMemoryStreamManager));
+            EnsureArg.IsNotNull(logger, nameof(logger));
 
             _recyclableMemoryStreamManager = recyclableMemoryStreamManager;
+            _logger = logger;
         }
 
+        /// <inheritdoc />
         public async Task PerformTestAsync(BlobServiceClient client, BlobContainerConfiguration blobContainerConfiguration, CancellationToken cancellationToken = default)
         {
             EnsureArg.IsNotNull(client, nameof(client));
@@ -37,6 +45,7 @@ namespace Microsoft.Health.Blob.Features.Storage
             BlobContainerClient blobContainer = client.GetBlobContainerClient(blobContainerConfiguration.ContainerName);
             BlockBlobClient blob = blobContainer.GetBlockBlobClient(TestBlobName);
 
+            _logger.LogInformation("Reading and writing blob: {container}/{blob}", blobContainerConfiguration.ContainerName, TestBlobName);
             using var content = new MemoryStream(Encoding.UTF8.GetBytes(TestBlobContent));
             await blob.UploadAsync(
                 content,

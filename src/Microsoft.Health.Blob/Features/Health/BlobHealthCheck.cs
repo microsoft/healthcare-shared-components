@@ -3,7 +3,6 @@
 // Licensed under the MIT License (MIT). See LICENSE in the repo root for license information.
 // -------------------------------------------------------------------------------------------------
 
-using System;
 using System.Threading;
 using System.Threading.Tasks;
 using Azure.Storage.Blobs;
@@ -16,6 +15,9 @@ using Microsoft.Health.Blob.Features.Storage;
 
 namespace Microsoft.Health.Blob.Features.Health
 {
+    /// <summary>
+    /// Performs health checks on blob storage.
+    /// </summary>
     public class BlobHealthCheck : IHealthCheck
     {
         private readonly BlobServiceClient _client;
@@ -52,18 +54,9 @@ namespace Microsoft.Health.Blob.Features.Health
 
         public async Task<HealthCheckResult> CheckHealthAsync(HealthCheckContext context, CancellationToken cancellationToken = default)
         {
-            try
-            {
-                await _testProvider.PerformTestAsync(_client, _blobContainerConfiguration, cancellationToken).ConfigureAwait(false);
-
-                return HealthCheckResult.Healthy("Successfully connected.");
-            }
-            catch (Exception ex)
-            {
-                _logger.LogWarning(ex, "Failed to connect to the blob data store.");
-
-                return HealthCheckResult.Unhealthy("Failed to connect.");
-            }
+            _logger.LogInformation("Performing health check.");
+            await _testProvider.PerformTestAsync(_client, _blobContainerConfiguration, cancellationToken).ConfigureAwait(false);
+            return HealthCheckResult.Healthy("Successfully connected.");
         }
     }
 }

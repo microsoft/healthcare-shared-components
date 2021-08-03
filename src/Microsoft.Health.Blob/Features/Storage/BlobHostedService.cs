@@ -45,6 +45,7 @@ namespace Microsoft.Health.Blob.Features.Storage
             _collectionInitializers = collectionInitializers;
         }
 
+        /// <inheritdoc />
         public async Task StartAsync(CancellationToken cancellationToken)
         {
             var sleepTime = TimeSpan.FromSeconds(_blobDataStoreConfiguration.RequestOptions.InitialConnectWaitBeforeRetryInSeconds);
@@ -56,12 +57,13 @@ namespace Microsoft.Health.Blob.Features.Storage
 
             await timeoutPolicy
                    .WrapAsync(retryPolicy)
-                   .ExecuteAsync((token) => _blobInitializer.InitializeDataStoreAsync(_collectionInitializers), cancellationToken)
+                   .ExecuteAsync((token) => _blobInitializer.InitializeDataStoreAsync(_collectionInitializers, token), cancellationToken)
                    .ConfigureAwait(false);
 
             _logger.LogInformation("Blob containers initialized");
         }
 
+        /// <inheritdoc />
         public Task StopAsync(CancellationToken cancellationToken) => Task.CompletedTask;
     }
 }
