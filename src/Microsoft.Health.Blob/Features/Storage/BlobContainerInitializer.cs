@@ -3,7 +3,6 @@
 // Licensed under the MIT License (MIT). See LICENSE in the repo root for license information.
 // -------------------------------------------------------------------------------------------------
 
-using System;
 using System.Threading;
 using System.Threading.Tasks;
 using Azure.Storage.Blobs;
@@ -37,15 +36,7 @@ namespace Microsoft.Health.Blob.Features.Storage
             BlobContainerClient container = client.GetBlobContainerClient(_containerName);
 
             _logger.LogDebug("Creating blob container if not exists: {containerName}", _containerName);
-
-            try
-            {
-                await container.CreateIfNotExistsAsync(cancellationToken: cancellationToken);
-            }
-            catch (OperationCanceledException ex)
-            {
-                _logger.LogCritical(ex, "Blob container initialization cancelled: {containerName}", _containerName);
-            }
+            await container.CreateIfNotExistsAsync(cancellationToken: cancellationToken);
 
             return container;
         }

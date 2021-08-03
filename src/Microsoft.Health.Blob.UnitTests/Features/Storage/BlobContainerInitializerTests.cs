@@ -39,14 +39,13 @@ namespace Microsoft.Health.Blob.UnitTests.Features.Storage
         }
 
         [Fact]
-        public async void GivenCancellation_WhenInitializingContainer_ThenExceptionIsHandled()
+        public async void GivenCancelation_WhenInitializingContainer_ThenOperationCanceledExceptionIsThrown()
         {
             var blobContainerInitializer = new BlobContainerInitializer(TestContainerName, _logger);
             using var cancellationTokenSource = new CancellationTokenSource();
             cancellationTokenSource.Cancel();
 
-            var exception = await Record.ExceptionAsync(() => blobContainerInitializer.InitializeContainerAsync(_blobClient, cancellationTokenSource.Token));
-            Assert.Null(exception);
+            await Assert.ThrowsAsync<OperationCanceledException>(() => blobContainerInitializer.InitializeContainerAsync(_blobClient, cancellationTokenSource.Token));
         }
     }
 }

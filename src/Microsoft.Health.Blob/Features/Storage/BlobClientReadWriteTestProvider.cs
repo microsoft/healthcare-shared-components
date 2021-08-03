@@ -3,7 +3,6 @@
 // Licensed under the MIT License (MIT). See LICENSE in the repo root for license information.
 // -------------------------------------------------------------------------------------------------
 
-using System;
 using System.IO;
 using System.Text;
 using System.Threading;
@@ -46,20 +45,13 @@ namespace Microsoft.Health.Blob.Features.Storage
             BlobContainerClient blobContainer = client.GetBlobContainerClient(blobContainerConfiguration.ContainerName);
             BlockBlobClient blob = blobContainer.GetBlockBlobClient(TestBlobName);
 
-            try
-            {
-                _logger.LogInformation("Reading and writing blob: {container}/{blob}", blobContainerConfiguration.ContainerName, TestBlobName);
-                using var content = new MemoryStream(Encoding.UTF8.GetBytes(TestBlobContent));
-                await blob.UploadAsync(
-                    content,
-                    new BlobHttpHeaders { ContentType = "text/plain" },
-                    cancellationToken: cancellationToken).ConfigureAwait(false);
-                await DownloadBlobContentAsync(blob, cancellationToken).ConfigureAwait(false);
-            }
-            catch (OperationCanceledException ex)
-            {
-                _logger.LogCritical(ex, "Reading and writing cancelled for blob: {container}/{blob}", blobContainerConfiguration.ContainerName, TestBlobName);
-            }
+            _logger.LogInformation("Reading and writing blob: {container}/{blob}", blobContainerConfiguration.ContainerName, TestBlobName);
+            using var content = new MemoryStream(Encoding.UTF8.GetBytes(TestBlobContent));
+            await blob.UploadAsync(
+                content,
+                new BlobHttpHeaders { ContentType = "text/plain" },
+                cancellationToken: cancellationToken).ConfigureAwait(false);
+            await DownloadBlobContentAsync(blob, cancellationToken).ConfigureAwait(false);
         }
 
         private async Task<byte[]> DownloadBlobContentAsync(BlockBlobClient blob, CancellationToken cancellationToken)

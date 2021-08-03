@@ -43,14 +43,13 @@ namespace Microsoft.Health.Blob.UnitTests.Features.Storage
         }
 
         [Fact]
-        public async void GivenCancellation_WhenPerformingTest_ThenExceptionIsHandled()
+        public async void GivenCancelation_WhenPerformingTest_ThenOperationCanceledExceptionIsThrown()
         {
             var testProvider = new BlobClientReadWriteTestProvider(new RecyclableMemoryStreamManager(), _logger);
             using var cancellationTokenSource = new CancellationTokenSource();
             cancellationTokenSource.Cancel();
 
-            var exception = await Record.ExceptionAsync(() => testProvider.PerformTestAsync(_blobClient, new Configs.BlobContainerConfiguration(), cancellationTokenSource.Token));
-            Assert.Null(exception);
+            await Assert.ThrowsAsync<OperationCanceledException>(() => testProvider.PerformTestAsync(_blobClient, new Configs.BlobContainerConfiguration(), cancellationTokenSource.Token));
         }
     }
 }

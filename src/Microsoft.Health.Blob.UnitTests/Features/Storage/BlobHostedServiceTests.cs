@@ -39,7 +39,7 @@ namespace Microsoft.Health.Blob.UnitTests.Features.Storage
         }
 
         [Fact]
-        public async void GivenCancellation_WhenStartingService_ThenInitializationIsCancelled()
+        public async void GivenCancelation_WhenStartingService_ThenOperationCanceledExceptionIsThrown()
         {
             var blobHostedService = new BlobHostedService(_blobInitializer, _options, NullLogger<BlobHostedService>.Instance, _collectionInitializers);
             using var cancellationTokenSource = new CancellationTokenSource();
