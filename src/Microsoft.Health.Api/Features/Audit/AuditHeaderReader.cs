@@ -29,13 +29,11 @@ namespace Microsoft.Health.Api.Features.Audit
             EnsureArg.IsNotNull(httpContext, nameof(httpContext));
 
             object cachedCustomHeaders;
-
+            var customHeaders = new Dictionary<string, string>();
             if (httpContext.Items.TryGetValue(AuditConstants.CustomAuditHeaderKeyValue, out cachedCustomHeaders))
             {
-                return cachedCustomHeaders as IReadOnlyDictionary<string, string>;
+                customHeaders = (Dictionary<string, string>)cachedCustomHeaders;
             }
-
-            var customHeaders = new Dictionary<string, string>();
 
             foreach (KeyValuePair<string, StringValues> header in httpContext.Request.Headers)
             {
