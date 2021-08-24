@@ -42,10 +42,7 @@ namespace Microsoft.Health.SqlServer.Api.Features.Schema
 
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
-            if (!_sqlServerDataStoreConfiguration.SchemaOptions.AutomaticUpdatesEnabled && _schemaInformation.Current.HasValue)
-            {
-                await _schemaJobWorker.ExecuteAsync(_schemaInformation, _instanceName, stoppingToken).ConfigureAwait(false);
-            }
+             await _schemaJobWorker.ExecuteAsync(_schemaInformation, _instanceName, stoppingToken).ConfigureAwait(false);
         }
     }
 }

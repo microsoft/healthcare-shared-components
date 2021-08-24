@@ -8,6 +8,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using EnsureThat;
 using MediatR;
+using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -81,6 +82,10 @@ namespace Microsoft.Health.SqlServer.Features.Schema
                     {
                         _processTerminator.Terminate(cancellationToken);
                     }
+                }
+                catch (SqlException e) when (schemaInformation.Current is null && string.Equals(e.Message, string.Format(Resources.CurrentSchemaVersionStoredProcedureNotFound, "dbo.UpsertInstanceSchema"), StringComparison.OrdinalIgnoreCase))
+                {
+                    _logger.LogWarning(e, "Schema is not initialized.");
                 }
                 catch (Exception ex)
                 {

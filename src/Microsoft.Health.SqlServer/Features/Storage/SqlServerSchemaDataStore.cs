@@ -93,7 +93,15 @@ namespace Microsoft.Health.SqlServer.Features.Storage
                 }
                 catch (SqlException e)
                 {
-                    _logger.LogError(e, "Error from SQL database on upserting InstanceSchema information");
+                    if (schemaInformation.Current is null && string.Equals(e.Message, string.Format(Resources.CurrentSchemaVersionStoredProcedureNotFound, "dbo.UpsertInstanceSchema"), StringComparison.OrdinalIgnoreCase))
+                    {
+                        _logger.LogInformation(e, "Error from SQL database on upserting InstanceSchema information");
+                    }
+                    else
+                    {
+                        _logger.LogError(e, "Error from SQL database on upserting InstanceSchema information");
+                    }
+
                     throw;
                 }
             }

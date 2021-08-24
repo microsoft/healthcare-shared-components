@@ -133,7 +133,7 @@ namespace Microsoft.Health.SqlServer {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Could not find stored procedure &apos;dbo.SelectCurrentSchemaVersion&apos;..
+        ///   Looks up a localized string similar to Could not find stored procedure &apos;{0}&apos;..
         /// </summary>
         internal static string CurrentSchemaVersionStoredProcedureNotFound {
             get {

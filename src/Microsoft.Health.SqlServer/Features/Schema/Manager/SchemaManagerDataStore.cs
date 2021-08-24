@@ -87,7 +87,7 @@ namespace Microsoft.Health.SqlServer.Features.Schema.Manager
                 object current = await selectCommand.ExecuteScalarAsync(cancellationToken).ConfigureAwait(false);
                 return (current == null || Convert.IsDBNull(current)) ? 0 : (int)current;
             }
-            catch (SqlException e) when (string.Equals(e.Message, Resources.CurrentSchemaVersionStoredProcedureNotFound, StringComparison.OrdinalIgnoreCase))
+            catch (SqlException e) when (string.Equals(e.Message, string.Format(Resources.CurrentSchemaVersionStoredProcedureNotFound, "dbo.SelectCurrentSchemaVersion"), StringComparison.OrdinalIgnoreCase))
             {
                 return 0;
             }
