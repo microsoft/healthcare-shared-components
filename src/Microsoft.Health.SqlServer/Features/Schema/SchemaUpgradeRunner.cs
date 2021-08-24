@@ -50,7 +50,7 @@ namespace Microsoft.Health.SqlServer.Features.Schema
             {
                 _logger.LogInformation("Applying schema {version}", version);
 
-                await _schemaManagerDataStore.DeleteSchemaVersionAsync(version, SchemaVersionStatus.failed.ToString(), cancellationToken).ConfigureAwait(false);
+                await _schemaManagerDataStore.DeleteSchemaVersionAsync(version, SchemaVersionStatus.failed.ToString(), cancellationToken);
 
                 if (!applyFullSchemaSnapshot)
                 {
