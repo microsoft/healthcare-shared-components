@@ -21,8 +21,11 @@ namespace Microsoft.Health.SqlServer.Api.Features.Schema
     {
         private readonly string _instanceName;
         private readonly SchemaJobWorker _schemaJobWorker;
-        private readonly SqlServerDataStoreConfiguration _sqlServerDataStoreConfiguration;
         private readonly SchemaInformation _schemaInformation;
+
+#pragma warning disable IDE0052 // Remove unread private members
+        private readonly SqlServerDataStoreConfiguration _sqlServerDataStoreConfiguration;
+#pragma warning restore IDE0052 // Remove unread private members
 
         public SchemaJobWorkerBackgroundService(SchemaJobWorker schemaJobWorker, IOptions<SqlServerDataStoreConfiguration> sqlServerDataStoreConfiguration, SchemaInformation schemaInformation)
         {
