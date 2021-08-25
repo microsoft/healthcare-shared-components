@@ -95,7 +95,7 @@ namespace Microsoft.Health.SqlServer.Features.Storage
                 {
                     if (schemaInformation.Current is null && string.Equals(e.Message, string.Format(Resources.CurrentSchemaVersionStoredProcedureNotFound, "dbo.UpsertInstanceSchema"), StringComparison.OrdinalIgnoreCase))
                     {
-                        _logger.LogInformation(e, "Error from SQL database on upserting InstanceSchema information");
+                        _logger.LogWarning("Schema is not initialized - {e.Message}", e.Message);
                     }
                     else
                     {

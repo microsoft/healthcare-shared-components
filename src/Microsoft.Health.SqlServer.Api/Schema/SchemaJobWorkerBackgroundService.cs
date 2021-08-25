@@ -22,10 +22,7 @@ namespace Microsoft.Health.SqlServer.Api.Features.Schema
         private readonly string _instanceName;
         private readonly SchemaJobWorker _schemaJobWorker;
         private readonly SchemaInformation _schemaInformation;
-
-#pragma warning disable IDE0052 // Remove unread private members
         private readonly SqlServerDataStoreConfiguration _sqlServerDataStoreConfiguration;
-#pragma warning restore IDE0052 // Remove unread private members
 
         public SchemaJobWorkerBackgroundService(SchemaJobWorker schemaJobWorker, IOptions<SqlServerDataStoreConfiguration> sqlServerDataStoreConfiguration, SchemaInformation schemaInformation)
         {
@@ -45,7 +42,10 @@ namespace Microsoft.Health.SqlServer.Api.Features.Schema
 
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
-             await _schemaJobWorker.ExecuteAsync(_schemaInformation, _instanceName, stoppingToken).ConfigureAwait(false);
+            if (!_sqlServerDataStoreConfiguration.SchemaOptions.AutomaticUpdatesEnabled)
+            {
+                await _schemaJobWorker.ExecuteAsync(_schemaInformation, _instanceName, stoppingToken).ConfigureAwait(false);
+            }
         }
     }
 }

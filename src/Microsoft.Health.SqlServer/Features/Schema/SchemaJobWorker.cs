@@ -85,7 +85,7 @@ namespace Microsoft.Health.SqlServer.Features.Schema
                 }
                 catch (SqlException e) when (schemaInformation.Current is null && string.Equals(e.Message, string.Format(Resources.CurrentSchemaVersionStoredProcedureNotFound, "dbo.UpsertInstanceSchema"), StringComparison.OrdinalIgnoreCase))
                 {
-                    _logger.LogWarning(e, "Schema is not initialized.");
+                    _logger.LogWarning("Schema is not initialized - {ex.Message}", e.Message);
                 }
                 catch (Exception ex)
                 {
