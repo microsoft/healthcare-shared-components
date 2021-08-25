@@ -21,8 +21,8 @@ namespace Microsoft.Health.SqlServer.Api.Features.Schema
     {
         private readonly string _instanceName;
         private readonly SchemaJobWorker _schemaJobWorker;
-        private readonly SchemaInformation _schemaInformation;
         private readonly SqlServerDataStoreConfiguration _sqlServerDataStoreConfiguration;
+        private readonly SchemaInformation _schemaInformation;
 
         public SchemaJobWorkerBackgroundService(SchemaJobWorker schemaJobWorker, IOptions<SqlServerDataStoreConfiguration> sqlServerDataStoreConfiguration, SchemaInformation schemaInformation)
         {
