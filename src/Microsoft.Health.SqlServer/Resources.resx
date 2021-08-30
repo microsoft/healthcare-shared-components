@@ -143,7 +143,7 @@
     <comment>{0} is the response statusCode.</comment>
   </data>
   <data name="CurrentSchemaVersionStoredProcedureNotFound" xml:space="preserve">
-    <value>Could not find stored procedure '{0}'.</value>
+    <value>Could not find stored procedure 'dbo.SelectCurrentSchemaVersion'.</value>
   </data>
   <data name="InstanceSchemaRecordErrorMessage" xml:space="preserve">
     <value>The current version information could not be fetched from the service. Please try again.</value>
