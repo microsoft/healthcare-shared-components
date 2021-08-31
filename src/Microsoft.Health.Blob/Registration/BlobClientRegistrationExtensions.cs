@@ -42,6 +42,18 @@ namespace Microsoft.Extensions.DependencyInjection
                 optionsBuilder.Configure(configureAction);
             }
 
+            services
+                .AddOptions<BlobInitializerOptions>()
+                .Configure<IOptions<BlobDataStoreConfiguration>>((newConfig, oldConfig) =>
+                {
+                    BlobDataStoreRequestOptions requestOptions = oldConfig?.Value.RequestOptions;
+                    if (requestOptions != null)
+                    {
+                        newConfig.RetryDelay = TimeSpan.FromSeconds(requestOptions.InitialConnectWaitBeforeRetryInSeconds);
+                        newConfig.Timeout = TimeSpan.FromMinutes(requestOptions.InitialConnectMaxWaitInMinutes);
+                    }
+                });
+
             services.AddBlobServiceClient();
 
             // Add the configuration directly for backwards compatibility along with other services
@@ -56,7 +68,8 @@ namespace Microsoft.Extensions.DependencyInjection
         /// Adds a singleton <see cref="BlobServiceClient"/> to the specified <see cref="IServiceCollection"/>.
         /// </summary>
         /// <param name="services">The <see cref="IServiceCollection"/> to be updated.</param>
-        /// <param name="configure">A delegate for configuring the <see cref="BlobDataStoreConfiguration"/>.</param>/// <returns>The <paramref name="services"/> for additional method invocations.</returns>
+        /// <param name="configure">A delegate for configuring the <see cref="BlobDataStoreConfiguration"/>.</param>
+        /// <returns>The <paramref name="services"/> for additional method invocations.</returns>
         /// <exception cref="ArgumentNullException">
         /// <paramref name="services"/> is <see langword="null"/>.
         /// </exception>
@@ -84,16 +97,22 @@ namespace Microsoft.Extensions.DependencyInjection
         /// has been initialized in the background.
         /// </summary>
         /// <param name="services">The <see cref="IServiceCollection"/> to be updated.</param>
+        /// <param name="configure">A delegate for configuring the <see cref="BlobInitializerOptions"/>.</param>
         /// <returns>The <paramref name="services"/> for additional method invocations.</returns>
         /// <exception cref="ArgumentNullException">
         /// <paramref name="services"/> is <see langword="null"/>.
         /// </exception>
-        private static IServiceCollection AddBlobContainerInitialization(this IServiceCollection services)
+        public static IServiceCollection AddBlobContainerInitialization(this IServiceCollection services, Action<BlobInitializerOptions> configure = null)
         {
             services.TryAddSingleton<IBlobInitializer, BlobInitializer>();
             services.AddHostedService<BlobHostedService>();
             services.TryAddSingleton<IBlobClientTestProvider, BlobClientReadWriteTestProvider>();
             services.TryAddSingleton<RecyclableMemoryStreamManager>();
+
+            if (configure != null)
+            {
+                services.Configure(configure);
+            }
 
             return services;
         }
