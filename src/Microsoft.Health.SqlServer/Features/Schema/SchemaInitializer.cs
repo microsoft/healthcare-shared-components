@@ -131,6 +131,10 @@ namespace Microsoft.Health.SqlServer.Features.Schema
                     _logger.LogInformation("No version found. It must be new database");
                 }
             }
+            else
+            {
+                _logger.LogWarning("Could not find stored procedure - dbo.SelectCurrentSchemaVersion");
+            }
         }
 
         public static void ValidateDatabaseName(string databaseName)

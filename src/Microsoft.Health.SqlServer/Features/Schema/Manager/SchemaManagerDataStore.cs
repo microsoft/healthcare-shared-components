@@ -138,7 +138,7 @@ namespace Microsoft.Health.SqlServer.Features.Schema.Manager
         /// <inheritdoc />
         public async Task<bool> InstanceSchemaRecordExistsAsync(CancellationToken cancellationToken)
         {
-            var procedureQuery = "SELECT COUNT(*) FROM dbo.InstanceSchema1";
+            var procedureQuery = "SELECT COUNT(*) FROM dbo.InstanceSchema";
 
             using SqlConnection connection = await _sqlConnectionFactory.GetSqlConnectionAsync(cancellationToken: cancellationToken).ConfigureAwait(false);
             await connection.TryOpenAsync(cancellationToken).ConfigureAwait(false);
