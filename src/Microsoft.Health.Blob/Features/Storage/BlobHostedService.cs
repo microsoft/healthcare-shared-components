@@ -30,8 +30,8 @@ namespace Microsoft.Health.Blob.Features.Storage
 
         public BlobHostedService(
             IBlobInitializer blobInitializer,
-            IOptions<BlobInitializerOptions> options,
             IEnumerable<IBlobContainerInitializer> collectionInitializers,
+            IOptions<BlobInitializerOptions> options,
             ILogger<BlobHostedService> logger)
         {
             _blobInitializer = EnsureArg.IsNotNull(blobInitializer, nameof(blobInitializer));
