@@ -77,20 +77,13 @@ namespace Microsoft.Health.SqlServer.Features.Schema.Manager
             using SqlConnection connection = await _sqlConnectionFactory.GetSqlConnectionAsync(cancellationToken: cancellationToken).ConfigureAwait(false);
             await connection.TryOpenAsync(cancellationToken).ConfigureAwait(false);
 
-            try
+            using var selectCommand = new SqlCommand("dbo.SelectCurrentSchemaVersion", connection)
             {
-                using var selectCommand = new SqlCommand("dbo.SelectCurrentSchemaVersion", connection)
-                {
-                    CommandType = CommandType.StoredProcedure,
-                };
+                CommandType = CommandType.StoredProcedure,
+            };
 
-                object current = await selectCommand.ExecuteScalarAsync(cancellationToken).ConfigureAwait(false);
-                return (current == null || Convert.IsDBNull(current)) ? 0 : (int)current;
-            }
-            catch (SqlException e) when (string.Equals(e.Message, Resources.CurrentSchemaVersionStoredProcedureNotFound, StringComparison.OrdinalIgnoreCase))
-            {
-                return 0;
-            }
+            object current = await selectCommand.ExecuteScalarAsync(cancellationToken).ConfigureAwait(false);
+            return (current == null || Convert.IsDBNull(current)) ? 0 : (int)current;
         }
 
         private static async Task UpsertSchemaVersionAsync(SqlConnection connection, int version, string status, CancellationToken cancellationToken)
@@ -124,14 +117,20 @@ namespace Microsoft.Health.SqlServer.Features.Schema.Manager
         /// <inheritdoc />
         public async Task<bool> BaseSchemaExistsAsync(CancellationToken cancellationToken)
         {
+            return await ObjectExistsAsync("SelectCurrentVersionsInformation", "P", cancellationToken);
+        }
+
+        /// <inheritdoc />
+        public async Task<bool> ObjectExistsAsync(string objectName, string objectType, CancellationToken cancellationToken)
+        {
             var procedureQuery = "SELECT COUNT(*) FROM sys.objects WHERE name = @name and type = @type";
 
             using SqlConnection connection = await _sqlConnectionFactory.GetSqlConnectionAsync(cancellationToken: cancellationToken).ConfigureAwait(false);
             await connection.TryOpenAsync(cancellationToken).ConfigureAwait(false);
 
             using var command = new SqlCommand(procedureQuery, connection);
-            command.Parameters.AddWithValue("@name", "SelectCurrentVersionsInformation");
-            command.Parameters.AddWithValue("@type", 'P');
+            command.Parameters.AddWithValue("@name", objectName);
+            command.Parameters.AddWithValue("@type", objectType);
 
             return (int)await command.ExecuteScalarAsync(cancellationToken).ConfigureAwait(false) != 0;
         }
@@ -139,7 +138,7 @@ namespace Microsoft.Health.SqlServer.Features.Schema.Manager
         /// <inheritdoc />
         public async Task<bool> InstanceSchemaRecordExistsAsync(CancellationToken cancellationToken)
         {
-            var procedureQuery = "SELECT COUNT(*) FROM dbo.InstanceSchema";
+            var procedureQuery = "SELECT COUNT(*) FROM dbo.InstanceSchema1";
 
             using SqlConnection connection = await _sqlConnectionFactory.GetSqlConnectionAsync(cancellationToken: cancellationToken).ConfigureAwait(false);
             await connection.TryOpenAsync(cancellationToken).ConfigureAwait(false);
