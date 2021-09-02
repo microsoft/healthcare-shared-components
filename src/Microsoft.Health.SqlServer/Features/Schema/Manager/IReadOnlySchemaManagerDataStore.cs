@@ -27,5 +27,13 @@ namespace Microsoft.Health.SqlServer.Features.Schema.Manager
         /// </returns>
         /// <exception cref="OperationCanceledException">The <paramref name="cancellationToken"/> was canceled.</exception>
         Task<int> GetCurrentSchemaVersionAsync(CancellationToken cancellationToken);
+
+        /// <summary>
+        /// Checks if base schema already exists
+        /// </summary>
+        /// <param name="objectName">An object name</param>
+        /// <param name="objectType">An object type</param>
+        /// <param name="cancellationToken">A cancellation token</param>
+        Task<bool> ObjectExistsAsync(string objectName, string objectType, CancellationToken cancellationToken);
     }
 }
