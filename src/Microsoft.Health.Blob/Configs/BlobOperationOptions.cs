@@ -3,18 +3,12 @@
 // Licensed under the MIT License (MIT). See LICENSE in the repo root for license information.
 // -------------------------------------------------------------------------------------------------
 
-using Azure.Storage.Blobs;
+using Azure.Storage;
 
 namespace Microsoft.Health.Blob.Configs
 {
-    public class BlobServiceClientOptions : BlobClientOptions
+    public class BlobOperationOptions
     {
-        public string ConnectionString { get; set; }
-
-        public string Credential { get; set; }
-
-        public string ClientId { get; set; }
-
-        public BlobOperationOptions Operations { get; set; }
+        public StorageTransferOptions Upload { get; set; }
     }
 }
