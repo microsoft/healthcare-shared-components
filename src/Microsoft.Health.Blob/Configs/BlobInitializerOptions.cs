@@ -13,6 +13,11 @@ namespace Microsoft.Health.Blob.Configs
     public class BlobInitializerOptions
     {
         /// <summary>
+        /// A default configuration section name that may be used for binding.
+        /// </summary>
+        public const string DefaultSectionName = "Initialization";
+
+        /// <summary>
         /// Gets or sets the delay between initialization retries.
         /// </summary>
         /// <value>The amount of time between retries.</value>
