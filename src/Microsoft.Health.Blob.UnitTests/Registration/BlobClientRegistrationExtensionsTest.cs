@@ -2,7 +2,11 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License (MIT). See LICENSE in the repo root for license information.
 // -------------------------------------------------------------------------------------------------
+
+using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 using Azure.Storage.Blobs;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -11,6 +15,7 @@ using Microsoft.Extensions.Options;
 using Microsoft.Health.Blob.Configs;
 using Microsoft.Health.Blob.Features.Storage;
 using Microsoft.IO;
+using NSubstitute;
 using Xunit;
 
 namespace Microsoft.Health.Blob.UnitTests.Registration
@@ -124,6 +129,66 @@ namespace Microsoft.Health.Blob.UnitTests.Registration
 
             Assert.Equal("foo", actual.ConnectionString);
             Assert.Equal(2, actual.RequestOptions.DownloadMaximumConcurrency);
+        }
+
+        [Fact]
+        public void GivenBlobDataStoreConfiguration_WhenConfiguringInitializer_ThenMapSettings()
+        {
+            var services = new ServiceCollection();
+            services.AddSingleton<IConfiguration>(new ConfigurationBuilder().AddInMemoryCollection().Build());
+            services.AddBlobDataStore(x =>
+            {
+                x.RequestOptions.InitialConnectMaxWaitInMinutes = 123;
+                x.RequestOptions.InitialConnectWaitBeforeRetryInSeconds = 4567;
+            });
+
+            ServiceProvider provider = services.BuildServiceProvider();
+            var options = provider.GetRequiredService<IOptions<BlobInitializerOptions>>();
+            Assert.Equal(TimeSpan.FromSeconds(4567), options.Value.RetryDelay);
+            Assert.Equal(TimeSpan.FromMinutes(123), options.Value.Timeout);
+        }
+
+        [Fact]
+        public async Task GivenServices_WhenConfiguringContainerInitialization_ThenRegisterAppropriateServices()
+        {
+            var services = new ServiceCollection();
+
+            services
+                .AddLogging()
+                .AddBlobContainerInitialization(x =>
+                {
+                    x.RetryDelay = TimeSpan.FromSeconds(5);
+                    x.Timeout = TimeSpan.FromMinutes(1);
+                })
+                .ConfigureContainer("foo", x => x.ContainerName = "FooContainer")
+                .ConfigureContainer("bar", x => x.ContainerName = "BarContainer")
+                .ConfigureContainer("baz", x => x.ContainerName = "BazContainer");
+
+            ServiceProvider provider = services.BuildServiceProvider();
+
+            IOptionsMonitor<BlobContainerConfiguration> optionsMonitor = provider.GetRequiredService<IOptionsMonitor<BlobContainerConfiguration>>();
+            Assert.Equal("FooContainer", optionsMonitor.Get("foo").ContainerName);
+            Assert.Equal("BarContainer", optionsMonitor.Get("bar").ContainerName);
+            Assert.Equal("BazContainer", optionsMonitor.Get("baz").ContainerName);
+
+            List<IBlobContainerInitializer> intializers = provider.GetRequiredService<IEnumerable<IBlobContainerInitializer>>().ToList();
+
+            Assert.Equal(3, intializers.Count);
+            await AssertBlobInitializationAsync(intializers[0], "FooContainer");
+            await AssertBlobInitializationAsync(intializers[1], "BarContainer");
+            await AssertBlobInitializationAsync(intializers[2], "BazContainer");
+        }
+
+        private static async Task AssertBlobInitializationAsync(IBlobContainerInitializer initializer, string expectedContainer)
+        {
+            BlobServiceClient client = Substitute.For<BlobServiceClient>();
+            BlobContainerClient containerClient = Substitute.For<BlobContainerClient>();
+            client.GetBlobContainerClient(expectedContainer).Returns(containerClient);
+
+            await initializer.InitializeContainerAsync(client);
+
+            client.Received(1).GetBlobContainerClient(expectedContainer);
+            await containerClient.Received(1).CreateIfNotExistsAsync();
         }
     }
 }
