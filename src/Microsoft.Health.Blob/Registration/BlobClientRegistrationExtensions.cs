@@ -135,7 +135,7 @@ namespace Microsoft.Extensions.DependencyInjection
 
                     if (string.Equals(options.Credential, "managedidentity", StringComparison.OrdinalIgnoreCase))
                     {
-                        clientBuilder.WithCredential(new ManagedIdentityCredential(options.ClientId, null));
+                        clientBuilder.WithCredential(new ManagedIdentityCredential(options.ClientId));
                     }
                 });
 
