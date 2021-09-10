@@ -9,6 +9,8 @@ namespace Microsoft.Health.Blob.Configs
 {
     public class BlobOperationOptions
     {
+        public StorageTransferOptions Download { get; set; }
+
         public StorageTransferOptions Upload { get; set; }
     }
 }

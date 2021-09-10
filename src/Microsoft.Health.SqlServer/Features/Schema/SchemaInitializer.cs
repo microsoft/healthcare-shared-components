@@ -36,6 +36,7 @@ namespace Microsoft.Health.SqlServer.Features.Schema
         private readonly ISqlConnectionFactory _sqlConnectionFactory;
         private readonly ISqlConnectionStringProvider _sqlConnectionStringProvider;
         private readonly IMediator _mediator;
+        private bool _canCallGetCurrentSchema;
 
         public SchemaInitializer(
             IOptions<SqlServerDataStoreConfiguration> sqlServerDataStoreConfiguration,
@@ -113,14 +114,26 @@ namespace Microsoft.Health.SqlServer.Features.Schema
 
         private async Task GetCurrentSchemaVersionAsync(CancellationToken cancellationToken)
         {
-            int version = await _schemaManagerDataStore.GetCurrentSchemaVersionAsync(cancellationToken);
-            if (version != 0)
+            if (!_canCallGetCurrentSchema)
             {
-                _schemaInformation.Current = version;
+                _canCallGetCurrentSchema = await _schemaManagerDataStore.ObjectExistsAsync("SelectCurrentSchemaVersion", "P", cancellationToken);
+            }
+
+            if (_canCallGetCurrentSchema)
+            {
+                int version = await _schemaManagerDataStore.GetCurrentSchemaVersionAsync(cancellationToken);
+                if (version != 0)
+                {
+                    _schemaInformation.Current = version;
+                }
+                else
+                {
+                    _logger.LogInformation("No version found. It must be new database");
+                }
             }
             else
             {
-                _logger.LogInformation("No version found. It must be new database");
+                _logger.LogWarning("Could not find stored procedure - dbo.SelectCurrentSchemaVersion");
             }
         }
 
