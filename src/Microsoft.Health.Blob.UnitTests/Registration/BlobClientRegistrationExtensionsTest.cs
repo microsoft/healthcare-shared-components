@@ -132,7 +132,7 @@ namespace Microsoft.Health.Blob.UnitTests.Registration
         }
 
         [Fact]
-        public void GivenBlobDataStoreConfiguration_WhenConfiguringInitializer_ThenMapSettings()
+        public void GivenBlobDataStoreConfiguration_WhenAddingBlobDataStore_ThenMapInitializerSettings()
         {
             var services = new ServiceCollection();
             services.AddSingleton<IConfiguration>(new ConfigurationBuilder().AddInMemoryCollection().Build());
@@ -146,6 +146,29 @@ namespace Microsoft.Health.Blob.UnitTests.Registration
             var options = provider.GetRequiredService<IOptions<BlobInitializerOptions>>();
             Assert.Equal(TimeSpan.FromSeconds(4567), options.Value.RetryDelay);
             Assert.Equal(TimeSpan.FromMinutes(123), options.Value.Timeout);
+        }
+
+        [Fact]
+        public void GivenNoConnectionString_WhenAddingBlobServiceClient_ThenUseDefault()
+        {
+            IConfiguration config = new ConfigurationBuilder()
+                .AddInMemoryCollection(
+                    new KeyValuePair<string, string>[]
+                    {
+                        KeyValuePair.Create("ConnectionString", (string)null),
+                        KeyValuePair.Create("Operations:Download:MaximumConcurrency", "12"),
+                    })
+                .Build();
+
+            var services = new ServiceCollection();
+            services.AddSingleton(config);
+            services.AddBlobServiceClient(config);
+
+            BlobServiceClient actual = services
+                .BuildServiceProvider()
+                .GetRequiredService<BlobServiceClient>();
+
+            Assert.Equal("devstoreaccount1", actual.AccountName);
         }
 
         [Fact]

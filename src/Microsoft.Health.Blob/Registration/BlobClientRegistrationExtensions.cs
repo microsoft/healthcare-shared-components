@@ -82,16 +82,10 @@ namespace Microsoft.Extensions.DependencyInjection
         {
             EnsureArg.IsNotNull(services, nameof(services));
 
-            services
-                .AddOptions<BlobDataStoreConfiguration>()
-                .PostConfigure(
-                    options =>
-                    {
-                        if (string.IsNullOrEmpty(options.ConnectionString) && options.AuthenticationType == BlobDataStoreAuthenticationType.ConnectionString)
-                        {
-                            options.ConnectionString = BlobLocalEmulator.ConnectionString;
-                        }
-                    });
+            // Use can explicit service type like BlobDataStorePostConfigure (instead of the PostConfigure method)
+            // to allow users to call this method multiple times without issue.
+            services.AddOptions<BlobDataStoreConfiguration>();
+            services.TryAddEnumerable(ServiceDescriptor.Singleton<IPostConfigureOptions<BlobDataStoreConfiguration>, BlobDataStorePostConfigure>());
 
             services.TryAddSingleton(p => BlobClientFactory.Create(p.GetRequiredService<IOptions<BlobDataStoreConfiguration>>().Value));
             return configure == null ? services : services.Configure(configure);
@@ -119,6 +113,13 @@ namespace Microsoft.Extensions.DependencyInjection
             // to be bound later using options rather than reading them directly from the configuration object.
             var options = new BlobServiceClientOptions();
             configuration.Bind(options);
+
+            // We'll default to the emulator connection string like the previous API.
+            // Note that string.IsNullOrWhiteSpace is used by the underlying AddBlobServiceClient for checking credentials.
+            if (string.IsNullOrWhiteSpace(options.ConnectionString) && string.IsNullOrWhiteSpace(options.Credential))
+            {
+                options.ConnectionString = BlobLocalEmulator.ConnectionString;
+            }
 
             services.AddAzureClients(
                 builder =>
