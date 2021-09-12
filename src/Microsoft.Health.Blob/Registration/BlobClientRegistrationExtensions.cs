@@ -12,9 +12,11 @@ using EnsureThat;
 using Microsoft.Extensions.Azure;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.Health.Blob.Configs;
 using Microsoft.Health.Blob.Features.Storage;
+using Microsoft.Health.Blob.Registration;
 using Microsoft.IO;
 
 namespace Microsoft.Extensions.DependencyInjection
@@ -80,16 +82,10 @@ namespace Microsoft.Extensions.DependencyInjection
         {
             EnsureArg.IsNotNull(services, nameof(services));
 
-            services
-                .AddOptions<BlobDataStoreConfiguration>()
-                .PostConfigure(
-                    options =>
-                    {
-                        if (string.IsNullOrEmpty(options.ConnectionString) && options.AuthenticationType == BlobDataStoreAuthenticationType.ConnectionString)
-                        {
-                            options.ConnectionString = BlobLocalEmulator.ConnectionString;
-                        }
-                    });
+            // Use can explicit service type like BlobDataStorePostConfigure (instead of the PostConfigure method)
+            // to allow users to call this method multiple times without issue.
+            services.AddOptions<BlobDataStoreConfiguration>();
+            services.TryAddEnumerable(ServiceDescriptor.Singleton<IPostConfigureOptions<BlobDataStoreConfiguration>, BlobDataStorePostConfigure>());
 
             services.TryAddSingleton(p => BlobClientFactory.Create(p.GetRequiredService<IOptions<BlobDataStoreConfiguration>>().Value));
             return configure == null ? services : services.Configure(configure);
@@ -118,6 +114,13 @@ namespace Microsoft.Extensions.DependencyInjection
             var options = new BlobServiceClientOptions();
             configuration.Bind(options);
 
+            // We'll default to the emulator connection string like the previous API.
+            // Note that string.IsNullOrWhiteSpace is used by the underlying AddBlobServiceClient for checking credentials.
+            if (string.IsNullOrWhiteSpace(options.ConnectionString) && string.IsNullOrWhiteSpace(options.Credential))
+            {
+                options.ConnectionString = BlobLocalEmulator.ConnectionString;
+            }
+
             services.AddAzureClients(
                 builder =>
                 {
@@ -143,28 +146,70 @@ namespace Microsoft.Extensions.DependencyInjection
         }
 
         /// <summary>
-        /// Configures the singleton <see cref="BlobServiceClient"/> to only resolve once its container
-        /// has been initialized in the background.
+        /// Configures a hosted service that will not complete its startup routine until one or more containers
+        /// have been initialized.
         /// </summary>
         /// <param name="services">The <see cref="IServiceCollection"/> to be updated.</param>
         /// <param name="configure">A delegate for configuring the <see cref="BlobInitializerOptions"/>.</param>
-        /// <returns>The <paramref name="services"/> for additional method invocations.</returns>
+        /// <returns>
+        /// A <see cref="BlobContainerInitializationBuilder"/> for configuring one or more containers.
+        /// </returns>
         /// <exception cref="ArgumentNullException">
         /// <paramref name="services"/> is <see langword="null"/>.
         /// </exception>
-        public static IServiceCollection AddBlobContainerInitialization(this IServiceCollection services, Action<BlobInitializerOptions> configure = null)
+        public static BlobContainerInitializationBuilder AddBlobContainerInitialization(this IServiceCollection services, Action<BlobInitializerOptions> configure = null)
         {
+            EnsureArg.IsNotNull(services);
+
             services.TryAddSingleton<IBlobInitializer, BlobInitializer>();
             services.AddHostedService<BlobHostedService>();
             services.TryAddSingleton<IBlobClientTestProvider, BlobClientReadWriteTestProvider>();
             services.TryAddSingleton<RecyclableMemoryStreamManager>();
 
+            services.AddOptions();
             if (configure != null)
             {
                 services.Configure(configure);
             }
 
-            return services;
+            return new BlobContainerInitializationBuilder(services);
+        }
+
+        /// <summary>
+        /// Configures the container specified in <see cref="BlobContainerConfiguration"/> for initialization.
+        /// </summary>
+        /// <param name="builder">The <see cref="BlobContainerInitializationBuilder"/> to which more containers may be added.</param>
+        /// <param name="optionsName">The unique name for the container's options.</param>
+        /// <param name="configure">A delegate for configuring the <see cref="BlobContainerConfiguration"/>.</param>
+        /// <returns>The <paramref name="builder"/> for additional method invocations.</returns>
+        /// <exception cref="ArgumentNullException">
+        /// <paramref name="builder"/> is <see langword="null"/>.
+        /// </exception>
+        public static BlobContainerInitializationBuilder ConfigureContainer(
+            this BlobContainerInitializationBuilder builder,
+            string optionsName,
+            Action<BlobContainerConfiguration> configure = null)
+        {
+            EnsureArg.IsNotNull(builder);
+
+            builder.Services.Add(
+                ServiceDescriptor.Singleton<IBlobContainerInitializer>(provider =>
+                {
+                    ILoggerFactory loggerFactory = provider.GetRequiredService<ILoggerFactory>();
+                    IOptionsMonitor<BlobContainerConfiguration> optionsMonitor = provider.GetRequiredService<IOptionsMonitor<BlobContainerConfiguration>>();
+                    BlobContainerConfiguration config = optionsMonitor.Get(optionsName);
+
+                    return new BlobContainerInitializer(
+                        config.ContainerName,
+                        loggerFactory.CreateLogger<BlobContainerInitializer>());
+                }));
+
+            if (configure != null)
+            {
+                builder.Services.Configure(optionsName, configure);
+            }
+
+            return builder;
         }
     }
 }
