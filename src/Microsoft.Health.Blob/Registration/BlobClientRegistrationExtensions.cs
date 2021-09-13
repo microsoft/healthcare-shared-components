@@ -138,7 +138,7 @@ namespace Microsoft.Extensions.DependencyInjection
 
                     if (string.Equals(options.Credential, "managedidentity", StringComparison.OrdinalIgnoreCase))
                     {
-                        clientBuilder.WithCredential(new ManagedIdentityCredential(options.ClientId));
+                        clientBuilder.WithCredential(new DefaultAzureCredential(new DefaultAzureCredentialOptions { ManagedIdentityClientId = options.ClientId }));
                     }
                 });
 
