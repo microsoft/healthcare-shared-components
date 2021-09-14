@@ -21,10 +21,17 @@ namespace Microsoft.Health.Blob.Configs
         /// Gets or sets the Azure Blob Storage connection string.
         /// </summary>
         /// <remarks>
-        /// Note that Azure Storage connection strings are not URLs. Instead they are semicolon-delimited (;)
-        /// key-value pairs that describe different aspects of the connection including <c>"DefaultEndpointsProtocol"</c>,
-        /// <c>"AccountName"</c>, and <c>"AccountKey"</c>. Each pair has its key and value separated by an equal sign
-        /// (=) like in the following example: <c>"DefaultEndpointsProtocol=https"</c>.
+        /// <para>
+        /// Connection strings may be URLs or semicolon-delimited (;) key-value pairs. When creating a
+        /// <see cref="BlobServiceClient"/>, the ctor <see cref="BlobServiceClient(string)"/> only
+        /// expects key-value pairs while the <see cref="System.Uri"/> overloads unsurprisingly expect URLs.
+        /// </para>
+        /// <para>
+        /// Key-value pair connection strings describe different aspects of the connection including
+        /// <c>"DefaultEndpointsProtocol"</c>, <c>"AccountName"</c>, and <c>"AccountKey"</c>. Each pair has its key
+        /// and value separated by an equal sign (=) like in the following example:
+        /// <c>"DefaultEndpointsProtocol=https;AccountName=myAccountName;AccountKey=myAccountKey"</c>.
+        /// </para>
         /// </remarks>
         /// <value>The connection string key-value pairs.</value>
         public string ConnectionString { get; set; }
