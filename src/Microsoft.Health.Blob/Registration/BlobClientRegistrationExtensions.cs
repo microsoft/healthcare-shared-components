@@ -125,20 +125,26 @@ namespace Microsoft.Extensions.DependencyInjection
                 builder =>
                 {
                     // The field "ConnectionString," "Credential," "ClientId," and the phrase "managedidentity"
-                    // are all from the underlying library's source code. These fields and logic would be used
+                    // are all from the underlying library's source code. These fields would be used
                     // if the configuration was passed directly to the AddBlobServiceClient call.
-                    IAzureClientBuilder<BlobServiceClient, BlobClientOptions> clientBuilder = builder
-                        .AddBlobServiceClient(options.ConnectionString)
-                        .ConfigureOptions(x => configuration.Bind(x));
+                    // However, the logic is more similar to BlobClientFactory to provide better compatibility.
+                    IAzureClientBuilder<BlobServiceClient, BlobClientOptions> clientBuilder;
+                    if (string.Equals(options.Credential, "managedidentity", StringComparison.OrdinalIgnoreCase))
+                    {
+                        clientBuilder = builder
+                            .AddBlobServiceClient(new Uri(options.ConnectionString))
+                            .WithCredential(new DefaultAzureCredential(new DefaultAzureCredentialOptions { ManagedIdentityClientId = options.ClientId }));
+                    }
+                    else
+                    {
+                        clientBuilder = builder
+                            .AddBlobServiceClient(options.ConnectionString);
+                    }
 
+                    clientBuilder = clientBuilder.ConfigureOptions(x => configuration.Bind(x));
                     if (configure != null)
                     {
                         clientBuilder = clientBuilder.ConfigureOptions(configure);
-                    }
-
-                    if (string.Equals(options.Credential, "managedidentity", StringComparison.OrdinalIgnoreCase))
-                    {
-                        clientBuilder.WithCredential(new DefaultAzureCredential(new DefaultAzureCredentialOptions { ManagedIdentityClientId = options.ClientId }));
                     }
                 });
 
