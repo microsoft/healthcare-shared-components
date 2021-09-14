@@ -37,8 +37,9 @@ namespace Microsoft.Health.SqlServer.Features.Client
                 transientFaultRetryPolicyConfiguration.Factor,
                 transientFaultRetryPolicyConfiguration.FastFirst);
 
+            // Check for exceptions that are considered transient by SQL Server, deadlocks (1205), or timeouts.
             PolicyBuilder policyBuilder = Policy
-                .Handle<SqlException>(sqlException => sqlException.IsTransient())
+                .Handle<SqlException>(sqlException => sqlException.IsTransient() || sqlException.Number == 1205)
                 .Or<TimeoutException>();
 
             Action<Exception, TimeSpan, int, Context> onRetryLogger = pollyRetryLoggerFactory.Create();

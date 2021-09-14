@@ -117,6 +117,9 @@ namespace Microsoft.Health.SqlServer.UnitTests
         public static SqlException CreateTransientException()
             => Create(10060);
 
+        public static SqlException CreateDeadlockException()
+            => Create(1205);
+
         public static SqlException CreateNonTransientException()
             => Create(50404);
     }

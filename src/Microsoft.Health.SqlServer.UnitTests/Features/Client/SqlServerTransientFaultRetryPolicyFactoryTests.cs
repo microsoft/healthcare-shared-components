@@ -69,6 +69,15 @@ namespace Microsoft.Health.SqlServer.UnitTests.Features.Client
         }
 
         [Fact]
+        public async Task GivenADeadlockedException_WhenRetryPolicyIsUsed_ThenItShouldRetry()
+        {
+            await Assert.ThrowsAsync<SqlException>(() =>
+                _asyncPolicy.ExecuteAsync(() => Task.Run(() => throw SqlExceptionFactory.CreateDeadlockException())));
+
+            ValidateCapturedRetries();
+        }
+
+        [Fact]
         public async Task GivenATimeoutException_WhenRetryPolicyIsUsed_ThenItShouldRetry()
         {
             await Assert.ThrowsAsync<TimeoutException>(() =>
