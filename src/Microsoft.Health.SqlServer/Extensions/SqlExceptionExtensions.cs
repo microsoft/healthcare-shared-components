@@ -76,6 +76,9 @@ namespace Microsoft.Health.SqlServer.Extensions
                     // A connection was successfully established with the server, but then an error occurred during the login process.
                     // (provider: TCP Provider, error: 0 - The specified network name is no longer available.)
                     case 64:
+                    // SQL Error Code: 1205
+                    // Transaction (Process ID XX) was deadlocked on lock resources with another process and has been chosen as the deadlock victim. Rerun the transaction.
+                    case 1205:
                         return true;
                 }
             }
