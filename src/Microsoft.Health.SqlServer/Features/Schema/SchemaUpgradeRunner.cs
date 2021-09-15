@@ -5,6 +5,7 @@
 
 using System;
 using System.Data;
+using System.Data.Common;
 using System.Threading;
 using System.Threading.Tasks;
 using EnsureThat;
@@ -66,8 +67,13 @@ namespace Microsoft.Health.SqlServer.Features.Schema
             catch (Exception e) when (e is SqlException || e is ExecutionFailureException)
             {
                 _logger.LogError("Failed applying schema {version}", version);
-                await FailSchemaVersionAsync(version, cancellationToken);
-                throw;
+
+                // check if the schema version is already completed by another instance in case multi-instance deployment
+                // then don't override and just return
+                if (await UpdateFailedStatusAsync(version, cancellationToken))
+                {
+                    throw;
+                }
             }
         }
 
@@ -82,31 +88,83 @@ namespace Microsoft.Health.SqlServer.Features.Schema
 
         private async Task InsertSchemaVersionAsync(int schemaVersion, CancellationToken cancellationToken)
         {
-            await UpsertSchemaVersionAsync(schemaVersion, "started", cancellationToken);
+            await UpsertSchemaVersionAsync(schemaVersion, SchemaVersionStatus.started.ToString(), cancellationToken);
         }
 
         private async Task CompleteSchemaVersionAsync(int schemaVersion, CancellationToken cancellationToken)
         {
-            await UpsertSchemaVersionAsync(schemaVersion, "completed", cancellationToken);
+            await UpsertSchemaVersionAsync(schemaVersion, SchemaVersionStatus.completed.ToString(), cancellationToken);
         }
 
-        private async Task FailSchemaVersionAsync(int schemaVersion, CancellationToken cancellationToken)
+        private async Task<bool> UpdateFailedStatusAsync(int schemaVersion, CancellationToken cancellationToken)
         {
-            await UpsertSchemaVersionAsync(schemaVersion, "failed", cancellationToken);
+            DbTransaction transaction;
+            using (SqlConnection connection = await _sqlConnectionFactory.GetSqlConnectionAsync(cancellationToken: cancellationToken).ConfigureAwait(false))
+            {
+                await connection.TryOpenAsync(cancellationToken).ConfigureAwait(false);
+                transaction = await connection.BeginTransactionAsync(cancellationToken);
+
+                try
+                {
+                    if (!await SchemaVersionCompletedAsync(schemaVersion, connection, cancellationToken))
+                    {
+                        await UpsertSchemaVersionAsync(schemaVersion, SchemaVersionStatus.failed.ToString(), cancellationToken, connection);
+                        transaction.Commit();
+                        return true;
+                    }
+                }
+                catch (Exception e) when (e is SqlException || e is ExecutionFailureException)
+                {
+                    transaction.Rollback();
+                    throw;
+                }
+            }
+
+            return false;
         }
 
-        private async Task UpsertSchemaVersionAsync(int schemaVersion, string status, CancellationToken cancellationToken)
+        private async Task UpsertSchemaVersionAsync(int schemaVersion, string status, CancellationToken cancellationToken, SqlConnection connection = null)
         {
-            using (var connection = await _sqlConnectionFactory.GetSqlConnectionAsync(cancellationToken: cancellationToken))
+            if (connection == null)
+            {
+                using (connection = await _sqlConnectionFactory.GetSqlConnectionAsync(cancellationToken: cancellationToken))
+                {
+                    await connection.TryOpenAsync(cancellationToken);
+                    await UpsertSchemaVersionWithConnectionAsync(schemaVersion, connection, status, cancellationToken);
+                }
+            }
+            else
+            {
+                await UpsertSchemaVersionWithConnectionAsync(schemaVersion, connection, status, cancellationToken);
+            }
+        }
+
+        private static async Task UpsertSchemaVersionWithConnectionAsync(int schemaVersion, SqlConnection connection, string status, CancellationToken cancellationToken)
+        {
             using (var upsertCommand = new SqlCommand("dbo.UpsertSchemaVersion", connection))
             {
                 upsertCommand.CommandType = CommandType.StoredProcedure;
                 upsertCommand.Parameters.AddWithValue("@version", schemaVersion);
                 upsertCommand.Parameters.AddWithValue("@status", status);
 
-                await connection.TryOpenAsync(cancellationToken);
                 await upsertCommand.ExecuteNonQueryAsync(cancellationToken);
             }
+        }
+
+        private static async Task<bool> SchemaVersionCompletedAsync(int schemaVersion, SqlConnection connection, CancellationToken cancellationToken)
+        {
+            EnsureArg.IsGte(schemaVersion, 1);
+
+            bool exists = false;
+            using (var selectCommand = new SqlCommand("SELECT * FROM dbo.SchemaVersion WHERE Version = @version AND Status = @status", connection))
+            {
+                selectCommand.Parameters.AddWithValue("@version", schemaVersion);
+                selectCommand.Parameters.AddWithValue("@status", SchemaVersionStatus.completed.ToString());
+
+                exists = (int)await selectCommand.ExecuteScalarAsync(cancellationToken).ConfigureAwait(false) != 0;
+            }
+
+            return exists;
         }
     }
 }
