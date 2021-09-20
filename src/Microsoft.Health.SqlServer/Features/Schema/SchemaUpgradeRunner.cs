@@ -65,7 +65,7 @@ namespace Microsoft.Health.SqlServer.Features.Schema
             }
             catch (Exception e) when (e is SqlException || e is ExecutionFailureException)
             {
-                _logger.LogError("Failed applying schema {version}", version);
+                _logger.LogError(e, "Failed applying schema {version}", version);
                 await FailSchemaVersionAsync(version, cancellationToken);
                 throw;
             }
