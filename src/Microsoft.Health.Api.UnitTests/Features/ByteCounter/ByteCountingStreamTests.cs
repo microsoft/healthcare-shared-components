@@ -8,10 +8,10 @@ using System.IO;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.Health.Dicom.Api.Features.ByteCounter;
+using Microsoft.Health.Api.Features.ByteCounter;
 using Xunit;
 
-namespace Microsoft.Health.Dicom.Api.UnitTests.Features.ByteCounter
+namespace Microsoft.Health.Api.UnitTests.Features.ByteCounter
 {
     public class ByteCountingStreamTests
     {

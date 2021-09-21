@@ -5,7 +5,7 @@
 
 using System.IO;
 
-namespace Microsoft.Health.Dicom.Api.Features.ByteCounter
+namespace Microsoft.Health.Api.Features.ByteCounter
 {
     public interface IResponseLogStreamFactory
     {

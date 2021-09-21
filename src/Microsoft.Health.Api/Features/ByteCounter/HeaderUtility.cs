@@ -9,7 +9,7 @@ using EnsureThat;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Primitives;
 
-namespace Microsoft.Health.Dicom.Api.Features.ByteCounter
+namespace Microsoft.Health.Api.Features.ByteCounter
 {
     public static class HeaderUtility
     {

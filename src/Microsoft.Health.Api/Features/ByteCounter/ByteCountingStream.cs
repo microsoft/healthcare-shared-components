@@ -9,7 +9,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using EnsureThat;
 
-namespace Microsoft.Health.Dicom.Api.Features.ByteCounter
+namespace Microsoft.Health.Api.Features.ByteCounter
 {
     /// <summary>
     /// A stream to wrap an underlying stream and counts the number of bytes passed while operating with it.
@@ -17,6 +17,7 @@ namespace Microsoft.Health.Dicom.Api.Features.ByteCounter
     public class ByteCountingStream : Stream
     {
         private readonly Stream _stream;
+        private long _writtenByteCount;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ByteCountingStream"/> class.
@@ -51,7 +52,7 @@ namespace Microsoft.Health.Dicom.Api.Features.ByteCounter
         /// <summary>
         /// The number of bytes that have been written.
         /// </summary>
-        public long WrittenByteCount { get; private set; }
+        public long WrittenByteCount { get => _writtenByteCount; }
 
         /// <inheritdoc />
         public override void Flush()
@@ -87,14 +88,14 @@ namespace Microsoft.Health.Dicom.Api.Features.ByteCounter
         public override void WriteByte(byte value)
         {
             _stream.WriteByte(value);
-            WrittenByteCount++;
+            Interlocked.Increment(ref _writtenByteCount);
         }
 
         /// <inheritdoc />
         public override void Write(byte[] buffer, int offset, int count)
         {
             _stream.Write(buffer, offset, count);
-            WrittenByteCount += count;
+            Interlocked.Add(ref _writtenByteCount, count);
         }
 
         /// <summary>
@@ -106,21 +107,21 @@ namespace Microsoft.Health.Dicom.Api.Features.ByteCounter
         /// <returns>A task that represents the asynchronous write operation.</returns>
         public new Task WriteAsync(byte[] buffer, int offset, int count)
         {
-            WrittenByteCount += count;
+            Interlocked.Add(ref _writtenByteCount, count);
             return _stream.WriteAsync(buffer, offset, count);
         }
 
         /// <inheritdoc />
         public override Task WriteAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken)
         {
-            WrittenByteCount += count;
+            Interlocked.Add(ref _writtenByteCount, count);
             return _stream.WriteAsync(buffer, offset, count, cancellationToken);
         }
 
         /// <inheritdoc />
         public override IAsyncResult BeginWrite(byte[] buffer, int offset, int count, AsyncCallback callback, object state)
         {
-            WrittenByteCount += count;
+            Interlocked.Add(ref _writtenByteCount, count);
             return _stream.BeginWrite(buffer, offset, count, callback, state);
         }
 
