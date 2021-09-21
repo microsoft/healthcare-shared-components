@@ -7,6 +7,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Azure.Core.Pipeline;
 using Azure.Storage.Blobs;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -200,6 +201,28 @@ namespace Microsoft.Health.Blob.UnitTests.Registration
             await AssertBlobInitializationAsync(intializers[0], "FooContainer");
             await AssertBlobInitializationAsync(intializers[1], "BarContainer");
             await AssertBlobInitializationAsync(intializers[2], "BazContainer");
+        }
+
+        [Fact]
+        public void GivenServices_WhenConfiguringTransportOverride_ThenCreateNewTransport()
+        {
+            IConfiguration config = new ConfigurationBuilder()
+                .AddInMemoryCollection(
+                    new KeyValuePair<string, string>[]
+                    {
+                        KeyValuePair.Create("TransportOverride:ConnectTimeout", TimeSpan.FromSeconds(2).ToString()),
+                    })
+                .Build();
+
+            var services = new ServiceCollection();
+
+            IServiceProvider provider = services
+                .AddLogging()
+                .AddBlobServiceClient(config)
+                .BuildServiceProvider();
+
+            var options = provider.GetRequiredService<IOptionsMonitor<BlobClientOptions>>();
+            Assert.NotSame(HttpClientTransport.Shared, options.CurrentValue.Transport);
         }
 
         private static async Task AssertBlobInitializationAsync(IBlobContainerInitializer initializer, string expectedContainer)

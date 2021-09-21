@@ -64,8 +64,10 @@ namespace Microsoft.Health.Blob.Configs
         public BlobOperationOptions Operations { get; set; }
 
         /// <summary>
-        /// Gets or sets the maximum time it waits for the connection to be established.
+        /// Gets or sets the options for configuring the <see cref="Azure.Core.ClientOptions.Transport"/>
+        /// via a collection of settings.
         /// </summary>
-        public int ConnectionTimeoutInSeconds { get; set; } = 2;
+        /// <value>The settings for configuring the underlying HTTP transport.</value>
+        public TransportOverrideOptions TransportOverride { get; set; }
     }
 }
