@@ -62,5 +62,10 @@ namespace Microsoft.Health.Blob.Configs
         /// </summary>
         /// <value>The operation settings.</value>
         public BlobOperationOptions Operations { get; set; }
+
+        /// <summary>
+        /// Gets or sets the maximum time it waits for the connection to be established.
+        /// </summary>
+        public int ConnectionTimeoutInSeconds { get; set; } = 2;
     }
 }

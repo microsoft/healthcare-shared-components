@@ -5,7 +5,9 @@
 
 using System;
 using System.Linq;
+using System.Net.Http;
 using Azure.Core.Extensions;
+using Azure.Core.Pipeline;
 using Azure.Identity;
 using Azure.Storage.Blobs;
 using EnsureThat;
@@ -120,6 +122,21 @@ namespace Microsoft.Extensions.DependencyInjection
             {
                 options.ConnectionString = BlobLocalEmulator.ConnectionString;
             }
+
+            // Singleton, called only during app initialization, and should be available during the lifetime of the app
+            // Creating our own HttpClient to handle connection timeout. We are seeing intermittent socketexceptions in
+            // QIDO where we can send upto 200 concurrent Azure blob requests. This waits for 22 seconds. #85137
+            // Azure SDK code that does this https://github.com/Azure/azure-sdk-for-net/blob/99f5a87233b397fb9992031300cd61fe2c4baa5c/sdk/core/Azure.Core/src/Pipeline/HttpClientTransport.cs#L143-L144
+            #pragma warning disable CA2000 // Dispose objects before losing scope
+            var socketsHandler = new SocketsHttpHandler
+            {
+                ConnectTimeout = new TimeSpan(0, 0, options.ConnectionTimeoutInSeconds),
+            };
+
+            // HttpClient initialized here to be used by the Blob client SDK
+            var client = new HttpClient(socketsHandler);
+#pragma warning restore CA2000 // Dispose objects before losing scope
+            options.Transport = new HttpClientTransport(client);
 
             services.AddAzureClients(
                 builder =>
