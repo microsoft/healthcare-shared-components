@@ -62,5 +62,12 @@ namespace Microsoft.Health.Blob.Configs
         /// </summary>
         /// <value>The operation settings.</value>
         public BlobOperationOptions Operations { get; set; }
+
+        /// <summary>
+        /// Gets or sets the options for configuring the <see cref="Azure.Core.ClientOptions.Transport"/>
+        /// via a collection of settings.
+        /// </summary>
+        /// <value>The settings for configuring the underlying HTTP transport.</value>
+        public TransportOverrideOptions TransportOverride { get; set; }
     }
 }

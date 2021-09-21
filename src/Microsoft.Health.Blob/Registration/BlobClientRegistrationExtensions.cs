@@ -148,6 +148,14 @@ namespace Microsoft.Extensions.DependencyInjection
                     }
                 });
 
+            // While users can configure the Transport using the "configure" parameter,
+            // the TransportOverride provides a more configuration-friendly mechanism
+            if (options.TransportOverride != null)
+            {
+                services.TryAddEnumerable(
+                    ServiceDescriptor.Singleton<IConfigureOptions<BlobClientOptions>>(new TransportConfigure(options.TransportOverride)));
+            }
+
             return services;
         }
 
