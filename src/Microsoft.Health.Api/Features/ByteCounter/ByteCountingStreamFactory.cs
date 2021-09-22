@@ -7,10 +7,10 @@ using System.IO;
 
 namespace Microsoft.Health.Api.Features.ByteCounter
 {
-    public class ByteCountingStreamResponseLogStreamFactory : IResponseLogStreamFactory
+    public class ByteCountingStreamFactory : IByteCountingStreamFactory
     {
         /// <inheritdoc/>
-        public ByteCountingStream CreateByteCountingResponseLogStream(Stream stream)
+        public ByteCountingStream CreateByteCountingStream(Stream stream)
         {
             return new ByteCountingStream(stream);
         }

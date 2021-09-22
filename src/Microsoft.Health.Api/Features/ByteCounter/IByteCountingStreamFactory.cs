@@ -7,13 +7,13 @@ using System.IO;
 
 namespace Microsoft.Health.Api.Features.ByteCounter
 {
-    public interface IResponseLogStreamFactory
+    public interface IByteCountingStreamFactory
     {
         /// <summary>
         /// Creates a <see cref="ByteCountingStream"/>
         /// </summary>
         /// <param name="stream">An underlying stream.</param>
         /// <returns>A byte counting stream that wraps the specified underlying stream.</returns>
-        ByteCountingStream CreateByteCountingResponseLogStream(Stream stream);
+        ByteCountingStream CreateByteCountingStream(Stream stream);
     }
 }
