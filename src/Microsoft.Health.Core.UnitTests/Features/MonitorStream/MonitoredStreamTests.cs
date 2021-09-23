@@ -8,10 +8,10 @@ using System.IO;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.Health.Core.Features.ByteCounter;
+using Microsoft.Health.Core.Features.MonitorStream;
 using Xunit;
 
-namespace Microsoft.Health.Core.UnitTests.Features.ByteCounter
+namespace Microsoft.Health.Core.UnitTests.Features.MonitorStream
 {
     public class MonitoredStreamTests
     {
