@@ -9,25 +9,22 @@ using System.Threading;
 using System.Threading.Tasks;
 using EnsureThat;
 
-namespace Microsoft.Health.Api.Features.ByteCounter
+namespace Microsoft.Health.Core.Features.MonitorStream
 {
     /// <summary>
     /// A stream to wrap an underlying stream and counts the number of bytes passed while operating with it.
     /// </summary>
-    public class ByteCountingStream : Stream
+    public sealed class MonitoredStream : Stream
     {
         private readonly Stream _stream;
-        private long _writtenByteCount;
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="ByteCountingStream"/> class.
+        /// Initializes a new instance of the <see cref="MonitoredStream"/> class.
         /// </summary>
         /// <param name="stream">An underlying stream.</param>
-        public ByteCountingStream(Stream stream)
+        public MonitoredStream(Stream stream)
         {
-            EnsureArg.IsNotNull(stream, nameof(stream));
-
-            _stream = stream;
+            _stream = EnsureArg.IsNotNull(stream, nameof(stream));
         }
 
         /// <inheritdoc />
@@ -45,14 +42,14 @@ namespace Microsoft.Health.Api.Features.ByteCounter
         /// <inheritdoc />
         public override long Position
         {
-            get { return _stream.Position; }
-            set { _stream.Position = value; }
+            get => _stream.Position;
+            set => _stream.Position = value;
         }
 
         /// <summary>
         /// The number of bytes that have been written.
         /// </summary>
-        public long WrittenByteCount { get => _writtenByteCount; }
+        public long WriteCount { get; private set; }
 
         /// <inheritdoc />
         public override void Flush()
@@ -88,14 +85,14 @@ namespace Microsoft.Health.Api.Features.ByteCounter
         public override void WriteByte(byte value)
         {
             _stream.WriteByte(value);
-            Interlocked.Increment(ref _writtenByteCount);
+            WriteCount++;
         }
 
         /// <inheritdoc />
         public override void Write(byte[] buffer, int offset, int count)
         {
             _stream.Write(buffer, offset, count);
-            Interlocked.Add(ref _writtenByteCount, count);
+            WriteCount += count;
         }
 
         /// <summary>
@@ -107,21 +104,21 @@ namespace Microsoft.Health.Api.Features.ByteCounter
         /// <returns>A task that represents the asynchronous write operation.</returns>
         public new Task WriteAsync(byte[] buffer, int offset, int count)
         {
-            Interlocked.Add(ref _writtenByteCount, count);
+            WriteCount += count;
             return _stream.WriteAsync(buffer, offset, count);
         }
 
         /// <inheritdoc />
         public override Task WriteAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken)
         {
-            Interlocked.Add(ref _writtenByteCount, count);
+            WriteCount += count;
             return _stream.WriteAsync(buffer, offset, count, cancellationToken);
         }
 
         /// <inheritdoc />
         public override IAsyncResult BeginWrite(byte[] buffer, int offset, int count, AsyncCallback callback, object state)
         {
-            Interlocked.Add(ref _writtenByteCount, count);
+            WriteCount += count;
             return _stream.BeginWrite(buffer, offset, count, callback, state);
         }
 

@@ -9,31 +9,30 @@ using EnsureThat;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Primitives;
 
-namespace Microsoft.Health.Api.Features.ByteCounter
+namespace Microsoft.Health.Api.Extensions
 {
-    public static class HeaderUtility
+    public static class HeaderExtensions
     {
-        private static readonly Encoding HeaderEncoding = Encoding.UTF8;
-        private static readonly int HeaderDelimiterByteCount = HeaderEncoding.GetByteCount(": ");
-        private static readonly int HeaderEndOfLineCharactersByteCount = HeaderEncoding.GetByteCount("\r\n");
-
-        public static int GetTotalHeaderLength(IHeaderDictionary headers)
+        public static int GetTotalHeaderLength(this IHeaderDictionary headers, Encoding headerEncoding)
         {
             // Per https://en.wikipedia.org/wiki/List_of_HTTP_header_fields, each header will be of the form
             // headerKey: headerValues, and terminated by an end-of-line character sequence. The list of headers
             // will be terminated by another end-of-line character sequence.
             EnsureArg.IsNotNull(headers, nameof(headers));
+            EnsureArg.IsNotNull(headerEncoding, nameof(headerEncoding));
 
+            int headerDelimiterByteCount = headerEncoding.GetByteCount(": ");
+            int headerEndOfLineCharactersByteCount = headerEncoding.GetByteCount("\r\n");
             int headerLength = 0;
             foreach (KeyValuePair<string, StringValues> header in headers)
             {
-                headerLength += HeaderEncoding.GetByteCount(header.Key)
-                    + HeaderDelimiterByteCount
-                    + HeaderEncoding.GetByteCount(header.Value.ToString())
-                    + HeaderEndOfLineCharactersByteCount;
+                headerLength += headerEncoding.GetByteCount(header.Key)
+                    + headerDelimiterByteCount
+                    + headerEncoding.GetByteCount(header.Value.ToString())
+                    + headerEndOfLineCharactersByteCount;
             }
 
-            headerLength += HeaderEndOfLineCharactersByteCount;
+            headerLength += headerEndOfLineCharactersByteCount;
 
             return headerLength;
         }
