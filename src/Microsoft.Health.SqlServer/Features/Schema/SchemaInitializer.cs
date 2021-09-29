@@ -10,6 +10,8 @@ using System.Globalization;
 using System.Threading;
 using System.Threading.Tasks;
 using EnsureThat;
+using Medallion.Threading;
+using Medallion.Threading.SqlServer;
 using MediatR;
 using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.Hosting;
@@ -37,6 +39,7 @@ namespace Microsoft.Health.SqlServer.Features.Schema
         private readonly ISqlConnectionStringProvider _sqlConnectionStringProvider;
         private readonly IMediator _mediator;
         private bool _canCallGetCurrentSchema;
+        public const string SchemaUpgradeLockName = "SchemaUpgrade";
 
         public SchemaInitializer(
             IOptions<SqlServerDataStoreConfiguration> sqlServerDataStoreConfiguration,
@@ -67,10 +70,19 @@ namespace Microsoft.Health.SqlServer.Features.Schema
 
             await GetCurrentSchemaVersionAsync(cancellationToken).ConfigureAwait(false);
 
-            _logger.LogInformation("Schema version is {version}", _schemaInformation.Current?.ToString(CultureInfo.InvariantCulture) ?? "NULL");
+            _logger.LogInformation("Initial check of schema version is {version}", _schemaInformation.Current?.ToString(CultureInfo.InvariantCulture) ?? "NULL");
 
             if (_sqlServerDataStoreConfiguration.SchemaOptions.AutomaticUpdatesEnabled)
             {
+                IDistributedLock sqlLock = new SqlDistributedLock(SchemaUpgradeLockName, await _sqlConnectionStringProvider.GetSqlConnectionString(cancellationToken));
+                await using IDistributedSynchronizationHandle lockHandle = await sqlLock.AcquireAsync(TimeSpan.FromMinutes(10), cancellationToken);
+
+                _logger.LogInformation("Schema upgrade lock acquired");
+
+                // Recheck the version with lock
+                await GetCurrentSchemaVersionAsync(cancellationToken).ConfigureAwait(false);
+                _logger.LogInformation("Schema version is {version}", _schemaInformation.Current?.ToString(CultureInfo.InvariantCulture) ?? "NULL");
+
                 // If the stored procedure to get the current schema version doesn't exist
                 if (_schemaInformation.Current == null)
                 {
