@@ -20,9 +20,9 @@ namespace Microsoft.Health.SqlServer.Features.Schema.Manager
     {
         private readonly HttpClient _httpClient;
 
-        public SchemaClient(HttpClient httpClient)
+        public SchemaClient(IHttpClientFactory httpClientFactory)
         {
-            _httpClient = httpClient;
+            _httpClient = httpClientFactory.CreateClient();
         }
 
         public void SetUri(Uri uri)
@@ -118,20 +118,6 @@ namespace Microsoft.Health.SqlServer.Features.Schema.Manager
             else
             {
                 throw new SchemaManagerException(string.Format(CultureInfo.InvariantCulture, Resources.ScriptNotFound, response.StatusCode));
-            }
-        }
-
-        public void Dispose()
-        {
-            Dispose(true);
-            GC.SuppressFinalize(this);
-        }
-
-        protected virtual void Dispose(bool disposing)
-        {
-            if (disposing)
-            {
-                _httpClient?.Dispose();
             }
         }
     }
