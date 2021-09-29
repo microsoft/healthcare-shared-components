@@ -16,13 +16,13 @@ using Newtonsoft.Json;
 
 namespace Microsoft.Health.SqlServer.Features.Schema.Manager
 {
-    public class SchemaClient : ISchemaClient, IDisposable
+    public class SchemaClient : ISchemaClient
     {
         private readonly HttpClient _httpClient;
 
-        public SchemaClient()
+        public SchemaClient(HttpClient httpClient)
         {
-            _httpClient = new HttpClient();
+            _httpClient = httpClient;
         }
 
         public void SetUri(Uri uri)
