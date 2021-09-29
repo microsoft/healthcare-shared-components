@@ -45,6 +45,7 @@ namespace SchemaManager
 
             // Add SqlServer services
             services.AddOptions();
+            services.AddHttpClient();
             services.AddSingleton<ISqlConnectionFactory, DefaultSqlConnectionFactory>();
             services.AddSingleton<ISqlConnectionStringProvider, DefaultSqlConnectionStringProvider>();
             services.AddSingleton<IBaseSchemaRunner, BaseSchemaRunner>();
