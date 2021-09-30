@@ -75,7 +75,13 @@ namespace Microsoft.Health.SqlServer.Features.Schema
             if (_sqlServerDataStoreConfiguration.SchemaOptions.AutomaticUpdatesEnabled)
             {
                 IDistributedLock sqlLock = new SqlDistributedLock(SchemaUpgradeLockName, await _sqlConnectionStringProvider.GetSqlConnectionString(cancellationToken));
-                await using IDistributedSynchronizationHandle lockHandle = await sqlLock.AcquireAsync(TimeSpan.FromMinutes(10), cancellationToken);
+                await using IDistributedSynchronizationHandle lockHandle = await sqlLock.TryAcquireAsync(TimeSpan.FromSeconds(30), cancellationToken);
+
+                if (lockHandle == null)
+                {
+                    _logger.LogInformation("Schema upgrade lock was not acquired, skipping");
+                    return;
+                }
 
                 _logger.LogInformation("Schema upgrade lock acquired");
 
