@@ -16,13 +16,13 @@ using Newtonsoft.Json;
 
 namespace Microsoft.Health.SqlServer.Features.Schema.Manager
 {
-    public class SchemaClient : ISchemaClient, IDisposable
+    public class SchemaClient : ISchemaClient
     {
         private readonly HttpClient _httpClient;
 
-        public SchemaClient()
+        public SchemaClient(IHttpClientFactory httpClientFactory)
         {
-            _httpClient = new HttpClient();
+            _httpClient = httpClientFactory.CreateClient();
         }
 
         public void SetUri(Uri uri)
@@ -118,20 +118,6 @@ namespace Microsoft.Health.SqlServer.Features.Schema.Manager
             else
             {
                 throw new SchemaManagerException(string.Format(CultureInfo.InvariantCulture, Resources.ScriptNotFound, response.StatusCode));
-            }
-        }
-
-        public void Dispose()
-        {
-            Dispose(true);
-            GC.SuppressFinalize(this);
-        }
-
-        protected virtual void Dispose(bool disposing)
-        {
-            if (disposing)
-            {
-                _httpClient?.Dispose();
             }
         }
     }

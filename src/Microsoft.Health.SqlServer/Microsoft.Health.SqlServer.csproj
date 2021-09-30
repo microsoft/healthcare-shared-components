@@ -25,6 +25,7 @@
     <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="$(SdkPackageVersion)" />
     <PackageReference Include="Microsoft.Extensions.Diagnostics.HealthChecks.Abstractions" Version="$(SdkPackageVersion)" />
     <PackageReference Include="Microsoft.Extensions.Hosting.Abstractions" Version="$(SdkPackageVersion)" />
+    <PackageReference Include="Microsoft.Extensions.Http" Version="$(SdkPackageVersion)" />
     <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="$(SdkPackageVersion)" />
     <PackageReference Include="Microsoft.Extensions.Options" Version="$(SdkPackageVersion)" />
     <PackageReference Include="Microsoft.SqlServer.SqlManagementObjects" Version="161.46437.65" />
