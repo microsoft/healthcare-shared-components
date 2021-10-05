@@ -18,3 +18,6 @@ dotner pack Microsoft.Health.Tools.Sql.Tasks.csproj
 ``` CLI
 dotner msbuild Microsoft.Health.Tools.Sql.Tasks.Tests.csproj -v:d
 ```
+
+## Know issues
+- Using unofficial Sql DacFx nuget manually uploaded in our public feed because of https://github.com/microsoft/DacFx/issues/39
