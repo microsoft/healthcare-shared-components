@@ -12,7 +12,7 @@
     <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="3.11.0" />
     <PackageReference Include="Microsoft.CodeAnalysis.CSharp.Workspaces" Version="3.11.0" />
     <PackageReference Include="Microsoft.Data.SqlClient" Version="3.0.1" />
-    <PackageReference Include="Microsoft.SqlServer.DacFx" Version="150.5164.1" />
+    <PackageReference Include="Microsoft.SqlServer.DacFx" Version="150.5282.3" />
     <PackageReference Include="System.CommandLine.DragonFruit" Version="0.2.0-alpha.19174.3" />
   </ItemGroup>
 
