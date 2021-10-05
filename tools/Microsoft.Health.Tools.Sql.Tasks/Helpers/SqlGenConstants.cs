@@ -9,7 +9,7 @@ namespace Microsoft.Health.Tools.Sql.Tasks.Helpers
     {
         public const string GeneratedHeader = @"
 /*************************************************************************************************
-    Auto-Generated from Sql build task. Do not manuallly edit it. 
+    Auto-Generated from Sql build task. Do not manually edit it. 
 **************************************************************************************************/";
 
         public const string BeginTransaction = "BEGIN TRAN";
