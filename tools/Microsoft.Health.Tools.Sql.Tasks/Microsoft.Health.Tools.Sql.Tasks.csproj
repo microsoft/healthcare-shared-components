@@ -3,6 +3,7 @@
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
     <Platforms>AnyCPU</Platforms>
+    <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
   </PropertyGroup>
 
   <ItemGroup>
@@ -18,11 +19,6 @@
     <PublishDir>$(IntermediatePackDir)$(TargetFramework)/</PublishDir>
     <NuspecProperties>publishDir=$([MSBuild]::NormalizeDirectory($(IntermediatePackDir)));version=$(PackageVersion)</NuspecProperties>
   </PropertyGroup>
-
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
-    <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
-    <WarningsAsErrors />
-  </PropertyGroup> 
 
   <Target Name="PublishAll" BeforeTargets="GenerateNuspec">
     <MSBuild Projects="$(MSBuildProjectFullPath)" Targets="Publish" Properties="TargetFramework=netstandard2.0" />
