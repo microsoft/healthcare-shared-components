@@ -1,0 +1,9 @@
+{
+  "profiles": {
+    "Microsoft.Health.Tools.Sql.Tasks": {
+      "commandName": "Executable",
+      "executablePath": "C:\\Program Files\\dotnet\\dotnet.exe",
+      "commandLineArgs": "msbuild Microsoft.Health.Tools.Sql.Tasks.Tests.csproj"
+    }
+  }
+}

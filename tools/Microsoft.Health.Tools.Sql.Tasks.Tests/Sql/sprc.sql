@@ -1,0 +1,9 @@
+CREATE OR ALTER PROCEDURE dbo.GetTable1
+    @Uid   BIGINT
+AS
+SET NOCOUNT ON
+BEGIN
+    SELECT * 
+    FROM Table1
+    WHERE Key1 = @Uid
+END
