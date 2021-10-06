@@ -1,0 +1,35 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net5.0</TargetFramework>
+    <Platforms>AnyCPU</Platforms>
+    <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Folder Include="Schema\" />
+    <Folder Include="Sql\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Microsoft.Health.Tools.Sql.Tasks\Microsoft.Health.Tools.Sql.Tasks.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <TInitSqlScript Include="Sql\transaction-cond.sql" />
+    <TSqlScript Include="Sql\table1.sql" />
+    <TSqlScript Include="Sql\table2.sql" />
+    <SqlScript Include="Sql\sprc.sql" />
+  </ItemGroup>
+  
+  <PropertyGroup>
+    <LatestSchemaVersion>1</LatestSchemaVersion>
+    <IntermediateOutputPath>$(MSBuildThisFileDirectory)obj\$(Configuration)</IntermediateOutputPath>
+    <GeneratedFullScriptPath>Schema\$(LatestSchemaVersion).sql</GeneratedFullScriptPath>
+  </PropertyGroup>
+
+  <Target Name="PublishSqlTasks" BeforeTargets="CoreCompile">
+    <MSBuild Projects="..\Microsoft.Health.Tools.Sql.Tasks\Microsoft.Health.Tools.Sql.Tasks.csproj" Targets="Publish" Properties="TargetFramework=netstandard2.0" />
+  </Target>
+  
+  <Import Project="..\Microsoft.Health.Tools.Sql.Tasks\Sql.test.targets" />  
+</Project>
