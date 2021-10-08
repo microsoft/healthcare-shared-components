@@ -59,36 +59,33 @@ namespace Microsoft.Health.SqlServer.Features.Schema
 
             while (!cancellationToken.IsCancellationRequested)
             {
-                if (schemaInformation.Current != null)
+                try
                 {
-                    try
+                    using IServiceScope scope = _serviceProvider.CreateScope();
+                    ISchemaDataStore schemaDataStore = scope.ServiceProvider.GetRequiredService<ISchemaDataStore>();
+
+                    int? previous = schemaInformation.Current;
+                    schemaInformation.Current = await schemaDataStore.UpsertInstanceSchemaInformationAsync(instanceName, schemaInformation, cancellationToken).ConfigureAwait(false);
+
+                    // If there was a change in the schema version and this isn't the base schema
+                    if (schemaInformation.Current != previous && schemaInformation.Current > 0)
                     {
-                        using IServiceScope scope = _serviceProvider.CreateScope();
-                        ISchemaDataStore schemaDataStore = scope.ServiceProvider.GetRequiredService<ISchemaDataStore>();
+                        var isFullSchemaSnapshot = previous == 0;
 
-                        int? previous = schemaInformation.Current;
-                        schemaInformation.Current = await schemaDataStore.UpsertInstanceSchemaInformationAsync(instanceName, schemaInformation, cancellationToken).ConfigureAwait(false);
-
-                        // If there was a change in the schema version and this isn't the base schema
-                        if (schemaInformation.Current != previous && schemaInformation.Current > 0)
-                        {
-                            var isFullSchemaSnapshot = previous == 0;
-
-                            await _mediator.NotifySchemaUpgradedAsync((int)schemaInformation.Current, isFullSchemaSnapshot).ConfigureAwait(false);
-                        }
-
-                        await schemaDataStore.DeleteExpiredInstanceSchemaAsync(cancellationToken).ConfigureAwait(false);
-
-                        if (_sqlServerDataStoreConfiguration.TerminateWhenSchemaVersionUpdatedTo.HasValue && _sqlServerDataStoreConfiguration.TerminateWhenSchemaVersionUpdatedTo.Value == schemaInformation.Current)
-                        {
-                            _processTerminator.Terminate(cancellationToken);
-                        }
+                        await _mediator.NotifySchemaUpgradedAsync((int)schemaInformation.Current, isFullSchemaSnapshot).ConfigureAwait(false);
                     }
-                    catch (Exception ex)
+
+                    await schemaDataStore.DeleteExpiredInstanceSchemaAsync(cancellationToken).ConfigureAwait(false);
+
+                    if (_sqlServerDataStoreConfiguration.TerminateWhenSchemaVersionUpdatedTo.HasValue && _sqlServerDataStoreConfiguration.TerminateWhenSchemaVersionUpdatedTo.Value == schemaInformation.Current)
                     {
-                        // The job failed.
-                        _logger.LogError(ex, "Unhandled exception in the worker.");
+                        _processTerminator.Terminate(cancellationToken);
                     }
+                }
+                catch (Exception ex)
+                {
+                    // The job failed.
+                    _logger.LogError(ex, "Unhandled exception in the worker.");
                 }
 
                 try
