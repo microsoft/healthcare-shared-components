@@ -22,6 +22,9 @@ namespace Microsoft.Health.Core.Features.Context
 
         string RouteName { get; set; }
 
+        // We want to log anonymous calls (FhirAnonymousOperationType) in RequestMetric with valid operation type e.g. Metadata and Versions and not just limit to standard AuditEventTypes
+        // This property holds value for both the AuditEventTypes and FhirAnonymousOperationType
+        // We will still continue to log audit logs for AuditEventTypes only. This change is made in AuditHelper class
         string AuditEventType { get; set; }
 
         ClaimsPrincipal Principal { get; set; }
