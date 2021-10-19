@@ -14,6 +14,7 @@ using Microsoft.AspNetCore.Mvc.Controllers;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Health.Api.Features.AnonymousOperation;
 using Microsoft.Health.Api.Features.Audit;
 using NSubstitute;
 using Xunit;
@@ -24,12 +25,16 @@ namespace Microsoft.Health.Api.UnitTests.Features.Audit
     {
         private const string ControllerName = nameof(MockController);
         private const string AnonymousMethodName = nameof(MockController.Anonymous);
+        private const string MetadataAnonymousMethodName = nameof(MockController.MetadataAnonymous);
+        private const string VersionsAnonymousMethodName = nameof(MockController.VersionsAnonymous);
         private const string AudittedMethodName = nameof(MockController.Auditted);
         private const string MultipleRoutesMethodName = nameof(MockController.MultipleRoutes);
         private const string SameNameMethodName = nameof(MockController.SameName);
         private const string NoAttributeMethodName = nameof(MockController.NoAttribute);
         private const string AuditEventType = "audit";
         private const string AnotherAuditEventType = "anotherAudit";
+        private const string MetadataFhirAnonymousOperationType = "metadata";
+        private const string VersionsFhirAnonymousOperationType = "versions";
 
         private readonly IActionDescriptorCollectionProvider _actionDescriptorCollectionProvider = Substitute.For<IActionDescriptorCollectionProvider>();
         private readonly AuditEventTypeMapping _auditEventTypeMapping;
@@ -45,6 +50,18 @@ namespace Microsoft.Health.Api.UnitTests.Features.Audit
                     ControllerName = ControllerName,
                     ActionName = AnonymousMethodName,
                     MethodInfo = mockControllerType.GetMethod(AnonymousMethodName),
+                },
+                new ControllerActionDescriptor()
+                {
+                    ControllerName = ControllerName,
+                    ActionName = MetadataAnonymousMethodName,
+                    MethodInfo = mockControllerType.GetMethod(MetadataAnonymousMethodName),
+                },
+                new ControllerActionDescriptor()
+                {
+                    ControllerName = ControllerName,
+                    ActionName = VersionsAnonymousMethodName,
+                    MethodInfo = mockControllerType.GetMethod(VersionsAnonymousMethodName),
                 },
                 new ControllerActionDescriptor()
                 {
@@ -91,6 +108,8 @@ namespace Microsoft.Health.Api.UnitTests.Features.Audit
 
         [Theory]
         [InlineData(ControllerName, AnonymousMethodName, null)]
+        [InlineData(ControllerName, MetadataAnonymousMethodName, MetadataFhirAnonymousOperationType)]
+        [InlineData(ControllerName, VersionsAnonymousMethodName, VersionsFhirAnonymousOperationType)]
         [InlineData(ControllerName, AudittedMethodName, AuditEventType)]
         [InlineData(ControllerName, MultipleRoutesMethodName, AuditEventType)]
         public void GivenControllerNameAndActionName_WhenGetAuditEventTypeIsCalled_ThenAuditEventTypeShouldBeReturned(string controllerName, string actionName, string expectedAuditEventType)
@@ -139,6 +158,12 @@ namespace Microsoft.Health.Api.UnitTests.Features.Audit
         {
             [AllowAnonymous]
             public IActionResult Anonymous() => new OkResult();
+
+            [FhirAnonymousOperation(MetadataFhirAnonymousOperationType)]
+            public IActionResult MetadataAnonymous() => new OkResult();
+
+            [FhirAnonymousOperation(VersionsFhirAnonymousOperationType)]
+            public IActionResult VersionsAnonymous() => new OkResult();
 
             [AuditEventType(AuditEventType)]
             public IActionResult Auditted() => new OkResult();
