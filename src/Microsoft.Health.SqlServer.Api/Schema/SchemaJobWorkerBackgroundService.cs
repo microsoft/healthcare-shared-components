@@ -8,8 +8,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using EnsureThat;
 using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Options;
-using Microsoft.Health.SqlServer.Configs;
 using Microsoft.Health.SqlServer.Features.Schema;
 
 namespace Microsoft.Health.SqlServer.Api.Features.Schema
@@ -21,17 +19,14 @@ namespace Microsoft.Health.SqlServer.Api.Features.Schema
     {
         private readonly string _instanceName;
         private readonly SchemaJobWorker _schemaJobWorker;
-        private readonly SqlServerDataStoreConfiguration _sqlServerDataStoreConfiguration;
         private readonly SchemaInformation _schemaInformation;
 
-        public SchemaJobWorkerBackgroundService(SchemaJobWorker schemaJobWorker, IOptions<SqlServerDataStoreConfiguration> sqlServerDataStoreConfiguration, SchemaInformation schemaInformation)
+        public SchemaJobWorkerBackgroundService(SchemaJobWorker schemaJobWorker, SchemaInformation schemaInformation)
         {
             EnsureArg.IsNotNull(schemaJobWorker, nameof(schemaJobWorker));
-            EnsureArg.IsNotNull(sqlServerDataStoreConfiguration?.Value, nameof(sqlServerDataStoreConfiguration));
             EnsureArg.IsNotNull(schemaInformation, nameof(schemaInformation));
 
             _schemaJobWorker = schemaJobWorker;
-            _sqlServerDataStoreConfiguration = sqlServerDataStoreConfiguration.Value;
             _schemaInformation = schemaInformation;
 #if NET5_0_OR_GREATER
             _instanceName = Guid.NewGuid() + "-" + Environment.ProcessId;
@@ -42,10 +37,7 @@ namespace Microsoft.Health.SqlServer.Api.Features.Schema
 
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
-            if (!_sqlServerDataStoreConfiguration.SchemaOptions.AutomaticUpdatesEnabled)
-            {
-                await _schemaJobWorker.ExecuteAsync(_schemaInformation, _instanceName, stoppingToken).ConfigureAwait(false);
-            }
+            await _schemaJobWorker.ExecuteAsync(_schemaInformation, _instanceName, stoppingToken).ConfigureAwait(false);
         }
     }
 }

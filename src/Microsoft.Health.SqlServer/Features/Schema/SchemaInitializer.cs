@@ -10,6 +10,8 @@ using System.Globalization;
 using System.Threading;
 using System.Threading.Tasks;
 using EnsureThat;
+using Medallion.Threading;
+using Medallion.Threading.SqlServer;
 using MediatR;
 using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.Hosting;
@@ -37,6 +39,7 @@ namespace Microsoft.Health.SqlServer.Features.Schema
         private readonly ISqlConnectionStringProvider _sqlConnectionStringProvider;
         private readonly IMediator _mediator;
         private bool _canCallGetCurrentSchema;
+        public const string SchemaUpgradeLockName = "SchemaUpgrade";
 
         public SchemaInitializer(
             IOptions<SqlServerDataStoreConfiguration> sqlServerDataStoreConfiguration,
@@ -67,10 +70,36 @@ namespace Microsoft.Health.SqlServer.Features.Schema
 
             await GetCurrentSchemaVersionAsync(cancellationToken).ConfigureAwait(false);
 
-            _logger.LogInformation("Schema version is {version}", _schemaInformation.Current?.ToString(CultureInfo.InvariantCulture) ?? "NULL");
+            _logger.LogInformation("Initial check of schema version is {version}", _schemaInformation.Current?.ToString(CultureInfo.InvariantCulture) ?? "NULL");
 
             if (_sqlServerDataStoreConfiguration.SchemaOptions.AutomaticUpdatesEnabled)
             {
+                IDistributedLock sqlLock = new SqlDistributedLock(SchemaUpgradeLockName, await _sqlConnectionStringProvider.GetSqlConnectionString(cancellationToken));
+                try
+                {
+                    await using IDistributedSynchronizationHandle lockHandle = await sqlLock.TryAcquireAsync(TimeSpan.FromSeconds(30), cancellationToken);
+
+                    if (lockHandle == null)
+                    {
+                        _logger.LogInformation("Schema upgrade lock was not acquired, skipping");
+                        return;
+                    }
+                }
+
+                // 596 is the error code for Cannot continue the execution because the session is in the kill state.
+                // https://docs.microsoft.com/en-us/sql/relational-databases/errors-events/database-engine-events-and-errors?view=sql-server-ver15
+                catch (SqlException e) when (e.ErrorCode == 596)
+                {
+                    _logger.LogInformation("Schema upgrade lock was not acquired because the session is in the kill state, skipping");
+                    return;
+                }
+
+                _logger.LogInformation("Schema upgrade lock acquired");
+
+                // Recheck the version with lock
+                await GetCurrentSchemaVersionAsync(cancellationToken).ConfigureAwait(false);
+                _logger.LogInformation("Schema version is {version}", _schemaInformation.Current?.ToString(CultureInfo.InvariantCulture) ?? "NULL");
+
                 // If the stored procedure to get the current schema version doesn't exist
                 if (_schemaInformation.Current == null)
                 {
