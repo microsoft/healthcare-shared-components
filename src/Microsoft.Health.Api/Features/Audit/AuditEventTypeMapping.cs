@@ -14,6 +14,7 @@ using Microsoft.AspNetCore.Mvc.Controllers;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Health.Api.Extensions;
+using Microsoft.Health.Api.Features.AnonymousOperation;
 
 namespace Microsoft.Health.Api.Features.Audit
 {
@@ -59,6 +60,11 @@ namespace Microsoft.Health.Api.Features.Audit
                 return auditEventTypeAttribute.AuditEventType;
             }
 
+            if (attribute is FhirAnonymousOperationAttribute fhirAnonymousOperationAttribute)
+            {
+                return fhirAnonymousOperationAttribute.FhirOperation;
+            }
+
             return null;
         }
 
@@ -70,7 +76,8 @@ namespace Microsoft.Health.Api.Features.Audit
                 .Select(ad =>
                 {
                     Attribute attribute = ad.MethodInfo?.GetCustomAttributes<AllowAnonymousAttribute>().FirstOrDefault() ??
-                                          (Attribute)ad.MethodInfo?.GetCustomAttributes<AuditEventTypeAttribute>().FirstOrDefault();
+                                            ad.MethodInfo?.GetCustomAttributes<FhirAnonymousOperationAttribute>().FirstOrDefault() ??
+                                                (Attribute)ad.MethodInfo?.GetCustomAttributes<AuditEventTypeAttribute>().FirstOrDefault();
 
                     return (ad.ControllerName, ad.ActionName, Attribute: attribute);
                 })
