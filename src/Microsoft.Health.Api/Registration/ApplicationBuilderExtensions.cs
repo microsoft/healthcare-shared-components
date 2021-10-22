@@ -21,10 +21,12 @@ namespace Microsoft.Health.Api.Registration
         /// </summary>
         /// <param name="app">Application builder instance.</param>
         /// <param name="healthCheckPathString">Health check path string.</param>
-        public static void UseHealthChecksExtension(this IApplicationBuilder app, string healthCheckPathString)
+        /// <param name="predicate">A predicate that is used to filter the set of health checks executed.</param>
+        public static void UseHealthChecksExtension(this IApplicationBuilder app, string healthCheckPathString, Func<HealthCheckRegistration, bool> predicate)
         {
             app.UseHealthChecks(new PathString(healthCheckPathString), new HealthCheckOptions
             {
+                Predicate = predicate,
                 ResponseWriter = async (httpContext, healthReport) =>
                 {
                     var response = JsonConvert.SerializeObject(
