@@ -81,6 +81,8 @@ jobs:
   - task: CredScan@2
     displayName: Run CredScan
     continueOnError: True
+    env:
+      SYSTEM_ACCESSTOKEN: $(System.AccessToken)
     inputs:
       outputFormat: sarif
       debugMode: false
@@ -109,11 +111,12 @@ jobs:
       MY_ACCESS_TOKEN: $(System.AccessToken)
   - task: uploadScanResults@1
     displayName: Upload Scan Results for Analysis
+    env:
+      MY_ACCESS_TOKEN: $(System.AccessToken)
     inputs:
       areaPathParent: Health
       areaPathChild: Patient Engagement\Resolute
-    env:
-      MY_ACCESS_TOKEN: $(System.AccessToken)
+   
 - job: Phase_2
   displayName: Anti-malware Phase
   cancelTimeoutInMinutes: 1
