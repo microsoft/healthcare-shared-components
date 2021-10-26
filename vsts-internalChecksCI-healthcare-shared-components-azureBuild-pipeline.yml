@@ -14,6 +14,9 @@ trigger:
     - /build
     - /docs
 name: healthcare-shared-components-ci-$(Date:yyyyMMdd)$(Rev:-r)
+parameters:
+- name: BuildConfiguration
+  default: release
 resources:
   repositories:
   - repository: self
@@ -35,8 +38,9 @@ jobs:
   - task: UseDotNet@2
     displayName: Use .NET Core sdk (global.json)
     inputs:
-      useGlobalJson: true
-      version: $(NetCoreVersion)
+      #useGlobalJson: true
+      #version: $(NetCoreVersion)
+      version: 5.0.301
   - task: UseDotNet@2
     displayName: Use .NET Core 3.1.x sdk
     inputs:
@@ -48,13 +52,13 @@ jobs:
       projects: '**/*.sln'
       selectOrConfig: config
       nugetConfigPath: nuget.config
-      externalEndpoints: 75d1abac-8efd-4a22-aa0c-eaa4cdc48317
+      #externalEndpoints: 75d1abac-8efd-4a22-aa0c-eaa4cdc48317
   - task: DotNetCoreCLI@1
     name: ''
     displayName: dotnet build
     inputs:
       projects: '**/*.sln'
-      arguments: --configuration $(BuildConfiguration) --version-suffix $(build.buildnumber)
+      arguments: --configuration ${{ parameters.BuildConfiguration }} --version-suffix $(build.buildnumber)
   - task: ComponentGovernanceComponentDetection@0
     displayName: Component Detection
   - task: AutoApplicability@1
