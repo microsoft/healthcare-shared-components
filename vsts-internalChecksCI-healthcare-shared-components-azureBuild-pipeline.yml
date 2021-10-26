@@ -104,11 +104,11 @@ jobs:
   - task: PostAnalysis@1
     displayName: Post Analysis
     condition: succeededOrFailed()
+    env:
+      MY_ACCESS_TOKEN: $(System.AccessToken)
     inputs:
       BinSkim: true
       CredScan: true
-    env:
-      MY_ACCESS_TOKEN: $(System.AccessToken)
   - task: uploadScanResults@1
     displayName: Upload Scan Results for Analysis
     env:
