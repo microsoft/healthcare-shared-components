@@ -105,11 +105,15 @@ jobs:
     inputs:
       BinSkim: true
       CredScan: true
+    env:
+      MY_ACCESS_TOKEN: $(System.AccessToken)
   - task: uploadScanResults@1
     displayName: Upload Scan Results for Analysis
     inputs:
       areaPathParent: Health
       areaPathChild: Patient Engagement\Resolute
+    env:
+      MY_ACCESS_TOKEN: $(System.AccessToken)
 - job: Phase_2
   displayName: Anti-malware Phase
   cancelTimeoutInMinutes: 1
