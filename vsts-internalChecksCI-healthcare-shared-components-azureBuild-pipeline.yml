@@ -36,10 +36,8 @@ jobs:
     inputs:
       versionSpec: 4.3.0
   - task: UseDotNet@2
-    displayName: Use .NET Core sdk (global.json)
+    displayName: Use .NET Core sdk
     inputs:
-      #useGlobalJson: true
-      #version: $(NetCoreVersion)
       version: 5.0.301
   - task: UseDotNet@2
     displayName: Use .NET Core 3.1.x sdk
@@ -105,14 +103,14 @@ jobs:
     displayName: Post Analysis
     condition: succeededOrFailed()
     env:
-      MY_ACCESS_TOKEN: $(System.AccessToken)
+      SYSTEM_ACCESSTOKEN: $(System.AccessToken)
     inputs:
       BinSkim: true
       CredScan: true
   - task: uploadScanResults@1
     displayName: Upload Scan Results for Analysis
     env:
-      MY_ACCESS_TOKEN: $(System.AccessToken)
+     SYSTEM_ACCESSTOKEN: $(System.AccessToken)
     inputs:
       areaPathParent: Health
       areaPathChild: Patient Engagement\Resolute
