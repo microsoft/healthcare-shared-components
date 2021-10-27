@@ -76,6 +76,11 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Health.Tools.Sql.
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Health.Tools.Sql.Tasks", "tools\Microsoft.Health.Tools.Sql.Tasks\Microsoft.Health.Tools.Sql.Tasks.csproj", "{616C8BE1-11E6-4C40-A8D6-499BC14F7EAC}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "infrastructure", "infrastructure", "{3EF3631C-04BC-44DA-8D99-5F5F953DC7B8}"
+	ProjectSection(SolutionItems) = preProject
+		vsts-internalChecksCI-healthcare-shared-components-azureBuild-pipeline.yml = vsts-internalChecksCI-healthcare-shared-components-azureBuild-pipeline.yml
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -361,7 +366,7 @@ Global
 		{616C8BE1-11E6-4C40-A8D6-499BC14F7EAC} = {B70945F4-01A6-4351-955B-C4A2943B5E3B}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
-		SolutionGuid = {562bbd07-1817-4af5-ab66-8837cf849248}
 		RESX_SortFileContentOnSave = True
+		SolutionGuid = {562bbd07-1817-4af5-ab66-8837cf849248}
 	EndGlobalSection
 EndGlobal

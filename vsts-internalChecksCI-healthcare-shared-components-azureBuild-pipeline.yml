@@ -17,6 +17,8 @@ name: healthcare-shared-components-ci-$(Date:yyyyMMdd)$(Rev:-r)
 parameters:
 - name: BuildConfiguration
   default: release
+  env:
+    MY_ACCESS_TOKEN: $(System.AccessToken)
 resources:
   repositories:
   - repository: self
@@ -52,7 +54,7 @@ jobs:
       projects: '**/*.sln'
       selectOrConfig: config
       nugetConfigPath: nuget.config
-      #externalEndpoints: 75d1abac-8efd-4a22-aa0c-eaa4cdc48317
+      externalEndpoints: 75d1abac-8efd-4a22-aa0c-eaa4cdc48317
   - task: DotNetCoreCLI@1
     name: ''
     displayName: dotnet build
