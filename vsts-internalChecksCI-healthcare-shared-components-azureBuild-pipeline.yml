@@ -17,8 +17,6 @@ name: healthcare-shared-components-ci-$(Date:yyyyMMdd)$(Rev:-r)
 parameters:
 - name: BuildConfiguration
   default: release
-  env:
-    MY_ACCESS_TOKEN: $(System.AccessToken)
 resources:
   repositories:
   - repository: self
