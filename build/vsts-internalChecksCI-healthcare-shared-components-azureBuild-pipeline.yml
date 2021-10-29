@@ -1,8 +1,5 @@
-# 'Allow scripts to access the OAuth token' was selected in pipeline.  Add the following YAML to any steps requiring access:
-#       env:
-#           MY_ACCESS_TOKEN: $(System.AccessToken)
-# Variable 'NugetSecurityAnalysisWarningLevel' was defined in the Variables tab
-# Variable 'UploadUrl' was defined in the Variables tab
+name: healthcare-shared-components-ci-$(Date:yyyyMMdd)$(Rev:-r)
+
 trigger:
   branches:
     include:
@@ -13,21 +10,29 @@ trigger:
     exclude:
     - /build
     - /docs
-name: healthcare-shared-components-ci-$(Date:yyyyMMdd)$(Rev:-r)
+
 parameters:
 - name: BuildConfiguration
   default: release
+
+variables:
+- name: vmImage
+  value: windows-2019
+
 resources:
   repositories:
   - repository: self
     type: git
     ref: master
+
 jobs:
+
 - job: Phase_1
-  displayName: Phase 1
+  displayName: Tnternal Checks CI for Healthcare Shared Component - build and restore Phase
   cancelTimeoutInMinutes: 1
   pool:
-    vmImage: windows-2019
+    vmImage: $(vmImage)
+
   steps:
   - checkout: self
     persistCredentials: True
@@ -35,14 +40,17 @@ jobs:
     displayName: Use NuGet 4.3.0
     inputs:
       versionSpec: 4.3.0
+
   - task: UseDotNet@2
     displayName: Use .NET Core sdk
     inputs:
       version: 5.0.301
+
   - task: UseDotNet@2
     displayName: Use .NET Core 3.1.x sdk
     inputs:
       version: 3.1.x
+
   - task: DotNetCoreCLI@2
     displayName: dotnet restore
     inputs:
@@ -50,32 +58,38 @@ jobs:
       projects: '**/*.sln'
       selectOrConfig: config
       nugetConfigPath: nuget.config
-      externalEndpoints: 75d1abac-8efd-4a22-aa0c-eaa4cdc48317
+      
+
   - task: DotNetCoreCLI@1
     name: ''
     displayName: dotnet build
     inputs:
       projects: '**/*.sln'
       arguments: --configuration ${{ parameters.BuildConfiguration }} --version-suffix $(build.buildnumber)
+
   - task: ComponentGovernanceComponentDetection@0
     displayName: Component Detection
+
   - task: AutoApplicability@1
     displayName: Run AutoApplicability
     continueOnError: True
     inputs:
       ExternalRelease: true
       IsService: true
+
   - task: BinSkim@3
     displayName: 'Run BinSkim '
     continueOnError: True
     inputs:
       InputType: Basic
       AnalyzeTarget: $(Build.SourcesDirectory)\Microsoft.Health.*.dll
+
   - task: CodeMetrics@1
     displayName: 'Run CodeMetrics '
     continueOnError: True
     inputs:
       Files: $(Build.SourcesDirectory)\**\Microsoft.Health*.dll
+
   - task: CredScan@2
     displayName: Run CredScan
     continueOnError: True
@@ -85,9 +99,11 @@ jobs:
       outputFormat: sarif
       debugMode: false
       folderSuppression: false
+
   - task: VulnerabilityAssessment@0
     displayName: Run Vulnerability Assessment
     continueOnError: True
+
   - task: SdtReport@1
     displayName: Create Security Analysis Report
     condition: succeededOrFailed()
@@ -95,10 +111,12 @@ jobs:
     inputs:
       BinSkim: true
       CredScan: true
+
   - task: PublishSecurityAnalysisLogs@2
     displayName: Publish Security Analysis Logs
     condition: succeededOrFailed()
     continueOnError: True
+
   - task: PostAnalysis@1
     displayName: Post Analysis
     condition: succeededOrFailed()
@@ -107,6 +125,7 @@ jobs:
     inputs:
       BinSkim: true
       CredScan: true
+
   - task: uploadScanResults@1
     displayName: Upload Scan Results for Analysis
     env:
@@ -120,7 +139,8 @@ jobs:
   cancelTimeoutInMinutes: 1
   dependsOn: Phase_1
   pool:
-    vmImage: windows-2019
+    vmImage: $(vmImage)
+
   steps:
   - checkout: self
   - task: DownloadBuildArtifacts@0
@@ -130,6 +150,7 @@ jobs:
       buildVersionToDownload: specific
       artifactName: nuget
       extractTars: false
+
   - task: AntiMalware@3
     displayName: Run MpCmdRun.exe
     enabled: False
@@ -138,6 +159,7 @@ jobs:
       EnableServices: true
       SignatureFreshness: OneDay
       TreatStaleSignatureAs: Warning
+
   - task: PublishSecurityAnalysisLogs@2
     displayName: Publish Security Analysis Logs
     enabled: False
