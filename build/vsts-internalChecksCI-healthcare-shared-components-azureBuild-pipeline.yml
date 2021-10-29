@@ -28,7 +28,7 @@ resources:
 jobs:
 
 - job: Phase_1
-  displayName: Tnternal Checks CI for Healthcare Shared Component - build and restore Phase
+  displayName: Tnternal Checks CI for Healthcare Shared Components - build and restore Phase
   cancelTimeoutInMinutes: 1
   pool:
     vmImage: $(vmImage)
