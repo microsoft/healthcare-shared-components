@@ -9,6 +9,9 @@ name:  PR-internal-check-healthcare-shared-components-azureBuild-pipeline
 parameters:
 - name: BuildConfiguration
   default: release
+variables:
+- name:  vmImage
+  value: Hosted VS2017
 resources:
   repositories:
   - repository: self
@@ -19,7 +22,7 @@ jobs:
   displayName: Phase 1
   cancelTimeoutInMinutes: 1
   pool:
-    name: Hosted VS2017
+    vmImage: $(vmImage)
   steps:
   - checkout: self
   - task: NuGetToolInstaller@0
@@ -111,7 +114,8 @@ jobs:
   cancelTimeoutInMinutes: 1
   dependsOn: Phase_1
   pool:
-    name: Hosted VS2017
+
+    vmImage: $(vmImage)
   steps:
   - checkout: self
   - task: DownloadBuildArtifacts@0
