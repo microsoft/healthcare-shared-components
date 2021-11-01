@@ -1,22 +1,28 @@
 name:  PR-internal-check-healthcare-shared-components-azureBuild-pipeline
 #pr$(System.PullRequest.PullRequestNumber)-$(Date:yyyyMMdd)$(Rev:-r)
+
 parameters:
 - name: BuildConfiguration
   default: release
+
 variables:
 - name:  vmImage
   value: Hosted VS2017
+
 resources:
   repositories:
   - repository: self
     type: git
     ref: master
+
 jobs:
+
 - job: Phase_1
   displayName: Phase 1
   cancelTimeoutInMinutes: 1
   pool:
     vmImage: $(vmImage)
+
   steps:
   - checkout: self
   - task: NuGetToolInstaller@0
@@ -24,20 +30,24 @@ jobs:
     enabled: False
     inputs:
       versionSpec: 4.3.0
+
   - task: NuGetCommand@2
     displayName: NuGet restore
     enabled: False
     inputs:
       selectOrConfig: config
       nugetConfigPath: nuget.config
+
   - task: UseDotNet@2
     displayName: Use .NET Core sdk (3.1)
     inputs:
       version: 3.1.x
+
   - task: UseDotNet@2
     displayName: Use .NET Core sdk 
     inputs:
       version: 5.0.301
+
   - task: DotNetCoreCLI@2
     displayName: dotnet restore
     inputs:
@@ -45,32 +55,38 @@ jobs:
       projects: '**/*.sln'
       selectOrConfig: config
       nugetConfigPath: nuget.config
+
   - task: DotNetCoreCLI@1
     name: ''
     displayName: dotnet build
     inputs:
       projects: '**/*.sln'
       arguments: --configuration ${{ parameters.BuildConfiguration }} --version-suffix $(build.buildnumber)
+
   - task: ComponentGovernanceComponentDetection@0
     displayName: Component Detection
     enabled: False
+
   - task: AutoApplicability@1
     displayName: Run AutoApplicability
     continueOnError: True
     inputs:
       ExternalRelease: true
       IsService: true
+
   - task: BinSkim@3
     displayName: 'Run BinSkim '
     continueOnError: True
     inputs:
       InputType: Basic
       AnalyzeTarget: $(Build.SourcesDirectory)\Microsoft.Health.*.dll;$(Build.SourcesDirectory)\Microsoft.Health.*.exe
+
   - task: CodeMetrics@1
     displayName: 'Run CodeMetrics '
     continueOnError: True
     inputs:
       Files: $(Build.SourcesDirectory)\**\Microsoft.Health*.dll
+
   - task: CredScan@2
     displayName: Run CredScan
     continueOnError: True
@@ -78,13 +94,16 @@ jobs:
       toolVersionV2: LatestPreRelease
       debugMode: false
       folderSuppression: false
+
   - task: PoliCheck@1
     displayName: Run PoliCheck
     continueOnError: True
     enabled: False
+
   - task: VulnerabilityAssessment@0
     displayName: Run Vulnerability Assessment
     continueOnError: True
+
   - task: SdtReport@1
     displayName: Create Security Analysis Report
     condition: succeededOrFailed()
@@ -92,24 +111,27 @@ jobs:
     inputs:
       BinSkim: true
       CredScan: true
+
   - task: PublishSecurityAnalysisLogs@2
     displayName: Publish Security Analysis Logs
     condition: succeededOrFailed()
     continueOnError: True
     enabled: False
+
   - task: PostAnalysis@1
     displayName: Post Analysis
     condition: succeededOrFailed()
     inputs:
       BinSkim: true
       CredScan: true
+
 - job: Phase_2
   displayName: Anti-malware Phase
   cancelTimeoutInMinutes: 1
   dependsOn: Phase_1
   pool:
-
     vmImage: $(vmImage)
+
   steps:
   - checkout: self
   - task: DownloadBuildArtifacts@0
@@ -119,11 +141,13 @@ jobs:
       buildVersionToDownload: specific
       artifactName: nuget
       extractTars: false
+
   - task: AntiMalware@3
     displayName: Run MpCmdRun.exe
     enabled: False
     inputs:
       FileDirPath: $(System.ArtifactsDirectory)
+
   - task: PublishSecurityAnalysisLogs@2
     displayName: Publish Security Analysis Logs
     enabled: False
