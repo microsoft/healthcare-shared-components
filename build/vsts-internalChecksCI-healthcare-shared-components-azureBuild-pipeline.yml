@@ -54,7 +54,6 @@ jobs:
       selectOrConfig: config
       nugetConfigPath: nuget.config
       
-
   - task: DotNetCoreCLI@1
     name: ''
     displayName: dotnet build
