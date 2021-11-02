@@ -148,4 +148,3 @@ jobs:
     enabled: False
     inputs:
       ArtifactName: CodeAnalysisLogs - Antimalware
-...
