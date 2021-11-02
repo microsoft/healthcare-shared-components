@@ -169,7 +169,7 @@ namespace Microsoft.Health.SqlServer.Registration
                     var schemaManagerDataStore = p.GetService<IReadOnlySchemaManagerDataStore>() as SchemaManagerDataStore;
                     return schemaManagerDataStore != null
                         ? schemaManagerDataStore
-                        : new SchemaManagerDataStore(p.GetRequiredService<ISqlConnectionFactory>());
+                        : new SchemaManagerDataStore(p.GetRequiredService<ISqlConnectionFactory>(), p.GetRequiredService<IOptions<SqlServerDataStoreConfiguration>>(), p.GetRequiredService<ILogger<SchemaManagerDataStore>>());
                 });
 
             return services;

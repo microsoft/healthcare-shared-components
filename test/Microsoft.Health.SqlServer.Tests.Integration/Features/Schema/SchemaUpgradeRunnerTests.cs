@@ -7,6 +7,8 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.Extensions.Options;
+using Microsoft.Health.SqlServer.Configs;
 using Microsoft.Health.SqlServer.Features.Schema;
 using Microsoft.Health.SqlServer.Features.Schema.Manager;
 using Microsoft.SqlServer.Management.Common;
@@ -32,7 +34,8 @@ namespace Microsoft.Health.SqlServer.Tests.Integration.Features.Schema
 
             var connectionFactory = Substitute.For<ISqlConnectionFactory>();
             connectionFactory.GetSqlConnectionAsync(Arg.Any<string>(), Arg.Any<CancellationToken>()).ReturnsForAnyArgs((x) => GetSqlConnection());
-            _schemaDataStore = new SchemaManagerDataStore(connectionFactory);
+            var config = Options.Create(new SqlServerDataStoreConfiguration());
+            _schemaDataStore = new SchemaManagerDataStore(connectionFactory, config, NullLogger<SchemaManagerDataStore>.Instance);
             _runner = new SchemaUpgradeRunner(new ScriptProvider<SchemaVersion>(), new BaseScriptProvider(), NullLogger<SchemaUpgradeRunner>.Instance, connectionFactory, _schemaDataStore);
         }
 

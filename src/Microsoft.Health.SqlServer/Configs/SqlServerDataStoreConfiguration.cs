@@ -51,5 +51,10 @@ namespace Microsoft.Health.SqlServer.Configs
         /// If set, the client id of the managed identity to use when connecting to SQL, if AuthenticationType == ManagedIdentity.
         /// </summary>
         public string ManagedIdentityClientId { get; set; }
+
+        /// <summary>
+        /// Specifies the statement timeout to set on ServerConnection.
+        /// </summary>
+        public int StatementTimeoutInSecs { get; set; } = 14400;
     }
 }
