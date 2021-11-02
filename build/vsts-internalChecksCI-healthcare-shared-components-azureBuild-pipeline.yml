@@ -17,7 +17,7 @@ parameters:
 
 variables:
 - name: vmImage
-  value: windows-2019
+  value: windows-latest
 
 resources:
   repositories:
@@ -44,7 +44,7 @@ jobs:
   - task: UseDotNet@2
     displayName: Use .NET Core sdk
     inputs:
-      version: 5.0.301
+      useGlobalJson: true
 
   - task: UseDotNet@2
     displayName: Use .NET Core 3.1.x sdk
@@ -132,7 +132,7 @@ jobs:
      SYSTEM_ACCESSTOKEN: $(System.AccessToken)
     inputs:
       areaPathParent: Health
-      areaPathChild: Patient Engagement\Resolute
+      areaPathChild: Olympus
    
 - job: Phase_2
   displayName: Anti-malware Phase
@@ -165,4 +165,4 @@ jobs:
     enabled: False
     inputs:
       ArtifactName: CodeAnalysisLogs - Antimalware
-...
+
