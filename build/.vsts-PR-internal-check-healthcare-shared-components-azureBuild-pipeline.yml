@@ -7,7 +7,7 @@ parameters:
 
 variables:
 - name:  vmImage
-  value: Hosted VS2017
+  value: windows-latest
 
 resources:
   repositories:
@@ -39,14 +39,9 @@ jobs:
       nugetConfigPath: nuget.config
 
   - task: UseDotNet@2
-    displayName: Use .NET Core sdk (3.1)
-    inputs:
-      version: 3.1.x
-
-  - task: UseDotNet@2
     displayName: Use .NET Core sdk 
     inputs:
-      version: 5.0.301
+      useGlobalJson: true
 
   - task: DotNetCoreCLI@2
     displayName: dotnet restore
