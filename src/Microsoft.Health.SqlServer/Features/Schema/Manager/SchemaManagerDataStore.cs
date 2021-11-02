@@ -55,12 +55,12 @@ namespace Microsoft.Health.SqlServer.Features.Schema.Manager
 
                 var server = new Server(serverConnection);
                 var watch = Stopwatch.StartNew();
-                _logger.LogInformation($"Query execution started at {DateTime.UtcNow}");
+                _logger.LogInformation($"Script execution started at {DateTime.UtcNow}");
 
                 server.ConnectionContext.ExecuteNonQuery(script);
 
                 watch.Stop();
-                _logger.LogInformation($"Query execution time is {watch.Elapsed}");
+                _logger.LogInformation($"Script execution time is {watch.Elapsed}");
                 await UpsertSchemaVersionAsync(connection, version, SchemaVersionStatus.completed.ToString(), cancellationToken).ConfigureAwait(false);
             }
             catch (Exception e) when (e is SqlException || e is ExecutionFailureException)
