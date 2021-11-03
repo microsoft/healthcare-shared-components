@@ -1,5 +1,4 @@
-name:  PR-internal-check-healthcare-shared-components-azureBuild-pipeline
-#pr$(System.PullRequest.PullRequestNumber)-$(Date:yyyyMMdd)$(Rev:-r)
+name:  pr$(System.PullRequest.PullRequestNumber)-$(Date:yyyyMMdd)$(Rev:-r)
 
 parameters:
 - name: BuildConfiguration
@@ -42,11 +41,6 @@ jobs:
     displayName: Use .NET Core sdk 
     inputs:
       useGlobalJson: true
-
-  #- task: UseDotNet@2
-  #  displayName: Use .NET Core 3.1.x sdk
-  #  inputs:
-  #    version: 3.1.x
 
   - task: DotNetCoreCLI@2
     displayName: dotnet restore
