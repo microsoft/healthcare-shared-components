@@ -25,7 +25,8 @@ namespace Microsoft.Health.SqlServer.Registration
 {
     public static class SqlServerBaseRegistrationExtensions
     {
-        [Obsolete("Please use " + nameof(AddSqlServerConnection) + " and " + nameof(AddSqlServerManagement) + " instead.")]
+        [Obsolete("Please use " + nameof(AddSqlServerConnection) + " and " + nameof(AddSqlServerManagement) +
+                  " instead.")]
         public static IServiceCollection AddSqlServerBase<TSchemaVersionEnum>(
             this IServiceCollection services,
             IConfiguration configurationRoot,
@@ -43,14 +44,20 @@ namespace Microsoft.Health.SqlServer.Registration
 
             // Add more services for backward compatibility
             services.TryAddScoped(p => p.GetRequiredService<ISchemaDataStore>() as SqlServerSchemaDataStore);
-            services.TryAddSingleton(provider => provider.GetRequiredService<IOptions<SqlServerDataStoreConfiguration>>().Value);
-            services.TryAddSingleton(p => p.GetServices<IHostedService>().First(x => x is SchemaInitializer) as SchemaInitializer);
-            services.TryAddSingleton(p => p.GetRequiredService<IScriptProvider>() as ScriptProvider<TSchemaVersionEnum>);
+            services.TryAddSingleton(provider =>
+                provider.GetRequiredService<IOptions<SqlServerDataStoreConfiguration>>().Value);
+            services.TryAddSingleton(p =>
+                p.GetServices<IHostedService>().First(x => x is SchemaInitializer) as SchemaInitializer);
+            services.TryAddSingleton(p =>
+                p.GetRequiredService<IScriptProvider>() as ScriptProvider<TSchemaVersionEnum>);
             services.TryAddSingleton(p => p.GetRequiredService<IBaseScriptProvider>() as BaseScriptProvider);
             services.TryAddSingleton(p => p.GetRequiredService<ISchemaManagerDataStore>() as SchemaManagerDataStore);
             services.TryAddSingleton(p => p.GetRequiredService<IPollyRetryLoggerFactory>() as PollyRetryLoggerFactory);
-            services.TryAddSingleton(p => p.GetRequiredService<SqlCommandWrapperFactory>() as RetrySqlCommandWrapperFactory);
-            services.TryAddSingleton(p => p.GetRequiredService<ISqlServerTransientFaultRetryPolicyFactory>() as SqlServerTransientFaultRetryPolicyFactory);
+            services.TryAddSingleton(p =>
+                p.GetRequiredService<SqlCommandWrapperFactory>() as RetrySqlCommandWrapperFactory);
+            services.TryAddSingleton(p =>
+                p.GetRequiredService<ISqlServerTransientFaultRetryPolicyFactory>() as
+                    SqlServerTransientFaultRetryPolicyFactory);
 
             return services;
         }
@@ -72,10 +79,14 @@ namespace Microsoft.Health.SqlServer.Registration
             services.TryAddSingleton<ISqlConnectionFactory>(
                 p =>
                 {
-                    SqlServerDataStoreConfiguration config = p.GetRequiredService<IOptions<SqlServerDataStoreConfiguration>>().Value;
-                    ISqlConnectionStringProvider sqlConnectionStringProvider = p.GetRequiredService<ISqlConnectionStringProvider>();
+                    SqlServerDataStoreConfiguration config =
+                        p.GetRequiredService<IOptions<SqlServerDataStoreConfiguration>>().Value;
+                    ISqlConnectionStringProvider sqlConnectionStringProvider =
+                        p.GetRequiredService<ISqlConnectionStringProvider>();
                     return config.AuthenticationType == SqlServerAuthenticationType.ManagedIdentity
-                        ? new ManagedIdentitySqlConnectionFactory(sqlConnectionStringProvider, p.GetRequiredService<IAccessTokenHandler>())
+                        ? new ManagedIdentitySqlConnectionFactory(
+                            sqlConnectionStringProvider,
+                            p.GetRequiredService<IAccessTokenHandler>())
                         : new DefaultSqlConnectionFactory(sqlConnectionStringProvider);
                 });
 
@@ -83,7 +94,8 @@ namespace Microsoft.Health.SqlServer.Registration
             services.AddSingleton<IAccessTokenHandler, ManagedIdentityAccessTokenHandler>();
             services.AddSingleton<AzureServiceTokenProvider>(p =>
             {
-                SqlServerDataStoreConfiguration config = p.GetRequiredService<IOptions<SqlServerDataStoreConfiguration>>().Value;
+                SqlServerDataStoreConfiguration config =
+                    p.GetRequiredService<IOptions<SqlServerDataStoreConfiguration>>().Value;
 
                 string tokenProviderConnectionString = null;
 
@@ -97,13 +109,16 @@ namespace Microsoft.Health.SqlServer.Registration
 
             // Services to facilitate SQL connections
             // TODO: Does SqlTransactionHandler need to be registered directly? Should usage change to ITransactionHandler?
-            Func<IServiceProvider, SqlTransactionHandler> handlerFactory = p => p.GetRequiredService<SqlTransactionHandler>();
+            Func<IServiceProvider, SqlTransactionHandler> handlerFactory = p =>
+                p.GetRequiredService<SqlTransactionHandler>();
 
             services.TryAddScoped<SqlConnectionWrapperFactory>();
             services.TryAddScoped<SqlTransactionHandler>();
             services.TryAddScoped<ITransactionHandler>(handlerFactory);
             services.TryAddSingleton<IPollyRetryLoggerFactory, PollyRetryLoggerFactory>();
-            services.TryAddSingleton<ISqlServerTransientFaultRetryPolicyFactory, SqlServerTransientFaultRetryPolicyFactory>();
+            services
+                .TryAddSingleton<ISqlServerTransientFaultRetryPolicyFactory,
+                    SqlServerTransientFaultRetryPolicyFactory>();
             services.TryAddSingleton<SqlCommandWrapperFactory, RetrySqlCommandWrapperFactory>();
             services.TryAddSingleton<IReadOnlySchemaManagerDataStore, SchemaManagerDataStore>();
 
@@ -156,7 +171,8 @@ namespace Microsoft.Health.SqlServer.Registration
             services.TryAddSingleton<IProcessTerminator>(
                 p =>
                 {
-                    SqlServerDataStoreConfiguration config = p.GetRequiredService<IOptions<SqlServerDataStoreConfiguration>>().Value;
+                    SqlServerDataStoreConfiguration config =
+                        p.GetRequiredService<IOptions<SqlServerDataStoreConfiguration>>().Value;
                     return config.TerminateWhenSchemaVersionUpdatedTo.HasValue
                         ? new ProcessTerminator(p.GetRequiredService<IHostApplicationLifetime>())
                         : new NoOpProcessTerminator(p.GetRequiredService<ILogger<NoOpProcessTerminator>>());
@@ -166,7 +182,8 @@ namespace Microsoft.Health.SqlServer.Registration
             services.TryAddSingleton<ISchemaManagerDataStore>(
                 p =>
                 {
-                    var schemaManagerDataStore = p.GetService<IReadOnlySchemaManagerDataStore>() as SchemaManagerDataStore;
+                    var schemaManagerDataStore =
+                        p.GetService<IReadOnlySchemaManagerDataStore>() as SchemaManagerDataStore;
                     return schemaManagerDataStore != null
                         ? schemaManagerDataStore
                         : new SchemaManagerDataStore(p.GetRequiredService<ISqlConnectionFactory>());
