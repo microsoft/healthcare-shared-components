@@ -35,90 +35,121 @@ namespace Microsoft.Health.SqlServer.Features.Schema.Manager
 
         public async Task<List<CurrentVersion>> GetCurrentVersionInformationAsync(CancellationToken cancellationToken)
         {
-            HttpResponseMessage response = await _httpClient.GetAsync(KnownRoutes.RootedCurrentUri, cancellationToken).ConfigureAwait(false);
+            HttpResponseMessage response = await _httpClient
+                .GetAsync(KnownRoutes.RootedCurrentUri, cancellationToken)
+                .ConfigureAwait(false);
+
             if (response.IsSuccessStatusCode)
             {
 #if NET5_0_OR_GREATER
-                var responseBodyAsString = await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
+                var responseBodyAsString =
+ await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
 #else
-                var responseBodyAsString = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
+                var responseBodyAsString = await response.Content
+                    .ReadAsStringAsync()
+                    .ConfigureAwait(false);
 #endif
                 return JsonConvert.DeserializeObject<List<CurrentVersion>>(responseBodyAsString);
             }
-            else
-            {
-                throw new SchemaManagerException(string.Format(CultureInfo.InvariantCulture, Resources.CurrentDefaultErrorDescription, response.StatusCode));
-            }
+
+            throw new SchemaManagerException(string.Format(
+                CultureInfo.InvariantCulture,
+                Resources.CurrentDefaultErrorDescription,
+                response.StatusCode));
         }
 
         public async Task<string> GetScriptAsync(Uri scriptUri, CancellationToken cancellationToken)
         {
-            HttpResponseMessage response = await _httpClient.GetAsync(scriptUri, cancellationToken).ConfigureAwait(false);
+            HttpResponseMessage response = await _httpClient
+                .GetAsync(scriptUri, cancellationToken)
+                .ConfigureAwait(false);
+
             if (response.IsSuccessStatusCode)
             {
 #if NET5_0_OR_GREATER
                 return await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
 #else
-                return await response.Content.ReadAsStringAsync().ConfigureAwait(false);
+                return await response.Content
+                    .ReadAsStringAsync()
+                    .ConfigureAwait(false);
 #endif
             }
-            else
-            {
-                throw new SchemaManagerException(string.Format(CultureInfo.InvariantCulture, Resources.ScriptNotFound, response.StatusCode));
-            }
+
+            throw new SchemaManagerException(string.Format(
+                CultureInfo.InvariantCulture,
+                Resources.ScriptNotFound,
+                response.StatusCode));
         }
 
         public async Task<CompatibleVersion> GetCompatibilityAsync(CancellationToken cancellationToken)
         {
-            HttpResponseMessage response = await _httpClient.GetAsync(KnownRoutes.RootedCompatibilityUri, cancellationToken).ConfigureAwait(false);
-            if (response.IsSuccessStatusCode)
+            HttpResponseMessage response = await _httpClient
+                .GetAsync(KnownRoutes.RootedCompatibilityUri, cancellationToken)
+                .ConfigureAwait(false);
+
+            if (!response.IsSuccessStatusCode)
             {
+                throw new SchemaManagerException(string.Format(
+                    CultureInfo.InvariantCulture,
+                    Resources.CompatibilityDefaultErrorMessage,
+                    response.StatusCode));
+            }
 #if NET5_0_OR_GREATER
-                var responseBodyAsString = await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
+            var responseBodyAsString = await response.Content
+                .ReadAsStringAsync(cancellationToken)
+                .ConfigureAwait(false);
 #else
-                var responseBodyAsString = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
+            var responseBodyAsString = await response.Content
+                .ReadAsStringAsync()
+                .ConfigureAwait(false);
 #endif
-                return JsonConvert.DeserializeObject<CompatibleVersion>(responseBodyAsString);
-            }
-            else
-            {
-                throw new SchemaManagerException(string.Format(CultureInfo.InvariantCulture, Resources.CompatibilityDefaultErrorMessage, response.StatusCode));
-            }
+            return JsonConvert.DeserializeObject<CompatibleVersion>(responseBodyAsString);
         }
 
         public async Task<List<AvailableVersion>> GetAvailabilityAsync(CancellationToken cancellationToken)
         {
-            HttpResponseMessage response = await _httpClient.GetAsync(KnownRoutes.RootedVersionsUri, cancellationToken).ConfigureAwait(false);
+            HttpResponseMessage response = await _httpClient.GetAsync(KnownRoutes.RootedVersionsUri, cancellationToken)
+                .ConfigureAwait(false);
             if (response.IsSuccessStatusCode)
             {
 #if NET5_0_OR_GREATER
-                var responseBodyAsString = await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
+                var responseBodyAsString =
+ await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
 #else
-                var responseBodyAsString = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
+                var responseBodyAsString = await response.Content
+                    .ReadAsStringAsync()
+                    .ConfigureAwait(false);
 #endif
                 return JsonConvert.DeserializeObject<List<AvailableVersion>>(responseBodyAsString);
             }
-            else
-            {
-                throw new SchemaManagerException(string.Format(CultureInfo.InvariantCulture, Resources.AvailableVersionsDefaultErrorMessage, response.StatusCode));
-            }
+
+            throw new SchemaManagerException(string.Format(
+                CultureInfo.InvariantCulture,
+                Resources.AvailableVersionsDefaultErrorMessage,
+                response.StatusCode));
         }
 
         public async Task<string> GetDiffScriptAsync(Uri diffScriptUri, CancellationToken cancellationToken)
         {
-            HttpResponseMessage response = await _httpClient.GetAsync(diffScriptUri, cancellationToken).ConfigureAwait(false);
+            HttpResponseMessage response = await _httpClient
+                .GetAsync(diffScriptUri, cancellationToken)
+                .ConfigureAwait(false);
+
             if (response.IsSuccessStatusCode)
             {
 #if NET5_0_OR_GREATER
                 return await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
 #else
-                return await response.Content.ReadAsStringAsync().ConfigureAwait(false);
+                return await response.Content
+                    .ReadAsStringAsync()
+                    .ConfigureAwait(false);
 #endif
             }
-            else
-            {
-                throw new SchemaManagerException(string.Format(CultureInfo.InvariantCulture, Resources.ScriptNotFound, response.StatusCode));
-            }
+
+            throw new SchemaManagerException(string.Format(
+                CultureInfo.InvariantCulture,
+                Resources.ScriptNotFound,
+                response.StatusCode));
         }
     }
 }

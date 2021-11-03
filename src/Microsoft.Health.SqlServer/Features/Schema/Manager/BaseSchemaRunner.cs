@@ -45,22 +45,21 @@ namespace Microsoft.Health.SqlServer.Features.Schema.Manager
         {
             IBaseScriptProvider baseScriptProvider = new BaseScriptProvider();
 
-            await InitializeAsync(cancellationToken);
+            await InitializeAsync(cancellationToken).ConfigureAwait(false);
 
-            if (!await _schemaManagerDataStore.BaseSchemaExistsAsync(cancellationToken))
+            if (!await _schemaManagerDataStore.BaseSchemaExistsAsync(cancellationToken).ConfigureAwait(false))
             {
                 var script = baseScriptProvider.GetScript();
 
                 _logger.LogInformation(Resources.BaseSchemaExecuting);
 
-                await _schemaManagerDataStore.ExecuteScriptAsync(script, cancellationToken);
+                await _schemaManagerDataStore.ExecuteScriptAsync(script, cancellationToken).ConfigureAwait(false);
 
                 _logger.LogInformation(Resources.BaseSchemaSuccess);
+                return;
             }
-            else
-            {
-                _logger.LogWarning(Resources.BaseSchemaAlreadyExists);
-            }
+
+            _logger.LogWarning(Resources.BaseSchemaAlreadyExists);
         }
 
         public async Task EnsureInstanceSchemaRecordExistsAsync(CancellationToken cancellationToken)
@@ -69,21 +68,25 @@ namespace Microsoft.Health.SqlServer.Features.Schema.Manager
             int attempts = 1;
 
             await Policy.Handle<SchemaManagerException>()
-            .WaitAndRetryAsync(
-                retryCount: RetryAttempts,
-                sleepDurationProvider: (retryCount) => RetrySleepDuration,
-                onRetry: (exception, retryCount) =>
-                {
-                    _logger.LogWarning(exception, string.Format(Resources.RetryInstanceSchemaRecord, attempts++, RetryAttempts));
-                })
-            .ExecuteAsync(token => InstanceSchemaRecordCreatedAsync(token), cancellationToken);
+                .WaitAndRetryAsync(
+                    RetryAttempts,
+                    _ => RetrySleepDuration,
+                    (exception, _) =>
+                    {
+                        _logger.LogWarning(
+                            exception,
+                            string.Format(Resources.RetryInstanceSchemaRecord, attempts++, RetryAttempts));
+                    })
+                .ExecuteAsync(InstanceSchemaRecordCreatedAsync, cancellationToken)
+                .ConfigureAwait(false);
         }
 
         private async Task InstanceSchemaRecordCreatedAsync(CancellationToken cancellationToken)
         {
             try
             {
-                if (!await _schemaManagerDataStore.InstanceSchemaRecordExistsAsync(cancellationToken))
+                if (!await _schemaManagerDataStore.InstanceSchemaRecordExistsAsync(cancellationToken)
+                    .ConfigureAwait(false))
                 {
                     throw new SchemaManagerException(Resources.InstanceSchemaRecordErrorMessage);
                 }
@@ -97,21 +100,25 @@ namespace Microsoft.Health.SqlServer.Features.Schema.Manager
 
         private async Task InitializeAsync(CancellationToken cancellationToken)
         {
-            string sqlConnectionString = await _sqlConnectionStringProvider.GetSqlConnectionString(cancellationToken);
+            string sqlConnectionString = await _sqlConnectionStringProvider
+                .GetSqlConnectionString(cancellationToken)
+                .ConfigureAwait(false);
+
             var configuredConnectionBuilder = new SqlConnectionStringBuilder(sqlConnectionString);
+
             string databaseName = configuredConnectionBuilder.InitialCatalog;
 
             SchemaInitializer.ValidateDatabaseName(databaseName);
 
-            await CreateDatabaseIfNotExists(databaseName, cancellationToken);
-
-            bool canInitialize = false;
+            await CreateDatabaseIfNotExists(databaseName, cancellationToken).ConfigureAwait(false);
 
             // now switch to the target database
-            using (var connection = await _sqlConnectionFactory.GetSqlConnectionAsync(cancellationToken: cancellationToken))
-            {
-                canInitialize = await SchemaInitializer.CheckDatabasePermissionsAsync(connection, cancellationToken);
-            }
+            await using SqlConnection connection =
+                await _sqlConnectionFactory.GetSqlConnectionAsync(cancellationToken: cancellationToken)
+                    .ConfigureAwait(false);
+
+            bool canInitialize = await SchemaInitializer.CheckDatabasePermissionsAsync(connection, cancellationToken)
+                .ConfigureAwait(false);
 
             if (!canInitialize)
             {
@@ -121,26 +128,30 @@ namespace Microsoft.Health.SqlServer.Features.Schema.Manager
 
         private async Task CreateDatabaseIfNotExists(string databaseName, CancellationToken cancellationToken)
         {
-            using (var connection = await _sqlConnectionFactory.GetSqlConnectionAsync(cancellationToken: cancellationToken))
+            await using SqlConnection connection = await _sqlConnectionFactory
+                .GetSqlConnectionAsync(cancellationToken: cancellationToken)
+                .ConfigureAwait(false);
+
+            await connection.TryOpenAsync(cancellationToken).ConfigureAwait(false);
+
+            bool doesDatabaseExist = await SchemaInitializer
+                .DoesDatabaseExistAsync(connection, databaseName, cancellationToken)
+                .ConfigureAwait(false);
+
+            if (!doesDatabaseExist)
             {
-                await connection.TryOpenAsync(cancellationToken);
+                _logger.LogInformation("The database does not exists.");
 
-                bool doesDatabaseExist = await SchemaInitializer.DoesDatabaseExistAsync(connection, databaseName, cancellationToken);
-                if (!doesDatabaseExist)
+                bool created = await SchemaInitializer
+                    .CreateDatabaseAsync(connection, databaseName, cancellationToken)
+                    .ConfigureAwait(false);
+
+                if (!created)
                 {
-                    _logger.LogInformation("The database does not exists.");
-
-                    bool created = await SchemaInitializer.CreateDatabaseAsync(connection, databaseName, cancellationToken);
-
-                    if (created)
-                    {
-                        _logger.LogInformation("The database is created.");
-                    }
-                    else
-                    {
-                        throw new SchemaManagerException(Resources.InsufficientDatabasePermissionsMessage);
-                    }
+                    throw new SchemaManagerException(Resources.InsufficientDatabasePermissionsMessage);
                 }
+
+                _logger.LogInformation("The database is created.");
             }
         }
     }

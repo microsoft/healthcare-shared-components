@@ -21,5 +21,9 @@ namespace Microsoft.Health.SqlServer.Features.Schema.Manager.Exceptions
         {
             Debug.Assert(!string.IsNullOrEmpty(message), "Exception message should not be empty");
         }
+
+        public SchemaManagerException()
+        {
+        }
     }
 }

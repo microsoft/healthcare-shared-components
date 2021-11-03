@@ -22,17 +22,23 @@ namespace Microsoft.Health.SqlServer.Features.Schema.Manager
         public SchemaManagerDataStore(ISqlConnectionFactory sqlConnectionFactory)
         {
             EnsureArg.IsNotNull(sqlConnectionFactory);
-
             _sqlConnectionFactory = sqlConnectionFactory;
         }
 
         /// <inheritdoc />
-        public async Task ExecuteScriptAndCompleteSchemaVersionAsync(string script, int version, bool applyFullSchemaSnapshot, CancellationToken cancellationToken)
+        public async Task ExecuteScriptAndCompleteSchemaVersionAsync(
+            string script,
+            int version,
+            bool applyFullSchemaSnapshot,
+            CancellationToken cancellationToken)
         {
             EnsureArg.IsNotNull(script, nameof(script));
             EnsureArg.IsGte(version, 1);
 
-            using SqlConnection connection = await _sqlConnectionFactory.GetSqlConnectionAsync(cancellationToken: cancellationToken).ConfigureAwait(false);
+            await using SqlConnection connection = await _sqlConnectionFactory
+                .GetSqlConnectionAsync(cancellationToken: cancellationToken)
+                .ConfigureAwait(false);
+
             await connection.TryOpenAsync(cancellationToken).ConfigureAwait(false);
             var serverConnection = new ServerConnection(connection);
 
@@ -41,16 +47,32 @@ namespace Microsoft.Health.SqlServer.Features.Schema.Manager
                 // FullSchemaSnapshot script(x.sql) inserts 'started' status into the SchemaVersion table itself.
                 if (!applyFullSchemaSnapshot)
                 {
-                    await UpsertSchemaVersionAsync(connection, version, SchemaVersionStatus.started.ToString(), cancellationToken).ConfigureAwait(false);
+                    await UpsertSchemaVersionAsync(
+                            connection,
+                            version,
+                            SchemaVersionStatus.started.ToString(),
+                            cancellationToken)
+                        .ConfigureAwait(false);
                 }
 
                 var server = new Server(serverConnection);
                 server.ConnectionContext.ExecuteNonQuery(script);
-                await UpsertSchemaVersionAsync(connection, version, SchemaVersionStatus.completed.ToString(), cancellationToken).ConfigureAwait(false);
+
+                await UpsertSchemaVersionAsync(
+                        connection,
+                        version,
+                        SchemaVersionStatus.completed.ToString(),
+                        cancellationToken)
+                    .ConfigureAwait(false);
             }
-            catch (Exception e) when (e is SqlException || e is ExecutionFailureException)
+            catch (Exception e) when (e is SqlException or ExecutionFailureException)
             {
-                await UpsertSchemaVersionAsync(connection, version, SchemaVersionStatus.failed.ToString(), cancellationToken).ConfigureAwait(false);
+                await UpsertSchemaVersionAsync(
+                        connection,
+                        version,
+                        SchemaVersionStatus.failed.ToString(),
+                        cancellationToken)
+                    .ConfigureAwait(false);
                 throw;
             }
         }
@@ -61,10 +83,17 @@ namespace Microsoft.Health.SqlServer.Features.Schema.Manager
             EnsureArg.IsNotNull(status, nameof(status));
             EnsureArg.IsGte(version, 1);
 
-            using SqlConnection connection = await _sqlConnectionFactory.GetSqlConnectionAsync(cancellationToken: cancellationToken).ConfigureAwait(false);
+            await using SqlConnection connection = await _sqlConnectionFactory
+                .GetSqlConnectionAsync(cancellationToken: cancellationToken)
+                .ConfigureAwait(false);
+
             await connection.TryOpenAsync(cancellationToken).ConfigureAwait(false);
 
-            using var deleteCommand = new SqlCommand("DELETE FROM dbo.SchemaVersion WHERE Version = @version AND Status = @status", connection);
+            await using var deleteCommand =
+                new SqlCommand(
+                    "DELETE FROM dbo.SchemaVersion WHERE Version = @version AND Status = @status",
+                    connection);
+
             deleteCommand.Parameters.AddWithValue("@version", version);
             deleteCommand.Parameters.AddWithValue("@status", status);
 
@@ -74,28 +103,40 @@ namespace Microsoft.Health.SqlServer.Features.Schema.Manager
         /// <inheritdoc />
         public async Task<int> GetCurrentSchemaVersionAsync(CancellationToken cancellationToken)
         {
-            using SqlConnection connection = await _sqlConnectionFactory.GetSqlConnectionAsync(cancellationToken: cancellationToken).ConfigureAwait(false);
+            await using SqlConnection connection = await _sqlConnectionFactory
+                .GetSqlConnectionAsync(cancellationToken: cancellationToken)
+                .ConfigureAwait(false);
+
             await connection.TryOpenAsync(cancellationToken).ConfigureAwait(false);
 
-            using var selectCommand = new SqlCommand("dbo.SelectCurrentSchemaVersion", connection)
+            await using var selectCommand = new SqlCommand("dbo.SelectCurrentSchemaVersion", connection)
             {
                 CommandType = CommandType.StoredProcedure,
             };
 
-            object current = await selectCommand.ExecuteScalarAsync(cancellationToken).ConfigureAwait(false);
-            return (current == null || Convert.IsDBNull(current)) ? 0 : (int)current;
+            object current = await selectCommand.ExecuteScalarAsync(cancellationToken)
+                .ConfigureAwait(false);
+
+            return current == null || Convert.IsDBNull(current)
+                ? 0
+                : (int)current;
         }
 
-        private static async Task UpsertSchemaVersionAsync(SqlConnection connection, int version, string status, CancellationToken cancellationToken)
+        private static async Task UpsertSchemaVersionAsync(
+            SqlConnection connection,
+            int version,
+            string status,
+            CancellationToken cancellationToken)
         {
             EnsureArg.IsNotNull(connection, nameof(connection));
             EnsureArg.IsNotNull(status, nameof(status));
             EnsureArg.IsGte(version, 1);
 
-            using var upsertCommand = new SqlCommand("dbo.UpsertSchemaVersion", connection)
+            await using var upsertCommand = new SqlCommand("dbo.UpsertSchemaVersion", connection)
             {
                 CommandType = CommandType.StoredProcedure,
             };
+
             upsertCommand.Parameters.AddWithValue("@version", version);
             upsertCommand.Parameters.AddWithValue("@status", status);
 
@@ -107,7 +148,10 @@ namespace Microsoft.Health.SqlServer.Features.Schema.Manager
         {
             EnsureArg.IsNotNull(script, nameof(script));
 
-            using SqlConnection connection = await _sqlConnectionFactory.GetSqlConnectionAsync(cancellationToken: cancellationToken).ConfigureAwait(false);
+            await using SqlConnection connection = await _sqlConnectionFactory
+                .GetSqlConnectionAsync(cancellationToken: cancellationToken)
+                .ConfigureAwait(false);
+
             await connection.TryOpenAsync(cancellationToken).ConfigureAwait(false);
             var server = new Server(new ServerConnection(connection));
 
@@ -117,18 +161,25 @@ namespace Microsoft.Health.SqlServer.Features.Schema.Manager
         /// <inheritdoc />
         public async Task<bool> BaseSchemaExistsAsync(CancellationToken cancellationToken)
         {
-            return await ObjectExistsAsync("SelectCurrentVersionsInformation", "P", cancellationToken);
+            return await ObjectExistsAsync("SelectCurrentVersionsInformation", "P", cancellationToken)
+                .ConfigureAwait(false);
         }
 
         /// <inheritdoc />
-        public async Task<bool> ObjectExistsAsync(string objectName, string objectType, CancellationToken cancellationToken)
+        public async Task<bool> ObjectExistsAsync(
+            string objectName,
+            string objectType,
+            CancellationToken cancellationToken)
         {
-            var procedureQuery = "SELECT COUNT(*) FROM sys.objects WHERE name = @name and type = @type";
+            const string procedureQuery = "SELECT COUNT(*) FROM sys.objects WHERE name = @name and type = @type";
 
-            using SqlConnection connection = await _sqlConnectionFactory.GetSqlConnectionAsync(cancellationToken: cancellationToken).ConfigureAwait(false);
+            await using SqlConnection connection = await _sqlConnectionFactory
+                .GetSqlConnectionAsync(cancellationToken: cancellationToken)
+                .ConfigureAwait(false);
+
             await connection.TryOpenAsync(cancellationToken).ConfigureAwait(false);
 
-            using var command = new SqlCommand(procedureQuery, connection);
+            await using var command = new SqlCommand(procedureQuery, connection);
             command.Parameters.AddWithValue("@name", objectName);
             command.Parameters.AddWithValue("@type", objectType);
 
@@ -138,12 +189,16 @@ namespace Microsoft.Health.SqlServer.Features.Schema.Manager
         /// <inheritdoc />
         public async Task<bool> InstanceSchemaRecordExistsAsync(CancellationToken cancellationToken)
         {
-            var procedureQuery = "SELECT COUNT(*) FROM dbo.InstanceSchema";
+            const string procedureQuery = "SELECT COUNT(*) FROM dbo.InstanceSchema";
 
-            using SqlConnection connection = await _sqlConnectionFactory.GetSqlConnectionAsync(cancellationToken: cancellationToken).ConfigureAwait(false);
+            await using SqlConnection connection = await _sqlConnectionFactory
+                .GetSqlConnectionAsync(cancellationToken: cancellationToken)
+                .ConfigureAwait(false);
+
             await connection.TryOpenAsync(cancellationToken).ConfigureAwait(false);
 
-            using var command = new SqlCommand(procedureQuery, connection);
+            await using var command = new SqlCommand(procedureQuery, connection);
+
             return (int)await command.ExecuteScalarAsync(cancellationToken).ConfigureAwait(false) != 0;
         }
     }
