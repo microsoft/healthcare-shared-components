@@ -6,7 +6,7 @@
 using System;
 using System.CommandLine;
 
-namespace SchemaManager
+namespace Microsoft.Health.SchemaManager
 {
     public static class CommandOptions
     {

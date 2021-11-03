@@ -10,12 +10,13 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
+using Microsoft.Health.SchemaManager.Core;
+using Microsoft.Health.SchemaManager.Core.Model;
 using Microsoft.Health.SqlServer.Configs;
 using Microsoft.Health.SqlServer.Features.Schema.Manager;
 using Microsoft.Health.SqlServer.Features.Schema.Manager.Exceptions;
 using Microsoft.Health.SqlServer.Features.Schema.Manager.Model;
 using NSubstitute;
-using SchemaManager.Core.Model;
 using Xunit;
 
 namespace SchemaManager.Core.UnitTests

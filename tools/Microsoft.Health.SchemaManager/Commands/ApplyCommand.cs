@@ -11,11 +11,11 @@ using System.Threading;
 using System.Threading.Tasks;
 using EnsureThat;
 using Microsoft.Extensions.Logging;
-using SchemaManager.Core;
-using SchemaManager.Core.Model;
-using SchemaManager.Validators;
+using Microsoft.Health.SchemaManager.Core;
+using Microsoft.Health.SchemaManager.Core.Model;
+using Microsoft.Health.SchemaManager.Validators;
 
-namespace SchemaManager.Commands
+namespace Microsoft.Health.SchemaManager.Commands
 {
     public class ApplyCommand : Command
     {

@@ -12,11 +12,11 @@ using System.CommandLine.Rendering.Views;
 using System.Threading;
 using System.Threading.Tasks;
 using EnsureThat;
+using Microsoft.Health.SchemaManager.Core;
+using Microsoft.Health.SchemaManager.Validators;
 using Microsoft.Health.SqlServer.Features.Schema.Manager.Model;
-using SchemaManager.Core;
-using SchemaManager.Validators;
 
-namespace SchemaManager.Commands
+namespace Microsoft.Health.SchemaManager.Commands
 {
     public class AvailableCommand : Command
     {

@@ -8,7 +8,7 @@ using System.CommandLine;
 using System.Linq;
 using EnsureThat;
 
-namespace SchemaManager.Validators
+namespace Microsoft.Health.SchemaManager.Validators
 {
     public static class MutuallyExclusiveOptionValidator
     {

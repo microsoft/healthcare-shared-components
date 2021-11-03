@@ -3,14 +3,12 @@
 // Licensed under the MIT License (MIT). See LICENSE in the repo root for license information.
 // -------------------------------------------------------------------------------------------------
 
-namespace SchemaManager.Core.Model
+namespace Microsoft.Health.SchemaManager.Core
 {
-    public class MutuallyExclusiveType
+    public static class CommandNames
     {
-        public int Version { get; set; }
-
-        public bool Next { get; set; }
-
-        public bool Latest { get; set; }
+        public const string Apply = "apply";
+        public const string Available = "available";
+        public const string Current = "current";
     }
 }

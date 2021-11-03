@@ -8,9 +8,9 @@ using System.Collections.Generic;
 using System.CommandLine;
 using System.Linq;
 using Microsoft.Extensions.DependencyInjection;
-using SchemaManager.Commands;
+using Microsoft.Health.SchemaManager.Commands;
 
-namespace SchemaManager
+namespace Microsoft.Health.SchemaManager
 {
     /// <summary>
     /// Contains the collection extensions for adding the CLI commands.

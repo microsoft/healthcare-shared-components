@@ -14,6 +14,7 @@ using EnsureThat;
 using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using Microsoft.Health.SchemaManager.Core.Model;
 using Microsoft.Health.SqlServer.Configs;
 using Microsoft.Health.SqlServer.Features.Schema;
 using Microsoft.Health.SqlServer.Features.Schema.Manager;
@@ -21,9 +22,8 @@ using Microsoft.Health.SqlServer.Features.Schema.Manager.Exceptions;
 using Microsoft.Health.SqlServer.Features.Schema.Manager.Model;
 using Microsoft.SqlServer.Management.Common;
 using Polly;
-using SchemaManager.Core.Model;
 
-namespace SchemaManager.Core
+namespace Microsoft.Health.SchemaManager.Core
 {
     public class SqlSchemaManager : ISchemaManager
     {

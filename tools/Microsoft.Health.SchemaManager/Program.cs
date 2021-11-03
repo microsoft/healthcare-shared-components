@@ -9,11 +9,11 @@ using System.CommandLine.Invocation;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Microsoft.Health.SchemaManager.Core;
 using Microsoft.Health.SqlServer;
 using Microsoft.Health.SqlServer.Features.Schema.Manager;
-using SchemaManager.Core;
 
-namespace SchemaManager
+namespace Microsoft.Health.SchemaManager
 {
     internal class Program
     {

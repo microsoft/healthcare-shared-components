@@ -46,7 +46,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Health.SqlServer.
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Health.Development.IdentityProvider", "src\Microsoft.Health.Development.IdentityProvider\Microsoft.Health.Development.IdentityProvider.csproj", "{8DFE583A-60D6-4014-A95A-01AAE8D35A0E}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SchemaManager", "tools\SchemaManager\SchemaManager.csproj", "{4AB4CF95-DAE6-4B64-9DC5-5F0633FABD56}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Health.SchemaManager", "tools\Microsoft.Health.SchemaManager\Microsoft.Health.SchemaManager.csproj", "{4AB4CF95-DAE6-4B64-9DC5-5F0633FABD56}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Health.Blob", "src\Microsoft.Health.Blob\Microsoft.Health.Blob.csproj", "{B4F674D7-F073-4E21-ABE2-159C1CD86109}"
 EndProject
@@ -60,7 +60,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Health.Client", "
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Health.Client.UnitTests", "src\Microsoft.Health.Client.UnitTests\Microsoft.Health.Client.UnitTests.csproj", "{D4DD763B-5246-47F4-A618-211AA820B65E}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SchemaManager.Core", "tools\SchemaManager.Core\SchemaManager.Core.csproj", "{72816760-BDE2-4CAF-AF41-F7BEE8E26158}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Health.SchemaManager.Core", "tools\Microsoft.Health.SchemaManager.Core\Microsoft.Health.SchemaManager.Core.csproj", "{72816760-BDE2-4CAF-AF41-F7BEE8E26158}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SchemaManager.Core.UnitTests", "test\SchemaManager.Core.UnitTests\SchemaManager.Core.UnitTests.csproj", "{0BEB2EE3-DBC3-4DC4-BB01-141DBFFED8D2}"
 EndProject
