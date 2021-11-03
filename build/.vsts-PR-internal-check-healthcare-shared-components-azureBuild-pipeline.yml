@@ -6,13 +6,7 @@ parameters:
 
 variables:
 - name:  vmImage
-  value: windows-latest
-
-resources:
-  repositories:
-  - repository: self
-    type: git
-    ref: master
+  value: ubuntu-latest 
 
 jobs:
 
@@ -24,18 +18,6 @@ jobs:
 
   steps:
   - checkout: self
-  - task: NuGetToolInstaller@0
-    displayName: Use NuGet 4.3.0
-    enabled: False
-    inputs:
-      versionSpec: 4.3.0
-
-  - task: NuGetCommand@2
-    displayName: NuGet restore
-    enabled: False
-    inputs:
-      selectOrConfig: config
-      nugetConfigPath: nuget.config
 
   - task: UseDotNet@2
     displayName: Use .NET Core sdk 
