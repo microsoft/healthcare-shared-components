@@ -6,7 +6,7 @@ parameters:
 
 variables:
 - name:  vmImage
-  value: windows-latest 
+  value: ubuntu-latest 
 
 jobs:
 
