@@ -79,4 +79,3 @@ jobs:
       BinSkim: true
       CredScan: true
 
-- 
