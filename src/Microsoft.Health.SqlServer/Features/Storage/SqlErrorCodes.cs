@@ -39,5 +39,10 @@ namespace Microsoft.Health.SqlServer.Features.Storage
         /// DBNetlib error value for timeout
         /// </summary>
         public const short TimeoutExpired = -2;
+
+        /// <summary>
+        /// Cannot continue the execution because the session is in the kill state.
+        /// </summary>
+        public const short KilledSessionState = 596;
     }
 }
