@@ -22,7 +22,7 @@ namespace Microsoft.Health.Api.Registration
         /// <param name="app">Application builder instance.</param>
         /// <param name="healthCheckPathString">Health check path string.</param>
         /// <param name="predicate">A predicate that is used to filter the set of health checks executed.</param>
-        public static void UseHealthChecksExtension(this IApplicationBuilder app, string healthCheckPathString, Func<HealthCheckRegistration, bool> predicate)
+        public static void UseHealthChecksExtension(this IApplicationBuilder app, string healthCheckPathString, Func<HealthCheckRegistration, bool> predicate = null)
         {
             app.UseHealthChecks(new PathString(healthCheckPathString), new HealthCheckOptions
             {
