@@ -3,6 +3,8 @@
 // Licensed under the MIT License (MIT). See LICENSE in the repo root for license information.
 // -------------------------------------------------------------------------------------------------
 
+using System;
+
 namespace Microsoft.Health.SqlServer.Configs
 {
     public class SqlServerDataStoreConfiguration
@@ -55,6 +57,6 @@ namespace Microsoft.Health.SqlServer.Configs
         /// <summary>
         /// Specifies the statement timeout to set on ServerConnection.
         /// </summary>
-        public int StatementTimeoutInSecs { get; set; } = 14400;
+        public TimeSpan StatementTimeout { get; set; } = TimeSpan.FromSeconds(14400);
     }
 }

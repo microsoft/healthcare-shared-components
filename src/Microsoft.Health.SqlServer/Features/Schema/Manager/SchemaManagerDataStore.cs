@@ -12,6 +12,7 @@ using EnsureThat;
 using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using Microsoft.Health.Core;
 using Microsoft.Health.SqlServer.Configs;
 using Microsoft.Health.SqlServer.Extensions;
 using Microsoft.SqlServer.Management.Common;
@@ -55,7 +56,7 @@ namespace Microsoft.Health.SqlServer.Features.Schema.Manager
 
                 var server = new Server(serverConnection);
                 var watch = Stopwatch.StartNew();
-                _logger.LogInformation($"Script execution started at {DateTime.UtcNow}");
+                _logger.LogInformation($"Script execution started at {Clock.UtcNow}");
 
                 server.ConnectionContext.ExecuteNonQuery(script);
 
@@ -165,7 +166,7 @@ namespace Microsoft.Health.SqlServer.Features.Schema.Manager
         private ServerConnection GetServerConnectionWithTimeout(SqlConnection sqlConnection)
         {
             var serverConnection = new ServerConnection(sqlConnection);
-            serverConnection.StatementTimeout = _sqlServerDataStoreConfiguration.StatementTimeoutInSecs;
+            serverConnection.StatementTimeout = (int)_sqlServerDataStoreConfiguration.StatementTimeout.TotalSeconds;
             _logger.LogInformation($"ServerConnection timeout sets to {serverConnection.StatementTimeout} seconds");
             return serverConnection;
         }
