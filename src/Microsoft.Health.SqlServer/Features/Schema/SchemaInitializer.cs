@@ -115,6 +115,22 @@ namespace Microsoft.Health.SqlServer.Features.Schema
 
                             await _mediator.NotifySchemaUpgradedAsync((int)_schemaInformation.Current, true);
                         }
+
+                        // If the current schema version needs to be upgraded
+                        if (_schemaInformation.Current < _schemaInformation.MaximumSupportedVersion)
+                        {
+                            // Apply each .diff.sql file one by one.
+                            int current = _schemaInformation.Current ?? 0;
+                            for (int i = current + 1; i <= _schemaInformation.MaximumSupportedVersion; i++)
+                            {
+                                await _schemaUpgradeRunner.ApplySchemaAsync(version: i, applyFullSchemaSnapshot: false, cancellationToken).ConfigureAwait(false);
+
+                                // we need to ensure that the schema upgrade notification is sent after updating the _schemaInformation.Current for each upgraded version
+                                await GetCurrentSchemaVersionAsync(cancellationToken).ConfigureAwait(false);
+
+                                await _mediator.NotifySchemaUpgradedAsync((int)_schemaInformation.Current, false);
+                            }
+                        }
                     }
                 }
                 catch (SqlException e) when (e.Number == SqlErrorCodes.KilledSessionState)
@@ -128,22 +144,6 @@ namespace Microsoft.Health.SqlServer.Features.Schema
                 {
                     _logger.LogWarning($"Error occurred during multiplexed release lock");
                     return;
-                }
-
-                // If the current schema version needs to be upgraded
-                if (_schemaInformation.Current < _schemaInformation.MaximumSupportedVersion)
-                {
-                    // Apply each .diff.sql file one by one.
-                    int current = _schemaInformation.Current ?? 0;
-                    for (int i = current + 1; i <= _schemaInformation.MaximumSupportedVersion; i++)
-                    {
-                        await _schemaUpgradeRunner.ApplySchemaAsync(version: i, applyFullSchemaSnapshot: false, cancellationToken).ConfigureAwait(false);
-
-                        // we need to ensure that the schema upgrade notification is sent after updating the _schemaInformation.Current for each upgraded version
-                        await GetCurrentSchemaVersionAsync(cancellationToken).ConfigureAwait(false);
-
-                        await _mediator.NotifySchemaUpgradedAsync((int)_schemaInformation.Current, false);
-                    }
                 }
             }
         }
