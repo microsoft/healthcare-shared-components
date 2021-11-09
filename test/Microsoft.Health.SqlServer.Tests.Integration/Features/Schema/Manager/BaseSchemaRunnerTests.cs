@@ -6,6 +6,8 @@
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.Extensions.Options;
+using Microsoft.Health.SqlServer.Configs;
 using Microsoft.Health.SqlServer.Features.Schema.Manager;
 using Microsoft.Health.SqlServer.Features.Schema.Manager.Exceptions;
 using Xunit;
@@ -22,7 +24,8 @@ namespace Microsoft.Health.SqlServer.Tests.Integration.Features.Schema.Manager
             : base(output)
         {
             var sqlConnectionFactory = new DefaultSqlConnectionFactory(ConnectionStringProvider);
-            _dataStore = new SchemaManagerDataStore(sqlConnectionFactory);
+            var config = Options.Create(new SqlServerDataStoreConfiguration());
+            _dataStore = new SchemaManagerDataStore(sqlConnectionFactory, config, NullLogger<SchemaManagerDataStore>.Instance);
 
             _runner = new BaseSchemaRunner(sqlConnectionFactory, _dataStore, ConnectionStringProvider, NullLogger<BaseSchemaRunner>.Instance);
         }
