@@ -75,7 +75,7 @@ namespace Microsoft.Health.SqlServer.Features.Schema
 
             if (_sqlServerDataStoreConfiguration.SchemaOptions.AutomaticUpdatesEnabled)
             {
-                IDistributedLock sqlLock = new SqlDistributedLock(SchemaUpgradeLockName, await _sqlConnectionStringProvider.GetSqlConnectionString(cancellationToken));
+                IDistributedLock sqlLock = new SqlDistributedLock(SchemaUpgradeLockName, await _sqlConnectionFactory.GetSqlConnectionAsync(cancellationToken: cancellationToken));
 
                 try
                 {
@@ -136,14 +136,12 @@ namespace Microsoft.Health.SqlServer.Features.Schema
                 catch (SqlException e) when (e.Number == SqlErrorCodes.KilledSessionState)
                 {
                     _logger.LogWarning("Schema upgrade lock was not acquired because the session is in the kill state, skipping");
-                    return;
                 }
 
                 // This exception sometimes occurs at Medallion.Threading.Internal.Data.MultiplexedConnectionLock.ReleaseAsync
                 catch (SqlException e) when (e.Message.Contains("The connection is broken and recovery is not possible.", StringComparison.OrdinalIgnoreCase))
                 {
                     _logger.LogWarning($"Error occurred during multiplexed release lock");
-                    return;
                 }
             }
         }
