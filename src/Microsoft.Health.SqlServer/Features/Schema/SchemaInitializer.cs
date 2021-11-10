@@ -75,7 +75,9 @@ namespace Microsoft.Health.SqlServer.Features.Schema
 
             if (_sqlServerDataStoreConfiguration.SchemaOptions.AutomaticUpdatesEnabled)
             {
-                IDistributedLock sqlLock = new SqlDistributedLock(SchemaUpgradeLockName, await _sqlConnectionFactory.GetSqlConnectionAsync(cancellationToken: cancellationToken));
+                using SqlConnection sqlConnection = await _sqlConnectionFactory.GetSqlConnectionAsync(cancellationToken: cancellationToken);
+                await sqlConnection.OpenAsync(cancellationToken);
+                IDistributedLock sqlLock = new SqlDistributedLock(SchemaUpgradeLockName, sqlConnection);
 
                 try
                 {
