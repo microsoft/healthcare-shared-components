@@ -20,6 +20,7 @@ using Microsoft.Extensions.Options;
 using Microsoft.Health.SqlServer.Configs;
 using Microsoft.Health.SqlServer.Features.Schema.Extensions;
 using Microsoft.Health.SqlServer.Features.Schema.Manager;
+using Microsoft.Health.SqlServer.Features.Storage;
 
 namespace Microsoft.Health.SqlServer.Features.Schema
 {
@@ -74,69 +75,75 @@ namespace Microsoft.Health.SqlServer.Features.Schema
 
             if (_sqlServerDataStoreConfiguration.SchemaOptions.AutomaticUpdatesEnabled)
             {
-                IDistributedLock sqlLock = new SqlDistributedLock(SchemaUpgradeLockName, await _sqlConnectionStringProvider.GetSqlConnectionString(cancellationToken));
+                using SqlConnection sqlConnection = await _sqlConnectionFactory.GetSqlConnectionAsync(cancellationToken: cancellationToken);
+                await sqlConnection.OpenAsync(cancellationToken);
+                IDistributedLock sqlLock = new SqlDistributedLock(SchemaUpgradeLockName, sqlConnection);
+
                 try
                 {
-                    await using IDistributedSynchronizationHandle lockHandle = await sqlLock.TryAcquireAsync(TimeSpan.FromSeconds(30), cancellationToken);
-
-                    if (lockHandle == null)
+                    await using (IDistributedSynchronizationHandle lockHandle = await sqlLock.TryAcquireAsync(TimeSpan.FromSeconds(30), cancellationToken))
                     {
-                        _logger.LogInformation("Schema upgrade lock was not acquired, skipping");
-                        return;
-                    }
-                }
+                        if (lockHandle == null)
+                        {
+                            _logger.LogInformation("Schema upgrade lock was not acquired, skipping");
+                            return;
+                        }
 
-                // 596 is the error code for Cannot continue the execution because the session is in the kill state.
-                // https://docs.microsoft.com/en-us/sql/relational-databases/errors-events/database-engine-events-and-errors?view=sql-server-ver15
-                catch (SqlException e) when (e.ErrorCode == 596)
-                {
-                    _logger.LogInformation("Schema upgrade lock was not acquired because the session is in the kill state, skipping");
-                    return;
-                }
+                        _logger.LogInformation("Schema upgrade lock acquired");
 
-                _logger.LogInformation("Schema upgrade lock acquired");
-
-                // Recheck the version with lock
-                await GetCurrentSchemaVersionAsync(cancellationToken).ConfigureAwait(false);
-                _logger.LogInformation("Schema version is {version}", _schemaInformation.Current?.ToString(CultureInfo.InvariantCulture) ?? "NULL");
-
-                // If the stored procedure to get the current schema version doesn't exist
-                if (_schemaInformation.Current == null)
-                {
-                    // Apply base schema
-                    await _schemaUpgradeRunner.ApplyBaseSchemaAsync(cancellationToken).ConfigureAwait(false);
-
-                    // This is for tests purpose only
-                    if (forceIncrementalSchemaUpgrade)
-                    {
-                        // Run version 1 and and apply .diff.sql files to upgrade the schema version.
-                        await _schemaUpgradeRunner.ApplySchemaAsync(_schemaInformation.MinimumSupportedVersion, applyFullSchemaSnapshot: true, cancellationToken).ConfigureAwait(false);
-                    }
-                    else
-                    {
-                        // Apply the maximum supported version. This won't consider the .diff.sql files.
-                        await _schemaUpgradeRunner.ApplySchemaAsync(_schemaInformation.MaximumSupportedVersion, applyFullSchemaSnapshot: true, cancellationToken).ConfigureAwait(false);
-                    }
-
-                    await GetCurrentSchemaVersionAsync(cancellationToken).ConfigureAwait(false);
-
-                    await _mediator.NotifySchemaUpgradedAsync((int)_schemaInformation.Current, true);
-                }
-
-                // If the current schema version needs to be upgraded
-                if (_schemaInformation.Current < _schemaInformation.MaximumSupportedVersion)
-                {
-                    // Apply each .diff.sql file one by one.
-                    int current = _schemaInformation.Current ?? 0;
-                    for (int i = current + 1; i <= _schemaInformation.MaximumSupportedVersion; i++)
-                    {
-                        await _schemaUpgradeRunner.ApplySchemaAsync(version: i, applyFullSchemaSnapshot: false, cancellationToken).ConfigureAwait(false);
-
-                        // we need to ensure that the schema upgrade notification is sent after updating the _schemaInformation.Current for each upgraded version
+                        // Recheck the version with lock
                         await GetCurrentSchemaVersionAsync(cancellationToken).ConfigureAwait(false);
+                        _logger.LogInformation("Schema version is {version}", _schemaInformation.Current?.ToString(CultureInfo.InvariantCulture) ?? "NULL");
 
-                        await _mediator.NotifySchemaUpgradedAsync((int)_schemaInformation.Current, false);
+                        // If the stored procedure to get the current schema version doesn't exist
+                        if (_schemaInformation.Current == null)
+                        {
+                            // Apply base schema
+                            await _schemaUpgradeRunner.ApplyBaseSchemaAsync(cancellationToken).ConfigureAwait(false);
+
+                            // This is for tests purpose only
+                            if (forceIncrementalSchemaUpgrade)
+                            {
+                                // Run version 1 and and apply .diff.sql files to upgrade the schema version.
+                                await _schemaUpgradeRunner.ApplySchemaAsync(_schemaInformation.MinimumSupportedVersion, applyFullSchemaSnapshot: true, cancellationToken).ConfigureAwait(false);
+                            }
+                            else
+                            {
+                                // Apply the maximum supported version. This won't consider the .diff.sql files.
+                                await _schemaUpgradeRunner.ApplySchemaAsync(_schemaInformation.MaximumSupportedVersion, applyFullSchemaSnapshot: true, cancellationToken).ConfigureAwait(false);
+                            }
+
+                            await GetCurrentSchemaVersionAsync(cancellationToken).ConfigureAwait(false);
+
+                            await _mediator.NotifySchemaUpgradedAsync((int)_schemaInformation.Current, true);
+                        }
+
+                        // If the current schema version needs to be upgraded
+                        if (_schemaInformation.Current < _schemaInformation.MaximumSupportedVersion)
+                        {
+                            // Apply each .diff.sql file one by one.
+                            int current = _schemaInformation.Current ?? 0;
+                            for (int i = current + 1; i <= _schemaInformation.MaximumSupportedVersion; i++)
+                            {
+                                await _schemaUpgradeRunner.ApplySchemaAsync(version: i, applyFullSchemaSnapshot: false, cancellationToken).ConfigureAwait(false);
+
+                                // we need to ensure that the schema upgrade notification is sent after updating the _schemaInformation.Current for each upgraded version
+                                await GetCurrentSchemaVersionAsync(cancellationToken).ConfigureAwait(false);
+
+                                await _mediator.NotifySchemaUpgradedAsync((int)_schemaInformation.Current, false);
+                            }
+                        }
                     }
+                }
+                catch (SqlException e) when (e.Number == SqlErrorCodes.KilledSessionState)
+                {
+                    _logger.LogWarning("Schema upgrade lock was not acquired because the session is in the kill state, skipping");
+                }
+
+                // This exception sometimes occurs at Medallion.Threading.Internal.Data.MultiplexedConnectionLock.ReleaseAsync
+                catch (SqlException e) when (e.Message.Contains("The connection is broken and recovery is not possible.", StringComparison.OrdinalIgnoreCase))
+                {
+                    _logger.LogWarning($"Error occurred during multiplexed release lock");
                 }
             }
         }
