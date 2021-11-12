@@ -27,7 +27,7 @@
 
   <!-- Executes /t:Publish for all target frameworks before packing-->
   <Target Name="PublishAll" BeforeTargets="GenerateNuspec">
-    <MSBuild Projects="$(MSBuildProjectFullPath)" Targets="Publish" Properties="TargetFramework=net6.0" />
+    <MSBuild Projects="$(MSBuildProjectFullPath)" Targets="Publish" />
   </Target>
 
 </Project>
