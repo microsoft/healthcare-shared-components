@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <Description>Identity primitives used by Microsoft Health for local development.</Description>
-    <TargetFrameworks>$(SupportedFrameworks);</TargetFrameworks>
+    <TargetFramework>net6.0</TargetFramework>
   </PropertyGroup>
 
   <ItemGroup>

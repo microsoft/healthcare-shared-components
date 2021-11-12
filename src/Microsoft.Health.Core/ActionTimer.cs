@@ -35,7 +35,7 @@ namespace Microsoft.Health.Core
         public void Dispose()
         {
             _stopwatch.Stop();
-            _logger.LogInformation($"{_componentName} executed in {{Duration}}.", _stopwatch.Elapsed);
+            _logger.LogInformation("{Component} executed in {Duration}.", _componentName, _stopwatch.Elapsed);
             _scope.Dispose();
         }
     }

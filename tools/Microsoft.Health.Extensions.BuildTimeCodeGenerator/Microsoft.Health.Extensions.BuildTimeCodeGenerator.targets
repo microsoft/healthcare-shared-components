@@ -2,22 +2,22 @@
 
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
 
-    <PropertyGroup>
-        <GeneratorPath>$(MSBuildThisFileDirectory)../../tools/$(TargetFramework)/Microsoft.Health.Extensions.BuildTimeCodeGenerator.dll</GeneratorPath>
-    </PropertyGroup>
+  <PropertyGroup>
+    <GeneratorPath>$(MSBuildThisFileDirectory)../../tools/net6.0/Microsoft.Health.Extensions.BuildTimeCodeGenerator.dll</GeneratorPath>
+  </PropertyGroup>
 
-    <Target Name="CollectGenerateFilesInputs" BeforeTargets="GenerateFiles">
-        <ItemGroup>
-            <GenerateFilesInputs Include="$(GeneratorPath)" />
-            <GenerateFilesInputs Include="$(MSBuildProjectFile)" />
-            <GenerateFilesInputs Include="$(MSBuildThisFileFullPath)" />
-        </ItemGroup>
-    </Target>
+  <Target Name="CollectGenerateFilesInputs" BeforeTargets="GenerateFiles">
+    <ItemGroup>
+      <GenerateFilesInputs Include="$(GeneratorPath)" />
+      <GenerateFilesInputs Include="$(MSBuildProjectFile)" />
+      <GenerateFilesInputs Include="$(MSBuildThisFileFullPath)" />
+    </ItemGroup>
+  </Target>
 
-    <Target Name="GenerateFiles" BeforeTargets="CoreCompile" Inputs="@(GenerateFilesInputs)" Outputs="@(Generated)">
-        <ItemGroup>
-            <Compile Include="@(Generated)" Condition="!Exists('@(Generated)')" />
-        </ItemGroup>
-        <Exec Command='dotnet "$(GeneratorPath)" --generator-name "%(Generated.Generator)" --output-file "%(Generated.FullPath)" --namespace "%(Generated.Namespace)" %(Generated.Args)' />
-    </Target>
+  <Target Name="GenerateFiles" BeforeTargets="CoreCompile" Inputs="@(GenerateFilesInputs)" Outputs="@(Generated)">
+    <ItemGroup>
+      <Compile Include="@(Generated)" Condition="!Exists('@(Generated)')" />
+    </ItemGroup>
+    <Exec Command='dotnet "$(GeneratorPath)" --generator-name "%(Generated.Generator)" --output-file "%(Generated.FullPath)" --namespace "%(Generated.Namespace)" %(Generated.Args)' />
+  </Target>
 </Project>

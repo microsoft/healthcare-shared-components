@@ -14,7 +14,6 @@
         <file src="Microsoft.Health.Extensions.BuildTimeCodeGenerator.targets" target="build/netstandard2.0/Microsoft.Health.Extensions.BuildTimeCodeGenerator.targets" />
 
         <file src="Microsoft.Health.Extensions.BuildTimeCodeGenerator.targets" target="tools/" />
-        <file src="$publishdir$\netcoreapp3.1\**\*" target="tools/netcoreapp3.1/" />
-        <file src="$publishdir$\net5.0\**\*" target="tools/net5.0/" />
+        <file src="$publishdir$\net6.0\**\*" target="tools/net6.0/" />
     </files>
 </package>

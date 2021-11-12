@@ -71,7 +71,7 @@ namespace Microsoft.Health.SqlServer.Features.Schema
 
             await GetCurrentSchemaVersionAsync(cancellationToken).ConfigureAwait(false);
 
-            _logger.LogInformation("Initial check of schema version is {version}", _schemaInformation.Current?.ToString(CultureInfo.InvariantCulture) ?? "NULL");
+            _logger.LogInformation("Initial check of schema version is {Version}", _schemaInformation.Current?.ToString(CultureInfo.InvariantCulture) ?? "NULL");
 
             if (_sqlServerDataStoreConfiguration.SchemaOptions.AutomaticUpdatesEnabled)
             {
@@ -93,7 +93,7 @@ namespace Microsoft.Health.SqlServer.Features.Schema
 
                         // Recheck the version with lock
                         await GetCurrentSchemaVersionAsync(cancellationToken).ConfigureAwait(false);
-                        _logger.LogInformation("Schema version is {version}", _schemaInformation.Current?.ToString(CultureInfo.InvariantCulture) ?? "NULL");
+                        _logger.LogInformation("Schema version is {Version}", _schemaInformation.Current?.ToString(CultureInfo.InvariantCulture) ?? "NULL");
 
                         // If the stored procedure to get the current schema version doesn't exist
                         if (_schemaInformation.Current == null)

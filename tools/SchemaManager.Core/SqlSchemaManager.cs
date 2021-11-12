@@ -80,7 +80,7 @@ namespace SchemaManager.Core
                     sleepDurationProvider: (retryCount) => TimeSpan.FromSeconds(10),
                     onRetry: (exception, retryCount) =>
                     {
-                        _logger.LogError(exception, string.Format(CultureInfo.InvariantCulture, Resources.RetryHttpRequestException, attemptCount++, retryCountForHttpRequestException));
+                        _logger.LogError(exception, "Attempt {Attempt} of {MaxAttempts} to wait for the server to get started.", attemptCount++, retryCountForHttpRequestException);
                     })
                 .ExecuteAsync(token => GetAvailableSchema(server, token), token)
                 .ConfigureAwait(false);
@@ -95,26 +95,26 @@ namespace SchemaManager.Core
                     sleepDurationProvider: (retryCount) => _retrySleepDuration,
                     onRetry: (exception, retryCount) =>
                     {
-                        _logger.LogError(exception, string.Format(CultureInfo.InvariantCulture, Resources.RetryCurrentSchemaVersion, attemptCount++, RetryAttempts));
+                        _logger.LogError(exception, "Attempt {Attempt} of {MaxAttempts} to wait for the current version to be updated on the server.", attemptCount++, RetryAttempts);
                     })
                 .ExecuteAsync(token => FetchUpdatedAvailableVersionsAsync(token), token)
                 .ConfigureAwait(false);
 
                 if (availableVersions.Count == 1)
                 {
-                    _logger.LogError(Resources.AvailableVersionsDefaultErrorMessage);
+                    _logger.LogError("There are no available versions.");
                     return;
                 }
 
                 // Removes the current version since the first available version is always the current version which is already applied.
                 availableVersions.RemoveAt(0);
 
-                var targetVersion = type.Next == true ? availableVersions.First().Id :
-                                                                 type.Latest == true ? availableVersions.Last().Id :
-                                                                                                        type.Version;
+                var targetVersion = type.Next ?
+                    availableVersions.First().Id :
+                    (type.Latest ? availableVersions.Last().Id : type.Version);
                 if (availableVersions.First().Id > targetVersion)
                 {
-                    _logger.LogError(Resources.TargetVersionLesserThanCurrentVersion);
+                    _logger.LogError("The current schema version is already greater than or equals to the target schema version.");
                     return;
                 }
 
@@ -132,7 +132,7 @@ namespace SchemaManager.Core
                 if (availableVersions.First().Id == 1)
                 {
                     // Upgrade schema directly to the latest schema version
-                    _logger.LogInformation(string.Format(CultureInfo.InvariantCulture, Resources.SchemaMigrationStartedMessage, availableVersions.Last().Id));
+                    _logger.LogInformation("Schema migration is started for the version : {Version}.", availableVersions.Last().Id);
 
                     string script = await GetScriptAsync(1, availableVersions.Last().ScriptUri, token).ConfigureAwait(false);
 
@@ -145,7 +145,7 @@ namespace SchemaManager.Core
                 {
                     int executingVersion = availableVersion.Id;
 
-                    _logger.LogInformation(string.Format(CultureInfo.InvariantCulture, Resources.SchemaMigrationStartedMessage, executingVersion));
+                    _logger.LogInformation("Schema migration is started for the version : {Version}.", executingVersion);
 
                     attemptCount = 1;
 
@@ -153,10 +153,8 @@ namespace SchemaManager.Core
                         .WaitAndRetryAsync(
                             retryCount: RetryAttempts,
                             sleepDurationProvider: (retryCount) => _retrySleepDuration,
-                            onRetry: (exception, retryCount) =>
-                            {
-                                _logger.LogError(exception, string.Format(CultureInfo.InvariantCulture, Resources.RetryCurrentVersions, attemptCount++, RetryAttempts));
-                            })
+                            onRetry: (exception, delay) =>
+                                _logger.LogError(exception, "Attempt {Attempt} of {MaxAttempts} to verify if all the instances are running the previous version.", attemptCount++, RetryAttempts))
                         .ExecuteAsync(token => ValidateInstancesVersionAsync(executingVersion, token), token)
                         .ConfigureAwait(false);
 
@@ -168,19 +166,19 @@ namespace SchemaManager.Core
             }
             catch (Exception ex) when (ex is SchemaManagerException || ex is InvalidOperationException)
             {
-                _logger.LogError(ex, ex.Message);
+                _logger.LogError(ex, "Schema manager encountered an exception when applying schemas.");
                 throw;
             }
             catch (HttpRequestException ex)
             {
-                _logger.LogError(ex, string.Format(CultureInfo.InvariantCulture, Resources.RequestFailedMessage, server));
+                _logger.LogError(ex, "Unable to connect to host '{Server}'.", server);
                 throw;
             }
             catch (Exception ex)
             {
                 if (ex is SqlException || ex is ExecutionFailureException)
                 {
-                    _logger.LogError(ex, string.Format(CultureInfo.InvariantCulture, Resources.QueryExecutionErrorMessage, ex.Message));
+                    _logger.LogError(ex, "Script execution has failed.");
                     return;
                 }
 
@@ -209,12 +207,12 @@ namespace SchemaManager.Core
             }
             catch (SchemaManagerException ex)
             {
-                _logger.LogError(ex, ex.Message);
+                _logger.LogError(ex, "Schema manager encountered an exception when fetching the available schemas.");
                 throw;
             }
             catch (HttpRequestException ex)
             {
-                _logger.LogError(ex, string.Format(CultureInfo.InvariantCulture, Resources.RequestFailedMessage, server));
+                _logger.LogError(ex, "Unable to connect to host '{Server}'.", server);
                 throw;
             }
         }
@@ -242,12 +240,12 @@ namespace SchemaManager.Core
             }
             catch (SchemaManagerException ex)
             {
-                _logger.LogError(ex, ex.Message);
+                _logger.LogError(ex, "Schema manager encountered an exception when resolving the current schema.");
                 throw;
             }
             catch (HttpRequestException ex)
             {
-                _logger.LogError(ex, string.Format(CultureInfo.InvariantCulture, Resources.RequestFailedMessage, server));
+                _logger.LogError(ex, "Unable to connect to host '{Server}'.", server);
                 throw;
             }
         }
@@ -293,7 +291,7 @@ namespace SchemaManager.Core
 
             await _schemaManagerDataStore.ExecuteScriptAndCompleteSchemaVersionAsync(script, version, applyFullSchemaSnapshot, cancellationToken).ConfigureAwait(false);
 
-            _logger.LogInformation(string.Format(CultureInfo.InvariantCulture, Resources.SchemaMigrationSuccessMessage, version));
+            _logger.LogInformation("Schema migration completed successfully for the version : {Version}.", version);
         }
 
         private async Task ValidateInstancesVersionAsync(int version, CancellationToken cancellationToken)

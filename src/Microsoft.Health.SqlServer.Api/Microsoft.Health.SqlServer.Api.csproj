@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <Description>Common SQL Server-related components, such as controllers, for Microsoft Health APIs using ASP.NET Core.</Description>
-    <TargetFrameworks>$(SupportedFrameworks);</TargetFrameworks>
+    <TargetFramework>net6.0</TargetFramework>
   </PropertyGroup>
 
   <ItemGroup>

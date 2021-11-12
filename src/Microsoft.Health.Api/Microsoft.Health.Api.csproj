@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <Description>Common components, such as middleware, for Microsoft Health APIs using ASP.NET Core.</Description>
-    <TargetFrameworks>$(SupportedFrameworks);</TargetFrameworks>
+    <TargetFramework>net6.0</TargetFramework>
   </PropertyGroup>
 
   <ItemGroup>

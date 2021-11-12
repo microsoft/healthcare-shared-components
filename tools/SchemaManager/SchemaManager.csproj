@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
-    <TargetFrameworks>$(SupportedFrameworks);</TargetFrameworks>
+    <TargetFramework>net6.0</TargetFramework>
     <AssemblyName>Microsoft.Health.SchemaManager</AssemblyName>
     <PackAsTool>true</PackAsTool>
     <ToolCommandName>schema-manager</ToolCommandName>

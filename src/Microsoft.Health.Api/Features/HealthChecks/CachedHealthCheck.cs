@@ -71,7 +71,7 @@ namespace Microsoft.Health.Api.Features.HealthChecks
                     }
                     catch (Exception ex)
                     {
-                        _logger.LogError(ex, Resources.FailedHealthCheckMessage);
+                        _logger.LogError(ex, "Health check failed to complete");
                         _lastResult = HealthCheckResult.Unhealthy(Resources.FailedHealthCheckMessage);
                         _lastChecked = Clock.UtcNow;
                     }

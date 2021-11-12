@@ -55,7 +55,7 @@ namespace Microsoft.Health.SqlServer.Features.Schema
         {
             EnsureArg.IsNotNull(schemaInformation, nameof(schemaInformation));
 
-            _logger.LogInformation($"Polling started at {Clock.UtcNow}");
+            _logger.LogInformation("Polling started at {TimeUtc}", Clock.UtcNow);
 
             while (!cancellationToken.IsCancellationRequested)
             {
