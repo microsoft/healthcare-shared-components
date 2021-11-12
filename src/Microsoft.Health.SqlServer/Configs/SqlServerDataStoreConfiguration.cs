@@ -3,6 +3,8 @@
 // Licensed under the MIT License (MIT). See LICENSE in the repo root for license information.
 // -------------------------------------------------------------------------------------------------
 
+using System;
+
 namespace Microsoft.Health.SqlServer.Configs
 {
     public class SqlServerDataStoreConfiguration
@@ -51,5 +53,10 @@ namespace Microsoft.Health.SqlServer.Configs
         /// If set, the client id of the managed identity to use when connecting to SQL, if AuthenticationType == ManagedIdentity.
         /// </summary>
         public string ManagedIdentityClientId { get; set; }
+
+        /// <summary>
+        /// Specifies the statement timeout to set on ServerConnection.
+        /// </summary>
+        public TimeSpan StatementTimeout { get; set; } = TimeSpan.FromSeconds(14400);
     }
 }
