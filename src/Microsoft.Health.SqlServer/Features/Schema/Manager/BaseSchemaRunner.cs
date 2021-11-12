@@ -76,7 +76,7 @@ namespace Microsoft.Health.SqlServer.Features.Schema.Manager
                 {
                     _logger.LogWarning(
                         exception,
-                        "Attempt {CurrentAttempt} of {MaxAttempts} to verify if the base schema is synced up with the service.",
+                        "Attempt {Attempt} of {MaxAttempts} to verify if the base schema is synced up with the service.",
                         attempts++,
                         RetryAttempts);
                 })
