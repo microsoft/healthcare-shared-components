@@ -22,3 +22,10 @@ steps:
       pathtoPublish: '$(build.artifactStagingDirectory)/nupkgs'
       artifactName: 'nuget'
       publishLocation: 'container'
+
+  - task: PublishSymbols@2
+    displayName: 'Publish Symbols'
+    inputs:
+      searchPattern: '$(build.artifactStagingDirectory)\**\*.pdb'
+      symbolServerType: 'TeamServices'
+      detailedLog: true
