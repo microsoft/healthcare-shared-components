@@ -26,6 +26,8 @@ steps:
   - task: PublishSymbols@2
     displayName: 'Publish Symbols'
     inputs:
-      searchPattern: '$(build.artifactStagingDirectory)\**\*.pdb'
+      searchFolder: '$(build.artifactStagingDirectory)'
+      searchPattern: '**\*.pdb'
       symbolServerType: 'TeamServices'
+      indexSources: false # done in build step
       detailedLog: true
