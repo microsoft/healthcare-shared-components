@@ -10,8 +10,8 @@ variables:
 
 jobs:
 
-- job: Phase_1
-  displayName: Phase 1
+- job: Internal_checks
+  displayName: Internal checks
   cancelTimeoutInMinutes: 1
   pool:
     vmImage: $(vmImage)
@@ -33,7 +33,6 @@ jobs:
       nugetConfigPath: nuget.config
 
   - task: DotNetCoreCLI@1
-    name: ''
     displayName: dotnet build
     inputs:
       projects: '**/*.sln'
@@ -47,7 +46,7 @@ jobs:
       IsService: true
 
   - task: CodeMetrics@1
-    displayName: 'Run CodeMetrics '
+    displayName: 'Run CodeMetrics'
     continueOnError: True
     inputs:
       Files: $(Build.SourcesDirectory)\**\Microsoft.Health*.dll
