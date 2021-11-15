@@ -30,4 +30,3 @@ steps:
       searchPattern: '**\*.pdb'
       symbolServerType: 'TeamServices'
       indexSources: false # done in build step
-      detailedLog: true
