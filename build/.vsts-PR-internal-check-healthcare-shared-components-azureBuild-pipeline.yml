@@ -1,0 +1,80 @@
+name:  pr$(System.PullRequest.PullRequestNumber)-$(Date:yyyyMMdd)$(Rev:-r)
+
+parameters:
+- name: BuildConfiguration
+  default: release
+
+variables:
+- name:  vmImage
+  value: windows-latest 
+
+jobs:
+
+- job: Internal_checks
+  displayName: Internal checks
+  cancelTimeoutInMinutes: 1
+  pool:
+    vmImage: $(vmImage)
+
+  steps:
+  - checkout: self
+
+  - task: UseDotNet@2
+    displayName: Use .NET Core sdk 
+    inputs:
+      useGlobalJson: true
+
+  - task: DotNetCoreCLI@2
+    displayName: dotnet restore
+    inputs:
+      command: restore
+      projects: '**/*.sln'
+      selectOrConfig: config
+      nugetConfigPath: nuget.config
+
+  - task: DotNetCoreCLI@1
+    displayName: dotnet build
+    inputs:
+      projects: '**/*.sln'
+      arguments: --configuration ${{ parameters.BuildConfiguration }} --version-suffix $(build.buildnumber)
+
+  - task: AutoApplicability@1
+    displayName: Run AutoApplicability
+    continueOnError: True
+    inputs:
+      ExternalRelease: true
+      IsService: true
+
+  - task: CodeMetrics@1
+    displayName: 'Run CodeMetrics'
+    continueOnError: True
+    inputs:
+      Files: $(Build.SourcesDirectory)\**\Microsoft.Health*.dll
+
+  - task: CredScan@2
+    displayName: Run CredScan
+    continueOnError: True
+    inputs:
+      toolVersionV2: LatestPreRelease
+      debugMode: false
+      folderSuppression: false
+
+  - task: VulnerabilityAssessment@0
+    displayName: Run Vulnerability Assessment
+    continueOnError: True
+
+  - task: SdtReport@1
+    displayName: Create Security Analysis Report
+    condition: succeededOrFailed()
+    continueOnError: True
+    inputs:
+      BinSkim: true
+      CredScan: true
+
+  - task: PostAnalysis@1
+    displayName: Post Analysis
+    condition: succeededOrFailed()
+    inputs:
+      BinSkim: true
+      CredScan: true
+
