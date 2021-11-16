@@ -37,7 +37,6 @@ namespace Microsoft.Health.Api.Registration
                                 status = Enum.GetName(typeof(HealthStatus), entry.Value.Status),
                                 description = entry.Value.Description,
                                 data = entry.Value.Data,
-                                exception = entry.Value.Exception,
                             }),
                         });
 
