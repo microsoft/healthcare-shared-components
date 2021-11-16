@@ -20,10 +20,10 @@ namespace Microsoft.Health.Api.Registration
         /// Use health checks (extension method). Register the response as json.
         /// </summary>
         /// <param name="app">Application builder instance.</param>
-        /// <param name="healthCheckPathString">Health check path string.</param>
-        public static void UseHealthChecksExtension(this IApplicationBuilder app, string healthCheckPathString)
+        /// <param name="healthCheck">Health check path string.</param>
+        public static void UseHealthChecksExtension(this IApplicationBuilder app, string healthCheck)
         {
-            app.UseHealthChecks(new PathString(healthCheckPathString), new HealthCheckOptions
+            app.UseHealthChecks(new PathString(healthCheck), new HealthCheckOptions
             {
                 ResponseWriter = async (httpContext, healthReport) =>
                 {
