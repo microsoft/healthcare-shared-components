@@ -21,6 +21,35 @@ namespace Microsoft.Health.Api.Registration
         /// </summary>
         /// <param name="app">Application builder instance.</param>
         /// <param name="healthCheckPathString">Health check path string.</param>
+        public static void UseHealthChecksExtension(this IApplicationBuilder app, string healthCheckPathString)
+        {
+            app.UseHealthChecks(new PathString(healthCheckPathString), new HealthCheckOptions
+            {
+                ResponseWriter = async (httpContext, healthReport) =>
+                {
+                    var response = JsonConvert.SerializeObject(
+                        new
+                        {
+                            overallStatus = healthReport.Status.ToString(),
+                            details = healthReport.Entries.Select(entry => new
+                            {
+                                name = entry.Key,
+                                status = Enum.GetName(typeof(HealthStatus), entry.Value.Status),
+                                description = entry.Value.Description,
+                            }),
+                        });
+
+                    httpContext.Response.ContentType = MediaTypeNames.Application.Json;
+                    await httpContext.Response.WriteAsync(response);
+                },
+            });
+        }
+
+        /// <summary>
+        /// Use health checks (extension method). Register the response as json.
+        /// </summary>
+        /// <param name="app">Application builder instance.</param>
+        /// <param name="healthCheckPathString">Health check path string.</param>
         /// <param name="predicate">A predicate that is used to filter the set of health checks executed.</param>
         public static void UseHealthChecksExtension(this IApplicationBuilder app, string healthCheckPathString, Func<HealthCheckRegistration, bool> predicate)
         {
