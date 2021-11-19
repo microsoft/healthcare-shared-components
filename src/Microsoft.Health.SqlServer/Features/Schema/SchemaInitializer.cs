@@ -64,6 +64,8 @@ namespace Microsoft.Health.SqlServer.Features.Schema
 
         public async Task InitializeAsync(bool forceIncrementalSchemaUpgrade = false, CancellationToken cancellationToken = default)
         {
+            bool schemaNotificationSent = false;
+
             if (!await CanInitializeAsync(cancellationToken).ConfigureAwait(false))
             {
                 return;
@@ -116,6 +118,8 @@ namespace Microsoft.Health.SqlServer.Features.Schema
                             await GetCurrentSchemaVersionAsync(cancellationToken).ConfigureAwait(false);
 
                             await _mediator.NotifySchemaUpgradedAsync((int)_schemaInformation.Current, true);
+
+                            schemaNotificationSent = true;
                         }
 
                         // If the current schema version needs to be upgraded
@@ -132,6 +136,8 @@ namespace Microsoft.Health.SqlServer.Features.Schema
 
                                 await _mediator.NotifySchemaUpgradedAsync((int)_schemaInformation.Current, false);
                             }
+
+                            schemaNotificationSent = true;
                         }
                     }
                 }
@@ -148,7 +154,7 @@ namespace Microsoft.Health.SqlServer.Features.Schema
 
                 // Ensure to publish the Schema notifications even when schema is up-to date and Schema Initializer is called again (like restarting FHIR server will call this again)
                 // There is a dependency on this notification in FHIR server to enable some background jobs
-                if (_schemaInformation.Current >= _schemaInformation.MinimumSupportedVersion)
+                if (!schemaNotificationSent && _schemaInformation.Current >= _schemaInformation.MinimumSupportedVersion)
                 {
                     await _mediator.NotifySchemaUpgradedAsync((int)_schemaInformation.Current, false);
                 }
