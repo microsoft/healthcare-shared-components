@@ -64,6 +64,8 @@ namespace Microsoft.Health.SqlServer.Features.Schema
 
         public async Task InitializeAsync(bool forceIncrementalSchemaUpgrade = false, CancellationToken cancellationToken = default)
         {
+            bool schemaUpgradedNotificationSent = false;
+
             if (!await CanInitializeAsync(cancellationToken).ConfigureAwait(false))
             {
                 return;
@@ -116,6 +118,8 @@ namespace Microsoft.Health.SqlServer.Features.Schema
                             await GetCurrentSchemaVersionAsync(cancellationToken).ConfigureAwait(false);
 
                             await _mediator.NotifySchemaUpgradedAsync((int)_schemaInformation.Current, true);
+
+                            schemaUpgradedNotificationSent = true;
                         }
 
                         // If the current schema version needs to be upgraded
@@ -132,6 +136,8 @@ namespace Microsoft.Health.SqlServer.Features.Schema
 
                                 await _mediator.NotifySchemaUpgradedAsync((int)_schemaInformation.Current, false);
                             }
+
+                            schemaUpgradedNotificationSent = true;
                         }
                     }
                 }
@@ -144,6 +150,13 @@ namespace Microsoft.Health.SqlServer.Features.Schema
                 catch (SqlException e) when (e.Message.Contains("The connection is broken and recovery is not possible.", StringComparison.OrdinalIgnoreCase))
                 {
                     _logger.LogWarning($"Error occurred during multiplexed release lock");
+                }
+
+                // Ensure to publish the Schema notifications even when schema is up-to date and Schema Initializer is called again (like restarting FHIR server will call this again)
+                // There is a dependency on this notification in FHIR server to enable some background jobs
+                if (!schemaUpgradedNotificationSent && _schemaInformation.Current >= _schemaInformation.MinimumSupportedVersion)
+                {
+                    await _mediator.NotifySchemaUpgradedAsync((int)_schemaInformation.Current, false);
                 }
             }
         }
