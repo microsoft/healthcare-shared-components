@@ -145,6 +145,13 @@ namespace Microsoft.Health.SqlServer.Features.Schema
                 {
                     _logger.LogWarning($"Error occurred during multiplexed release lock");
                 }
+
+                // Ensure to publish the Schema notifications even when schema is up-to date and Schema Initializer is called again (like restarting FHIR server will call this again)
+                // There is a dependency on this notification in FHIR server to enable some background jobs
+                if (_schemaInformation.Current >= _schemaInformation.MinimumSupportedVersion)
+                {
+                    await _mediator.NotifySchemaUpgradedAsync((int)_schemaInformation.Current, false);
+                }
             }
         }
 
