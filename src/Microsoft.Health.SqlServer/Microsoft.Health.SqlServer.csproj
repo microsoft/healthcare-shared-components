@@ -4,7 +4,7 @@
 
   <PropertyGroup>
     <Description>SQL Server extensions and utilities used by Microsoft Health.</Description>
-    <TargetFramework>net6.0</TargetFramework>
+    <TargetFrameworks>$(SupportedFrameworks)</TargetFrameworks>
   </PropertyGroup>
 
   <ItemGroup>
@@ -13,6 +13,11 @@
 
   <ItemGroup>
     <EmbeddedResource Include="Features\Schema\Migrations\BaseSchema.sql" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Remove="**\*.generated.*.cs" />
+    <Compile Include="**\*.generated.$(TargetFramework).cs" />
   </ItemGroup>
 
   <ItemGroup>
@@ -43,7 +48,7 @@
 
   <ItemGroup>
     <GenerateFilesInputs Include="Features\Schema\Migrations\BaseSchema.sql" />
-    <Generated Include="Features\Schema\Model\SchemaShared.Generated.cs">
+    <Generated Include="Features\Schema\Model\SchemaShared.Generated.$(TargetFramework).cs">
       <Generator>MutableSqlModelGenerator</Generator>
       <Namespace>Microsoft.Health.SqlServer.Features.Schema.Model</Namespace>
       <Args>"$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)\Features\Schema\Migrations\BaseSchema.sql'))"</Args>
@@ -51,7 +56,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Generated Include="IndentedStringBuilder.Generated.cs">
+    <Generated Include="IndentedStringBuilder.Generated.$(TargetFramework).cs">
       <Generator>IndentedStringBuilderGenerator</Generator>
       <Namespace>Microsoft.Health.SqlServer</Namespace>
     </Generated>

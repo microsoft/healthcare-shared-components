@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <Description>Azure blob storage utilities for Microsoft Health.</Description>
-    <TargetFramework>net6.0</TargetFramework>
+    <TargetFrameworks>$(SupportedFrameworks)</TargetFrameworks>
   </PropertyGroup>
 
   <ItemGroup>

@@ -14,6 +14,7 @@
     <Product>Microsoft Health</Product>
     <PublishRepositoryUrl>true</PublishRepositoryUrl>
     <SdkPackageVersion>6.0.0</SdkPackageVersion>
+    <SupportedFrameworks>net5.0;net6.0</SupportedFrameworks>
     <TargetLatestRuntimePatch>true</TargetLatestRuntimePatch>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <WarningsAsErrors />
@@ -23,6 +24,19 @@
     <!-- CA1031 - Allow Exception to be caught -->
     <NoWarn>$(NoWarn);CA1031</NoWarn>
   </PropertyGroup>
+
+  <Choose>
+    <When Condition="$(TargetFramework.StartsWith('net5'))">
+      <PropertyGroup>
+        <SdkPackageVersion>5.0.0</SdkPackageVersion>
+      </PropertyGroup>
+    </When>
+    <Otherwise>
+      <PropertyGroup>
+        <SdkPackageVersion>6.0.0</SdkPackageVersion>
+      </PropertyGroup>
+    </Otherwise>
+  </Choose>
 
   <Choose>
     <When Condition="$(MSBuildProjectName.Contains('Test'))">

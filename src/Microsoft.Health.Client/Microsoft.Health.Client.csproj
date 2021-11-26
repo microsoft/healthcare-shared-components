@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <Description>Utilities for HTTP clients that communicate with Microsoft Health services.</Description>
-    <TargetFramework>net6.0</TargetFramework>
+    <TargetFrameworks>$(SupportedFrameworks)</TargetFrameworks>
   </PropertyGroup>
 
   <ItemGroup>

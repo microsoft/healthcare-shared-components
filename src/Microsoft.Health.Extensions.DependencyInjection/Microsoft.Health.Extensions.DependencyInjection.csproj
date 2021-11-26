@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <Description>Dependency injection extensions for Microsoft's default implementation used by Microsoft Health.</Description>
-    <TargetFramework>net6.0</TargetFramework>
+    <TargetFrameworks>$(SupportedFrameworks)</TargetFrameworks>
   </PropertyGroup>
 
   <ItemGroup>
