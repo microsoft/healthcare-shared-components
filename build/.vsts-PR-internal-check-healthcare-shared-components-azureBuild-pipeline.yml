@@ -6,7 +6,7 @@ parameters:
 
 variables:
 - name:  vmImage
-  value: windows-latest 
+  value: windows-latest
 
 jobs:
 
@@ -20,7 +20,13 @@ jobs:
   - checkout: self
 
   - task: UseDotNet@2
-    displayName: Use .NET Core sdk 
+    displayName: 'Use .NET 5.x SDK'
+    inputs:
+      packageType: sdk
+      version: 5.x
+
+  - task: UseDotNet@2
+    displayName: Use .NET sdk
     inputs:
       useGlobalJson: true
 

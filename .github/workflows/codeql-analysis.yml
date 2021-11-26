@@ -26,11 +26,11 @@ jobs:
       uses: actions/setup-dotnet@v1.9.0
       if: ${{ matrix.language == 'csharp' }}
 
-    - name: Install .NET SDK/Runtime for SQL generation
+    - name: Install .NET 5.0 SDK
       uses: actions/setup-dotnet@v1.9.0
       if: ${{ matrix.language == 'csharp' }}
       with:
-        dotnet-version: '3.1.x'
+        dotnet-version: '5.x'
 
     # Initializes the CodeQL tools for scanning.
     - name: Initialize CodeQL
