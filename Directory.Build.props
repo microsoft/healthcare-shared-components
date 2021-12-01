@@ -13,7 +13,6 @@
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <Product>Microsoft Health</Product>
     <PublishRepositoryUrl>true</PublishRepositoryUrl>
-    <SdkPackageVersion>6.0.0</SdkPackageVersion>
     <SupportedFrameworks>net5.0;net6.0</SupportedFrameworks>
     <TargetLatestRuntimePatch>true</TargetLatestRuntimePatch>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
@@ -26,14 +25,14 @@
   </PropertyGroup>
 
   <Choose>
-    <When Condition="$(TargetFramework.StartsWith('net5'))">
+    <When Condition="'$(TargetFramework)' == 'net6.0'">
       <PropertyGroup>
-        <SdkPackageVersion>5.0.0</SdkPackageVersion>
+        <SdkPackageVersion>6.0.0</SdkPackageVersion>
       </PropertyGroup>
     </When>
     <Otherwise>
       <PropertyGroup>
-        <SdkPackageVersion>6.0.0</SdkPackageVersion>
+        <SdkPackageVersion>5.0.0</SdkPackageVersion>
       </PropertyGroup>
     </Otherwise>
   </Choose>
