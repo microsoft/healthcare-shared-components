@@ -133,7 +133,7 @@ namespace Microsoft.Health.SqlServer
         }
 
         [System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverageAttribute]
-        public IndentedStringBuilder Append(System.IFormatProvider provider, ref System.Text.StringBuilder.AppendInterpolatedStringHandler handler)
+        public IndentedStringBuilder Append(System.IFormatProvider provider, [System.Runtime.CompilerServices.InterpolatedStringHandlerArgumentAttribute("", "provider")] ref System.Text.StringBuilder.AppendInterpolatedStringHandler handler)
         {
             AppendIndent();
             _inner.Append(provider, ref handler);
@@ -229,7 +229,7 @@ namespace Microsoft.Health.SqlServer
         }
 
         [System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverageAttribute]
-        public IndentedStringBuilder Append(ref System.Text.StringBuilder.AppendInterpolatedStringHandler handler)
+        public IndentedStringBuilder Append([System.Runtime.CompilerServices.InterpolatedStringHandlerArgumentAttribute("")] ref System.Text.StringBuilder.AppendInterpolatedStringHandler handler)
         {
             AppendIndent();
             _inner.Append(ref handler);
@@ -390,7 +390,7 @@ namespace Microsoft.Health.SqlServer
         }
 
         [System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverageAttribute]
-        public IndentedStringBuilder AppendLine(System.IFormatProvider provider, ref System.Text.StringBuilder.AppendInterpolatedStringHandler handler)
+        public IndentedStringBuilder AppendLine(System.IFormatProvider provider, [System.Runtime.CompilerServices.InterpolatedStringHandlerArgumentAttribute("", "provider")] ref System.Text.StringBuilder.AppendInterpolatedStringHandler handler)
         {
             AppendIndent();
             _inner.AppendLine(provider, ref handler);
@@ -408,7 +408,7 @@ namespace Microsoft.Health.SqlServer
         }
 
         [System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverageAttribute]
-        public IndentedStringBuilder AppendLine(ref System.Text.StringBuilder.AppendInterpolatedStringHandler handler)
+        public IndentedStringBuilder AppendLine([System.Runtime.CompilerServices.InterpolatedStringHandlerArgumentAttribute("")] ref System.Text.StringBuilder.AppendInterpolatedStringHandler handler)
         {
             AppendIndent();
             _inner.AppendLine(ref handler);

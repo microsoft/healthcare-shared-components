@@ -19,7 +19,7 @@ namespace Microsoft.Health.Extensions.BuildTimeCodeGenerator
     /// Generates a class that implements one or more interfaces, delegating implementation to an inner field.
     /// Implementations are explicit.
     /// </summary>
-    internal class DelegatingInterfaceImplementationGenerator : ICodeGenerator
+    public class DelegatingInterfaceImplementationGenerator : ICodeGenerator
     {
         internal const string DeclaringTypeKind = "DeclaringType";
         private readonly SyntaxTokenList _typeModifiers;
@@ -132,10 +132,12 @@ namespace Microsoft.Health.Extensions.BuildTimeCodeGenerator
                     var method = MethodDeclaration(methodInfo.ReturnType.ToTypeSyntax(), methodInfo.Name)
                         .WithExplicitInterfaceSpecifier(explicitInterfaceSpecifier)
                         .AddParameterListParameters(
-                            methodInfo.GetParameters().Select(p =>
-                                    Parameter(Identifier(p.Name))
-                                        .WithType(p.ParameterType.ToTypeSyntax())
-                                        .WithModifiers(p.IsDefined(typeof(ParamArrayAttribute), false) ? TokenList(Token(SyntaxKind.ParamsKeyword)) : TokenList()))
+                            methodInfo
+                                .GetParameters()
+                                .Select(p => Parameter(Identifier(p.Name))
+                                    .WithType(p.ParameterType.ToTypeSyntax())
+                                    .WithModifiers(p.IsDefined(typeof(ParamArrayAttribute), false) ? TokenList(Token(SyntaxKind.ParamsKeyword)) : TokenList())
+                                    .WithOptionalAttributeLists(p.CustomAttributes))
                                 .ToArray())
                         .AddAttributeLists(ExcludeFromCodeCoverageAttributeSyntax)
                         .WithBody(Block())
@@ -157,9 +159,12 @@ namespace Microsoft.Health.Extensions.BuildTimeCodeGenerator
                             methodName),
                         ArgumentList(
                             SeparatedList(
-                                methodInfo.GetParameters().Select(p => p.ParameterType.IsByRef
-                                    ? Argument(default, Token(SyntaxKind.RefKeyword), IdentifierName(p.Name))
-                                    : Argument(IdentifierName(p.Name))))));
+                                methodInfo
+                                    .GetParameters()
+                                    .Select(p => Argument(
+                                        default,
+                                        p.ParameterType.IsByRef ? Token(SyntaxKind.RefKeyword) : default,
+                                        IdentifierName(p.Name))))));
 
                     var block = Block(methodInfo.ReturnType == typeof(void) ? ExpressionStatement(invocation) : ReturnStatement(invocation));
 
