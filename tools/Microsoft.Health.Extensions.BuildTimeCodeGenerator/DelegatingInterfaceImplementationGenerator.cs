@@ -19,7 +19,7 @@ namespace Microsoft.Health.Extensions.BuildTimeCodeGenerator
     /// Generates a class that implements one or more interfaces, delegating implementation to an inner field.
     /// Implementations are explicit.
     /// </summary>
-    public class DelegatingInterfaceImplementationGenerator : ICodeGenerator
+    internal class DelegatingInterfaceImplementationGenerator : ICodeGenerator
     {
         internal const string DeclaringTypeKind = "DeclaringType";
         private readonly SyntaxTokenList _typeModifiers;

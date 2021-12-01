@@ -23,23 +23,23 @@ namespace Microsoft.Health.Extensions.BuildTimeCodeGenerator
             // TODO: Enable nullability attributes once the repository uses a nullable-aware context
             List<CustomAttributeData> eligibleAttributes = attributes
                 .Where(x =>
+                {
+                    // Used internally to record whether a reference type may be nullable. Developers should use '?' instead
+                    return x.AttributeType.FullName != "System.Runtime.CompilerServices.NullableAttribute" &&
 
-                    // Used internally to record whether a reference type may be nullable
-                    // Developers should use "?" instead
-                    x.AttributeType.FullName != "System.Runtime.CompilerServices.NullableAttribute" &&
+                        // Used internally for "params" parameters
+                        x.AttributeType != typeof(ParamArrayAttribute) &&
 
-                    // Used internally for "params" parameters
-                    x.AttributeType != typeof(ParamArrayAttribute) &&
-
-                    // Below are public attributes used by developer
-                    x.AttributeType != typeof(AllowNullAttribute) &&
-                    x.AttributeType != typeof(DisallowNullAttribute) &&
-                    x.AttributeType != typeof(MaybeNullAttribute) &&
-                    x.AttributeType != typeof(NotNullAttribute) &&
-                    x.AttributeType != typeof(MaybeNullWhenAttribute) &&
-                    x.AttributeType != typeof(NotNullWhenAttribute) &&
-                    x.AttributeType != typeof(NotNullIfNotNullAttribute) &&
-                    x.AttributeType != typeof(DoesNotReturnIfAttribute))
+                        // Public attributes used by developers for aiding in static code analysis
+                        x.AttributeType != typeof(AllowNullAttribute) &&
+                        x.AttributeType != typeof(DisallowNullAttribute) &&
+                        x.AttributeType != typeof(MaybeNullAttribute) &&
+                        x.AttributeType != typeof(NotNullAttribute) &&
+                        x.AttributeType != typeof(MaybeNullWhenAttribute) &&
+                        x.AttributeType != typeof(NotNullWhenAttribute) &&
+                        x.AttributeType != typeof(NotNullIfNotNullAttribute) &&
+                        x.AttributeType != typeof(DoesNotReturnIfAttribute);
+                })
                 .ToList();
 
             return eligibleAttributes.Count > 0 ? parameter.WithAttributeLists(GetAttributeList(eligibleAttributes)) : parameter;
