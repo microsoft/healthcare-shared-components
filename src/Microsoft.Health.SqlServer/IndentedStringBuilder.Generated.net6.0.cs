@@ -133,14 +133,6 @@ namespace Microsoft.Health.SqlServer
         }
 
         [System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverageAttribute]
-        public IndentedStringBuilder Append(System.IFormatProvider provider, [System.Runtime.CompilerServices.InterpolatedStringHandlerArgumentAttribute("", "provider")] ref System.Text.StringBuilder.AppendInterpolatedStringHandler handler)
-        {
-            AppendIndent();
-            _inner.Append(provider, ref handler);
-            return this;
-        }
-
-        [System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverageAttribute]
         public IndentedStringBuilder Append(System.Int16 value)
         {
             AppendIndent();
@@ -225,14 +217,6 @@ namespace Microsoft.Health.SqlServer
         {
             AppendIndent();
             _inner.Append(value);
-            return this;
-        }
-
-        [System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverageAttribute]
-        public IndentedStringBuilder Append([System.Runtime.CompilerServices.InterpolatedStringHandlerArgumentAttribute("")] ref System.Text.StringBuilder.AppendInterpolatedStringHandler handler)
-        {
-            AppendIndent();
-            _inner.Append(ref handler);
             return this;
         }
 
@@ -390,28 +374,10 @@ namespace Microsoft.Health.SqlServer
         }
 
         [System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverageAttribute]
-        public IndentedStringBuilder AppendLine(System.IFormatProvider provider, [System.Runtime.CompilerServices.InterpolatedStringHandlerArgumentAttribute("", "provider")] ref System.Text.StringBuilder.AppendInterpolatedStringHandler handler)
-        {
-            AppendIndent();
-            _inner.AppendLine(provider, ref handler);
-            _indentPending = true;
-            return this;
-        }
-
-        [System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverageAttribute]
         public IndentedStringBuilder AppendLine(System.String value)
         {
             AppendIndent();
             _inner.AppendLine(value);
-            _indentPending = true;
-            return this;
-        }
-
-        [System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverageAttribute]
-        public IndentedStringBuilder AppendLine([System.Runtime.CompilerServices.InterpolatedStringHandlerArgumentAttribute("")] ref System.Text.StringBuilder.AppendInterpolatedStringHandler handler)
-        {
-            AppendIndent();
-            _inner.AppendLine(ref handler);
             _indentPending = true;
             return this;
         }
