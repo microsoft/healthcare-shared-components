@@ -1,9 +1,8 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>$(SupportedFrameworks);</TargetFrameworks>
+    <TargetFrameworks>$(SupportedFrameworks)</TargetFrameworks>
     <AssemblyName>Microsoft.Health.SchemaManager.Core</AssemblyName>
-    <OutputType>Library</OutputType>
   </PropertyGroup>
 
   <ItemGroup>

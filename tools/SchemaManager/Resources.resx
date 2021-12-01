@@ -139,9 +139,6 @@
   <data name="ForceOptionDescription" xml:space="preserve">
     <value>The schema migration is run without validating the schema verison.</value>
   </data>
-  <data name="ForceWarning" xml:space="preserve">
-    <value>Are you sure to apply command with force option? Type 'yes' to confirm.</value>
-  </data>
   <data name="LatestOptionDescription" xml:space="preserve">
     <value>The versions between current version and latest available version to apply.</value>
   </data>

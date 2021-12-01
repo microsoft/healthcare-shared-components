@@ -3,7 +3,7 @@
   <Import Project="..\..\tools\Microsoft.Health.Extensions.BuildTimeCodeGenerator\Microsoft.Health.Extensions.BuildTimeCodeGenerator.targets" />
 
   <PropertyGroup>
-    <TargetFrameworks>$(SupportedFrameworks);</TargetFrameworks>
+    <TargetFrameworks>$(SupportedFrameworks)</TargetFrameworks>
     <IsPackable>false</IsPackable>
   </PropertyGroup>
 

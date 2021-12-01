@@ -95,24 +95,18 @@ namespace Microsoft.Health.Core.Features.MonitorStream
             WriteCount += count;
         }
 
-        /// <summary>
-        /// Asynchronously writes a sequence of bytes to the current stream and advances the current position within this stream by the number of bytes written.
-        /// </summary>
-        /// <param name="buffer">The buffer to write data from.</param>
-        /// <param name="offset">The zero-based byte offset in buffer from which to begin copying bytes to the stream.</param>
-        /// <param name="count">The maximum number of bytes to write.</param>
-        /// <returns>A task that represents the asynchronous write operation.</returns>
-        public new Task WriteAsync(byte[] buffer, int offset, int count)
-        {
-            WriteCount += count;
-            return _stream.WriteAsync(buffer, offset, count);
-        }
-
         /// <inheritdoc />
         public override Task WriteAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken)
         {
             WriteCount += count;
             return _stream.WriteAsync(buffer, offset, count, cancellationToken);
+        }
+
+        /// <inheritdoc />
+        public override ValueTask WriteAsync(ReadOnlyMemory<byte> buffer, CancellationToken cancellationToken = default)
+        {
+            WriteCount += buffer.Length;
+            return _stream.WriteAsync(buffer, cancellationToken);
         }
 
         /// <inheritdoc />

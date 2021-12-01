@@ -1,9 +1,8 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>$(SupportedFrameworks);</TargetFrameworks>
+    <TargetFrameworks>$(SupportedFrameworks)</TargetFrameworks>
     <IsPackable>false</IsPackable>
-    <RootNamespace>Microsoft.Health.SqlServer.Tests.Integration</RootNamespace>
   </PropertyGroup>
 
   <ItemGroup>

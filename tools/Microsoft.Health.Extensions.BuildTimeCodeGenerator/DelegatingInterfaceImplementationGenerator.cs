@@ -99,14 +99,14 @@ namespace Microsoft.Health.Extensions.BuildTimeCodeGenerator
                                 SyntaxKind.GetAccessorDeclaration,
                                 Block(ReturnStatement(
                                     indexParameters.Length == 0
-                                        ? (ExpressionSyntax)MemberAccessExpression(SyntaxKind.SimpleMemberAccessExpression, FieldName, IdentifierName(propertyInfo.Name))
+                                        ? MemberAccessExpression(SyntaxKind.SimpleMemberAccessExpression, FieldName, IdentifierName(propertyInfo.Name))
                                         : ElementAccessExpression(FieldName).AddArgumentListArguments(indexParameters.Select(p => Argument(IdentifierName(p.Name))).ToArray())))));
                     }
 
                     if (setter != null)
                     {
                         ExpressionSyntax assignmentTarget = indexParameters.Length == 0
-                            ? (ExpressionSyntax)MemberAccessExpression(SyntaxKind.SimpleMemberAccessExpression, typedFieldName, IdentifierName(propertyInfo.Name))
+                            ? MemberAccessExpression(SyntaxKind.SimpleMemberAccessExpression, typedFieldName, IdentifierName(propertyInfo.Name))
                             : ElementAccessExpression(FieldName).AddArgumentListArguments(indexParameters.Select(p => Argument(IdentifierName(p.Name))).ToArray());
 
                         propertyDeclarationSyntax = propertyDeclarationSyntax.AddAccessorListAccessors(
@@ -155,9 +155,13 @@ namespace Microsoft.Health.Extensions.BuildTimeCodeGenerator
                             SyntaxKind.SimpleMemberAccessExpression,
                             typedFieldName,
                             methodName),
-                        ArgumentList(SeparatedList(methodInfo.GetParameters().Select(p => Argument(IdentifierName(p.Name))))));
+                        ArgumentList(
+                            SeparatedList(
+                                methodInfo.GetParameters().Select(p => p.ParameterType.IsByRef
+                                    ? Argument(default, Token(SyntaxKind.RefKeyword), IdentifierName(p.Name))
+                                    : Argument(IdentifierName(p.Name))))));
 
-                    var block = Block(methodInfo.ReturnType == typeof(void) ? ExpressionStatement(invocation) : (StatementSyntax)ReturnStatement(invocation));
+                    var block = Block(methodInfo.ReturnType == typeof(void) ? ExpressionStatement(invocation) : ReturnStatement(invocation));
 
                     method = method.WithBody(block);
 

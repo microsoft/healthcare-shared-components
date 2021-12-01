@@ -3,8 +3,8 @@
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
 
   <PropertyGroup>
-    <ToolTargetFramework>net5.0</ToolTargetFramework>
-    <ToolTargetFramework Condition="'$(TargetFramework)' == 'netcoreapp3.1' Or '$(TargetFramework)' == 'net5.0'">$(TargetFramework)</ToolTargetFramework>
+    <ToolTargetFramework>net6.0</ToolTargetFramework>
+    <ToolTargetFramework Condition="'$(TargetFramework)' == 'net5.0' Or '$(TargetFramework)' == 'net6.0'">$(TargetFramework)</ToolTargetFramework>
     <GeneratorPath>$(MSBuildThisFileDirectory)../../tools/$(ToolTargetFramework)/Microsoft.Health.Extensions.BuildTimeCodeGenerator.dll</GeneratorPath>
   </PropertyGroup>
 

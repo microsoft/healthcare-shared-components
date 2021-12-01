@@ -1,8 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>$(SupportedFrameworks);</TargetFrameworks>
-    <RootNamespace>Microsoft.Health.Core.UnitTests</RootNamespace>
+    <TargetFrameworks>$(SupportedFrameworks)</TargetFrameworks>
   </PropertyGroup>
 
   <ItemGroup>

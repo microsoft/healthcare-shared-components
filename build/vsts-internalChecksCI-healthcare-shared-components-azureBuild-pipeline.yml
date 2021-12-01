@@ -42,7 +42,13 @@ jobs:
       versionSpec: 4.3.0
 
   - task: UseDotNet@2
-    displayName: Use .NET Core sdk
+    displayName: 'Use .NET 5.x SDK'
+    inputs:
+      packageType: sdk
+      version: 5.x
+
+  - task: UseDotNet@2
+    displayName: Use .NET sdk
     inputs:
       useGlobalJson: true
 
@@ -53,7 +59,7 @@ jobs:
       projects: '**/*.sln'
       selectOrConfig: config
       nugetConfigPath: nuget.config
-      
+
   - task: DotNetCoreCLI@1
     name: ''
     displayName: dotnet build
@@ -127,7 +133,7 @@ jobs:
     inputs:
       areaPathParent: Health
       areaPathChild: Olympus
-   
+
 - job: Phase_2
   displayName: Anti-malware Phase
   cancelTimeoutInMinutes: 1

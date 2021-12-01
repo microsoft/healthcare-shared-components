@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <Description>Identity primitives used by Microsoft Health for local development.</Description>
-    <TargetFrameworks>$(SupportedFrameworks);</TargetFrameworks>
+    <TargetFrameworks>$(SupportedFrameworks)</TargetFrameworks>
   </PropertyGroup>
 
   <ItemGroup>
@@ -20,7 +20,6 @@
     <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="$(SdkPackageVersion)" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="$(SdkPackageVersion)" />
     <PackageReference Include="Microsoft.Extensions.Options" Version="$(SdkPackageVersion)" />
-    <PackageReference Include="System.Text.Encodings.Web" Version="6.0.0" PrivateAssets="All" />
   </ItemGroup>
 
   <ItemGroup>

@@ -19,7 +19,7 @@ namespace SchemaManager.Core {
     // class via a tool like ResGen or Visual Studio.
     // To add or remove a member, edit your .ResX file then rerun ResGen
     // with the /str option, or rebuild your VS project.
-    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "16.0.0.0")]
+    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "17.0.0.0")]
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
     internal class Resources {
@@ -61,15 +61,6 @@ namespace SchemaManager.Core {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to There are no available versions..
-        /// </summary>
-        internal static string AvailableVersionsDefaultErrorMessage {
-            get {
-                return ResourceManager.GetString("AvailableVersionsDefaultErrorMessage", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to The available versions are not up-to-date..
         /// </summary>
         internal static string AvailableVersionsErrorMessage {
@@ -88,83 +79,11 @@ namespace SchemaManager.Core {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Script execution has failed due to &quot;{0}&quot;..
-        /// </summary>
-        internal static string QueryExecutionErrorMessage {
-            get {
-                return ResourceManager.GetString("QueryExecutionErrorMessage", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Unable to connect to host &quot;{0}&quot;..
-        /// </summary>
-        internal static string RequestFailedMessage {
-            get {
-                return ResourceManager.GetString("RequestFailedMessage", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Attempt {0} of {1} to wait for the current version to be updated on the server..
-        /// </summary>
-        internal static string RetryCurrentSchemaVersion {
-            get {
-                return ResourceManager.GetString("RetryCurrentSchemaVersion", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Attempt {0} of {1} to verify if all the instances are running the previous version..
-        /// </summary>
-        internal static string RetryCurrentVersions {
-            get {
-                return ResourceManager.GetString("RetryCurrentVersions", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Attempt {0} of {1} to wait for the server to get started..
-        /// </summary>
-        internal static string RetryHttpRequestException {
-            get {
-                return ResourceManager.GetString("RetryHttpRequestException", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Schema migration is started for the version : {0}..
-        /// </summary>
-        internal static string SchemaMigrationStartedMessage {
-            get {
-                return ResourceManager.GetString("SchemaMigrationStartedMessage", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Schema migration is completed successfully for the version : {0}..
-        /// </summary>
-        internal static string SchemaMigrationSuccessMessage {
-            get {
-                return ResourceManager.GetString("SchemaMigrationSuccessMessage", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to The specified schema version &quot;{0}&quot; is not available..
         /// </summary>
         internal static string SpecifiedVersionNotAvailable {
             get {
                 return ResourceManager.GetString("SpecifiedVersionNotAvailable", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to The current schema version is already greater than or equals to the target schema version..
-        /// </summary>
-        internal static string TargetVersionLesserThanCurrentVersion {
-            get {
-                return ResourceManager.GetString("TargetVersionLesserThanCurrentVersion", resourceCulture);
             }
         }
         

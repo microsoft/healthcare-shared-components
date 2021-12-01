@@ -9,11 +9,11 @@
     <EmbedUntrackedSources>true</EmbedUntrackedSources>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <HighEntropyVA>true</HighEntropyVA>
-    <LangVersion>9.0</LangVersion>
+    <LangVersion>latest</LangVersion>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <Product>Microsoft Health</Product>
     <PublishRepositoryUrl>true</PublishRepositoryUrl>
-    <SupportedFrameworks>netcoreapp3.1;net5.0</SupportedFrameworks>
+    <SupportedFrameworks>net5.0;net6.0</SupportedFrameworks>
     <TargetLatestRuntimePatch>true</TargetLatestRuntimePatch>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <WarningsAsErrors />
@@ -25,14 +25,14 @@
   </PropertyGroup>
 
   <Choose>
-    <When Condition="$(TargetFramework.StartsWith('net5'))">
+    <When Condition="'$(TargetFramework)' == 'net6.0'">
       <PropertyGroup>
-        <SdkPackageVersion>5.0.0</SdkPackageVersion>
+        <SdkPackageVersion>6.0.0</SdkPackageVersion>
       </PropertyGroup>
     </When>
     <Otherwise>
       <PropertyGroup>
-        <SdkPackageVersion>3.1.16</SdkPackageVersion>
+        <SdkPackageVersion>5.0.0</SdkPackageVersion>
       </PropertyGroup>
     </Otherwise>
   </Choose>
@@ -64,8 +64,7 @@
   <Choose>
     <When Condition="$(MSBuildProjectName)!='Microsoft.Health.Extensions.BuildTimeCodeGenerator' AND !$(MSBuildProjectName.Contains('Test'))">
       <PropertyGroup>
-        <AnalysisLevel>5.0</AnalysisLevel>
-        <AnalysisMode>AllEnabledByDefault</AnalysisMode>
+        <AnalysisLevel>latest-All</AnalysisLevel>
         <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
       </PropertyGroup>
     </When>

@@ -19,7 +19,7 @@ namespace Microsoft.Health.SqlServer {
     // class via a tool like ResGen or Visual Studio.
     // To add or remove a member, edit your .ResX file then rerun ResGen
     // with the /str option, or rebuild your VS project.
-    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "16.0.0.0")]
+    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "17.0.0.0")]
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
     internal class Resources {
@@ -66,33 +66,6 @@ namespace Microsoft.Health.SqlServer {
         internal static string AvailableVersionsDefaultErrorMessage {
             get {
                 return ResourceManager.GetString("AvailableVersionsDefaultErrorMessage", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to The base schema already exists..
-        /// </summary>
-        internal static string BaseSchemaAlreadyExists {
-            get {
-                return ResourceManager.GetString("BaseSchemaAlreadyExists", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to The base schema execution is started..
-        /// </summary>
-        internal static string BaseSchemaExecuting {
-            get {
-                return ResourceManager.GetString("BaseSchemaExecuting", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to The base schema execution is completed..
-        /// </summary>
-        internal static string BaseSchemaSuccess {
-            get {
-                return ResourceManager.GetString("BaseSchemaSuccess", resourceCulture);
             }
         }
         
@@ -201,15 +174,6 @@ namespace Microsoft.Health.SqlServer {
         internal static string PrecisionValueOutOfRange {
             get {
                 return ResourceManager.GetString("PrecisionValueOutOfRange", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Attempt {0} of {1} to verify if the base schema is synced up with the service..
-        /// </summary>
-        internal static string RetryInstanceSchemaRecord {
-            get {
-                return ResourceManager.GetString("RetryInstanceSchemaRecord", resourceCulture);
             }
         }
         

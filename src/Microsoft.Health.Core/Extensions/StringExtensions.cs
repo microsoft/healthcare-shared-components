@@ -21,11 +21,9 @@ namespace Microsoft.Health.Core.Extensions
         {
             EnsureArg.IsNotNull(data, nameof(data));
 
-            using (var sha256 = new SHA256Managed())
-            {
-                var hashed = sha256.ComputeHash(Encoding.UTF8.GetBytes(data));
-                return BitConverter.ToString(hashed).Replace("-", string.Empty, StringComparison.Ordinal);
-            }
+            using var sha256 = HashAlgorithm.Create(nameof(SHA256));
+            var hashed = sha256.ComputeHash(Encoding.UTF8.GetBytes(data));
+            return BitConverter.ToString(hashed).Replace("-", string.Empty, StringComparison.Ordinal);
         }
     }
 }
