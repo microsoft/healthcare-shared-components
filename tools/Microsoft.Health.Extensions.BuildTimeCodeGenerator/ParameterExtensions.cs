@@ -47,15 +47,16 @@ namespace Microsoft.Health.Extensions.BuildTimeCodeGenerator
 
         private static SyntaxList<AttributeListSyntax> GetAttributeList(this IEnumerable<CustomAttributeData> attributes)
         {
-            return SyntaxFactory.SingletonList(SyntaxFactory.AttributeList(
-                SyntaxFactory.SeparatedList(
-                    attributes.Select(x => SyntaxFactory.Attribute(
-                        SyntaxFactory.IdentifierName(x.AttributeType.FullName),
-                        SyntaxFactory.AttributeArgumentList(
-                            SyntaxFactory.SeparatedList(
-                                x.ConstructorArguments
-                                    .SelectMany(GetConstructorArguments)
-                                    .Concat(x.NamedArguments.Select(GetNamedAttributeArgument)))))))));
+            return SyntaxFactory.SingletonList(
+                SyntaxFactory.AttributeList(
+                    SyntaxFactory.SeparatedList(
+                        attributes.Select(x => SyntaxFactory.Attribute(
+                            SyntaxFactory.IdentifierName(x.AttributeType.FullName),
+                            SyntaxFactory.AttributeArgumentList(
+                                SyntaxFactory.SeparatedList(
+                                    x.ConstructorArguments
+                                        .SelectMany(GetConstructorArguments)
+                                        .Concat(x.NamedArguments.Select(GetNamedAttributeArgument)))))))));
         }
 
         private static IEnumerable<AttributeArgumentSyntax> GetConstructorArguments(CustomAttributeTypedArgument arg)
