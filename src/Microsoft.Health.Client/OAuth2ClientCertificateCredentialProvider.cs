@@ -28,7 +28,7 @@ namespace Microsoft.Health.Client
 
         /// <summary>
         /// Initializes a new instance of the <see cref="OAuth2ClientCertificateCredentialProvider"/> class.
-        /// This class is used to obtain a token for the configured resource via the OAuth2 token endpoint via client credentials.
+        /// This class is used to obtain a token for the configured resource via the OAuth2 token endpoint via client certificate credentials.
         /// </summary>
         /// <param name="oAuth2ClientCertificateCredentialConfiguration">The configuration to use when obtaining a token.</param>
         /// <param name="httpClient">The <see cref="HttpClient" /> to use when calling the token uri.</param>
@@ -43,6 +43,7 @@ namespace Microsoft.Health.Client
 
         protected override async Task<string> BearerTokenFunction(CancellationToken cancellationToken)
         {
+            // Values specified for the assertion JWT specified here: https://docs.microsoft.com/azure/active-directory/develop/active-directory-certificate-credentials
             var additionalClaims = new List<Claim>
             {
                 new (JwtRegisteredClaimNames.Sub,  _oAuth2ClientCertificateCredentialConfiguration.ClientId),
