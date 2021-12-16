@@ -40,7 +40,7 @@ namespace Microsoft.Health.EventGrid
         /// </summary>
         /// <param name="endpoint">Uri</param>
         /// <param name="httpClient">httpClient with client certificate</param>
-        /// <param name="keyCredentialName">string</param>
+        /// <param name="keyCredentialName">Key Vault credential name</param>
         public EventGridPublisher(Uri endpoint, HttpClient httpClient, string keyCredentialName)
         {
             EnsureArg.IsNotNull(endpoint, nameof(endpoint));
@@ -51,6 +51,22 @@ namespace Microsoft.Health.EventGrid
             {
                 Transport = new HttpClientTransport(httpClient),
             };
+
+            _client = new EventGridPublisherClient(endpoint, new AzureKeyCredential(keyCredentialName), options);
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="EventGridPublisher"/> class.
+        /// </summary>
+        /// <param name="endpoint">Uri</param>
+        /// <param name="keyCredentialName">Key Vault credential name</param>
+        /// <param name="options">Options that configure the Event Grid client</param>
+        public EventGridPublisher(Uri endpoint, string keyCredentialName, EventGridPublisherClientOptions options)
+        {
+            EnsureArg.IsNotNull(endpoint, nameof(endpoint));
+            EnsureArg.IsNotNull(keyCredentialName, nameof(keyCredentialName));
+            EnsureArg.IsNotNull(options, nameof(options));
+
             _client = new EventGridPublisherClient(endpoint, new AzureKeyCredential(keyCredentialName), options);
         }
 
