@@ -43,7 +43,7 @@ namespace Microsoft.Health.SqlServer.Features.Schema.Manager
             {
 #if NET5_0_OR_GREATER
                 var responseBodyAsString =
- await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
+                    await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
 #else
                 var responseBodyAsString = await response.Content
                     .ReadAsStringAsync()
@@ -87,23 +87,24 @@ namespace Microsoft.Health.SqlServer.Features.Schema.Manager
                 .GetAsync(KnownRoutes.RootedCompatibilityUri, cancellationToken)
                 .ConfigureAwait(false);
 
-            if (!response.IsSuccessStatusCode)
+            if (response.IsSuccessStatusCode)
             {
-                throw new SchemaManagerException(string.Format(
-                    CultureInfo.InvariantCulture,
-                    Resources.CompatibilityDefaultErrorMessage,
-                    response.StatusCode));
-            }
 #if NET5_0_OR_GREATER
-            var responseBodyAsString = await response.Content
-                .ReadAsStringAsync(cancellationToken)
-                .ConfigureAwait(false);
+                var responseBodyAsString = await response.Content
+                    .ReadAsStringAsync(cancellationToken)
+                    .ConfigureAwait(false);
 #else
             var responseBodyAsString = await response.Content
                 .ReadAsStringAsync()
                 .ConfigureAwait(false);
 #endif
-            return JsonConvert.DeserializeObject<CompatibleVersion>(responseBodyAsString);
+                return JsonConvert.DeserializeObject<CompatibleVersion>(responseBodyAsString);
+            }
+
+            throw new SchemaManagerException(string.Format(
+                CultureInfo.InvariantCulture,
+                Resources.CompatibilityDefaultErrorMessage,
+                response.StatusCode));
         }
 
         public async Task<List<AvailableVersion>> GetAvailabilityAsync(CancellationToken cancellationToken)
@@ -114,7 +115,7 @@ namespace Microsoft.Health.SqlServer.Features.Schema.Manager
             {
 #if NET5_0_OR_GREATER
                 var responseBodyAsString =
- await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
+                    await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
 #else
                 var responseBodyAsString = await response.Content
                     .ReadAsStringAsync()
