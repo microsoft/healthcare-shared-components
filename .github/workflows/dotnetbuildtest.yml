@@ -12,13 +12,13 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v2.3.5
-    - name: Setup .NET Core 3.1.x
-      uses: actions/setup-dotnet@v1.8.2
-      with:
-        dotnet-version: '3.1.x' # SDK Version to use; x will use the latest version of the 3.1 channel
+    - uses: actions/checkout@v2.4.0
     - name: Setup .NET (global.json)
-      uses: actions/setup-dotnet@v1.8.2
+      uses: actions/setup-dotnet@v1.9.0
+    - name: Setup .NET 5.0 SDK
+      uses: actions/setup-dotnet@v1.9.0
+      with:
+        dotnet-version: '5.x'
     - name: Build with dotnet
       run: dotnet build --configuration Release
     - name: Run UnitTests with dotnet

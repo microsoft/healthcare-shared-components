@@ -45,7 +45,7 @@ namespace Microsoft.Health.Blob.Features.Storage
             BlobContainerClient blobContainer = client.GetBlobContainerClient(blobContainerConfiguration.ContainerName);
             BlockBlobClient blob = blobContainer.GetBlockBlobClient(TestBlobName);
 
-            _logger.LogInformation("Reading and writing blob: {container}/{blob}", blobContainerConfiguration.ContainerName, TestBlobName);
+            _logger.LogInformation("Reading and writing blob: {Container}/{Blob}", blobContainerConfiguration.ContainerName, TestBlobName);
             using var content = new MemoryStream(Encoding.UTF8.GetBytes(TestBlobContent));
             await blob.UploadAsync(
                 content,

@@ -4,7 +4,7 @@
 
   <PropertyGroup>
     <Description>SQL Server extensions and utilities used by Microsoft Health.</Description>
-    <TargetFrameworks>$(SupportedFrameworks);</TargetFrameworks>
+    <TargetFrameworks>$(SupportedFrameworks)</TargetFrameworks>
   </PropertyGroup>
 
   <ItemGroup>
@@ -16,10 +16,15 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Compile Remove="**\*.generated.*.cs" />
+    <Compile Include="**\*.generated.$(TargetFramework).cs" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="Ensure.That" Version="10.1.0" />
     <PackageReference Include="MediatR" Version="9.0.0" />
     <PackageReference Include="Microsoft.Azure.Services.AppAuthentication" Version="1.6.2" />
-    <PackageReference Include="Microsoft.Data.SqlClient" Version="3.0.1" />
+    <PackageReference Include="Microsoft.Data.SqlClient" Version="4.0.0" />
     <PackageReference Include="Microsoft.Extensions.Configuration.Abstractions" Version="$(SdkPackageVersion)" />
     <PackageReference Include="Microsoft.Extensions.Configuration.Binder" Version="$(SdkPackageVersion)" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="$(SdkPackageVersion)" />
@@ -51,7 +56,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Generated Include="IndentedStringBuilder.Generated.cs">
+    <Generated Include="IndentedStringBuilder.Generated.$(TargetFramework).cs">
       <Generator>IndentedStringBuilderGenerator</Generator>
       <Namespace>Microsoft.Health.SqlServer</Namespace>
     </Generated>

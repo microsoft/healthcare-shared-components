@@ -99,14 +99,14 @@ namespace Microsoft.Health.Extensions.BuildTimeCodeGenerator
                                 SyntaxKind.GetAccessorDeclaration,
                                 Block(ReturnStatement(
                                     indexParameters.Length == 0
-                                        ? (ExpressionSyntax)MemberAccessExpression(SyntaxKind.SimpleMemberAccessExpression, FieldName, IdentifierName(propertyInfo.Name))
+                                        ? MemberAccessExpression(SyntaxKind.SimpleMemberAccessExpression, FieldName, IdentifierName(propertyInfo.Name))
                                         : ElementAccessExpression(FieldName).AddArgumentListArguments(indexParameters.Select(p => Argument(IdentifierName(p.Name))).ToArray())))));
                     }
 
                     if (setter != null)
                     {
                         ExpressionSyntax assignmentTarget = indexParameters.Length == 0
-                            ? (ExpressionSyntax)MemberAccessExpression(SyntaxKind.SimpleMemberAccessExpression, typedFieldName, IdentifierName(propertyInfo.Name))
+                            ? MemberAccessExpression(SyntaxKind.SimpleMemberAccessExpression, typedFieldName, IdentifierName(propertyInfo.Name))
                             : ElementAccessExpression(FieldName).AddArgumentListArguments(indexParameters.Select(p => Argument(IdentifierName(p.Name))).ToArray());
 
                         propertyDeclarationSyntax = propertyDeclarationSyntax.AddAccessorListAccessors(
@@ -132,10 +132,12 @@ namespace Microsoft.Health.Extensions.BuildTimeCodeGenerator
                     var method = MethodDeclaration(methodInfo.ReturnType.ToTypeSyntax(), methodInfo.Name)
                         .WithExplicitInterfaceSpecifier(explicitInterfaceSpecifier)
                         .AddParameterListParameters(
-                            methodInfo.GetParameters().Select(p =>
-                                    Parameter(Identifier(p.Name))
-                                        .WithType(p.ParameterType.ToTypeSyntax())
-                                        .WithModifiers(p.IsDefined(typeof(ParamArrayAttribute), false) ? TokenList(Token(SyntaxKind.ParamsKeyword)) : TokenList()))
+                            methodInfo
+                                .GetParameters()
+                                .Select(p => Parameter(Identifier(p.Name))
+                                    .WithType(p.ParameterType.ToTypeSyntax())
+                                    .WithModifiers(p.IsDefined(typeof(ParamArrayAttribute), false) ? TokenList(Token(SyntaxKind.ParamsKeyword)) : TokenList())
+                                    .WithOptionalAttributeLists(p.CustomAttributes))
                                 .ToArray())
                         .AddAttributeLists(ExcludeFromCodeCoverageAttributeSyntax)
                         .WithBody(Block())
@@ -155,9 +157,16 @@ namespace Microsoft.Health.Extensions.BuildTimeCodeGenerator
                             SyntaxKind.SimpleMemberAccessExpression,
                             typedFieldName,
                             methodName),
-                        ArgumentList(SeparatedList(methodInfo.GetParameters().Select(p => Argument(IdentifierName(p.Name))))));
+                        ArgumentList(
+                            SeparatedList(
+                                methodInfo
+                                    .GetParameters()
+                                    .Select(p => Argument(
+                                        default,
+                                        p.ParameterType.IsByRef ? Token(SyntaxKind.RefKeyword) : default,
+                                        IdentifierName(p.Name))))));
 
-                    var block = Block(methodInfo.ReturnType == typeof(void) ? ExpressionStatement(invocation) : (StatementSyntax)ReturnStatement(invocation));
+                    var block = Block(methodInfo.ReturnType == typeof(void) ? ExpressionStatement(invocation) : ReturnStatement(invocation));
 
                     method = method.WithBody(block);
 

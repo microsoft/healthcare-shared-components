@@ -51,15 +51,16 @@ namespace Microsoft.Health.SqlServer.Features.Schema.Manager
             {
                 var script = baseScriptProvider.GetScript();
 
-                _logger.LogInformation(Resources.BaseSchemaExecuting);
+                _logger.LogInformation("The base schema execution is started.");
 
                 await _schemaManagerDataStore.ExecuteScriptAsync(script, cancellationToken).ConfigureAwait(false);
 
-                _logger.LogInformation(Resources.BaseSchemaSuccess);
-                return;
+                _logger.LogInformation("The base schema execution is completed.");
             }
-
-            _logger.LogWarning(Resources.BaseSchemaAlreadyExists);
+            else
+            {
+                _logger.LogWarning("The base schema already exists.");
+            }
         }
 
         public async Task EnsureInstanceSchemaRecordExistsAsync(CancellationToken cancellationToken)
@@ -68,17 +69,18 @@ namespace Microsoft.Health.SqlServer.Features.Schema.Manager
             int attempts = 1;
 
             await Policy.Handle<SchemaManagerException>()
-                .WaitAndRetryAsync(
-                    RetryAttempts,
-                    _ => RetrySleepDuration,
-                    (exception, _) =>
-                    {
-                        _logger.LogWarning(
-                            exception,
-                            string.Format(Resources.RetryInstanceSchemaRecord, attempts++, RetryAttempts));
-                    })
-                .ExecuteAsync(InstanceSchemaRecordCreatedAsync, cancellationToken)
-                .ConfigureAwait(false);
+            .WaitAndRetryAsync(
+                retryCount: RetryAttempts,
+                sleepDurationProvider: (retryCount) => RetrySleepDuration,
+                onRetry: (exception, retryCount) =>
+                {
+                    _logger.LogWarning(
+                        exception,
+                        "Attempt {Attempt} of {MaxAttempts} to verify if the base schema is synced up with the service.",
+                        attempts++,
+                        RetryAttempts);
+                })
+            .ExecuteAsync(token => InstanceSchemaRecordCreatedAsync(token), cancellationToken);
         }
 
         private async Task InstanceSchemaRecordCreatedAsync(CancellationToken cancellationToken)

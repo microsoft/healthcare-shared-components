@@ -20,17 +20,17 @@ jobs:
 
     steps:
     - name: Checkout repository
-      uses: actions/checkout@v2.3.5
+      uses: actions/checkout@v2.4.0
 
     - name: Install .NET SDK
-      uses: actions/setup-dotnet@v1.8.2
+      uses: actions/setup-dotnet@v1.9.0
       if: ${{ matrix.language == 'csharp' }}
 
-    - name: Install .NET SDK/Runtime for SQL generation
-      uses: actions/setup-dotnet@v1.8.2
+    - name: Install .NET 5.0 SDK
+      uses: actions/setup-dotnet@v1.9.0
       if: ${{ matrix.language == 'csharp' }}
       with:
-        dotnet-version: '3.1.x'
+        dotnet-version: '5.x'
 
     # Initializes the CodeQL tools for scanning.
     - name: Initialize CodeQL

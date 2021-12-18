@@ -69,6 +69,12 @@ namespace Microsoft.Health.Extensions.BuildTimeCodeGenerator
                     return IncompleteMember();
                 }
 
+                if (node.ParameterList.Parameters.Any(p => p.Identifier.ValueText == "handler"))
+                {
+                    // skip methods that use the AppendInterpolatedStringHandler
+                    return IncompleteMember();
+                }
+
                 node = node
                     .WithExplicitInterfaceSpecifier(null)
                     .AddModifiers(Token(SyntaxKind.PublicKeyword));

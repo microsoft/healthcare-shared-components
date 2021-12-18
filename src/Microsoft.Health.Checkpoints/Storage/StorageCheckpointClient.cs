@@ -52,7 +52,7 @@ namespace Microsoft.Health.Checkpoints.Storage
             {
                 if (blobPage.Values.Count == 0)
                 {
-                    _logger.LogInformation("No blob found for blob name {blobName}.", blobName);
+                    _logger.LogInformation("No blob found for blob name {BlobName}.", blobName);
                     return null;
                 }
 
@@ -78,7 +78,7 @@ namespace Microsoft.Health.Checkpoints.Storage
 
                     if (string.IsNullOrWhiteSpace(lastProcessedDateTime) && string.IsNullOrWhiteSpace(lastProcessedIdentifier))
                     {
-                        _logger.LogInformation("No valid checkpoint found for {blobName}.", blobName);
+                        _logger.LogInformation("No valid checkpoint found for {BlobName}.", blobName);
                         return null;
                     }
 

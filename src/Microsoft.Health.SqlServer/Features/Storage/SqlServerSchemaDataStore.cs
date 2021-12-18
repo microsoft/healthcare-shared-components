@@ -50,7 +50,7 @@ namespace Microsoft.Health.SqlServer.Features.Storage
 
                 using (var dataReader = await sqlCommandWrapper.ExecuteReaderAsync(cancellationToken))
                 {
-                    if (dataReader.Read())
+                    if (await dataReader.ReadAsync(cancellationToken))
                     {
                         compatibleVersions = new CompatibleVersions(ConvertToInt(dataReader.GetValue(0)), ConvertToInt(dataReader.GetValue(1)));
                     }
@@ -134,7 +134,7 @@ namespace Microsoft.Health.SqlServer.Features.Storage
                             while (await dataReader.ReadAsync(cancellationToken))
                             {
                                 IList<string> instanceNames = new List<string>();
-                                if (!dataReader.IsDBNull(2))
+                                if (!await dataReader.IsDBNullAsync(2, cancellationToken))
                                 {
                                     string names = dataReader.GetString(2);
                                     instanceNames = names.Split(",").ToList();

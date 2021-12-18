@@ -64,6 +64,8 @@ namespace Microsoft.Health.SqlServer.Features.Schema
 
         public async Task InitializeAsync(bool forceIncrementalSchemaUpgrade = false, CancellationToken cancellationToken = default)
         {
+            bool schemaUpgradedNotificationSent = false;
+
             if (!await CanInitializeAsync(cancellationToken).ConfigureAwait(false))
             {
                 return;
@@ -71,11 +73,13 @@ namespace Microsoft.Health.SqlServer.Features.Schema
 
             await GetCurrentSchemaVersionAsync(cancellationToken).ConfigureAwait(false);
 
-            _logger.LogInformation("Initial check of schema version is {version}", _schemaInformation.Current?.ToString(CultureInfo.InvariantCulture) ?? "NULL");
+            _logger.LogInformation("Initial check of schema version is {Version}", _schemaInformation.Current?.ToString(CultureInfo.InvariantCulture) ?? "NULL");
 
             if (_sqlServerDataStoreConfiguration.SchemaOptions.AutomaticUpdatesEnabled)
             {
-                IDistributedLock sqlLock = new SqlDistributedLock(SchemaUpgradeLockName, await _sqlConnectionStringProvider.GetSqlConnectionString(cancellationToken));
+                using SqlConnection sqlConnection = await _sqlConnectionFactory.GetSqlConnectionAsync(cancellationToken: cancellationToken);
+                await sqlConnection.OpenAsync(cancellationToken);
+                IDistributedLock sqlLock = new SqlDistributedLock(SchemaUpgradeLockName, sqlConnection);
 
                 try
                 {
@@ -91,7 +95,7 @@ namespace Microsoft.Health.SqlServer.Features.Schema
 
                         // Recheck the version with lock
                         await GetCurrentSchemaVersionAsync(cancellationToken).ConfigureAwait(false);
-                        _logger.LogInformation("Schema version is {version}", _schemaInformation.Current?.ToString(CultureInfo.InvariantCulture) ?? "NULL");
+                        _logger.LogInformation("Schema version is {Version}", _schemaInformation.Current?.ToString(CultureInfo.InvariantCulture) ?? "NULL");
 
                         // If the stored procedure to get the current schema version doesn't exist
                         if (_schemaInformation.Current == null)
@@ -114,36 +118,45 @@ namespace Microsoft.Health.SqlServer.Features.Schema
                             await GetCurrentSchemaVersionAsync(cancellationToken).ConfigureAwait(false);
 
                             await _mediator.NotifySchemaUpgradedAsync((int)_schemaInformation.Current, true);
+
+                            schemaUpgradedNotificationSent = true;
+                        }
+
+                        // If the current schema version needs to be upgraded
+                        if (_schemaInformation.Current < _schemaInformation.MaximumSupportedVersion)
+                        {
+                            // Apply each .diff.sql file one by one.
+                            int current = _schemaInformation.Current ?? 0;
+                            for (int i = current + 1; i <= _schemaInformation.MaximumSupportedVersion; i++)
+                            {
+                                await _schemaUpgradeRunner.ApplySchemaAsync(version: i, applyFullSchemaSnapshot: false, cancellationToken).ConfigureAwait(false);
+
+                                // we need to ensure that the schema upgrade notification is sent after updating the _schemaInformation.Current for each upgraded version
+                                await GetCurrentSchemaVersionAsync(cancellationToken).ConfigureAwait(false);
+
+                                await _mediator.NotifySchemaUpgradedAsync((int)_schemaInformation.Current, false);
+                            }
+
+                            schemaUpgradedNotificationSent = true;
                         }
                     }
                 }
                 catch (SqlException e) when (e.Number == SqlErrorCodes.KilledSessionState)
                 {
                     _logger.LogWarning("Schema upgrade lock was not acquired because the session is in the kill state, skipping");
-                    return;
                 }
 
                 // This exception sometimes occurs at Medallion.Threading.Internal.Data.MultiplexedConnectionLock.ReleaseAsync
                 catch (SqlException e) when (e.Message.Contains("The connection is broken and recovery is not possible.", StringComparison.OrdinalIgnoreCase))
                 {
                     _logger.LogWarning($"Error occurred during multiplexed release lock");
-                    return;
                 }
 
-                // If the current schema version needs to be upgraded
-                if (_schemaInformation.Current < _schemaInformation.MaximumSupportedVersion)
+                // Ensure to publish the Schema notifications even when schema is up-to date and Schema Initializer is called again (like restarting FHIR server will call this again)
+                // There is a dependency on this notification in FHIR server to enable some background jobs
+                if (!schemaUpgradedNotificationSent && _schemaInformation.Current >= _schemaInformation.MinimumSupportedVersion)
                 {
-                    // Apply each .diff.sql file one by one.
-                    int current = _schemaInformation.Current ?? 0;
-                    for (int i = current + 1; i <= _schemaInformation.MaximumSupportedVersion; i++)
-                    {
-                        await _schemaUpgradeRunner.ApplySchemaAsync(version: i, applyFullSchemaSnapshot: false, cancellationToken).ConfigureAwait(false);
-
-                        // we need to ensure that the schema upgrade notification is sent after updating the _schemaInformation.Current for each upgraded version
-                        await GetCurrentSchemaVersionAsync(cancellationToken).ConfigureAwait(false);
-
-                        await _mediator.NotifySchemaUpgradedAsync((int)_schemaInformation.Current, false);
-                    }
+                    await _mediator.NotifySchemaUpgradedAsync((int)_schemaInformation.Current, false);
                 }
             }
         }

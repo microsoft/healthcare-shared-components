@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <Description>Azure EventGrid utilities for Microsoft Health.</Description>
-    <TargetFrameworks>$(SupportedFrameworks);</TargetFrameworks>
+    <TargetFrameworks>$(SupportedFrameworks)</TargetFrameworks>
   </PropertyGroup>
 
   <ItemGroup>

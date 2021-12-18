@@ -5,10 +5,15 @@
 
 using System;
 using System.Data;
+using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
 using EnsureThat;
 using Microsoft.Data.SqlClient;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
+using Microsoft.Health.Core;
+using Microsoft.Health.SqlServer.Configs;
 using Microsoft.Health.SqlServer.Extensions;
 using Microsoft.SqlServer.Management.Common;
 using Microsoft.SqlServer.Management.Smo;
@@ -18,11 +23,17 @@ namespace Microsoft.Health.SqlServer.Features.Schema.Manager
     public class SchemaManagerDataStore : ISchemaManagerDataStore
     {
         private readonly ISqlConnectionFactory _sqlConnectionFactory;
+        private readonly SqlServerDataStoreConfiguration _sqlServerDataStoreConfiguration;
+        private readonly ILogger<SchemaManagerDataStore> _logger;
 
-        public SchemaManagerDataStore(ISqlConnectionFactory sqlConnectionFactory)
+        public SchemaManagerDataStore(
+            ISqlConnectionFactory sqlConnectionFactory,
+            IOptions<SqlServerDataStoreConfiguration> sqlServerDataStoreConfiguration,
+            ILogger<SchemaManagerDataStore> logger)
         {
-            EnsureArg.IsNotNull(sqlConnectionFactory);
-            _sqlConnectionFactory = sqlConnectionFactory;
+            _sqlServerDataStoreConfiguration = EnsureArg.IsNotNull(sqlServerDataStoreConfiguration?.Value, nameof(sqlServerDataStoreConfiguration));
+            _sqlConnectionFactory = EnsureArg.IsNotNull(sqlConnectionFactory, nameof(sqlConnectionFactory));
+            _logger = EnsureArg.IsNotNull(logger, nameof(logger));
         }
 
         /// <inheritdoc />
@@ -40,7 +51,7 @@ namespace Microsoft.Health.SqlServer.Features.Schema.Manager
                 .ConfigureAwait(false);
 
             await connection.TryOpenAsync(cancellationToken).ConfigureAwait(false);
-            var serverConnection = new ServerConnection(connection);
+            var serverConnection = GetServerConnectionWithTimeout(connection);
 
             try
             {
@@ -56,14 +67,14 @@ namespace Microsoft.Health.SqlServer.Features.Schema.Manager
                 }
 
                 var server = new Server(serverConnection);
+                var watch = Stopwatch.StartNew();
+                _logger.LogInformation("Script execution started at {UtcTime}", Clock.UtcNow);
+
                 server.ConnectionContext.ExecuteNonQuery(script);
 
-                await UpsertSchemaVersionAsync(
-                        connection,
-                        version,
-                        SchemaVersionStatus.completed.ToString(),
-                        cancellationToken)
-                    .ConfigureAwait(false);
+                watch.Stop();
+                _logger.LogInformation("Script execution time is {ElapsedTime}", watch.Elapsed);
+                await UpsertSchemaVersionAsync(connection, version, SchemaVersionStatus.completed.ToString(), cancellationToken).ConfigureAwait(false);
             }
             catch (Exception e) when (e is SqlException or ExecutionFailureException)
             {
@@ -200,6 +211,14 @@ namespace Microsoft.Health.SqlServer.Features.Schema.Manager
             await using var command = new SqlCommand(procedureQuery, connection);
 
             return (int)await command.ExecuteScalarAsync(cancellationToken).ConfigureAwait(false) != 0;
+        }
+
+        private ServerConnection GetServerConnectionWithTimeout(SqlConnection sqlConnection)
+        {
+            var serverConnection = new ServerConnection(sqlConnection);
+            serverConnection.StatementTimeout = (int)_sqlServerDataStoreConfiguration.StatementTimeout.TotalSeconds;
+            _logger.LogInformation("ServerConnection timeout sets to {TimeoutSeconds} seconds", serverConnection.StatementTimeout);
+            return serverConnection;
         }
     }
 }

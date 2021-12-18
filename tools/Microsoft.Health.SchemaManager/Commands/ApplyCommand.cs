@@ -61,7 +61,7 @@ namespace Microsoft.Health.SchemaManager.Commands
 
         private bool EnsureForce()
         {
-            _logger.LogWarning(Resources.ForceWarning);
+            _logger.LogWarning("Are you sure to apply command with force option? Type 'yes' to confirm.");
             return string.Equals(Console.ReadLine(), "yes", StringComparison.OrdinalIgnoreCase);
         }
     }

@@ -120,15 +120,6 @@
   <data name="AvailableVersionsDefaultErrorMessage" xml:space="preserve">
     <value>There are no available versions.</value>
   </data>
-  <data name="BaseSchemaAlreadyExists" xml:space="preserve">
-    <value>The base schema already exists.</value>
-  </data>
-  <data name="BaseSchemaExecuting" xml:space="preserve">
-    <value>The base schema execution is started.</value>
-  </data>
-  <data name="BaseSchemaSuccess" xml:space="preserve">
-    <value>The base schema execution is completed.</value>
-  </data>
   <data name="BaseScriptNotFound" xml:space="preserve">
     <value>The base script is not found.</value>
   </data>
@@ -167,10 +158,6 @@
   <data name="PrecisionValueOutOfRange" xml:space="preserve">
     <value>Precision value {0} must be greater than or equal to 1 and less than or equal to 53.</value>
     <comment>{0} is precision.</comment>
-  </data>
-  <data name="RetryInstanceSchemaRecord" xml:space="preserve">
-    <value>Attempt {0} of {1} to verify if the base schema is synced up with the service.</value>
-    <comment>(0) is retry attempt, {1} is total number of retries.</comment>
   </data>
   <data name="ScriptNotFound" xml:space="preserve">
     <value>The provided version is unknown.</value>
