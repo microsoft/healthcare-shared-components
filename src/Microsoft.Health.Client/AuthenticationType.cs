@@ -11,5 +11,6 @@ namespace Microsoft.Health.Client
         ManagedIdentity = 1,
         OAuth2ClientCredential = 2,
         OAuth2UserPasswordCredential = 3,
+        OAuth2ClientCertificateCredential = 4,
     }
 }
