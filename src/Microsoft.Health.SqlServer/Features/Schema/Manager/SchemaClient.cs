@@ -41,14 +41,7 @@ namespace Microsoft.Health.SqlServer.Features.Schema.Manager
 
             if (response.IsSuccessStatusCode)
             {
-#if NET5_0_OR_GREATER
-                var responseBodyAsString =
-                    await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
-#else
-                var responseBodyAsString = await response.Content
-                    .ReadAsStringAsync()
-                    .ConfigureAwait(false);
-#endif
+                var responseBodyAsString = await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
                 return JsonConvert.DeserializeObject<List<CurrentVersion>>(responseBodyAsString);
             }
 
@@ -66,13 +59,7 @@ namespace Microsoft.Health.SqlServer.Features.Schema.Manager
 
             if (response.IsSuccessStatusCode)
             {
-#if NET5_0_OR_GREATER
                 return await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
-#else
-                return await response.Content
-                    .ReadAsStringAsync()
-                    .ConfigureAwait(false);
-#endif
             }
 
             throw new SchemaManagerException(string.Format(
@@ -89,15 +76,7 @@ namespace Microsoft.Health.SqlServer.Features.Schema.Manager
 
             if (response.IsSuccessStatusCode)
             {
-#if NET5_0_OR_GREATER
-                var responseBodyAsString = await response.Content
-                    .ReadAsStringAsync(cancellationToken)
-                    .ConfigureAwait(false);
-#else
-            var responseBodyAsString = await response.Content
-                .ReadAsStringAsync()
-                .ConfigureAwait(false);
-#endif
+                var responseBodyAsString = await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
                 return JsonConvert.DeserializeObject<CompatibleVersion>(responseBodyAsString);
             }
 
@@ -113,14 +92,7 @@ namespace Microsoft.Health.SqlServer.Features.Schema.Manager
                 .ConfigureAwait(false);
             if (response.IsSuccessStatusCode)
             {
-#if NET5_0_OR_GREATER
-                var responseBodyAsString =
-                    await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
-#else
-                var responseBodyAsString = await response.Content
-                    .ReadAsStringAsync()
-                    .ConfigureAwait(false);
-#endif
+                var responseBodyAsString = await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
                 return JsonConvert.DeserializeObject<List<AvailableVersion>>(responseBodyAsString);
             }
 
@@ -138,13 +110,7 @@ namespace Microsoft.Health.SqlServer.Features.Schema.Manager
 
             if (response.IsSuccessStatusCode)
             {
-#if NET5_0_OR_GREATER
                 return await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
-#else
-                return await response.Content
-                    .ReadAsStringAsync()
-                    .ConfigureAwait(false);
-#endif
             }
 
             throw new SchemaManagerException(string.Format(
