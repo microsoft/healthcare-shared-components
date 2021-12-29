@@ -28,11 +28,7 @@ namespace Microsoft.Health.SqlServer.Api.Features.Schema
 
             _schemaJobWorker = schemaJobWorker;
             _schemaInformation = schemaInformation;
-#if NET5_0_OR_GREATER
             _instanceName = Guid.NewGuid() + "-" + Environment.ProcessId;
-#else
-            _instanceName = Guid.NewGuid() + "-" + System.Diagnostics.Process.GetCurrentProcess().Id;
-#endif
         }
 
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
