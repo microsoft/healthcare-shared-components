@@ -125,7 +125,7 @@ namespace Microsoft.Health.SqlServer.Features.Schema.Manager
 
             using SqlConnection connection = await _sqlConnectionFactory.GetSqlConnectionAsync(cancellationToken: cancellationToken).ConfigureAwait(false);
             await connection.TryOpenAsync(cancellationToken).ConfigureAwait(false);
-            var server = new Server(new ServerConnection(connection));
+            var server = new Server(GetServerConnectionWithTimeout(connection));
 
             server.ConnectionContext.ExecuteNonQuery(script);
         }
