@@ -133,7 +133,7 @@ namespace Microsoft.Extensions.DependencyInjection
                     {
                         clientBuilder = builder
                             .AddBlobServiceClient(new Uri(options.ConnectionString))
-                            .WithCredential(new DefaultAzureCredential(new DefaultAzureCredentialOptions { ManagedIdentityClientId = options.ClientId }));
+                            .WithCredential(new ManagedIdentityCredential(options.ClientId);
                     }
                     else
                     {
