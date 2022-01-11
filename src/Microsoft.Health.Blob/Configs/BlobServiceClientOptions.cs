@@ -3,6 +3,7 @@
 // Licensed under the MIT License (MIT). See LICENSE in the repo root for license information.
 // -------------------------------------------------------------------------------------------------
 
+using Azure.Identity;
 using Azure.Storage.Blobs;
 
 namespace Microsoft.Health.Blob.Configs
@@ -69,5 +70,11 @@ namespace Microsoft.Health.Blob.Configs
         /// </summary>
         /// <value>The settings for configuring the underlying HTTP transport.</value>
         public TransportOverrideOptions TransportOverride { get; set; }
+
+        /// <summary>
+        /// Gets or sets the options for configuring DefaultAzureCredential
+        /// </summary>
+        /// <value>The settings for configuring the default azure credential</value>
+        public DefaultAzureCredentialOptions DefaultAzureCredentialOptions { get; set; } = new DefaultAzureCredentialOptions();
     }
 }

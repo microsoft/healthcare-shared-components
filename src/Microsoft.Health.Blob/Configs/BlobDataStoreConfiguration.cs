@@ -3,6 +3,8 @@
 // Licensed under the MIT License (MIT). See LICENSE in the repo root for license information.
 // -------------------------------------------------------------------------------------------------
 
+using Azure.Identity;
+
 namespace Microsoft.Health.Blob.Configs
 {
     public class BlobDataStoreConfiguration
@@ -19,5 +21,11 @@ namespace Microsoft.Health.Blob.Configs
         /// If set, the client id of the managed identity to use when connecting to azure storage, if AuthenticationType == ManagedIdentity.
         /// </summary>
         public string ManagedIdentityClientId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the options for configuring DefaultAzureCredential
+        /// </summary>
+        /// <value>The settings for configuring the default azure credential</value>
+        public DefaultAzureCredentialOptions DefaultAzureCredentialOptions { get; set; } = new DefaultAzureCredentialOptions();
     }
 }

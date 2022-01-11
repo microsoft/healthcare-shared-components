@@ -26,7 +26,8 @@ namespace Microsoft.Health.Blob.Features.Storage
 
             if (configuration.AuthenticationType == BlobDataStoreAuthenticationType.ManagedIdentity)
             {
-                ManagedIdentityCredential credential = new ManagedIdentityCredential(configuration.ManagedIdentityClientId);
+                configuration.DefaultAzureCredentialOptions.ManagedIdentityClientId = configuration.ManagedIdentityClientId;
+                DefaultAzureCredential credential = new DefaultAzureCredential(configuration.DefaultAzureCredentialOptions);
 
                 return new BlobServiceClient(new Uri(configuration.ConnectionString), credential, blobClientOptions);
             }
