@@ -20,12 +20,16 @@ namespace Microsoft.Health.Blob.Configs
         /// <summary>
         /// If set, the client id of the managed identity to use when connecting to azure storage, if AuthenticationType == ManagedIdentity.
         /// </summary>
-        public string ManagedIdentityClientId { get; set; }
+        public string ManagedIdentityClientId
+        {
+            get => Credentials.ManagedIdentityClientId;
+            set => Credentials.ManagedIdentityClientId = value;
+        }
 
         /// <summary>
         /// Gets or sets the options for configuring DefaultAzureCredential
         /// </summary>
         /// <value>The settings for configuring the default azure credential</value>
-        public DefaultAzureCredentialOptions DefaultAzureCredentialOptions { get; set; } = new DefaultAzureCredentialOptions();
+        public DefaultAzureCredentialOptions Credentials { get; set; } = new DefaultAzureCredentialOptions();
     }
 }
