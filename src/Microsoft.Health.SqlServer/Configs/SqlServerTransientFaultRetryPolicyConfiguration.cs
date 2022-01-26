@@ -18,7 +18,7 @@ namespace Microsoft.Health.SqlServer.Configs
         public TimeSpan InitialDelay { get; set; } = TimeSpan.FromMilliseconds(100);
 
         /// <summary>
-        /// The maximum number of retries to use, in addition to the original call.
+        /// The maximum number of retries to use, in addition to the original call for SqlCommand Execute*.
         /// </summary>
         public int RetryCount { get; set; } = 3;
 
@@ -31,5 +31,10 @@ namespace Microsoft.Health.SqlServer.Configs
         /// Whether the first retry will be immediate or not.
         /// </summary>
         public bool FastFirst { get; set; } = true;
+
+        /// <summary>
+        /// Set SqlConnectionStringBuilder.ConnectConnectRetryCount to retry connection open transient issues
+        /// </summary>
+        public int ConnectRetryCount { get; set; } = 4;
     }
 }

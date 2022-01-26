@@ -42,7 +42,7 @@ namespace Microsoft.Health.SqlServer
 
             // https://docs.microsoft.com/en-us/azure/azure-sql/database/troubleshoot-common-connectivity-issues
             // Change from default 1 to 3
-            connectionStringBuilder.ConnectRetryCount = sqlServerTransientFaultRetryPolicyConfiguration.RetryCount;
+            connectionStringBuilder.ConnectRetryCount = sqlServerTransientFaultRetryPolicyConfiguration.ConnectRetryCount;
 
             if (initialCatalog != null)
             {
