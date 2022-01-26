@@ -117,9 +117,6 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  <data name="AvailableVersionsDefaultErrorMessage" xml:space="preserve">
-    <value>There are no available versions.</value>
-  </data>
   <data name="AvailableVersionsErrorMessage" xml:space="preserve">
     <value>The available versions are not up-to-date.</value>
   </data>
@@ -127,40 +124,9 @@
     <value>The schema version {0} cannot be applied because all the instances are not running the previous version.</value>
     <comment>{0} is a version.</comment>
   </data>
-  <data name="QueryExecutionErrorMessage" xml:space="preserve">
-    <value>Script execution has failed due to "{0}".</value>
-    <comment>{0} is the exception message.</comment>
-  </data>
-  <data name="RequestFailedMessage" xml:space="preserve">
-    <value>Unable to connect to host "{0}".</value>
-    <comment>{0} is the server url.</comment>
-  </data>
-  <data name="RetryCurrentSchemaVersion" xml:space="preserve">
-    <value>Attempt {0} of {1} to wait for the current version to be updated on the server.</value>
-    <comment>(0) is retry attempt, {1} is total number of retries.</comment>
-  </data>
-  <data name="RetryCurrentVersions" xml:space="preserve">
-    <value>Attempt {0} of {1} to verify if all the instances are running the previous version.</value>
-    <comment>(0) is retry attempt, {1} is total retries</comment>
-  </data>
-  <data name="RetryHttpRequestException" xml:space="preserve">
-    <value>Attempt {0} of {1} to wait for the server to get started.</value>
-    <comment>(0) is retry attempt, {1} is total number of retries.</comment>
-  </data>
-  <data name="SchemaMigrationStartedMessage" xml:space="preserve">
-    <value>Schema migration is started for the version : {0}.</value>
-    <comment>{0} is a version.</comment>
-  </data>
-  <data name="SchemaMigrationSuccessMessage" xml:space="preserve">
-    <value>Schema migration is completed successfully for the version : {0}.</value>
-    <comment>{0} is a version.</comment>
-  </data>
   <data name="SpecifiedVersionNotAvailable" xml:space="preserve">
     <value>The specified schema version "{0}" is not available.</value>
     <comment>{0} is a version.</comment>
-  </data>
-  <data name="TargetVersionLesserThanCurrentVersion" xml:space="preserve">
-    <value>The current schema version is already greater than or equals to the target schema version.</value>
   </data>
   <data name="VersionIncompatibilityMessage" xml:space="preserve">
     <value>The schema version "{0}" is not compatible.</value>

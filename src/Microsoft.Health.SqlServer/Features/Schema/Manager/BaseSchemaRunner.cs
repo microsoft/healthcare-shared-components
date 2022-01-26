@@ -51,15 +51,15 @@ namespace Microsoft.Health.SqlServer.Features.Schema.Manager
             {
                 var script = baseScriptProvider.GetScript();
 
-                _logger.LogInformation(Resources.BaseSchemaExecuting);
+                _logger.LogInformation("The base schema execution is started.");
 
                 await _schemaManagerDataStore.ExecuteScriptAsync(script, cancellationToken);
 
-                _logger.LogInformation(Resources.BaseSchemaSuccess);
+                _logger.LogInformation("The base schema execution is completed.");
             }
             else
             {
-                _logger.LogWarning(Resources.BaseSchemaAlreadyExists);
+                _logger.LogWarning("The base schema already exists.");
             }
         }
 
@@ -74,7 +74,11 @@ namespace Microsoft.Health.SqlServer.Features.Schema.Manager
                 sleepDurationProvider: (retryCount) => RetrySleepDuration,
                 onRetry: (exception, retryCount) =>
                 {
-                    _logger.LogWarning(exception, string.Format(Resources.RetryInstanceSchemaRecord, attempts++, RetryAttempts));
+                    _logger.LogWarning(
+                        exception,
+                        "Attempt {Attempt} of {MaxAttempts} to verify if the base schema is synced up with the service.",
+                        attempts++,
+                        RetryAttempts);
                 })
             .ExecuteAsync(token => InstanceSchemaRecordCreatedAsync(token), cancellationToken);
         }

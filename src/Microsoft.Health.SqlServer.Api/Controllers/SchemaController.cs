@@ -85,7 +85,7 @@ namespace Microsoft.Health.SqlServer.Api.Controllers
         [Route(KnownRoutes.Script, Name = RouteNames.Script)]
         public async Task<FileContentResult> ScriptAsync(int id)
         {
-            _logger.LogInformation($"Attempting to get script for schema version: {id}");
+            _logger.LogInformation("Attempting to get script for schema version: {Version}", id);
             string fileName = $"{id}.sql";
             return File(await _scriptProvider.GetScriptAsBytesAsync(id, HttpContext.RequestAborted).ConfigureAwait(false), "application/sql", fileName);
         }
@@ -95,7 +95,7 @@ namespace Microsoft.Health.SqlServer.Api.Controllers
         [Route(KnownRoutes.Diff, Name = RouteNames.Diff)]
         public async Task<FileContentResult> DiffScriptAsync(int id)
         {
-            _logger.LogInformation($"Attempting to get diff script for schema version: {id}");
+            _logger.LogInformation("Attempting to get diff script for schema version: {Version}", id);
             string fileName = $"{id}.diff.sql";
             return File(await _scriptProvider.GetDiffScriptAsBytesAsync(id, HttpContext.RequestAborted).ConfigureAwait(false), "application/sql", fileName);
         }

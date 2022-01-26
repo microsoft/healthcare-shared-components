@@ -56,12 +56,12 @@ namespace Microsoft.Health.SqlServer.Features.Schema.Manager
 
                 var server = new Server(serverConnection);
                 var watch = Stopwatch.StartNew();
-                _logger.LogInformation($"Script execution started at {Clock.UtcNow}");
+                _logger.LogInformation("Script execution started at {UtcTime}", Clock.UtcNow);
 
                 server.ConnectionContext.ExecuteNonQuery(script);
 
                 watch.Stop();
-                _logger.LogInformation($"Script execution time is {watch.Elapsed}");
+                _logger.LogInformation("Script execution time is {ElapsedTime}", watch.Elapsed);
                 await UpsertSchemaVersionAsync(connection, version, SchemaVersionStatus.completed.ToString(), cancellationToken).ConfigureAwait(false);
             }
             catch (Exception e) when (e is SqlException || e is ExecutionFailureException)
@@ -125,7 +125,7 @@ namespace Microsoft.Health.SqlServer.Features.Schema.Manager
 
             using SqlConnection connection = await _sqlConnection.GetSqlConnectionAsync(cancellationToken: cancellationToken).ConfigureAwait(false);
             await connection.TryOpenAsync(cancellationToken).ConfigureAwait(false);
-            var server = new Server(new ServerConnection(connection));
+            var server = new Server(GetServerConnectionWithTimeout(connection));
 
             server.ConnectionContext.ExecuteNonQuery(script);
         }
@@ -167,7 +167,7 @@ namespace Microsoft.Health.SqlServer.Features.Schema.Manager
         {
             var serverConnection = new ServerConnection(sqlConnection);
             serverConnection.StatementTimeout = (int)_sqlServerDataStoreConfiguration.StatementTimeout.TotalSeconds;
-            _logger.LogInformation($"ServerConnection timeout sets to {serverConnection.StatementTimeout} seconds");
+            _logger.LogInformation("ServerConnection timeout sets to {TimeoutSeconds} seconds", serverConnection.StatementTimeout);
             return serverConnection;
         }
     }

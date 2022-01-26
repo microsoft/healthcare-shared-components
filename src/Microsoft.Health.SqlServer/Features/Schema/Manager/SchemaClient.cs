@@ -38,11 +38,7 @@ namespace Microsoft.Health.SqlServer.Features.Schema.Manager
             HttpResponseMessage response = await _httpClient.GetAsync(KnownRoutes.RootedCurrentUri, cancellationToken).ConfigureAwait(false);
             if (response.IsSuccessStatusCode)
             {
-#if NET5_0_OR_GREATER
                 var responseBodyAsString = await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
-#else
-                var responseBodyAsString = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
-#endif
                 return JsonConvert.DeserializeObject<List<CurrentVersion>>(responseBodyAsString);
             }
             else
@@ -56,11 +52,7 @@ namespace Microsoft.Health.SqlServer.Features.Schema.Manager
             HttpResponseMessage response = await _httpClient.GetAsync(scriptUri, cancellationToken).ConfigureAwait(false);
             if (response.IsSuccessStatusCode)
             {
-#if NET5_0_OR_GREATER
                 return await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
-#else
-                return await response.Content.ReadAsStringAsync().ConfigureAwait(false);
-#endif
             }
             else
             {
@@ -73,11 +65,7 @@ namespace Microsoft.Health.SqlServer.Features.Schema.Manager
             HttpResponseMessage response = await _httpClient.GetAsync(KnownRoutes.RootedCompatibilityUri, cancellationToken).ConfigureAwait(false);
             if (response.IsSuccessStatusCode)
             {
-#if NET5_0_OR_GREATER
                 var responseBodyAsString = await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
-#else
-                var responseBodyAsString = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
-#endif
                 return JsonConvert.DeserializeObject<CompatibleVersion>(responseBodyAsString);
             }
             else
@@ -91,11 +79,7 @@ namespace Microsoft.Health.SqlServer.Features.Schema.Manager
             HttpResponseMessage response = await _httpClient.GetAsync(KnownRoutes.RootedVersionsUri, cancellationToken).ConfigureAwait(false);
             if (response.IsSuccessStatusCode)
             {
-#if NET5_0_OR_GREATER
                 var responseBodyAsString = await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
-#else
-                var responseBodyAsString = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
-#endif
                 return JsonConvert.DeserializeObject<List<AvailableVersion>>(responseBodyAsString);
             }
             else
@@ -109,11 +93,7 @@ namespace Microsoft.Health.SqlServer.Features.Schema.Manager
             HttpResponseMessage response = await _httpClient.GetAsync(diffScriptUri, cancellationToken).ConfigureAwait(false);
             if (response.IsSuccessStatusCode)
             {
-#if NET5_0_OR_GREATER
                 return await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
-#else
-                return await response.Content.ReadAsStringAsync().ConfigureAwait(false);
-#endif
             }
             else
             {

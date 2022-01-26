@@ -27,6 +27,11 @@ namespace Microsoft.Health.Extensions.BuildTimeCodeGenerator
                 return SyntaxFactory.PredefinedType(SyntaxFactory.Token(SyntaxKind.VoidKeyword));
             }
 
+            if (t.IsByRef)
+            {
+                return SyntaxFactory.RefType(t.GetElementType().ToTypeSyntax());
+            }
+
             if (t.IsGenericParameter)
             {
                 return SyntaxFactory.IdentifierName(t.Name);
@@ -64,7 +69,7 @@ namespace Microsoft.Health.Extensions.BuildTimeCodeGenerator
             SimpleNameSyntax name = t.IsGenericType
                 ? SyntaxFactory.GenericName(t.Name.Substring(0, t.Name.IndexOf('`', StringComparison.Ordinal)))
                     .WithTypeArgumentList(SyntaxFactory.TypeArgumentList(SyntaxFactory.SeparatedList(t.GenericTypeArguments.Select(typeArg => typeArg.ToTypeSyntax(useGlobalAlias)))))
-                : (SimpleNameSyntax)SyntaxFactory.IdentifierName(t.Name);
+                : SyntaxFactory.IdentifierName(t.Name);
 
             return SyntaxFactory.QualifiedName((NameSyntax)qualification, name);
         }

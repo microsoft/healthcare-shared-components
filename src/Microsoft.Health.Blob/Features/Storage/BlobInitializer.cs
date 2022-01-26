@@ -58,17 +58,17 @@ namespace Microsoft.Health.Blob.Features.Storage
         {
             EnsureArg.IsNotNull(blobContainerConfiguration, nameof(blobContainerConfiguration));
 
-            _logger.LogInformation("Opening blob client connection to container {containerName}", blobContainerConfiguration.ContainerName);
+            _logger.LogInformation("Opening blob client connection to container {ContainerName}", blobContainerConfiguration.ContainerName);
 
             try
             {
                 await _testProvider.PerformTestAsync(_client, blobContainerConfiguration, cancellationToken);
 
-                _logger.LogInformation("Established blob client connection to container {containerName}", blobContainerConfiguration.ContainerName);
+                _logger.LogInformation("Established blob client connection to container {ContainerName}", blobContainerConfiguration.ContainerName);
             }
             catch (Exception e)
             {
-                _logger.LogCritical(e, "Failed to connect to blob client container {containerName}", blobContainerConfiguration.ContainerName);
+                _logger.LogCritical(e, "Failed to connect to blob client container {ContainerName}", blobContainerConfiguration.ContainerName);
                 throw;
             }
         }

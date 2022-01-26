@@ -48,7 +48,7 @@ namespace Microsoft.Health.SqlServer.Features.Schema
         {
             try
             {
-                _logger.LogInformation("Applying schema {version}", version);
+                _logger.LogInformation("Applying schema {Version}", version);
 
                 await _schemaManagerDataStore.DeleteSchemaVersionAsync(version, SchemaVersionStatus.failed.ToString(), cancellationToken).ConfigureAwait(false);
 
@@ -61,11 +61,11 @@ namespace Microsoft.Health.SqlServer.Features.Schema
 
                 await CompleteSchemaVersionAsync(version, cancellationToken);
 
-                _logger.LogInformation("Completed applying schema {version}", version);
+                _logger.LogInformation("Completed applying schema {Version}", version);
             }
             catch (Exception e) when (e is SqlException || e is ExecutionFailureException)
             {
-                _logger.LogError(e, "Failed applying schema {version}", version);
+                _logger.LogError(e, "Failed applying schema {Version}", version);
                 await FailSchemaVersionAsync(version, cancellationToken);
                 throw;
             }

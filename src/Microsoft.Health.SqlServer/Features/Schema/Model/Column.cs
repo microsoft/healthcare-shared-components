@@ -720,6 +720,14 @@ namespace Microsoft.Health.SqlServer.Features.Schema.Model
         }
     }
 
+    public class CharColumn : StringColumn
+    {
+        public CharColumn(string name, int length, string collation = null)
+            : base(name, SqlDbType.Char, false, length, collation)
+        {
+        }
+    }
+
     public class VarCharColumn : StringColumn
     {
         public VarCharColumn(string name, int length, string collation = null)

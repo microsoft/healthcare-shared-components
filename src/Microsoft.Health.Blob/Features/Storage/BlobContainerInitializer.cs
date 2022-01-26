@@ -35,7 +35,7 @@ namespace Microsoft.Health.Blob.Features.Storage
 
             BlobContainerClient container = client.GetBlobContainerClient(_containerName);
 
-            _logger.LogDebug("Creating blob container if not exists: {containerName}", _containerName);
+            _logger.LogDebug("Creating blob container if not exists: {ContainerName}", _containerName);
             await container.CreateIfNotExistsAsync(cancellationToken: cancellationToken);
 
             return container;
