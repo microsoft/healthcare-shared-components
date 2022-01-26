@@ -12,40 +12,34 @@ using Microsoft.Health.SqlServer.Configs;
 
 namespace Microsoft.Health.SqlServer
 {
-    public class ManagedIdentitySqlConnection : ISqlConnection
+    /// <summary>
+    /// Default Sql Connection Factory is responsible to handle Sql connections that can be made purely based on connection string.
+    /// Connection string containing user name and password, or integrated auth are perfect examples for this.
+    /// </summary>
+    public class DefaultSqlConnectionBuilder : ISqlConnectionBuilder
     {
         private readonly ISqlConnectionStringProvider _sqlConnectionStringProvider;
-        private readonly IAccessTokenHandler _accessTokenHandler;
         private readonly SqlServerTransientFaultRetryPolicyConfiguration _transientFaultRetryPolicyConfiguration;
-        private readonly string _azureResource = "https://database.windows.net/";
 
-        public ManagedIdentitySqlConnection(
+        public DefaultSqlConnectionBuilder(
             ISqlConnectionStringProvider sqlConnectionStringProvider,
-            IAccessTokenHandler accessTokenHandler,
             IOptions<SqlServerDataStoreConfiguration> sqlServerDataStoreConfiguration)
         {
             EnsureArg.IsNotNull(sqlConnectionStringProvider, nameof(sqlConnectionStringProvider));
-            EnsureArg.IsNotNull(accessTokenHandler, nameof(accessTokenHandler));
             EnsureArg.IsNotNull(sqlServerDataStoreConfiguration?.Value, nameof(sqlServerDataStoreConfiguration));
 
             _sqlConnectionStringProvider = sqlConnectionStringProvider;
-            _accessTokenHandler = accessTokenHandler;
             _transientFaultRetryPolicyConfiguration = sqlServerDataStoreConfiguration.Value.TransientFaultRetryPolicy;
         }
 
         /// <inheritdoc />
         public async Task<SqlConnection> GetSqlConnectionAsync(string initialCatalog = null, CancellationToken cancellationToken = default)
         {
-            SqlConnection sqlConnection = await SqlConnectionBuilder.GetBaseSqlConnectionAsync(
-                                                                        _sqlConnectionStringProvider,
-                                                                        _transientFaultRetryPolicyConfiguration,
-                                                                        initialCatalog,
-                                                                        cancellationToken);
-
-            // set managed identity access token
-            var result = await _accessTokenHandler.GetAccessTokenAsync(_azureResource, cancellationToken);
-            sqlConnection.AccessToken = result;
-            return sqlConnection;
+            return await SqlConnectionHelper.GetBaseSqlConnectionAsync(
+                _sqlConnectionStringProvider,
+                _transientFaultRetryPolicyConfiguration,
+                initialCatalog,
+                cancellationToken);
         }
     }
 }

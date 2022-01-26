@@ -34,12 +34,22 @@ namespace Microsoft.Health.SqlServer.Configs
 
         /// <summary>
         /// Set SqlConnectionStringBuilder.ConnectConnectRetryCount to retry connection open transient issues
+        /// Range is 0 through 255
         /// </summary>
-        public int ConnectRetryCount { get; set; } = 4;
+        public int ConnectRetryCount { get; set; } = 3;
 
         /// <summary>
         /// Set SqlConnectionStringBuilder.ConnectTimeout to retry connection open transient issues in seconds
+        /// Range is 1 through 60
+        /// Make sure ConnectionTimeout = ConnectRetryCount * ConnectionRetryInterval
+        /// https://docs.microsoft.com/en-us/azure/azure-sql/database/troubleshoot-common-connectivity-issues#net-sqlconnection-parameters-for-connection-retry
         /// </summary>
-        public int ConnectTimeoutInSeconds { get; internal set; } = 30;
+        public int ConnectTimeoutInSeconds { get; set; } = 30;
+
+        /// <summary>
+        /// Set SqlConnectionStringBuilder.ConnectRetryInterval to retry connection open transient issues in seconds
+        /// Range is 0 through 2147483647.
+        /// </summary>
+        public int ConnectRetryIntervalInSeconds { get; set; } = 10;
     }
 }

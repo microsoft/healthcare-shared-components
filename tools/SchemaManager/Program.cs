@@ -48,7 +48,7 @@ namespace SchemaManager
             services.AddHttpClient();
 
             // TODO: this won't work in OSS if the AuthenticationType is set to ManagedIdentity
-            services.AddSingleton<ISqlConnection, DefaultSqlConnection>();
+            services.AddSingleton<ISqlConnectionBuilder, DefaultSqlConnectionBuilder>();
             services.AddSingleton<ISqlConnectionStringProvider, DefaultSqlConnectionStringProvider>();
             services.AddSingleton<IBaseSchemaRunner, BaseSchemaRunner>();
             services.AddSingleton<ISchemaManagerDataStore, SchemaManagerDataStore>();

@@ -36,7 +36,7 @@ namespace Microsoft.Health.SqlServer.Features.Schema
         private readonly SchemaUpgradeRunner _schemaUpgradeRunner;
         private readonly SchemaInformation _schemaInformation;
         private readonly ILogger<SchemaInitializer> _logger;
-        private readonly ISqlConnection _sqlConnection;
+        private readonly ISqlConnectionBuilder _sqlConnectionBuilder;
         private readonly ISqlConnectionStringProvider _sqlConnectionStringProvider;
         private readonly IMediator _mediator;
         private bool _canCallGetCurrentSchema;
@@ -47,7 +47,7 @@ namespace Microsoft.Health.SqlServer.Features.Schema
             IReadOnlySchemaManagerDataStore schemaManagerDataStore,
             SchemaUpgradeRunner schemaUpgradeRunner,
             SchemaInformation schemaInformation,
-            ISqlConnection sqlConnection,
+            ISqlConnectionBuilder sqlConnectionBuilder,
             ISqlConnectionStringProvider sqlConnectionStringProvider,
             IMediator mediator,
             ILogger<SchemaInitializer> logger)
@@ -56,7 +56,7 @@ namespace Microsoft.Health.SqlServer.Features.Schema
             _schemaManagerDataStore = EnsureArg.IsNotNull(schemaManagerDataStore, nameof(schemaManagerDataStore));
             _schemaUpgradeRunner = EnsureArg.IsNotNull(schemaUpgradeRunner, nameof(schemaUpgradeRunner));
             _schemaInformation = EnsureArg.IsNotNull(schemaInformation, nameof(schemaInformation));
-            _sqlConnection = EnsureArg.IsNotNull(sqlConnection, nameof(sqlConnection));
+            _sqlConnectionBuilder = EnsureArg.IsNotNull(sqlConnectionBuilder, nameof(sqlConnectionBuilder));
             _sqlConnectionStringProvider = EnsureArg.IsNotNull(sqlConnectionStringProvider, nameof(sqlConnectionStringProvider));
             _mediator = EnsureArg.IsNotNull(mediator, nameof(mediator));
             _logger = EnsureArg.IsNotNull(logger, nameof(logger));
@@ -77,7 +77,7 @@ namespace Microsoft.Health.SqlServer.Features.Schema
 
             if (_sqlServerDataStoreConfiguration.SchemaOptions.AutomaticUpdatesEnabled)
             {
-                using SqlConnection sqlConnection = await _sqlConnection.GetSqlConnectionAsync(cancellationToken: cancellationToken);
+                using SqlConnection sqlConnection = await _sqlConnectionBuilder.GetSqlConnectionAsync(cancellationToken: cancellationToken);
                 await sqlConnection.OpenAsync(cancellationToken);
                 IDistributedLock sqlLock = new SqlDistributedLock(SchemaUpgradeLockName, sqlConnection);
 
@@ -279,7 +279,7 @@ namespace Microsoft.Health.SqlServer.Features.Schema
 
             if (_sqlServerDataStoreConfiguration.AllowDatabaseCreation)
             {
-                using SqlConnection connection = await _sqlConnection.GetSqlConnectionAsync(MasterDatabase, cancellationToken).ConfigureAwait(false);
+                using SqlConnection connection = await _sqlConnectionBuilder.GetSqlConnectionAsync(MasterDatabase, cancellationToken).ConfigureAwait(false);
                 bool doesDatabaseExist = await DoesDatabaseExistAsync(connection, databaseName, cancellationToken).ConfigureAwait(false);
 
                 if (!doesDatabaseExist)
@@ -303,7 +303,7 @@ namespace Microsoft.Health.SqlServer.Features.Schema
             bool canInitialize = false;
 
             // now switch to the target database
-            using (SqlConnection connection = await _sqlConnection.GetSqlConnectionAsync(cancellationToken: cancellationToken).ConfigureAwait(false))
+            using (SqlConnection connection = await _sqlConnectionBuilder.GetSqlConnectionAsync(cancellationToken: cancellationToken).ConfigureAwait(false))
             {
                 canInitialize = await CheckDatabasePermissionsAsync(connection, cancellationToken).ConfigureAwait(false);
             }

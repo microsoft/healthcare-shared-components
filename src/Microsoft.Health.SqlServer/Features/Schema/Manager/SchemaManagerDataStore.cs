@@ -22,17 +22,17 @@ namespace Microsoft.Health.SqlServer.Features.Schema.Manager
 {
     public class SchemaManagerDataStore : ISchemaManagerDataStore
     {
-        private readonly ISqlConnection _sqlConnection;
+        private readonly ISqlConnectionBuilder _sqlConnectionBuilder;
         private readonly SqlServerDataStoreConfiguration _sqlServerDataStoreConfiguration;
         private readonly ILogger<SchemaManagerDataStore> _logger;
 
         public SchemaManagerDataStore(
-            ISqlConnection sqlConnection,
+            ISqlConnectionBuilder sqlConnectionBuilder,
             IOptions<SqlServerDataStoreConfiguration> sqlServerDataStoreConfiguration,
             ILogger<SchemaManagerDataStore> logger)
         {
             _sqlServerDataStoreConfiguration = EnsureArg.IsNotNull(sqlServerDataStoreConfiguration?.Value, nameof(sqlServerDataStoreConfiguration));
-            _sqlConnection = EnsureArg.IsNotNull(sqlConnection, nameof(sqlConnection));
+            _sqlConnectionBuilder = EnsureArg.IsNotNull(sqlConnectionBuilder, nameof(sqlConnectionBuilder));
             _logger = EnsureArg.IsNotNull(logger, nameof(logger));
         }
 
@@ -42,7 +42,7 @@ namespace Microsoft.Health.SqlServer.Features.Schema.Manager
             EnsureArg.IsNotNull(script, nameof(script));
             EnsureArg.IsGte(version, 1);
 
-            using SqlConnection connection = await _sqlConnection.GetSqlConnectionAsync(cancellationToken: cancellationToken).ConfigureAwait(false);
+            using SqlConnection connection = await _sqlConnectionBuilder.GetSqlConnectionAsync(cancellationToken: cancellationToken).ConfigureAwait(false);
             await connection.TryOpenAsync(cancellationToken).ConfigureAwait(false);
             var serverConnection = GetServerConnectionWithTimeout(connection);
 
@@ -77,7 +77,7 @@ namespace Microsoft.Health.SqlServer.Features.Schema.Manager
             EnsureArg.IsNotNull(status, nameof(status));
             EnsureArg.IsGte(version, 1);
 
-            using SqlConnection connection = await _sqlConnection.GetSqlConnectionAsync(cancellationToken: cancellationToken).ConfigureAwait(false);
+            using SqlConnection connection = await _sqlConnectionBuilder.GetSqlConnectionAsync(cancellationToken: cancellationToken).ConfigureAwait(false);
             await connection.TryOpenAsync(cancellationToken).ConfigureAwait(false);
 
             using var deleteCommand = new SqlCommand("DELETE FROM dbo.SchemaVersion WHERE Version = @version AND Status = @status", connection);
@@ -90,7 +90,7 @@ namespace Microsoft.Health.SqlServer.Features.Schema.Manager
         /// <inheritdoc />
         public async Task<int> GetCurrentSchemaVersionAsync(CancellationToken cancellationToken)
         {
-            using SqlConnection connection = await _sqlConnection.GetSqlConnectionAsync(cancellationToken: cancellationToken).ConfigureAwait(false);
+            using SqlConnection connection = await _sqlConnectionBuilder.GetSqlConnectionAsync(cancellationToken: cancellationToken).ConfigureAwait(false);
             await connection.TryOpenAsync(cancellationToken).ConfigureAwait(false);
 
             using var selectCommand = new SqlCommand("dbo.SelectCurrentSchemaVersion", connection)
@@ -123,7 +123,7 @@ namespace Microsoft.Health.SqlServer.Features.Schema.Manager
         {
             EnsureArg.IsNotNull(script, nameof(script));
 
-            using SqlConnection connection = await _sqlConnection.GetSqlConnectionAsync(cancellationToken: cancellationToken).ConfigureAwait(false);
+            using SqlConnection connection = await _sqlConnectionBuilder.GetSqlConnectionAsync(cancellationToken: cancellationToken).ConfigureAwait(false);
             await connection.TryOpenAsync(cancellationToken).ConfigureAwait(false);
             var server = new Server(GetServerConnectionWithTimeout(connection));
 
@@ -141,7 +141,7 @@ namespace Microsoft.Health.SqlServer.Features.Schema.Manager
         {
             var procedureQuery = "SELECT COUNT(*) FROM sys.objects WHERE name = @name and type = @type";
 
-            using SqlConnection connection = await _sqlConnection.GetSqlConnectionAsync(cancellationToken: cancellationToken).ConfigureAwait(false);
+            using SqlConnection connection = await _sqlConnectionBuilder.GetSqlConnectionAsync(cancellationToken: cancellationToken).ConfigureAwait(false);
             await connection.TryOpenAsync(cancellationToken).ConfigureAwait(false);
 
             using var command = new SqlCommand(procedureQuery, connection);
@@ -156,7 +156,7 @@ namespace Microsoft.Health.SqlServer.Features.Schema.Manager
         {
             var procedureQuery = "SELECT COUNT(*) FROM dbo.InstanceSchema";
 
-            using SqlConnection connection = await _sqlConnection.GetSqlConnectionAsync(cancellationToken: cancellationToken).ConfigureAwait(false);
+            using SqlConnection connection = await _sqlConnectionBuilder.GetSqlConnectionAsync(cancellationToken: cancellationToken).ConfigureAwait(false);
             await connection.TryOpenAsync(cancellationToken).ConfigureAwait(false);
 
             using var command = new SqlCommand(procedureQuery, connection);

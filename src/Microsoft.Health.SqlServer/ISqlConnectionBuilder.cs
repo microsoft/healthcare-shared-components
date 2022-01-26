@@ -9,7 +9,7 @@ using Microsoft.Data.SqlClient;
 
 namespace Microsoft.Health.SqlServer
 {
-    public interface ISqlConnection
+    public interface ISqlConnectionBuilder
     {
         /// <summary>
         /// Get unopened SqlConnection object.

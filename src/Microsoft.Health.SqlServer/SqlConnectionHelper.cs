@@ -15,7 +15,7 @@ namespace Microsoft.Health.SqlServer
     /// Helper class to build the base SqlConnection object
     /// </summary>
     /// Could not do a real builder class because SqlConnection is of type IDisposable and it cannot be a member, since its disposal is handled in SqlConnectionWrapper
-    internal class SqlConnectionBuilder
+    internal class SqlConnectionHelper
     {
         /// <summary>
         /// Get the SqlConnection object with right connection properties to retry
@@ -45,7 +45,10 @@ namespace Microsoft.Health.SqlServer
             connectionStringBuilder.ConnectRetryCount = sqlServerTransientFaultRetryPolicyConfiguration.ConnectRetryCount;
 
             // Change from default 10 to 30
-            connectionStringBuilder.ConnectTimeout = sqlServerTransientFaultRetryPolicyConfiguration.ConnectTimeout;
+            connectionStringBuilder.ConnectTimeout = sqlServerTransientFaultRetryPolicyConfiguration.ConnectTimeoutInSeconds;
+
+            // Change from default 10 to 10
+            connectionStringBuilder.ConnectRetryInterval = sqlServerTransientFaultRetryPolicyConfiguration.ConnectRetryIntervalInSeconds;
 
             if (initialCatalog != null)
             {

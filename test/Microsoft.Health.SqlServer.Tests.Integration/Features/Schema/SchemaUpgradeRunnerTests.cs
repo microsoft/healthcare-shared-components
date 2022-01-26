@@ -32,7 +32,7 @@ namespace Microsoft.Health.SqlServer.Tests.Integration.Features.Schema
         {
             await base.InitializeAsync();
 
-            var sqlConnection = Substitute.For<ISqlConnection>();
+            var sqlConnection = Substitute.For<ISqlConnectionBuilder>();
             sqlConnection.GetSqlConnectionAsync(Arg.Any<string>(), Arg.Any<CancellationToken>()).ReturnsForAnyArgs((x) => GetSqlConnection());
             var config = Options.Create(new SqlServerDataStoreConfiguration());
             _schemaDataStore = new SchemaManagerDataStore(sqlConnection, config, NullLogger<SchemaManagerDataStore>.Instance);

@@ -70,24 +70,24 @@ namespace Microsoft.Health.SqlServer.Registration
             services.AddOptions();
             services.TryAddSingleton<ISqlConnectionStringProvider, DefaultSqlConnectionStringProvider>();
 
-            services.TryAddSingleton<ISqlConnection>(
+            services.TryAddSingleton<ISqlConnectionBuilder>(
                  p =>
                  {
                      var sqlServerDataStoreConfigOption = p.GetRequiredService<IOptions<SqlServerDataStoreConfiguration>>();
                      SqlServerDataStoreConfiguration config = sqlServerDataStoreConfigOption.Value;
                      ISqlConnectionStringProvider sqlConnectionStringProvider = p.GetRequiredService<ISqlConnectionStringProvider>();
                      return config.AuthenticationType == SqlServerAuthenticationType.ManagedIdentity
-                         ? new ManagedIdentitySqlConnection(sqlConnectionStringProvider, p.GetRequiredService<IAccessTokenHandler>(), sqlServerDataStoreConfigOption)
-                         : new DefaultSqlConnection(sqlConnectionStringProvider, sqlServerDataStoreConfigOption);
+                         ? new ManagedIdentitySqlConnectionBuilder(sqlConnectionStringProvider, p.GetRequiredService<IAccessTokenHandler>(), sqlServerDataStoreConfigOption)
+                         : new DefaultSqlConnectionBuilder(sqlConnectionStringProvider, sqlServerDataStoreConfigOption);
                  });
 
-            services.TryAddSingleton<ISqlConnection>(
+            services.TryAddSingleton<ISqlConnectionBuilder>(
                 p =>
                 {
                     SqlServerDataStoreConfiguration config = p.GetRequiredService<IOptions<SqlServerDataStoreConfiguration>>().Value;
                     return config.AuthenticationType == SqlServerAuthenticationType.ManagedIdentity
-                        ? p.GetRequiredService<ManagedIdentitySqlConnection>()
-                        : p.GetRequiredService<DefaultSqlConnection>();
+                        ? p.GetRequiredService<ManagedIdentitySqlConnectionBuilder>()
+                        : p.GetRequiredService<DefaultSqlConnectionBuilder>();
                 });
 
             // The following are only used in case of managed identity
@@ -180,7 +180,7 @@ namespace Microsoft.Health.SqlServer.Registration
                     var schemaManagerDataStore = p.GetService<IReadOnlySchemaManagerDataStore>() as SchemaManagerDataStore;
                     return schemaManagerDataStore != null
                         ? schemaManagerDataStore
-                        : new SchemaManagerDataStore(p.GetRequiredService<ISqlConnection>(), p.GetRequiredService<IOptions<SqlServerDataStoreConfiguration>>(), p.GetRequiredService<ILogger<SchemaManagerDataStore>>());
+                        : new SchemaManagerDataStore(p.GetRequiredService<ISqlConnectionBuilder>(), p.GetRequiredService<IOptions<SqlServerDataStoreConfiguration>>(), p.GetRequiredService<ILogger<SchemaManagerDataStore>>());
                 });
 
             return services;
