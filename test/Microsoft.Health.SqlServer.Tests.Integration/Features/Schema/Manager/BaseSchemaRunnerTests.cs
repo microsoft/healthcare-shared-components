@@ -23,11 +23,11 @@ namespace Microsoft.Health.SqlServer.Tests.Integration.Features.Schema.Manager
         public BaseSchemaRunnerTests(ITestOutputHelper output)
             : base(output)
         {
-            var sqlConnectionFactory = new DefaultSqlConnectionFactory(ConnectionStringProvider);
             var config = Options.Create(new SqlServerDataStoreConfiguration());
-            _dataStore = new SchemaManagerDataStore(sqlConnectionFactory, config, NullLogger<SchemaManagerDataStore>.Instance);
+            var sqlConnection = new DefaultSqlConnection(ConnectionStringProvider, config);
+            _dataStore = new SchemaManagerDataStore(sqlConnection, config, NullLogger<SchemaManagerDataStore>.Instance);
 
-            _runner = new BaseSchemaRunner(sqlConnectionFactory, _dataStore, ConnectionStringProvider, NullLogger<BaseSchemaRunner>.Instance);
+            _runner = new BaseSchemaRunner(sqlConnection, _dataStore, ConnectionStringProvider, NullLogger<BaseSchemaRunner>.Instance);
         }
 
         [Fact]

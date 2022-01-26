@@ -18,7 +18,7 @@ namespace Microsoft.Health.SqlServer.Features.Client
         private readonly bool _enlistInTransactionIfPresent;
         private readonly SqlTransactionHandler _sqlTransactionHandler;
         private readonly SqlCommandWrapperFactory _sqlCommandWrapperFactory;
-        private readonly ISqlConnectionFactory _sqlConnectionFactory;
+        private readonly ISqlConnection _connection;
 
         private SqlConnection _sqlConnection;
         private SqlTransaction _sqlTransaction;
@@ -26,17 +26,17 @@ namespace Microsoft.Health.SqlServer.Features.Client
         internal SqlConnectionWrapper(
             SqlTransactionHandler sqlTransactionHandler,
             SqlCommandWrapperFactory sqlCommandWrapperFactory,
-            ISqlConnectionFactory sqlConnectionFactory,
+            ISqlConnection connection,
             bool enlistInTransactionIfPresent)
         {
             EnsureArg.IsNotNull(sqlTransactionHandler, nameof(sqlTransactionHandler));
             EnsureArg.IsNotNull(sqlCommandWrapperFactory, nameof(sqlCommandWrapperFactory));
-            EnsureArg.IsNotNull(sqlConnectionFactory, nameof(sqlConnectionFactory));
+            EnsureArg.IsNotNull(connection, nameof(connection));
 
             _sqlTransactionHandler = sqlTransactionHandler;
             _enlistInTransactionIfPresent = enlistInTransactionIfPresent;
             _sqlCommandWrapperFactory = sqlCommandWrapperFactory;
-            _sqlConnectionFactory = sqlConnectionFactory;
+            _connection = connection;
         }
 
         public SqlConnection SqlConnection
@@ -60,7 +60,7 @@ namespace Microsoft.Health.SqlServer.Features.Client
             }
             else
             {
-                _sqlConnection = await _sqlConnectionFactory.GetSqlConnectionAsync(cancellationToken: cancellationToken);
+                _sqlConnection = await _connection.GetSqlConnectionAsync(cancellationToken: cancellationToken);
             }
 
             if (_enlistInTransactionIfPresent && _sqlTransactionHandler.SqlTransactionScope != null && _sqlTransactionHandler.SqlTransactionScope.SqlConnection == null)

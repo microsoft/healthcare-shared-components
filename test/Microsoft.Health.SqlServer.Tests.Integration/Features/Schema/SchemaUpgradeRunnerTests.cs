@@ -32,11 +32,11 @@ namespace Microsoft.Health.SqlServer.Tests.Integration.Features.Schema
         {
             await base.InitializeAsync();
 
-            var connectionFactory = Substitute.For<ISqlConnectionFactory>();
-            connectionFactory.GetSqlConnectionAsync(Arg.Any<string>(), Arg.Any<CancellationToken>()).ReturnsForAnyArgs((x) => GetSqlConnection());
+            var sqlConnection = Substitute.For<ISqlConnection>();
+            sqlConnection.GetSqlConnectionAsync(Arg.Any<string>(), Arg.Any<CancellationToken>()).ReturnsForAnyArgs((x) => GetSqlConnection());
             var config = Options.Create(new SqlServerDataStoreConfiguration());
-            _schemaDataStore = new SchemaManagerDataStore(connectionFactory, config, NullLogger<SchemaManagerDataStore>.Instance);
-            _runner = new SchemaUpgradeRunner(new ScriptProvider<SchemaVersion>(), new BaseScriptProvider(), NullLogger<SchemaUpgradeRunner>.Instance, connectionFactory, _schemaDataStore);
+            _schemaDataStore = new SchemaManagerDataStore(sqlConnection, config, NullLogger<SchemaManagerDataStore>.Instance);
+            _runner = new SchemaUpgradeRunner(new ScriptProvider<SchemaVersion>(), new BaseScriptProvider(), NullLogger<SchemaUpgradeRunner>.Instance, sqlConnection, _schemaDataStore);
         }
 
         [Fact]

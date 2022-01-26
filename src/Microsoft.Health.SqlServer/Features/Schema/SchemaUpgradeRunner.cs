@@ -21,26 +21,26 @@ namespace Microsoft.Health.SqlServer.Features.Schema
         private readonly IScriptProvider _scriptProvider;
         private readonly IBaseScriptProvider _baseScriptProvider;
         private readonly ILogger<SchemaUpgradeRunner> _logger;
-        private readonly ISqlConnectionFactory _sqlConnectionFactory;
+        private readonly ISqlConnection _sqlConnection;
         private ISchemaManagerDataStore _schemaManagerDataStore;
 
         public SchemaUpgradeRunner(
             IScriptProvider scriptProvider,
             IBaseScriptProvider baseScriptProvider,
             ILogger<SchemaUpgradeRunner> logger,
-            ISqlConnectionFactory sqlConnectionFactory,
+            ISqlConnection sqlConnection,
             ISchemaManagerDataStore schemaManagerDataStore)
         {
             EnsureArg.IsNotNull(scriptProvider, nameof(scriptProvider));
             EnsureArg.IsNotNull(baseScriptProvider, nameof(baseScriptProvider));
             EnsureArg.IsNotNull(logger, nameof(logger));
-            EnsureArg.IsNotNull(sqlConnectionFactory, nameof(sqlConnectionFactory));
+            EnsureArg.IsNotNull(sqlConnection, nameof(sqlConnection));
             EnsureArg.IsNotNull(schemaManagerDataStore, nameof(schemaManagerDataStore));
 
             _scriptProvider = scriptProvider;
             _baseScriptProvider = baseScriptProvider;
             _logger = logger;
-            _sqlConnectionFactory = sqlConnectionFactory;
+            _sqlConnection = sqlConnection;
             _schemaManagerDataStore = schemaManagerDataStore;
         }
 
@@ -97,7 +97,7 @@ namespace Microsoft.Health.SqlServer.Features.Schema
 
         private async Task UpsertSchemaVersionAsync(int schemaVersion, string status, CancellationToken cancellationToken)
         {
-            using (var connection = await _sqlConnectionFactory.GetSqlConnectionAsync(cancellationToken: cancellationToken))
+            using (var connection = await _sqlConnection.GetSqlConnectionAsync(cancellationToken: cancellationToken))
             using (var upsertCommand = new SqlCommand("dbo.UpsertSchemaVersion", connection))
             {
                 upsertCommand.CommandType = CommandType.StoredProcedure;

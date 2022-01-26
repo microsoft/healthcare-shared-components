@@ -3,11 +3,12 @@
 // Licensed under the MIT License (MIT). See LICENSE in the repo root for license information.
 // -------------------------------------------------------------------------------------------------
 
-using System;
 using System.Threading;
 using System.Threading.Tasks;
 using EnsureThat;
 using Microsoft.Data.SqlClient;
+using Microsoft.Extensions.Options;
+using Microsoft.Health.SqlServer.Configs;
 
 namespace Microsoft.Health.SqlServer
 {
@@ -15,38 +16,30 @@ namespace Microsoft.Health.SqlServer
     /// Default Sql Connection Factory is responsible to handle Sql connections that can be made purely based on connection string.
     /// Connection string containing user name and password, or integrated auth are perfect examples for this.
     /// </summary>
-    public class DefaultSqlConnectionFactory : ISqlConnectionFactory
+    public class DefaultSqlConnection : ISqlConnection
     {
         private readonly ISqlConnectionStringProvider _sqlConnectionStringProvider;
+        private readonly SqlServerTransientFaultRetryPolicyConfiguration _transientFaultRetryPolicyConfiguration;
 
-        public DefaultSqlConnectionFactory(ISqlConnectionStringProvider sqlConnectionStringProvider)
+        public DefaultSqlConnection(
+            ISqlConnectionStringProvider sqlConnectionStringProvider,
+            IOptions<SqlServerDataStoreConfiguration> sqlServerDataStoreConfiguration)
         {
             EnsureArg.IsNotNull(sqlConnectionStringProvider, nameof(sqlConnectionStringProvider));
+            EnsureArg.IsNotNull(sqlServerDataStoreConfiguration?.Value, nameof(sqlServerDataStoreConfiguration));
 
             _sqlConnectionStringProvider = sqlConnectionStringProvider;
+            _transientFaultRetryPolicyConfiguration = sqlServerDataStoreConfiguration.Value.TransientFaultRetryPolicy;
         }
 
         /// <inheritdoc />
         public async Task<SqlConnection> GetSqlConnectionAsync(string initialCatalog = null, CancellationToken cancellationToken = default)
         {
-            SqlConnection sqlConnection;
-            string sqlConnectionString = await _sqlConnectionStringProvider.GetSqlConnectionString(cancellationToken);
-            if (string.IsNullOrEmpty(sqlConnectionString))
-            {
-                throw new InvalidOperationException("The SQL connection string cannot be null or empty.");
-            }
-
-            if (initialCatalog == null)
-            {
-                sqlConnection = new SqlConnection(sqlConnectionString);
-            }
-            else
-            {
-                SqlConnectionStringBuilder connectionBuilder = new SqlConnectionStringBuilder(sqlConnectionString) { InitialCatalog = initialCatalog };
-                sqlConnection = new SqlConnection(connectionBuilder.ToString());
-            }
-
-            return sqlConnection;
+            return await SqlConnectionBuilder.GetBaseSqlConnectionAsync(
+                _sqlConnectionStringProvider,
+                _transientFaultRetryPolicyConfiguration,
+                initialCatalog,
+                cancellationToken);
         }
     }
 }

@@ -20,7 +20,7 @@ namespace Microsoft.Health.SqlServer.UnitTests
         private const string TestAccessToken = "test token";
         private const string AzureResource = "https://database.windows.net/";
 
-        private readonly ManagedIdentitySqlConnectionFactory _sqlConnectionFactory;
+        private readonly ManagedIdentitySqlConnection _sqlConnectionFactory;
 
         public ManagedIdentitySqlConnectionTests()
         {
@@ -33,8 +33,9 @@ namespace Microsoft.Health.SqlServer.UnitTests
                 AuthenticationType = SqlServerAuthenticationType.ManagedIdentity,
             };
 
-            _sqlConnectionFactory = new ManagedIdentitySqlConnectionFactory(
-                new DefaultSqlConnectionStringProvider(Options.Create(sqlServerDataStoreConfiguration)), accessTokenHandler);
+            var sqlConfigOptions = Options.Create(sqlServerDataStoreConfiguration);
+            _sqlConnectionFactory = new ManagedIdentitySqlConnection(
+                new DefaultSqlConnectionStringProvider(sqlConfigOptions), accessTokenHandler, sqlConfigOptions);
         }
 
         [Fact]

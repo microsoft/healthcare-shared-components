@@ -69,14 +69,13 @@ namespace Microsoft.Health.SqlServer.Registration
 
             services.AddOptions();
             services.TryAddSingleton<ISqlConnectionStringProvider, DefaultSqlConnectionStringProvider>();
-            services.TryAddSingleton<ISqlConnectionFactory>(
+            services.TryAddSingleton<ISqlConnection>(
                 p =>
                 {
                     SqlServerDataStoreConfiguration config = p.GetRequiredService<IOptions<SqlServerDataStoreConfiguration>>().Value;
-                    ISqlConnectionStringProvider sqlConnectionStringProvider = p.GetRequiredService<ISqlConnectionStringProvider>();
                     return config.AuthenticationType == SqlServerAuthenticationType.ManagedIdentity
-                        ? new ManagedIdentitySqlConnectionFactory(sqlConnectionStringProvider, p.GetRequiredService<IAccessTokenHandler>())
-                        : new DefaultSqlConnectionFactory(sqlConnectionStringProvider);
+                        ? (ISqlConnection)p.GetService(typeof(ManagedIdentitySqlConnection))
+                        : (ISqlConnection)p.GetService(typeof(DefaultSqlConnection));
                 });
 
             // The following are only used in case of managed identity
@@ -169,7 +168,7 @@ namespace Microsoft.Health.SqlServer.Registration
                     var schemaManagerDataStore = p.GetService<IReadOnlySchemaManagerDataStore>() as SchemaManagerDataStore;
                     return schemaManagerDataStore != null
                         ? schemaManagerDataStore
-                        : new SchemaManagerDataStore(p.GetRequiredService<ISqlConnectionFactory>(), p.GetRequiredService<IOptions<SqlServerDataStoreConfiguration>>(), p.GetRequiredService<ILogger<SchemaManagerDataStore>>());
+                        : new SchemaManagerDataStore(p.GetRequiredService<ISqlConnection>(), p.GetRequiredService<IOptions<SqlServerDataStoreConfiguration>>(), p.GetRequiredService<ILogger<SchemaManagerDataStore>>());
                 });
 
             return services;
