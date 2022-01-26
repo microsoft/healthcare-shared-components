@@ -12,7 +12,7 @@ using Microsoft.Health.SqlServer.Configs;
 namespace Microsoft.Health.SqlServer
 {
     /// <summary>
-    /// Helper class to build the base SqlConnection object
+    /// Helper class to build the base <see cref="SqlConnection"/> object
     /// </summary>
     /// Could not do a real builder class because SqlConnection is of type IDisposable and it cannot be a member, since its disposal is handled in SqlConnectionWrapper
     internal class SqlConnectionHelper
