@@ -74,8 +74,8 @@ namespace Microsoft.Health.SqlServer.Registration
                 {
                     SqlServerDataStoreConfiguration config = p.GetRequiredService<IOptions<SqlServerDataStoreConfiguration>>().Value;
                     return config.AuthenticationType == SqlServerAuthenticationType.ManagedIdentity
-                        ? (ISqlConnection)p.GetService(typeof(ManagedIdentitySqlConnection))
-                        : (ISqlConnection)p.GetService(typeof(DefaultSqlConnection));
+                        ? p.GetService<ManagedIdentitySqlConnection>()
+                        : p.GetService<DefaultSqlConnection>();
                 });
 
             // The following are only used in case of managed identity
