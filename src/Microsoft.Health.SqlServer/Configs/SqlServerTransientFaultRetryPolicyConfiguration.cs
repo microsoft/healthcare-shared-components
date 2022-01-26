@@ -36,5 +36,10 @@ namespace Microsoft.Health.SqlServer.Configs
         /// Set SqlConnectionStringBuilder.ConnectConnectRetryCount to retry connection open transient issues
         /// </summary>
         public int ConnectRetryCount { get; set; } = 4;
+
+        /// <summary>
+        /// Set SqlConnectionStringBuilder.ConnectTimeout to retry connection open transient issues in seconds
+        /// </summary>
+        public int ConnectTimeoutInSeconds { get; internal set; } = 30;
     }
 }

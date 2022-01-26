@@ -44,6 +44,9 @@ namespace Microsoft.Health.SqlServer
             // Change from default 1 to 3
             connectionStringBuilder.ConnectRetryCount = sqlServerTransientFaultRetryPolicyConfiguration.ConnectRetryCount;
 
+            // Change from default 10 to 30
+            connectionStringBuilder.ConnectTimeout = sqlServerTransientFaultRetryPolicyConfiguration.ConnectTimeout;
+
             if (initialCatalog != null)
             {
                 connectionStringBuilder.InitialCatalog = initialCatalog;
