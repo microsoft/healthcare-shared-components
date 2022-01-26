@@ -69,13 +69,25 @@ namespace Microsoft.Health.SqlServer.Registration
 
             services.AddOptions();
             services.TryAddSingleton<ISqlConnectionStringProvider, DefaultSqlConnectionStringProvider>();
+
+            services.TryAddSingleton<ISqlConnection>(
+                 p =>
+                 {
+                     var sqlServerDataStoreConfigOption = p.GetRequiredService<IOptions<SqlServerDataStoreConfiguration>>();
+                     SqlServerDataStoreConfiguration config = sqlServerDataStoreConfigOption.Value;
+                     ISqlConnectionStringProvider sqlConnectionStringProvider = p.GetRequiredService<ISqlConnectionStringProvider>();
+                     return config.AuthenticationType == SqlServerAuthenticationType.ManagedIdentity
+                         ? new ManagedIdentitySqlConnection(sqlConnectionStringProvider, p.GetRequiredService<IAccessTokenHandler>(), sqlServerDataStoreConfigOption)
+                         : new DefaultSqlConnection(sqlConnectionStringProvider, sqlServerDataStoreConfigOption);
+                 });
+
             services.TryAddSingleton<ISqlConnection>(
                 p =>
                 {
                     SqlServerDataStoreConfiguration config = p.GetRequiredService<IOptions<SqlServerDataStoreConfiguration>>().Value;
                     return config.AuthenticationType == SqlServerAuthenticationType.ManagedIdentity
-                        ? p.GetService<ManagedIdentitySqlConnection>()
-                        : p.GetService<DefaultSqlConnection>();
+                        ? p.GetRequiredService<ManagedIdentitySqlConnection>()
+                        : p.GetRequiredService<DefaultSqlConnection>();
                 });
 
             // The following are only used in case of managed identity
