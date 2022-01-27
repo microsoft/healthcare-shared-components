@@ -14,25 +14,25 @@ namespace Microsoft.Health.SqlServer.Features.Client
     {
         private readonly SqlTransactionHandler _sqlTransactionHandler;
         private readonly SqlCommandWrapperFactory _sqlCommandWrapperFactory;
-        private readonly ISqlConnectionFactory _sqlConnectionFactory;
+        private readonly ISqlConnectionBuilder _sqlConnectionBuilder;
 
         public SqlConnectionWrapperFactory(
             SqlTransactionHandler sqlTransactionHandler,
             SqlCommandWrapperFactory sqlCommandWrapperFactory,
-            ISqlConnectionFactory sqlConnectionFactory)
+            ISqlConnectionBuilder sqlConnectionBuilder)
         {
             EnsureArg.IsNotNull(sqlTransactionHandler, nameof(sqlTransactionHandler));
             EnsureArg.IsNotNull(sqlCommandWrapperFactory, nameof(sqlCommandWrapperFactory));
-            EnsureArg.IsNotNull(sqlConnectionFactory, nameof(sqlConnectionFactory));
+            EnsureArg.IsNotNull(sqlConnectionBuilder, nameof(sqlConnectionBuilder));
 
             _sqlTransactionHandler = sqlTransactionHandler;
             _sqlCommandWrapperFactory = sqlCommandWrapperFactory;
-            _sqlConnectionFactory = sqlConnectionFactory;
+            _sqlConnectionBuilder = sqlConnectionBuilder;
         }
 
         public async Task<SqlConnectionWrapper> ObtainSqlConnectionWrapperAsync(CancellationToken cancellationToken, bool enlistInTransaction = false)
         {
-            SqlConnectionWrapper sqlConnectionWrapper = new SqlConnectionWrapper(_sqlTransactionHandler, _sqlCommandWrapperFactory, _sqlConnectionFactory, enlistInTransaction);
+            SqlConnectionWrapper sqlConnectionWrapper = new SqlConnectionWrapper(_sqlTransactionHandler, _sqlCommandWrapperFactory, _sqlConnectionBuilder, enlistInTransaction);
             await sqlConnectionWrapper.InitializeAsync(cancellationToken);
 
             return sqlConnectionWrapper;

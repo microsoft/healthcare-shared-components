@@ -19,23 +19,23 @@ namespace Microsoft.Health.SqlServer.Features.Schema.Manager
     {
         private static readonly TimeSpan RetrySleepDuration = TimeSpan.FromSeconds(20);
         private const int RetryAttempts = 3;
-        private readonly ISqlConnectionFactory _sqlConnectionFactory;
+        private readonly ISqlConnectionBuilder _sqlConnectionBuilder;
         private readonly ISchemaManagerDataStore _schemaManagerDataStore;
         private readonly ISqlConnectionStringProvider _sqlConnectionStringProvider;
         private readonly ILogger<BaseSchemaRunner> _logger;
 
         public BaseSchemaRunner(
-            ISqlConnectionFactory sqlConnectionFactory,
+            ISqlConnectionBuilder sqlConnectionBuilder,
             ISchemaManagerDataStore schemaManagerDataStore,
             ISqlConnectionStringProvider sqlConnectionStringProvider,
             ILogger<BaseSchemaRunner> logger)
         {
-            EnsureArg.IsNotNull(sqlConnectionFactory);
+            EnsureArg.IsNotNull(sqlConnectionBuilder);
             EnsureArg.IsNotNull(schemaManagerDataStore);
             EnsureArg.IsNotNull(sqlConnectionStringProvider);
             EnsureArg.IsNotNull(logger, nameof(logger));
 
-            _sqlConnectionFactory = sqlConnectionFactory;
+            _sqlConnectionBuilder = sqlConnectionBuilder;
             _schemaManagerDataStore = schemaManagerDataStore;
             _sqlConnectionStringProvider = sqlConnectionStringProvider;
             _logger = logger;
@@ -112,7 +112,7 @@ namespace Microsoft.Health.SqlServer.Features.Schema.Manager
             bool canInitialize = false;
 
             // now switch to the target database
-            using (var connection = await _sqlConnectionFactory.GetSqlConnectionAsync(cancellationToken: cancellationToken))
+            using (var connection = await _sqlConnectionBuilder.GetSqlConnectionAsync(cancellationToken: cancellationToken))
             {
                 canInitialize = await SchemaInitializer.CheckDatabasePermissionsAsync(connection, cancellationToken);
             }
@@ -125,7 +125,7 @@ namespace Microsoft.Health.SqlServer.Features.Schema.Manager
 
         private async Task CreateDatabaseIfNotExists(string databaseName, CancellationToken cancellationToken)
         {
-            using (var connection = await _sqlConnectionFactory.GetSqlConnectionAsync(cancellationToken: cancellationToken))
+            using (var connection = await _sqlConnectionBuilder.GetSqlConnectionAsync(cancellationToken: cancellationToken))
             {
                 await connection.TryOpenAsync(cancellationToken);
 
