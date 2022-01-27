@@ -81,6 +81,8 @@ namespace Microsoft.Health.SqlServer.Registration
                          : new DefaultSqlConnectionBuilder(sqlConnectionStringProvider, sqlServerDataStoreConfigOption);
                  });
 
+            // We build SqlConnection object differently for different Authentication Type.
+            // For ManagedIdentity access we set the access token
             services.TryAddSingleton<ISqlConnectionBuilder>(
                 p =>
                 {
