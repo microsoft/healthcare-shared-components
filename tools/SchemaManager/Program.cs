@@ -46,7 +46,9 @@ namespace SchemaManager
             // Add SqlServer services
             services.AddOptions();
             services.AddHttpClient();
-            services.AddSingleton<ISqlConnectionFactory, DefaultSqlConnectionFactory>();
+
+            // TODO: this won't work in OSS if the AuthenticationType is set to ManagedIdentity
+            services.AddSingleton<ISqlConnectionBuilder, DefaultSqlConnectionBuilder>();
             services.AddSingleton<ISqlConnectionStringProvider, DefaultSqlConnectionStringProvider>();
             services.AddSingleton<IBaseSchemaRunner, BaseSchemaRunner>();
             services.AddSingleton<ISchemaManagerDataStore, SchemaManagerDataStore>();

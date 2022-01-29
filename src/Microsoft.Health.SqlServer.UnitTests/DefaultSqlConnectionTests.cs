@@ -17,7 +17,7 @@ namespace Microsoft.Health.SqlServer.UnitTests.Features
         private const string ServerName = "(local)";
         private const string MasterDatabase = "master";
 
-        private readonly DefaultSqlConnectionFactory _sqlConnectionFactory;
+        private readonly DefaultSqlConnectionBuilder _sqlConnectionFactory;
 
         public DefaultSqlConnectionTests()
         {
@@ -26,7 +26,8 @@ namespace Microsoft.Health.SqlServer.UnitTests.Features
                 ConnectionString = $"server={ServerName};Initial Catalog={DatabaseName};Integrated Security=true",
             };
 
-            _sqlConnectionFactory = new DefaultSqlConnectionFactory(new DefaultSqlConnectionStringProvider(Options.Create(sqlServerDataStoreConfiguration)));
+            var sqlConfigOptions = Options.Create(sqlServerDataStoreConfiguration);
+            _sqlConnectionFactory = new DefaultSqlConnectionBuilder(new DefaultSqlConnectionStringProvider(sqlConfigOptions), sqlConfigOptions);
         }
 
         [Fact]
