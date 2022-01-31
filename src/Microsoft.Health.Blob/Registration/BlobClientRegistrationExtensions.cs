@@ -132,15 +132,14 @@ namespace Microsoft.Extensions.DependencyInjection
                     if (string.Equals(options.Credential, "managedidentity", StringComparison.OrdinalIgnoreCase))
                     {
                         clientBuilder = builder
-                            .AddBlobServiceClient(new Uri(options.ConnectionString));
+                            .AddBlobServiceClient(new Uri(options.ConnectionString))
+                            .WithCredential(new DefaultAzureCredential(options.Credentials));
                     }
                     else
                     {
                         clientBuilder = builder
                             .AddBlobServiceClient(options.ConnectionString);
                     }
-
-                    clientBuilder = clientBuilder.WithCredential(new DefaultAzureCredential(options.Credentials));
 
                     clientBuilder = clientBuilder.ConfigureOptions(x => configuration.Bind(x));
                     if (configure != null)
