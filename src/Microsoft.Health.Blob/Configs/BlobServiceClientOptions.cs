@@ -3,6 +3,7 @@
 // Licensed under the MIT License (MIT). See LICENSE in the repo root for license information.
 // -------------------------------------------------------------------------------------------------
 
+using Azure.Identity;
 using Azure.Storage.Blobs;
 
 namespace Microsoft.Health.Blob.Configs
@@ -55,7 +56,11 @@ namespace Microsoft.Health.Blob.Configs
         /// This setting should only be set if <see cref="Credential"/> contains the value <c>"managedidentity"</c>.
         /// </remarks>
         /// <value>The client id if using managed identity to authenticate; otherwise, <see langword="null"/>.</value>
-        public string ClientId { get; set; }
+        public string ClientId
+        {
+            get => Credentials.ManagedIdentityClientId;
+            set => Credentials.ManagedIdentityClientId = value;
+        }
 
         /// <summary>
         /// Gets or sets the options for <see cref="BlobServiceClient"/> operations.
@@ -69,5 +74,11 @@ namespace Microsoft.Health.Blob.Configs
         /// </summary>
         /// <value>The settings for configuring the underlying HTTP transport.</value>
         public TransportOverrideOptions TransportOverride { get; set; }
+
+        /// <summary>
+        /// Gets or sets the options for configuring DefaultAzureCredential
+        /// </summary>
+        /// <value>The settings for configuring the default azure credential</value>
+        public DefaultAzureCredentialOptions Credentials { get; set; } = new DefaultAzureCredentialOptions();
     }
 }
