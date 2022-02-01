@@ -16,6 +16,11 @@ namespace Microsoft.Health.SqlServer.Features.Storage
         private const int CustomErrorCodeBase = 50000;
 
         /// <summary>
+        /// Client error
+        /// </summary>
+        public const int BadRequest = CustomErrorCodeBase + 400;
+
+        /// <summary>
         /// A resource was not found
         /// </summary>
         public const int NotFound = CustomErrorCodeBase + 404;
