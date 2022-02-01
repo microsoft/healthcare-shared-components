@@ -179,7 +179,6 @@ namespace SchemaManager.Core
                 if (ex is SqlException || ex is ExecutionFailureException)
                 {
                     _logger.LogError(ex, "Script execution has failed.");
-                    return;
                 }
 
                 throw;
@@ -303,6 +302,13 @@ namespace SchemaManager.Core
             {
                 throw new SchemaManagerException(string.Format(CultureInfo.InvariantCulture, Resources.InvalidVersionMessage, version));
             }
+        }
+
+        public async Task<int> GetLatestSchema(CancellationToken cancellationToken = default)
+        {
+            int latestVersion = await _schemaManagerDataStore.GetCurrentSchemaVersionAsync(cancellationToken);
+            _logger.LogInformation("Latest schema version in db is : {Version}", latestVersion);
+            return latestVersion;
         }
     }
 }

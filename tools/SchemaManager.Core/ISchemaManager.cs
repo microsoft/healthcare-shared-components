@@ -40,5 +40,12 @@ namespace SchemaManager.Core
         /// <param name="cancellationToken">A cancellation token.</param>
         /// <returns>A list of the current schema versions from the service.</returns>
         public Task<IList<CurrentVersion>> GetCurrentSchema(string connectionString, Uri server, CancellationToken cancellationToken = default);
+
+        /// <summary>
+        /// Gets the latest schema version of the service.
+        /// </summary>
+        /// <param name="cancellationToken">A cancellation token.</param>
+        /// <returns>The latest version on the server</returns>
+        public Task<int> GetLatestSchema(CancellationToken cancellationToken = default);
     }
 }
