@@ -39,9 +39,7 @@ namespace Microsoft.Health.Client
 
         protected override async Task<string> BearerTokenFunction(CancellationToken cancellationToken)
         {
-            OAuth2ClientCredentialConfiguration oAuth2ClientCredentialConfiguration = string.IsNullOrEmpty(_optionsName)
-                ? _oAuth2ClientCredentialConfigurationMonitor.CurrentValue
-                : _oAuth2ClientCredentialConfigurationMonitor.Get(_optionsName);
+            OAuth2ClientCredentialConfiguration oAuth2ClientCredentialConfiguration = _oAuth2ClientCredentialConfigurationMonitor.Get(_optionsName);
 
             var formData = new List<KeyValuePair<string, string>>
             {

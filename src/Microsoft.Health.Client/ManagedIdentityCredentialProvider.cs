@@ -36,9 +36,8 @@ namespace Microsoft.Health.Client
 
         protected override async Task<string> BearerTokenFunction(CancellationToken cancellationToken)
         {
-            ManagedIdentityCredentialConfiguration managedIdentityCredentialConfiguration = string.IsNullOrEmpty(_optionsName)
-                ? _managedIdentityCredentialConfigurationMonitor.CurrentValue
-                : _managedIdentityCredentialConfigurationMonitor.Get(_optionsName);
+            ManagedIdentityCredentialConfiguration managedIdentityCredentialConfiguration = _managedIdentityCredentialConfigurationMonitor.Get(_optionsName);
+
             var azureServiceTokenProvider = new AzureServiceTokenProvider(httpClientFactory: _httpClientFactory);
             return await azureServiceTokenProvider.GetAccessTokenAsync(managedIdentityCredentialConfiguration.Resource, managedIdentityCredentialConfiguration.TenantId, cancellationToken);
         }

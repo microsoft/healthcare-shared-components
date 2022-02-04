@@ -46,9 +46,7 @@ namespace Microsoft.Health.Client
 
         protected override async Task<string> BearerTokenFunction(CancellationToken cancellationToken)
         {
-            OAuth2ClientCertificateCredentialConfiguration oAuth2ClientCertificateCredentialConfiguration = string.IsNullOrEmpty(_optionsName)
-                ? _oAuth2ClientCertificateCredentialConfigurationMonitor.CurrentValue
-                : _oAuth2ClientCertificateCredentialConfigurationMonitor.Get(_optionsName);
+            OAuth2ClientCertificateCredentialConfiguration oAuth2ClientCertificateCredentialConfiguration = _oAuth2ClientCertificateCredentialConfigurationMonitor.Get(_optionsName);
 
             // Values specified for the assertion JWT specified here: https://docs.microsoft.com/azure/active-directory/develop/active-directory-certificate-credentials
             var additionalClaims = new List<Claim>
