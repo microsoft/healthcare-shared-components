@@ -152,6 +152,7 @@ namespace Microsoft.Health.Client.UnitTests
         {
             var optionsMonitor = Substitute.For<IOptionsMonitor<T>>();
             optionsMonitor.CurrentValue.Returns(configuration);
+            optionsMonitor.Get(default).ReturnsForAnyArgs(configuration);
             return optionsMonitor;
         }
     }
