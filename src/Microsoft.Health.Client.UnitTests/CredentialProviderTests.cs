@@ -57,7 +57,8 @@ namespace Microsoft.Health.Client.UnitTests
                         "invalid scope",
                         "invalid client id",
                         "invalid client secret");
-            var credentialProvider = new OAuth2ClientCredentialProvider(Options.Create(credentialConfiguration), httpClient);
+
+            var credentialProvider = new OAuth2ClientCredentialProvider(GetOptionsMonitor(credentialConfiguration), httpClient);
             await Assert.ThrowsAsync<FailToRetrieveTokenException>(() => credentialProvider.GetBearerToken(cancellationToken: default));
         }
 
@@ -84,8 +85,9 @@ namespace Microsoft.Health.Client.UnitTests
                         "invalid client id",
                         "invalid client secret",
                         "invalid username",
-                        "invaid password");
-            var credentialProvider = new OAuth2UserPasswordCredentialProvider(Options.Create(credentialConfiguration), httpClient);
+                        "invalid password");
+
+            var credentialProvider = new OAuth2UserPasswordCredentialProvider(GetOptionsMonitor(credentialConfiguration), httpClient);
             await Assert.ThrowsAsync<FailToRetrieveTokenException>(() => credentialProvider.GetBearerToken(cancellationToken: default));
         }
 
@@ -144,6 +146,13 @@ namespace Microsoft.Health.Client.UnitTests
                 .Returns(Task.FromResult(responseMessage));
 
             return mockHandler;
+        }
+
+        private static IOptionsMonitor<T> GetOptionsMonitor<T>(T configuration)
+        {
+            var optionsMonitor = Substitute.For<IOptionsMonitor<T>>();
+            optionsMonitor.CurrentValue.Returns(configuration);
+            return optionsMonitor;
         }
     }
 }
