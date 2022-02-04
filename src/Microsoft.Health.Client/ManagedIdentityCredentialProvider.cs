@@ -14,27 +14,32 @@ namespace Microsoft.Health.Client
 {
     public class ManagedIdentityCredentialProvider : CredentialProvider
     {
-        private readonly ManagedIdentityCredentialConfiguration _managedIdentityCredentialConfiguration;
+        private readonly IOptionsMonitor<ManagedIdentityCredentialConfiguration> _managedIdentityCredentialConfigurationMonitor;
         private readonly IHttpClientFactory _httpClientFactory;
+        private readonly string _optionsName;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ManagedIdentityCredentialProvider"/> class.
         /// This class is used to obtain a token for the configured resource via Managed Identity.
         /// </summary>
-        /// <param name="managedIdentityCredentialConfiguration">The configuration of the token to obtain.</param>
+        /// <param name="managedIdentityCredentialConfigurationMonitorMonitor">The configuration of the token to obtain.</param>
         /// <param name="httpClientFactory">An optional <see cref="IHttpClientFactory"/> for use within the <see cref="AzureServiceTokenProvider"/>.</param>
-        public ManagedIdentityCredentialProvider(IOptions<ManagedIdentityCredentialConfiguration> managedIdentityCredentialConfiguration, IHttpClientFactory httpClientFactory = null)
+        /// <param name="optionsName">Optional name to use when retrieving options from the IOptionsMonitor</param>
+        public ManagedIdentityCredentialProvider(IOptionsMonitor<ManagedIdentityCredentialConfiguration> managedIdentityCredentialConfigurationMonitorMonitor, IHttpClientFactory httpClientFactory = null, string optionsName = null)
         {
-            EnsureArg.IsNotNull(managedIdentityCredentialConfiguration?.Value, nameof(managedIdentityCredentialConfiguration));
+            EnsureArg.IsNotNull(managedIdentityCredentialConfigurationMonitorMonitor, nameof(managedIdentityCredentialConfigurationMonitorMonitor));
 
-            _managedIdentityCredentialConfiguration = managedIdentityCredentialConfiguration.Value;
+            _managedIdentityCredentialConfigurationMonitor = managedIdentityCredentialConfigurationMonitorMonitor;
+            _optionsName = optionsName;
             _httpClientFactory = httpClientFactory;
         }
 
         protected override async Task<string> BearerTokenFunction(CancellationToken cancellationToken)
         {
+            ManagedIdentityCredentialConfiguration managedIdentityCredentialConfiguration = _managedIdentityCredentialConfigurationMonitor.Get(_optionsName);
+
             var azureServiceTokenProvider = new AzureServiceTokenProvider(httpClientFactory: _httpClientFactory);
-            return await azureServiceTokenProvider.GetAccessTokenAsync(_managedIdentityCredentialConfiguration.Resource, _managedIdentityCredentialConfiguration.TenantId, cancellationToken);
+            return await azureServiceTokenProvider.GetAccessTokenAsync(managedIdentityCredentialConfiguration.Resource, managedIdentityCredentialConfiguration.TenantId, cancellationToken);
         }
     }
 }
