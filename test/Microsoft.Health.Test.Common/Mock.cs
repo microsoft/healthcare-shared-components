@@ -115,10 +115,7 @@ namespace Microsoft.Health.Test.Utilities
                     }
                     else
                     {
-                        object item = parameter.ParameterType.IsInterface ?
-                            Substitute.For(new[] { parameter.ParameterType }, null) :
-                            SubstitutionContext.Current.SubstituteFactory.CreatePartial(new[] { parameter.ParameterType }, null);
-                        arguments.Add(item);
+                        arguments.Add(Substitute.For(new[] { parameter.ParameterType }, Array.Empty<object>()));
                     }
                 }
             }
