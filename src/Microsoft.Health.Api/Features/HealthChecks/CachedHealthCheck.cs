@@ -23,7 +23,7 @@ namespace Microsoft.Health.Api.Features.HealthChecks
         private readonly ILogger _logger;
         private readonly SemaphoreSlim _semaphore = new SemaphoreSlim(1, 1);
 
-        private CachedHealthCheckResult _cachedResult = new CachedHealthCheckResult();
+        private volatile CachedHealthCheckResult _cachedResult = new CachedHealthCheckResult();
 
         public CachedHealthCheck(IServiceProvider provider, Func<IServiceProvider, IHealthCheck> healthCheck)
         {
@@ -81,6 +81,11 @@ namespace Microsoft.Health.Api.Features.HealthChecks
                     IHealthCheck check = _healthCheck.Invoke(scope.ServiceProvider);
                     result = await check.CheckHealthAsync(context, cancellationToken).ConfigureAwait(false);
                 }
+                catch (OperationCanceledException oce) when (oce.CancellationToken == cancellationToken)
+                {
+                    _logger.LogWarning(oce, $"Cancellation was requested for {nameof(CheckHealthAsync)}.");
+                    throw;
+                }
                 catch (Exception ex)
                 {
                     _logger.LogError(ex, "Health check failed to complete.");
@@ -119,7 +124,7 @@ namespace Microsoft.Health.Api.Features.HealthChecks
 
         public void Dispose()
         {
-            _semaphore?.Dispose();
+            _semaphore.Dispose();
             GC.SuppressFinalize(this);
         }
 
