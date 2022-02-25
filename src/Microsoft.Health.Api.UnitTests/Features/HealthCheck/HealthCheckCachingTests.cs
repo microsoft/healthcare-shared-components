@@ -8,7 +8,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
-using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Health.Api.Features.HealthChecks;
 using Microsoft.Health.Core.Internal;
 using Microsoft.Health.Test.Utilities;
@@ -19,93 +18,122 @@ namespace Microsoft.Health.Api.UnitTests.Features.HealthCheck
 {
     public class HealthCheckCachingTests
     {
-        private readonly CachedHealthCheck _cahcedHealthCheck;
-        private readonly HealthCheckContext _context;
-        private Func<IServiceProvider, IHealthCheck> _healthCheckFunc;
-        private IHealthCheck _healthCheck;
-        private IServiceScope _serviceScope;
-
-        public HealthCheckCachingTests()
-        {
-            var serviceProvider = Substitute.For<IServiceProvider>();
-            var scopeFactory = Substitute.For<IServiceScopeFactory>();
-            serviceProvider.GetService(typeof(IServiceScopeFactory)).Returns(scopeFactory);
-
-            _serviceScope = Substitute.For<IServiceScope>();
-            scopeFactory.CreateScope().Returns(_serviceScope);
-
-            _healthCheckFunc = Substitute.For<Func<IServiceProvider, IHealthCheck>>();
-            _healthCheck = Substitute.For<IHealthCheck>();
-            _context = new HealthCheckContext();
-
-            _cahcedHealthCheck = new CachedHealthCheck(serviceProvider, _healthCheckFunc, NullLogger<CachedHealthCheck>.Instance);
-
-            _healthCheckFunc.Invoke(Arg.Any<IServiceProvider>()).ReturnsForAnyArgs(_healthCheck);
-
-            _healthCheck.CheckHealthAsync(Arg.Any<HealthCheckContext>()).Returns(HealthCheckResult.Healthy());
-        }
+        private readonly HealthCheckContext _context = new HealthCheckContext();
+        private readonly IHealthCheck _healthCheck = Substitute.For<IHealthCheck>();
+        private readonly DateTimeOffset _currentTime = DateTimeOffset.UtcNow;
+        private readonly HealthCheckCachingOptions _options = new HealthCheckCachingOptions();
 
         [Fact]
         public async Task GivenTheHealthCheckCache_WhenCallingWithMultipleRequests_ThenOnlyOneResultShouldBeExecuted()
         {
-            await Task.WhenAll(
-                _cahcedHealthCheck.CheckHealthAsync(_context, CancellationToken.None),
-                _cahcedHealthCheck.CheckHealthAsync(_context, CancellationToken.None),
-                _cahcedHealthCheck.CheckHealthAsync(_context, CancellationToken.None),
-                _cahcedHealthCheck.CheckHealthAsync(_context, CancellationToken.None));
+            using CancellationTokenSource tokenSource = new CancellationTokenSource();
 
-            _healthCheckFunc.Received(1).Invoke(_serviceScope.ServiceProvider);
-        }
+            _healthCheck
+                .CheckHealthAsync(_context, tokenSource.Token)
+                .Returns(Task.FromResult(HealthCheckResult.Healthy()));
 
-        [Fact]
-        public async Task GivenTheHealthCheckCache_WhenRequestingStatus_ThenTheResultIsWrittenCorrectly()
-        {
-            var result = await _cahcedHealthCheck.CheckHealthAsync(_context, CancellationToken.None);
+            _options.Expiry = TimeSpan.FromDays(1);
 
-            Assert.Equal(HealthStatus.Healthy, result.Status);
+            CachedHealthCheck cache = CreateHealthCheck();
+
+            HealthCheckResult[] actual = await Task.WhenAll(
+                cache.CheckHealthAsync(_context, tokenSource.Token),
+                cache.CheckHealthAsync(_context, tokenSource.Token),
+                cache.CheckHealthAsync(_context, tokenSource.Token),
+                cache.CheckHealthAsync(_context, tokenSource.Token));
+
+            await _healthCheck.Received(1).CheckHealthAsync(_context, tokenSource.Token);
+            Assert.All(actual, x => Assert.Equal(HealthStatus.Healthy, x.Status));
         }
 
         [Fact]
         public async Task GivenTheHealthCheckCache_WhenHealthCheckThrows_ThenTheResultIsWrittenCorrectly()
         {
-            _healthCheck.When(x => x.CheckHealthAsync(Arg.Any<HealthCheckContext>())).Throw<Exception>();
+            using CancellationTokenSource tokenSource = new CancellationTokenSource();
 
-            var result = await _cahcedHealthCheck.CheckHealthAsync(_context, CancellationToken.None);
+            _healthCheck
+                .When(c => c.CheckHealthAsync(_context, tokenSource.Token))
+                .Throw<Exception>();
 
+            HealthCheckResult result = await CreateHealthCheck().CheckHealthAsync(_context, tokenSource.Token);
+
+            await _healthCheck.Received(1).CheckHealthAsync(_context, tokenSource.Token);
             Assert.Equal(HealthStatus.Unhealthy, result.Status);
         }
 
         [Fact]
         public async Task GivenTheHealthCheckCache_WhenMoreThan1SecondApart_ThenSecondRequestGetsFreshResults()
         {
+            using CancellationTokenSource tokenSource = new CancellationTokenSource();
+
+            _healthCheck
+                .CheckHealthAsync(_context, tokenSource.Token)
+                .Returns(Task.FromResult(HealthCheckResult.Healthy()));
+
+            _options.Expiry = TimeSpan.FromSeconds(1);
+
+            CachedHealthCheck cache = CreateHealthCheck();
+
             // Mocks the time a second ago so we can call the middleware in the past
             using (Mock.Property(() => ClockResolver.UtcNowFunc, () => DateTimeOffset.UtcNow.AddSeconds(-1)))
             {
-                await Task.WhenAll(
-                    _cahcedHealthCheck.CheckHealthAsync(_context, CancellationToken.None),
-                    _cahcedHealthCheck.CheckHealthAsync(_context, CancellationToken.None));
+                Assert.All(
+                    await Task.WhenAll(
+                        cache.CheckHealthAsync(_context, tokenSource.Token),
+                        cache.CheckHealthAsync(_context, tokenSource.Token)),
+                    x => Assert.Equal(HealthStatus.Healthy, x.Status));
             }
 
-            // Call the middleware again to ensure we get new results
-            await _cahcedHealthCheck.CheckHealthAsync(_context, CancellationToken.None);
+            await _healthCheck.Received(1).CheckHealthAsync(_context, tokenSource.Token);
 
-            _healthCheckFunc.Received(2).Invoke(_serviceScope.ServiceProvider);
+            // Call the middleware again to ensure we get new results
+            Assert.Equal(HealthStatus.Healthy, (await cache.CheckHealthAsync(_context, tokenSource.Token)).Status);
+
+            await _healthCheck.Received(2).CheckHealthAsync(_context, tokenSource.Token);
         }
 
         [Fact]
         public async Task GivenTheHealthCheckCache_WhenCancellationIsRequested_ThenWeDoNotThrowAndReturnLastHealthCheckResult()
         {
-            // Trigger a health check so as to populate lastResult
-            await _cahcedHealthCheck.CheckHealthAsync(_context, CancellationToken.None);
+            HealthCheckResult result;
+            using CancellationTokenSource tokenSource = new CancellationTokenSource();
 
-            var ctSource = new CancellationTokenSource();
-            ctSource.Cancel();
+            _healthCheck
+                .CheckHealthAsync(_context, tokenSource.Token)
+                .Returns(Task.FromResult(HealthCheckResult.Healthy()));
 
-            HealthCheckResult result = await _cahcedHealthCheck.CheckHealthAsync(_context, ctSource.Token);
+            _options.Expiry = TimeSpan.FromDays(1);
+
+            CachedHealthCheck cache = CreateHealthCheck();
+
+            // Populate cache
+            result = await cache.CheckHealthAsync(_context, tokenSource.Token);
+
+            await _healthCheck.Received(1).CheckHealthAsync(_context, tokenSource.Token);
+            Assert.Equal(HealthStatus.Healthy, result.Status);
+
+            // Check again
+            result = await cache.CheckHealthAsync(_context, tokenSource.Token);
 
             // Confirm we only called CheckHealthAsync once.
-            await _healthCheck.Received(1).CheckHealthAsync(Arg.Any<HealthCheckContext>(), Arg.Any<CancellationToken>());
+            await _healthCheck.Received(1).CheckHealthAsync(_context, tokenSource.Token);
             Assert.Equal(HealthStatus.Healthy, result.Status);
+        }
+
+        private CachedHealthCheck CreateHealthCheck()
+        {
+            IServiceProvider provider = new ServiceCollection()
+                .AddLogging()
+                .AddSingleton(() => _currentTime)
+                .Configure<HealthCheckCachingOptions>(x =>
+                {
+                    x.CacheFailure = _options.CacheFailure;
+                    x.Expiry = _options.Expiry;
+                    x.RefreshOffset = _options.RefreshOffset;
+                })
+                .BuildServiceProvider();
+
+            return new CachedHealthCheck(provider, s => _healthCheck);
         }
     }
 }

@@ -18,7 +18,7 @@ namespace Microsoft.Health.Api.Modules
         {
             EnsureArg.IsNotNull(services, nameof(services));
 
-            services.Add<HealthCheckConfiguration>()
+            services.Add<HealthCheckPostConfigure>()
                 .Transient()
                 .AsService<IPostConfigureOptions<HealthCheckServiceOptions>>();
         }

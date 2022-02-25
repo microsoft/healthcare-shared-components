@@ -128,6 +128,9 @@
   <data name="FailedHealthCheckMessage" xml:space="preserve">
     <value>Failed while running health check.</value>
   </data>
+  <data name="InvalidHealthCheckCacheExpiry" xml:space="preserve">
+    <value>Health Check cache refresh offset cannot be larger than the expiry.</value>
+  </data>
   <data name="MissingAuditInformation" xml:space="preserve">
     <value>The audit information is missing for Controller: {0} and Action: {1}. This usually means the action is not marked with appropriate attribute.</value>
     <comment>{0} is the controller name and {1} is the action name.</comment>
