@@ -12,11 +12,11 @@ using Microsoft.Extensions.Options;
 
 namespace Microsoft.Health.Api.Features.HealthChecks
 {
-    internal sealed class HealthCheckPostConfigure : IPostConfigureOptions<HealthCheckServiceOptions>
+    internal sealed class HealthCheckCachingPostConfigure : IPostConfigureOptions<HealthCheckServiceOptions>
     {
         private readonly IServiceProvider _serviceProvider;
 
-        public HealthCheckPostConfigure(IServiceProvider serviceProvider)
+        public HealthCheckCachingPostConfigure(IServiceProvider serviceProvider)
             => _serviceProvider = EnsureArg.IsNotNull(serviceProvider, nameof(serviceProvider));
 
         [SuppressMessage("Reliability", "CA2000:Dispose objects before losing scope", Justification = "CachedHealthCheck lasts the lifetime of the service.")]

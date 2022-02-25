@@ -29,6 +29,8 @@ namespace Microsoft.Health.SqlServer.Features.Health
 
         public async Task<HealthCheckResult> CheckHealthAsync(HealthCheckContext context, CancellationToken cancellationToken)
         {
+            _logger.LogInformation($"Starting {nameof(SqlServerHealthCheck)}.");
+
             try
             {
                 using SqlConnectionWrapper sqlConnectionWrapper = await _sqlConnectionWrapperFactory.ObtainSqlConnectionWrapperAsync(cancellationToken);
@@ -38,12 +40,12 @@ namespace Microsoft.Health.SqlServer.Features.Health
 
                 await sqlCommandWrapper.ExecuteScalarAsync(cancellationToken).ConfigureAwait(false);
 
+                _logger.LogInformation("Successfully connected to SQL database.");
                 return HealthCheckResult.Healthy("Successfully connected.");
             }
             catch (Exception ex)
             {
-                _logger.LogWarning(ex, "Failed to connect to the data store.");
-
+                _logger.LogError(ex, "Failed to connect to the data store.");
                 return HealthCheckResult.Unhealthy("Failed to connect.");
             }
         }
