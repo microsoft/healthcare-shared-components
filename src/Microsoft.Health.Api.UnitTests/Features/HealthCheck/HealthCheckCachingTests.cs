@@ -65,8 +65,8 @@ namespace Microsoft.Health.Api.UnitTests.Features.HealthCheck
                         return HealthCheckResult.Healthy();
                     }));
 
-            _options.Expiry = TimeSpan.FromSeconds(10);
-            _options.RefreshOffset = TimeSpan.FromSeconds(5);
+            _options.Expiry = TimeSpan.FromSeconds(30);
+            _options.RefreshOffset = TimeSpan.FromSeconds(28);
 
             CachedHealthCheck cache = CreateHealthCheck();
 
@@ -77,7 +77,8 @@ namespace Microsoft.Health.Api.UnitTests.Features.HealthCheck
             Assert.Equal(HealthStatus.Healthy, result.Status);
 
             // Start attempting to refresh a stale token
-            using (Mock.Property(() => ClockResolver.UtcNowFunc, () => DateTimeOffset.UtcNow.AddSeconds(5)))
+            DateTimeOffset futureTime = DateTimeOffset.UtcNow.AddSeconds(2);
+            using (Mock.Property(() => ClockResolver.UtcNowFunc, () => futureTime))
             {
                 Task<HealthCheckResult> semaphoreConsumerTask = cache.CheckHealthAsync(_context, tokenSource.Token);
 
@@ -114,7 +115,8 @@ namespace Microsoft.Health.Api.UnitTests.Features.HealthCheck
             CachedHealthCheck cache = CreateHealthCheck();
 
             // Mocks the time a second ago so we can call the middleware in the past
-            using (Mock.Property(() => ClockResolver.UtcNowFunc, () => DateTimeOffset.UtcNow.AddSeconds(-1)))
+            DateTimeOffset futureTime = DateTimeOffset.UtcNow.AddSeconds(-1);
+            using (Mock.Property(() => ClockResolver.UtcNowFunc, () => futureTime))
             {
                 Assert.All(
                     await Task.WhenAll(
@@ -205,8 +207,8 @@ namespace Microsoft.Health.Api.UnitTests.Features.HealthCheck
                         return HealthCheckResult.Healthy();
                     }));
 
-            _options.Expiry = TimeSpan.FromSeconds(10);
-            _options.RefreshOffset = TimeSpan.FromSeconds(5);
+            _options.Expiry = TimeSpan.FromSeconds(30);
+            _options.RefreshOffset = TimeSpan.FromSeconds(25);
 
             CachedHealthCheck cache = CreateHealthCheck();
 
@@ -217,7 +219,8 @@ namespace Microsoft.Health.Api.UnitTests.Features.HealthCheck
             Assert.Equal(HealthStatus.Healthy, result.Status);
 
             // Start attempting to refresh a stale token
-            using (Mock.Property(() => ClockResolver.UtcNowFunc, () => DateTimeOffset.UtcNow.AddSeconds(5)))
+            DateTimeOffset futureTime = DateTimeOffset.UtcNow.AddSeconds(5);
+            using (Mock.Property(() => ClockResolver.UtcNowFunc, () => futureTime))
             {
                 Task<HealthCheckResult> semaphoreConsumerTask = cache.CheckHealthAsync(_context, tokenSource.Token);
 
@@ -259,7 +262,8 @@ namespace Microsoft.Health.Api.UnitTests.Features.HealthCheck
 
             // Attempt to fetch a health check with a canceled token after the cache expired
             tokenSource.Cancel();
-            using (Mock.Property(() => ClockResolver.UtcNowFunc, () => DateTimeOffset.UtcNow.AddSeconds(1)))
+            DateTimeOffset futureTime = DateTimeOffset.UtcNow.AddSeconds(1);
+            using (Mock.Property(() => ClockResolver.UtcNowFunc, () => futureTime))
             {
                 await Assert.ThrowsAsync<TaskCanceledException>(() => cache.CheckHealthAsync(_context, tokenSource.Token));
             }
@@ -295,6 +299,50 @@ namespace Microsoft.Health.Api.UnitTests.Features.HealthCheck
 
             Assert.Equal(HealthStatus.Unhealthy, result.Status);
             await _healthCheck.Received(cacheFailure ? 1 : 2).CheckHealthAsync(_context, tokenSource.Token);
+        }
+
+        [Fact]
+        public async Task GivenTheHealthCheckCacheWithNoFailureCaching_WhenRefreshingWhileStale_ThenDoNotReturnNewUnhealthy()
+        {
+            HealthCheckResult result;
+            using CancellationTokenSource tokenSource = new CancellationTokenSource();
+
+            _healthCheck
+                .CheckHealthAsync(_context, tokenSource.Token)
+                .Returns(
+                    Task.FromResult(HealthCheckResult.Degraded()),
+                    Task.FromResult(HealthCheckResult.Unhealthy()),
+                    Task.FromResult(HealthCheckResult.Healthy()));
+
+            _options.CacheFailure = false;
+            _options.Expiry = TimeSpan.FromSeconds(60);
+            _options.RefreshOffset = TimeSpan.FromSeconds(50);
+
+            CachedHealthCheck cache = CreateHealthCheck();
+
+            // Populate cache
+            result = await cache.CheckHealthAsync(_context, tokenSource.Token);
+
+            await _healthCheck.Received(1).CheckHealthAsync(_context, tokenSource.Token);
+            Assert.Equal(HealthStatus.Degraded, result.Status);
+
+            // Attempt to refresh
+            DateTimeOffset futureTime = DateTimeOffset.UtcNow.AddSeconds(10);
+            using (Mock.Property(() => ClockResolver.UtcNowFunc, () => futureTime))
+            {
+                // Attempt refresh but retrieve unhealthy status
+                // Because we don't cache failures, and because the last status is still valid, return the old value
+                result = await cache.CheckHealthAsync(_context, tokenSource.Token);
+
+                await _healthCheck.Received(2).CheckHealthAsync(_context, tokenSource.Token);
+                Assert.Equal(HealthStatus.Degraded, result.Status);
+
+                // Try to get the status again (as the cache wasn't updated)
+                result = await cache.CheckHealthAsync(_context, tokenSource.Token);
+
+                await _healthCheck.Received(3).CheckHealthAsync(_context, tokenSource.Token);
+                Assert.Equal(HealthStatus.Healthy, result.Status);
+            }
         }
 
         private CachedHealthCheck CreateHealthCheck()

@@ -23,6 +23,7 @@ namespace Microsoft.Health.Api.Features.HealthChecks
         private readonly ILogger _logger;
         private readonly SemaphoreSlim _semaphore = new SemaphoreSlim(1, 1);
 
+        // By default, the times are DateTimeOffset.MinValue such that they are always considered invalid
         private volatile CachedHealthCheckResult _cachedResult = new CachedHealthCheckResult();
 
         public CachedHealthCheck(IServiceProvider provider, Func<IServiceProvider, IHealthCheck> healthCheck)
@@ -92,8 +93,7 @@ namespace Microsoft.Health.Api.Features.HealthChecks
                     result = HealthCheckResult.Unhealthy(Resources.FailedHealthCheckMessage); // Do not pass error to caller
                 }
 
-                UpdateCache(result);
-                return result;
+                return UpdateCache(result).Value;
             }
             finally
             {
@@ -101,14 +101,14 @@ namespace Microsoft.Health.Api.Features.HealthChecks
             }
         }
 
-        private void UpdateCache(HealthCheckResult result)
+        private CachedHealthCheckResult UpdateCache(HealthCheckResult result)
         {
             // Only update the cache if:
             // (1) The current result has expired OR
-            // (2) The current result is stale and the cache has been configured to save failed results
-            // (3) The current result is stale and the result is healthy
+            // (2) The current result is stale and the cache has been configured to save failed results OR
+            // (3) The current result is stale and the new result is healthy
             DateTimeOffset currentTime = Clock.UtcNow;
-            if (currentTime >= _cachedResult.ExpireTime || _options.CacheFailure || _cachedResult.Value.Status != HealthStatus.Unhealthy)
+            if (currentTime >= _cachedResult.ExpireTime || _options.CacheFailure || result.Status != HealthStatus.Unhealthy)
             {
                 _cachedResult = new CachedHealthCheckResult
                 {
@@ -117,6 +117,8 @@ namespace Microsoft.Health.Api.Features.HealthChecks
                     Value = result,
                 };
             }
+
+            return _cachedResult;
         }
 
         private bool IsCacheFresh(DateTimeOffset currentTime)
