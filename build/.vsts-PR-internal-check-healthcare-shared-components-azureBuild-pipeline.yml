@@ -3,12 +3,12 @@ name:  pr$(System.PullRequest.PullRequestNumber)-$(Date:yyyyMMdd)$(Rev:-r)
 parameters:
 - name: BuildConfiguration
   default: release
-- name: NugetSecurityAnalysisWarningLevel
-  default: warn
 
 variables:
 - name:  vmImage
   value: windows-latest
+- name: skipNugetSecurityAnalysis
+  value: true
 
 jobs:
 

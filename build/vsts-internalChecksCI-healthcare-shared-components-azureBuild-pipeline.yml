@@ -14,12 +14,12 @@ trigger:
 parameters:
 - name: BuildConfiguration
   default: release
-- name: NugetSecurityAnalysisWarningLevel
-  default: warn
 
 variables:
 - name: vmImage
   value: windows-latest
+- name: skipNugetSecurityAnalysis
+  value: true
 
 resources:
   repositories:
