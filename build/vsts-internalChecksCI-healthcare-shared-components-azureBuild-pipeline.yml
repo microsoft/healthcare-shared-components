@@ -14,6 +14,8 @@ trigger:
 parameters:
 - name: BuildConfiguration
   default: release
+- name: NugetSecurityAnalysisWarningLevel
+  default: warn
 
 variables:
 - name: vmImage
