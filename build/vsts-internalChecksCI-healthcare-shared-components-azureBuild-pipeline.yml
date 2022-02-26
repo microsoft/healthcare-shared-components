@@ -18,6 +18,8 @@ parameters:
 variables:
 - name: vmImage
   value: windows-latest
+- name: skipNugetSecurityAnalysis
+  value: true
 
 resources:
   repositories:
