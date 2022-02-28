@@ -7,6 +7,7 @@ using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using EnsureThat;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Options;
 
@@ -27,6 +28,7 @@ namespace Microsoft.Health.Api.Features.HealthChecks
             HealthCheckRegistration[] list = options.Registrations.ToArray();
             options.Registrations.Clear();
 
+            HealthCheckCachingOptions cacheOptions = _serviceProvider.GetRequiredService<IOptions<HealthCheckCachingOptions>>().Value;
             foreach (HealthCheckRegistration registration in list)
             {
                 // Wrap health checks with a caching wrapper.
@@ -36,7 +38,7 @@ namespace Microsoft.Health.Api.Features.HealthChecks
                     new CachedHealthCheck(_serviceProvider, registration.Factory),
                     registration.FailureStatus,
                     registration.Tags,
-                    registration.Timeout);
+                    cacheOptions.Timeout ?? registration.Timeout);
 
                 options.Registrations.Add(newRegistration);
             }
