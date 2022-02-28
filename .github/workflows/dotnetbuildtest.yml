@@ -14,9 +14,9 @@ jobs:
     steps:
     - uses: actions/checkout@v2.4.0
     - name: Setup .NET (global.json)
-      uses: actions/setup-dotnet@v1.9.0
+      uses: actions/setup-dotnet@v2
     - name: Setup .NET 5.0 SDK
-      uses: actions/setup-dotnet@v1.9.0
+      uses: actions/setup-dotnet@v2
       with:
         dotnet-version: '5.x'
     - name: Build with dotnet
