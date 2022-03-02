@@ -47,6 +47,7 @@ namespace Microsoft.Health.SqlServer.Features.Health
 
                     await sqlCommandWrapper.ExecuteScalarAsync(cancellationToken).ConfigureAwait(false);
                 });
+
                 return HealthCheckResult.Healthy("Successfully connected.");
             }
             catch (Exception ex)
