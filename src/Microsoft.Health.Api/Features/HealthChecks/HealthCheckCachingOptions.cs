@@ -31,10 +31,5 @@ namespace Microsoft.Health.Api.Features.HealthChecks
         /// Gets or sets a flag that indicates whether <see cref="HealthStatus.Unhealthy"/> should be cached.
         /// </summary>
         public bool CacheFailure { get; set; } = true;
-
-        /// <summary>
-        /// Gets or sets the optional timeout for fetching the cached health check.
-        /// </summary>
-        public TimeSpan? Timeout { get; set; }
     }
 }
