@@ -51,7 +51,6 @@ namespace Microsoft.Health.SqlServer.Registration
             services.TryAddSingleton(p => p.GetRequiredService<IPollyRetryLoggerFactory>() as PollyRetryLoggerFactory);
             services.TryAddSingleton(p => p.GetRequiredService<SqlCommandWrapperFactory>());
             services.TryAddSingleton(p => p.GetRequiredService<ISqlServerTransientFaultRetryPolicyFactory>() as SqlServerTransientFaultRetryPolicyFactory);
-            services.TryAddSingleton(p => p.GetRequiredService<RetrySqlAction>());
 
             return services;
         }
