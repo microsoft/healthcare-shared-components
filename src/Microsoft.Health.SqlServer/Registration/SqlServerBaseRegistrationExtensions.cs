@@ -49,7 +49,7 @@ namespace Microsoft.Health.SqlServer.Registration
             services.TryAddSingleton(p => p.GetRequiredService<IBaseScriptProvider>() as BaseScriptProvider);
             services.TryAddSingleton(p => p.GetRequiredService<ISchemaManagerDataStore>() as SchemaManagerDataStore);
             services.TryAddSingleton(p => p.GetRequiredService<IPollyRetryLoggerFactory>() as PollyRetryLoggerFactory);
-            services.TryAddSingleton(p => p.GetRequiredService<SqlCommandWrapperFactory>());
+            services.TryAddSingleton(p => p.GetRequiredService<SqlCommandWrapperFactory>() as RetrySqlCommandWrapperFactory);
             services.TryAddSingleton(p => p.GetRequiredService<ISqlServerTransientFaultRetryPolicyFactory>() as SqlServerTransientFaultRetryPolicyFactory);
 
             return services;
@@ -117,7 +117,7 @@ namespace Microsoft.Health.SqlServer.Registration
             services.TryAddScoped<ITransactionHandler>(handlerFactory);
             services.TryAddSingleton<IPollyRetryLoggerFactory, PollyRetryLoggerFactory>();
             services.TryAddSingleton<ISqlServerTransientFaultRetryPolicyFactory, SqlServerTransientFaultRetryPolicyFactory>();
-            services.TryAddSingleton<SqlCommandWrapperFactory, SqlCommandWrapperFactory>();
+            services.TryAddSingleton(p => p.GetRequiredService<SqlCommandWrapperFactory>() as RetrySqlCommandWrapperFactory);
             services.TryAddSingleton<IReadOnlySchemaManagerDataStore, SchemaManagerDataStore>();
 
             return services;

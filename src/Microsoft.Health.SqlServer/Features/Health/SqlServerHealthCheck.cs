@@ -7,6 +7,7 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 using EnsureThat;
+using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Logging;
 using Microsoft.Health.SqlServer.Features.Client;
@@ -41,11 +42,11 @@ namespace Microsoft.Health.SqlServer.Features.Health
                 await _retrySqlPolicy.ExecuteAsync(async () =>
                 {
                     using SqlConnectionWrapper sqlConnectionWrapper = await _sqlConnectionWrapperFactory.ObtainSqlConnectionWrapperAsync(cancellationToken);
-                    using SqlCommandWrapper sqlCommandWrapper = sqlConnectionWrapper.CreateSqlCommand();
+                    using SqlCommand sqlCommand = sqlConnectionWrapper.SqlConnection.CreateCommand();
 
-                    sqlCommandWrapper.CommandText = "select @@DBTS";
+                    sqlCommand.CommandText = "select @@DBTS";
 
-                    await sqlCommandWrapper.ExecuteScalarAsync(cancellationToken).ConfigureAwait(false);
+                    await sqlCommand.ExecuteScalarAsync(cancellationToken).ConfigureAwait(false);
                 });
 
                 return HealthCheckResult.Healthy("Successfully connected.");
