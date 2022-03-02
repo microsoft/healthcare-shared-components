@@ -117,7 +117,7 @@ namespace Microsoft.Health.SqlServer.Registration
             services.TryAddScoped<ITransactionHandler>(handlerFactory);
             services.TryAddSingleton<IPollyRetryLoggerFactory, PollyRetryLoggerFactory>();
             services.TryAddSingleton<ISqlServerTransientFaultRetryPolicyFactory, SqlServerTransientFaultRetryPolicyFactory>();
-            services.TryAddSingleton(p => p.GetRequiredService<SqlCommandWrapperFactory>() as RetrySqlCommandWrapperFactory);
+            services.TryAddSingleton<SqlCommandWrapperFactory, RetrySqlCommandWrapperFactory>();
             services.TryAddSingleton<IReadOnlySchemaManagerDataStore, SchemaManagerDataStore>();
 
             return services;
