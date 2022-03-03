@@ -32,18 +32,52 @@ namespace Microsoft.Health.SqlServer.Features.Client
 
         /// <inheritdoc/>
         public override Task<int> ExecuteNonQueryAsync(CancellationToken cancellationToken)
-            => _retryPolicy.ExecuteAsync(() => _sqlCommandWrapper.ExecuteNonQueryAsync(cancellationToken));
+        {
+            return _retryPolicy.ExecuteAsync(async () =>
+            {
+                await EnsureConnectionOpenAsync(cancellationToken);
+                return await _sqlCommandWrapper.ExecuteNonQueryAsync(cancellationToken);
+            });
+        }
 
         /// <inheritdoc/>
         public override Task<object> ExecuteScalarAsync(CancellationToken cancellationToken)
-            => _retryPolicy.ExecuteAsync(() => _sqlCommandWrapper.ExecuteScalarAsync(cancellationToken));
+        {
+            return _retryPolicy.ExecuteAsync(async () =>
+            {
+                await EnsureConnectionOpenAsync(cancellationToken);
+                return await _sqlCommandWrapper.ExecuteScalarAsync(cancellationToken);
+            });
+        }
 
         /// <inheritdoc/>
         public override Task<SqlDataReader> ExecuteReaderAsync(CancellationToken cancellationToken)
-            => _retryPolicy.ExecuteAsync(() => _sqlCommandWrapper.ExecuteReaderAsync(cancellationToken));
+        {
+            return _retryPolicy.ExecuteAsync(async () =>
+            {
+                await EnsureConnectionOpenAsync(cancellationToken);
+                return await _sqlCommandWrapper.ExecuteReaderAsync(cancellationToken);
+            });
+        }
 
         /// <inheritdoc/>
         public override Task<SqlDataReader> ExecuteReaderAsync(CommandBehavior behavior, CancellationToken cancellationToken)
-            => _retryPolicy.ExecuteAsync(() => _sqlCommandWrapper.ExecuteReaderAsync(behavior, cancellationToken));
+        {
+            return _retryPolicy.ExecuteAsync(async () =>
+            {
+                await EnsureConnectionOpenAsync(cancellationToken);
+                return await _sqlCommandWrapper.ExecuteReaderAsync(behavior, cancellationToken);
+            });
+        }
+
+        private Task EnsureConnectionOpenAsync(CancellationToken cancellationToken)
+        {
+            if (_sqlCommandWrapper.Connection.State != ConnectionState.Open)
+            {
+                return _sqlCommandWrapper.Connection.OpenAsync(cancellationToken);
+            }
+
+            return Task.CompletedTask;
+        }
     }
 }

@@ -7,11 +7,9 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 using EnsureThat;
-using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Logging;
 using Microsoft.Health.SqlServer.Features.Client;
-using Polly;
 
 namespace Microsoft.Health.SqlServer.Features.Health
 {
@@ -22,16 +20,10 @@ namespace Microsoft.Health.SqlServer.Features.Health
     {
         private readonly ILogger<SqlServerHealthCheck> _logger;
         private readonly SqlConnectionWrapperFactory _sqlConnectionWrapperFactory;
-        private readonly IAsyncPolicy _retrySqlPolicy;
 
-        public SqlServerHealthCheck(
-            SqlConnectionWrapperFactory sqlConnectionWrapperFactory,
-            ISqlServerTransientFaultRetryPolicyFactory sqlServerTransientFault,
-            ILogger<SqlServerHealthCheck> logger)
+        public SqlServerHealthCheck(SqlConnectionWrapperFactory sqlConnectionWrapperFactory, ILogger<SqlServerHealthCheck> logger)
         {
             _sqlConnectionWrapperFactory = EnsureArg.IsNotNull(sqlConnectionWrapperFactory, nameof(sqlConnectionWrapperFactory));
-            EnsureArg.IsNotNull(sqlServerTransientFault, nameof(sqlServerTransientFault));
-            _retrySqlPolicy = sqlServerTransientFault.Create();
             _logger = EnsureArg.IsNotNull(logger, nameof(logger));
         }
 
@@ -39,15 +31,12 @@ namespace Microsoft.Health.SqlServer.Features.Health
         {
             try
             {
-                await _retrySqlPolicy.ExecuteAsync(async () =>
-                {
-                    using SqlConnectionWrapper sqlConnectionWrapper = await _sqlConnectionWrapperFactory.ObtainSqlConnectionWrapperAsync(cancellationToken);
-                    using SqlCommand sqlCommand = sqlConnectionWrapper.SqlConnection.CreateCommand();
+                using SqlConnectionWrapper sqlConnectionWrapper = await _sqlConnectionWrapperFactory.ObtainSqlConnectionWrapperAsync(cancellationToken);
+                using SqlCommandWrapper sqlCommandWrapper = sqlConnectionWrapper.CreateSqlCommand();
 
-                    sqlCommand.CommandText = "select @@DBTS";
+                sqlCommandWrapper.CommandText = "select @@DBTS";
 
-                    await sqlCommand.ExecuteScalarAsync(cancellationToken).ConfigureAwait(false);
-                });
+                await sqlCommandWrapper.ExecuteScalarAsync(cancellationToken).ConfigureAwait(false);
 
                 return HealthCheckResult.Healthy("Successfully connected.");
             }
