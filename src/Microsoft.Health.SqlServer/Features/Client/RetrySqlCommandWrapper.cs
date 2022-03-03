@@ -72,7 +72,8 @@ namespace Microsoft.Health.SqlServer.Features.Client
 
         private Task EnsureConnectionOpenAsync(CancellationToken cancellationToken)
         {
-            if (_sqlCommandWrapper.Connection.State != ConnectionState.Open)
+            // null check on connection is to handle unit test that cannot mock a sealed sqlConnection type
+            if (_sqlCommandWrapper.Connection != null && _sqlCommandWrapper.Connection.State != ConnectionState.Open)
             {
                 return _sqlCommandWrapper.Connection.OpenAsync(cancellationToken);
             }
