@@ -44,12 +44,12 @@ namespace Microsoft.Health.SqlServer.Configs
         /// Make sure ConnectionTimeout = ConnectRetryCount * ConnectionRetryInterval
         /// https://docs.microsoft.com/en-us/azure/azure-sql/database/troubleshoot-common-connectivity-issues#net-sqlconnection-parameters-for-connection-retry
         /// </summary>
-        public int ConnectTimeoutInSeconds { get; set; } = 60;
+        public int ConnectTimeoutInSeconds { get; set; } = 30;
 
         /// <summary>
         /// Set SqlConnectionStringBuilder.ConnectRetryInterval to retry connection open transient issues in seconds
         /// Range is 0 through 2147483647.
         /// </summary>
-        public int ConnectRetryIntervalInSeconds { get; set; } = 10;
+        public int ConnectRetryIntervalInSeconds { get; set; } = 5;
     }
 }
