@@ -14,70 +14,101 @@ using Microsoft.Health.Core;
 
 namespace Microsoft.Health.Api.Features.HealthChecks
 {
-    public class CachedHealthCheck : IHealthCheck, IDisposable
+    internal sealed class CachedHealthCheck : IHealthCheck, IDisposable
     {
         private readonly IServiceProvider _provider;
-        private readonly Func<IServiceProvider, IHealthCheck> _healthCheck;
-        private readonly ILogger<CachedHealthCheck> _logger;
-        private DateTimeOffset _lastChecked;
-        private HealthCheckResult _lastResult;
+        private readonly Func<IServiceProvider, IHealthCheck> _healthCheckFactory;
+        private readonly HealthCheckCachingOptions _options;
+        private readonly ILogger _logger;
         private readonly SemaphoreSlim _semaphore = new SemaphoreSlim(1, 1);
-        private static readonly TimeSpan CacheTime = TimeSpan.FromSeconds(1);
 
-        public CachedHealthCheck(IServiceProvider provider, Func<IServiceProvider, IHealthCheck> healthCheck, ILogger<CachedHealthCheck> logger)
+        // By default, the times are DateTimeOffset.MinValue such that they are always considered invalid
+        private volatile CachedHealthCheckResult _cachedResult = new CachedHealthCheckResult();
+
+        public CachedHealthCheck(
+            IServiceProvider provider,
+            Func<IServiceProvider, IHealthCheck> healthCheckFactory,
+            HealthCheckCachingOptions options,
+            ILogger<CachedHealthCheck> logger)
         {
-            EnsureArg.IsNotNull(provider, nameof(provider));
-            EnsureArg.IsNotNull(healthCheck, nameof(healthCheck));
-            EnsureArg.IsNotNull(logger, nameof(logger));
-
-            _provider = provider;
-            _healthCheck = healthCheck;
-            _logger = logger;
+            _provider = EnsureArg.IsNotNull(provider, nameof(provider));
+            _healthCheckFactory = EnsureArg.IsNotNull(healthCheckFactory, nameof(healthCheckFactory));
+            _options = EnsureArg.IsNotNull(options, nameof(options));
+            _logger = EnsureArg.IsNotNull(logger, nameof(logger));
         }
 
-        private static DateTimeOffset ExpirationWindow => Clock.UtcNow.Add(-CacheTime);
-
-        public async Task<HealthCheckResult> CheckHealthAsync(HealthCheckContext context, CancellationToken cancellationToken = default)
+        public Task<HealthCheckResult> CheckHealthAsync(HealthCheckContext context, CancellationToken cancellationToken = default)
         {
-            if (_lastChecked >= ExpirationWindow)
+            DateTimeOffset currentTime = Clock.UtcNow;
+            if (IsCacheFresh(currentTime))
             {
-                return _lastResult;
+                return Task.FromResult(_cachedResult.Value);
+            }
+
+            return RefreshCache(context, currentTime, cancellationToken);
+        }
+
+        private async Task<HealthCheckResult> RefreshCache(HealthCheckContext context, DateTimeOffset currentTime, CancellationToken cancellationToken)
+        {
+            // If the cache is stale but not expired, then we make a best effort to refresh if the semaphore isn't
+            // currently occupied by another thread. Otherwise, we'll use the cached value.
+            TimeSpan maxWait = IsCacheValid(currentTime) ? TimeSpan.Zero : Timeout.InfiniteTimeSpan;
+
+            try
+            {
+                // Note: Only the timespan controls whether or not the method returns true/false.
+                //       If the token is canceled, the method throws instead an OperationCanceledException.
+                if (!await _semaphore.WaitAsync(maxWait, cancellationToken).ConfigureAwait(false))
+                {
+                    return _cachedResult.Value;
+                }
+            }
+            catch (OperationCanceledException oce)
+            {
+                // Re-evaluate the current time and return the cached value if it's still valid
+                if (!IsCacheValid(Clock.UtcNow))
+                {
+                    _logger.LogWarning(oce, $"Cancellation was requested for {nameof(CheckHealthAsync)}.");
+                    throw;
+                }
+
+                return _cachedResult.Value;
             }
 
             try
             {
-                await _semaphore.WaitAsync(cancellationToken).ConfigureAwait(false);
-            }
-            catch (OperationCanceledException oce) when (cancellationToken.IsCancellationRequested)
-            {
-                _logger.LogInformation(oce, $"Cancellation was requested for {nameof(CheckHealthAsync)}");
-                return _lastResult;
-            }
-
-            try
-            {
-                if (_lastChecked >= ExpirationWindow)
+                // Once we've entered the semaphore, check the cache again for its freshness
+                if (IsCacheFresh(currentTime))
                 {
-                    return _lastResult;
+                    return _cachedResult.Value;
                 }
 
-                using (IServiceScope scope = _provider.CreateScope())
+                using IServiceScope scope = _provider.CreateScope();
+
+                HealthCheckResult result;
+                try
                 {
-                    try
+                    IHealthCheck check = _healthCheckFactory.Invoke(scope.ServiceProvider);
+                    result = await check.CheckHealthAsync(context, cancellationToken).ConfigureAwait(false);
+                }
+                catch (OperationCanceledException oce)
+                {
+                    // Re-evaluate the current time and return the cached value if it's still valid
+                    if (!IsCacheValid(Clock.UtcNow))
                     {
-                        IHealthCheck check = _healthCheck.Invoke(scope.ServiceProvider);
-                        _lastResult = await check.CheckHealthAsync(context, cancellationToken).ConfigureAwait(false);
-                        _lastChecked = Clock.UtcNow;
+                        _logger.LogWarning(oce, $"Cancellation was requested for {nameof(CheckHealthAsync)}.");
+                        throw;
                     }
-                    catch (Exception ex)
-                    {
-                        _logger.LogError(ex, "Health check failed to complete");
-                        _lastResult = HealthCheckResult.Unhealthy(Resources.FailedHealthCheckMessage);
-                        _lastChecked = Clock.UtcNow;
-                    }
+
+                    return _cachedResult.Value;
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "Health check failed to complete.");
+                    result = HealthCheckResult.Unhealthy(Resources.FailedHealthCheckMessage); // Do not pass error to caller
                 }
 
-                return _lastResult;
+                return UpdateCache(result).Value;
             }
             finally
             {
@@ -85,16 +116,45 @@ namespace Microsoft.Health.Api.Features.HealthChecks
             }
         }
 
+        private CachedHealthCheckResult UpdateCache(HealthCheckResult result)
+        {
+            // Only update the cache if:
+            // (1) The current result has expired OR
+            // (2) The current result is stale and the cache has been configured to save failed results OR
+            // (3) The current result is stale and the new result is healthy
+            DateTimeOffset currentTime = Clock.UtcNow;
+            if (currentTime >= _cachedResult.ExpireTime || _options.CacheFailure || result.Status != HealthStatus.Unhealthy)
+            {
+                _cachedResult = new CachedHealthCheckResult
+                {
+                    ExpireTime = currentTime + _options.Expiry,
+                    StaleTime = currentTime + _options.Expiry - _options.RefreshOffset,
+                    Value = result,
+                };
+            }
+
+            return _cachedResult;
+        }
+
+        private bool IsCacheFresh(DateTimeOffset currentTime)
+            => currentTime < _cachedResult.StaleTime && (_options.CacheFailure || _cachedResult.Value.Status != HealthStatus.Unhealthy);
+
+        private bool IsCacheValid(DateTimeOffset currentTime)
+            => currentTime < _cachedResult.ExpireTime;
+
         public void Dispose()
         {
-            Dispose(true);
+            _semaphore.Dispose();
             GC.SuppressFinalize(this);
         }
 
-        // The bulk of the clean-up code is implemented in Dispose(bool)
-        protected virtual void Dispose(bool disposing)
+        private sealed class CachedHealthCheckResult
         {
-            _semaphore?.Dispose();
+            public DateTimeOffset StaleTime { get; init; }
+
+            public DateTimeOffset ExpireTime { get; init; }
+
+            public HealthCheckResult Value { get; init; }
         }
     }
 }
