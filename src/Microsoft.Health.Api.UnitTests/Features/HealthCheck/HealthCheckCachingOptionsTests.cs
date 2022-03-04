@@ -10,6 +10,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using Microsoft.Health.Api.Features.HealthChecks;
+using Microsoft.Health.Api.Modules;
 using Xunit;
 
 namespace Microsoft.Health.Api.UnitTests.Features.HealthCheck
@@ -103,12 +104,14 @@ namespace Microsoft.Health.Api.UnitTests.Features.HealthCheck
 
         private static IOptions<HealthCheckCachingOptions> GetOptions(IConfiguration config)
         {
-            IServiceProvider provider = new ServiceCollection()
+            IServiceCollection services = new ServiceCollection();
+
+            new HealthCheckModule().Load(services);
+            IServiceProvider provider = services
                 .AddSingleton(config)
                 .AddOptions<HealthCheckCachingOptions>()
                 .Bind(config)
                 .Services
-                .AddSingleton<IValidateOptions<HealthCheckCachingOptions>, HealthCheckCachingOptionsValidation>()
                 .BuildServiceProvider();
 
             return provider.GetRequiredService<IOptions<HealthCheckCachingOptions>>();
