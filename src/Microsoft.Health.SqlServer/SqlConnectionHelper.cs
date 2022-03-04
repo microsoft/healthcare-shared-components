@@ -41,10 +41,10 @@ namespace Microsoft.Health.SqlServer
             var connectionStringBuilder = new SqlConnectionStringBuilder(sqlConnectionString);
 
             // https://docs.microsoft.com/en-us/azure/azure-sql/database/troubleshoot-common-connectivity-issues
-            // Change from default 1 to 3
+            // Change from default 1 to 6
             connectionStringBuilder.ConnectRetryCount = sqlServerTransientFaultRetryPolicyConfiguration.ConnectRetryCount;
 
-            // Change from default 10 to 30
+            // Change from default 10 to 60
             connectionStringBuilder.ConnectTimeout = sqlServerTransientFaultRetryPolicyConfiguration.ConnectTimeoutInSeconds;
 
             // Change from default 10 to 10

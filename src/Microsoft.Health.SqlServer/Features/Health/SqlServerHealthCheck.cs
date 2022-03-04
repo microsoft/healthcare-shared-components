@@ -33,7 +33,7 @@ namespace Microsoft.Health.SqlServer.Features.Health
 
             try
             {
-                using SqlConnectionWrapper sqlConnectionWrapper = await _sqlConnectionWrapperFactory.ObtainSqlConnectionWrapperAsync(cancellationToken);
+                using SqlConnectionWrapper sqlConnectionWrapper = await _sqlConnectionWrapperFactory.ObtainSqlConnectionWrapperAsync(cancellationToken, openConnection: false);
                 using SqlCommandWrapper sqlCommandWrapper = sqlConnectionWrapper.CreateSqlCommand();
 
                 sqlCommandWrapper.CommandText = "select @@DBTS";

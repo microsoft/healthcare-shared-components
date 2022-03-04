@@ -30,10 +30,10 @@ namespace Microsoft.Health.SqlServer.Features.Client
             _sqlConnectionBuilder = sqlConnectionBuilder;
         }
 
-        public async Task<SqlConnectionWrapper> ObtainSqlConnectionWrapperAsync(CancellationToken cancellationToken, bool enlistInTransaction = false)
+        public async Task<SqlConnectionWrapper> ObtainSqlConnectionWrapperAsync(CancellationToken cancellationToken, bool enlistInTransaction = false, bool openConnection = true)
         {
             SqlConnectionWrapper sqlConnectionWrapper = new SqlConnectionWrapper(_sqlTransactionHandler, _sqlCommandWrapperFactory, _sqlConnectionBuilder, enlistInTransaction);
-            await sqlConnectionWrapper.InitializeAsync(cancellationToken);
+            await sqlConnectionWrapper.InitializeAsync(cancellationToken, openConnection);
 
             return sqlConnectionWrapper;
         }

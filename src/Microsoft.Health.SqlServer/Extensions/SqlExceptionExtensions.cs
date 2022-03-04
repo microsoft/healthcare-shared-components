@@ -79,6 +79,29 @@ namespace Microsoft.Health.SqlServer.Extensions
                     // SQL Error Code: 1205
                     // Transaction (Process ID XX) was deadlocked on lock resources with another process and has been chosen as the deadlock victim. Rerun the transaction.
                     case 1205:
+                    // https://docs.microsoft.com/en-us/azure/azure-sql/database/troubleshoot-common-errors-issues#list-of-transient-fault-error-codes
+                    // Could not find database ID % d, name '%.*ls'.Error Code 615.
+                    // This means in-memory cache is not in-sync with SQL server instance and lookups are retrieving stale database ID     case 615:
+                    case 615:
+                    // Database 'replicatedmaster' cannot be opened.It has been marked SUSPECT by recovery.See the SQL Server errorlog for more information
+                    case 926:
+                    // Cannot open database "%.*ls" requested by the login. The login failed.
+                    case 4060:
+                    // Login to read-secondary failed due to long wait on 'HADR_DATABASE_WAIT_FOR_TRANSITION_TO_VERSIONING'.
+                    case 4221:
+                    // The service is currently busy. Retry the request after 10 seconds. Incident ID: %ls. Code: %d.
+                    case 40501:
+                    // Cannot process request. Not enough resources to process request.
+                    case 49918:
+                    // Cannot process create or update request. Too many create or update operations in progress for subscription "%ld".
+                    case 49919:
+                    // Cannot process request.Too many operations in progress for subscription "%ld".
+                    case 49920:
+                    case 11001:
+                    // this sort of long retries can be expensive.
+                    // https://docs.microsoft.com/en-us/azure/azure-sql/database/troubleshoot-common-errors-issues#login-failed-for-user--user-name-
+                    // Login failed for user '<User name>'.
+                    case 18456:
                         return true;
                 }
             }
