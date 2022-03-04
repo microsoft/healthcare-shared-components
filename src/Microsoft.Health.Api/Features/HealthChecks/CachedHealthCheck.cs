@@ -45,20 +45,19 @@ namespace Microsoft.Health.Api.Features.HealthChecks
                 return Task.FromResult(_cachedResult.Value);
             }
 
-            return RefreshCache(context, currentTime, cancellationToken);
-        }
-
-        private async Task<HealthCheckResult> RefreshCache(HealthCheckContext context, DateTimeOffset currentTime, CancellationToken cancellationToken)
-        {
             // If the cache is stale but not expired, then we make a best effort to refresh if the semaphore isn't
             // currently occupied by another thread. Otherwise, we'll use the cached value.
             TimeSpan maxWait = IsCacheValid(currentTime) ? TimeSpan.Zero : Timeout.InfiniteTimeSpan;
+            return RefreshCache(context, maxWait, cancellationToken);
+        }
 
+        private async Task<HealthCheckResult> RefreshCache(HealthCheckContext context, TimeSpan maxSemaphoreWait, CancellationToken cancellationToken)
+        {
             try
             {
                 // Note: Only the timespan controls whether or not the method returns true/false.
                 //       If the token is canceled, the method throws instead an OperationCanceledException.
-                if (!await _semaphore.WaitAsync(maxWait, cancellationToken).ConfigureAwait(false))
+                if (!await _semaphore.WaitAsync(maxSemaphoreWait, cancellationToken).ConfigureAwait(false))
                 {
                     return _cachedResult.Value;
                 }
@@ -78,7 +77,7 @@ namespace Microsoft.Health.Api.Features.HealthChecks
             try
             {
                 // Once we've entered the semaphore, check the cache again for its freshness
-                if (IsCacheFresh(currentTime))
+                if (IsCacheFresh(Clock.UtcNow))
                 {
                     return _cachedResult.Value;
                 }

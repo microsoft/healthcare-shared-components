@@ -4,7 +4,6 @@
 // -------------------------------------------------------------------------------------------------
 
 using System;
-using System.ComponentModel.DataAnnotations;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 
 namespace Microsoft.Health.Api.Features.HealthChecks
@@ -17,14 +16,12 @@ namespace Microsoft.Health.Api.Features.HealthChecks
         /// <summary>
         /// Gets or sets the amount of time for which an instance of <see cref="HealthCheckResult"/> is considered valid.
         /// </summary>
-        [Range(typeof(TimeSpan), "00:00:00", "1.00:00:00", ConvertValueInInvariantCulture = true, ParseLimitsInInvariantCulture = true)]
         public TimeSpan Expiry { get; set; } = TimeSpan.FromSeconds(1);
 
         /// <summary>
         /// Gets or sets the amount of time before the expiry for which the instance of <see cref="HealthCheckResult"/>
         /// should be refreshed.
         /// </summary>
-        [Range(typeof(TimeSpan), "00:00:00", "1.00:00:00", ConvertValueInInvariantCulture = true, ParseLimitsInInvariantCulture = true)]
         public TimeSpan RefreshOffset { get; set; } = TimeSpan.Zero;
 
         /// <summary>

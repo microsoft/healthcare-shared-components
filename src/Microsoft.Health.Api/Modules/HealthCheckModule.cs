@@ -18,6 +18,10 @@ namespace Microsoft.Health.Api.Modules
         {
             EnsureArg.IsNotNull(services, nameof(services));
 
+            services.Add<HealthCheckCachingOptionsValidation>()
+                .Singleton()
+                .AsService<IValidateOptions<HealthCheckCachingOptions>>();
+
             services.Add<HealthCheckCachingPostConfigure>()
                 .Transient()
                 .AsService<IPostConfigureOptions<HealthCheckServiceOptions>>();

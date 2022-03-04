@@ -88,20 +88,29 @@ namespace Microsoft.Health.Api {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Health Check cache refresh offset cannot be larger than the expiry..
-        /// </summary>
-        internal static string InvalidHealthCheckCacheExpiry {
-            get {
-                return ResourceManager.GetString("InvalidHealthCheckCacheExpiry", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to The audit information is missing for Controller: {0} and Action: {1}. This usually means the action is not marked with appropriate attribute..
         /// </summary>
         internal static string MissingAuditInformation {
             get {
                 return ResourceManager.GetString("MissingAuditInformation", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The value of the &apos;{0}&apos; property &apos;{1}&apos; cannot be larger than the value of the &apos;{2}&apos; property &apos;{3}&apos;..
+        /// </summary>
+        internal static string PropertyCannotBeLargerThanOther {
+            get {
+                return ResourceManager.GetString("PropertyCannotBeLargerThanOther", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The value of &apos;{0}&apos; property &apos;{1}&apos; cannot be less than &apos;{2}&apos;..
+        /// </summary>
+        internal static string PropertyCannotBeLessThanValue {
+            get {
+                return ResourceManager.GetString("PropertyCannotBeLessThanValue", resourceCulture);
             }
         }
         
