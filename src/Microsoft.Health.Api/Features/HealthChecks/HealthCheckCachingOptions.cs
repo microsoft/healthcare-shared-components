@@ -28,5 +28,10 @@ namespace Microsoft.Health.Api.Features.HealthChecks
         /// Gets or sets a flag that indicates whether <see cref="HealthStatus.Unhealthy"/> should be cached.
         /// </summary>
         public bool CacheFailure { get; set; } = true;
+
+        /// <summary>
+        /// Gets or sets the maximum number of threads that can refresh the cache concurrently.
+        /// </summary>
+        public int MaxRefreshThreads { get; set; } = 1;
     }
 }

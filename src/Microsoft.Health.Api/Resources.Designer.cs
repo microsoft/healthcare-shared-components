@@ -99,9 +99,9 @@ namespace Microsoft.Health.Api {
         /// <summary>
         ///   Looks up a localized string similar to The value of the &apos;{0}&apos; property &apos;{1}&apos; cannot be larger than the value of the &apos;{2}&apos; property &apos;{3}&apos;..
         /// </summary>
-        internal static string PropertyCannotBeLargerThanOther {
+        internal static string PropertyCannotBeLargerThanAnother {
             get {
-                return ResourceManager.GetString("PropertyCannotBeLargerThanOther", resourceCulture);
+                return ResourceManager.GetString("PropertyCannotBeLargerThanAnother", resourceCulture);
             }
         }
         

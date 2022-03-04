@@ -47,13 +47,25 @@ namespace Microsoft.Health.Api.Features.HealthChecks
                         TimeSpan.Zero));
             }
 
+            // MaxRefreshThreads
+            if (options.MaxRefreshThreads < 1)
+            {
+                failures.Add(
+                    string.Format(
+                        CultureInfo.CurrentCulture,
+                        Resources.PropertyCannotBeLessThanValue,
+                        nameof(HealthCheckCachingOptions.MaxRefreshThreads),
+                        options.MaxRefreshThreads,
+                        1));
+            }
+
             // Expiry + RefreshOffset
             if (options.Expiry >= TimeSpan.Zero && options.RefreshOffset > options.Expiry)
             {
                 failures.Add(
                     string.Format(
                         CultureInfo.CurrentCulture,
-                        Resources.PropertyCannotBeLargerThanOther,
+                        Resources.PropertyCannotBeLargerThanAnother,
                         nameof(HealthCheckCachingOptions.RefreshOffset),
                         options.RefreshOffset,
                         nameof(HealthCheckCachingOptions.Expiry),
