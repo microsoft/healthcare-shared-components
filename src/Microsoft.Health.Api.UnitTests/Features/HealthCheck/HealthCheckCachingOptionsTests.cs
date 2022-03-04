@@ -49,6 +49,24 @@ namespace Microsoft.Health.Api.UnitTests.Features.HealthCheck
             Assert.Single(exception.Failures);
         }
 
+        [Theory]
+        [InlineData("0")]
+        [InlineData("-5")]
+        public void GivenConfiguration_WhenCreatingHealthCheckOptions_ThenValidateMaxRefreshThreads(string value)
+        {
+            IConfiguration config = new ConfigurationBuilder()
+                .AddInMemoryCollection(
+                    new KeyValuePair<string, string>[]
+                    {
+                        KeyValuePair.Create(nameof(HealthCheckCachingOptions.MaxRefreshThreads), value),
+                    })
+                .Build();
+
+            IOptions<HealthCheckCachingOptions> options = GetOptions(config);
+            var exception = Assert.Throws<OptionsValidationException>(() => options.Value);
+            Assert.Single(exception.Failures);
+        }
+
         [Fact]
         public void GivenConfiguration_WhenCreatingHealthCheckOptions_ThenValidatePropertyCombination()
         {
@@ -75,12 +93,13 @@ namespace Microsoft.Health.Api.UnitTests.Features.HealthCheck
                     {
                         KeyValuePair.Create(nameof(HealthCheckCachingOptions.Expiry), "-00:00:10"),
                         KeyValuePair.Create(nameof(HealthCheckCachingOptions.RefreshOffset), "-00:01:00"),
+                        KeyValuePair.Create(nameof(HealthCheckCachingOptions.MaxRefreshThreads), "0"),
                     })
                 .Build();
 
             IOptions<HealthCheckCachingOptions> options = GetOptions(config);
             var exception = Assert.Throws<OptionsValidationException>(() => options.Value);
-            Assert.Equal(2, exception.Failures.Count());
+            Assert.Equal(3, exception.Failures.Count());
         }
 
         [Fact]

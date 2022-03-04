@@ -308,7 +308,7 @@ namespace Microsoft.Health.Api.UnitTests.Features.HealthCheck
             DateTimeOffset futureTime = DateTimeOffset.UtcNow.AddSeconds(delaySeconds);
             using (Mock.Property(() => ClockResolver.UtcNowFunc, () => futureTime))
             {
-                // This task will enter the semaphore and refused to leave
+                // This task will enter the semaphore and refuse to leave
                 Task<HealthCheckResult> refreshTask = cache.CheckHealthAsync(_context, tokenSource.Token);
 
                 // Now we'll attempt to fetch the semaphore after the semaphore is entered
@@ -409,6 +409,66 @@ namespace Microsoft.Health.Api.UnitTests.Features.HealthCheck
             }
         }
 
+        [Theory]
+        [InlineData(HealthStatus.Healthy, HealthStatus.Degraded, HealthStatus.Healthy)]
+        [InlineData(HealthStatus.Degraded, HealthStatus.Healthy, HealthStatus.Healthy)]
+        [InlineData(HealthStatus.Degraded, HealthStatus.Unhealthy, HealthStatus.Degraded)]
+        public async Task GivenTheHealthCheckCache_WhenMultipleThreadsRefreshing_ThenGracefullyHandleOverlap(
+            HealthStatus first,
+            HealthStatus second,
+            HealthStatus expected)
+        {
+            using ManualResetEventSlim startEvent1 = new ManualResetEventSlim(false);
+            using ManualResetEventSlim completeEvent1 = new ManualResetEventSlim(false);
+            using ManualResetEventSlim startEvent2 = new ManualResetEventSlim(false);
+            using ManualResetEventSlim completeEvent2 = new ManualResetEventSlim(false);
+            using CancellationTokenSource tokenSource = new CancellationTokenSource();
+
+            _healthCheck
+                .CheckHealthAsync(_context, tokenSource.Token)
+                .Returns(
+                    c => Task.Run(() =>
+                    {
+                        startEvent1.Set();
+                        completeEvent1.Wait(); // Wait for event
+                        return new HealthCheckResult(first);
+                    }),
+                    c => Task.Run(() =>
+                    {
+                        startEvent2.Set();
+                        completeEvent2.Wait(); // Wait for event
+                        return new HealthCheckResult(second);
+                    }));
+
+            _options.Expiry = TimeSpan.FromSeconds(30);
+            _options.MaxRefreshThreads = 2;
+
+            CachedHealthCheck cache = CreateHealthCheck();
+
+            // Start two threads who will concurrently attempt to populate the cache
+            DateTimeOffset now = DateTimeOffset.UtcNow;
+            using (Mock.Property(() => ClockResolver.UtcNowFunc, () => now))
+            {
+                // These tasks will enter the semaphore and refuse to leave
+                Task<HealthCheckResult> refreshTask1 = cache.CheckHealthAsync(_context, tokenSource.Token);
+                Task<HealthCheckResult> refreshTask2 = cache.CheckHealthAsync(_context, tokenSource.Token);
+
+                // Wait until the semaphore has been entered by both threads
+                startEvent1.Wait();
+                startEvent2.Wait();
+
+                await _healthCheck.Received(2).CheckHealthAsync(_context, tokenSource.Token);
+
+                // Allow the first task to complete to update the cache
+                completeEvent1.Set();
+                Assert.Equal(first, (await refreshTask1).Status);
+
+                // Allow the second task to complete and see the cache has already been updated
+                completeEvent2.Set();
+                Assert.Equal(expected, (await refreshTask2).Status);
+            }
+        }
+
         private CachedHealthCheck CreateHealthCheck()
         {
             IServiceProvider provider = new ServiceCollection()
@@ -419,6 +479,7 @@ namespace Microsoft.Health.Api.UnitTests.Features.HealthCheck
                     x.CacheFailure = _options.CacheFailure;
                     x.Expiry = _options.Expiry;
                     x.RefreshOffset = _options.RefreshOffset;
+                    x.MaxRefreshThreads = _options.MaxRefreshThreads;
                 })
                 .BuildServiceProvider();
 

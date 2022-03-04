@@ -52,6 +52,12 @@ namespace Microsoft.Health.Api.Features.HealthChecks
             return RefreshCache(context, current, maxWait, cancellationToken);
         }
 
+        public void Dispose()
+        {
+            _semaphore.Dispose();
+            GC.SuppressFinalize(this);
+        }
+
         private async Task<HealthCheckResult> RefreshCache(
             HealthCheckContext context,
             CacheSnapshot current,
@@ -116,7 +122,7 @@ namespace Microsoft.Health.Api.Features.HealthChecks
                 }
 
                 // Update cache based on the latest snapshot
-                return UpdateCache(GetCacheSnapshot(), result);
+                return RefreshCache(GetCacheSnapshot(), result);
             }
             finally
             {
@@ -124,18 +130,12 @@ namespace Microsoft.Health.Api.Features.HealthChecks
             }
         }
 
-        private CacheSnapshot GetCacheSnapshot()
-            => new CacheSnapshot { Cache = _cachedResult, Timestamp = Clock.UtcNow };
-
-        private HealthCheckResult UpdateCache(CacheSnapshot current, HealthCheckResult newResult)
+        private HealthCheckResult RefreshCache(CacheSnapshot current, HealthCheckResult newResult)
         {
-            // Only update the cache if:
-            // (1) The current result has expired OR
-            // (2) The current result is stale and the cache has been configured to save failed results OR
-            // (3) The current result is stale and the new result is healthy
-            if (!current.IsValid || _options.CacheFailure || newResult.Status != HealthStatus.Unhealthy)
+            // The cache is only updated if appropriate
+            if (current.CanUpdate(newResult.Status, _options.CacheFailure))
             {
-                CachedHealthCheckResult newCache = new CachedHealthCheckResult
+                var newCache = new CachedHealthCheckResult
                 {
                     ExpireTime = current.Timestamp + _options.Expiry,
                     StaleTime = current.Timestamp + _options.Expiry - _options.RefreshOffset,
@@ -152,11 +152,8 @@ namespace Microsoft.Health.Api.Features.HealthChecks
             return _cachedResult.Result;
         }
 
-        public void Dispose()
-        {
-            _semaphore.Dispose();
-            GC.SuppressFinalize(this);
-        }
+        private CacheSnapshot GetCacheSnapshot()
+            => new CacheSnapshot { Cache = _cachedResult, Timestamp = Clock.UtcNow };
 
         private readonly struct CacheSnapshot
         {
@@ -171,6 +168,16 @@ namespace Microsoft.Health.Api.Features.HealthChecks
             public bool IsValid => Timestamp < Cache.ExpireTime;
 
             public bool IsStale => IsValid && !IsFresh;
+
+            // Only update the cache if:
+            // (1) The cache is fresh, but the new value is better
+            // (2) The cache is stale and the cache has been configured to save any result
+            // (3) The cache is stale and the new result is healthy
+            // (4) The cache has expired
+            public bool CanUpdate(HealthStatus newStatus, bool cacheFailure)
+                => IsFresh
+                ? newStatus > Result.Status
+                : !IsValid || cacheFailure || newStatus != HealthStatus.Unhealthy;
         }
 
         private sealed class CachedHealthCheckResult
