@@ -7,8 +7,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using EnsureThat;
 using Microsoft.Data.SqlClient;
-using Microsoft.Extensions.Options;
-using Microsoft.Health.SqlServer.Configs;
 
 namespace Microsoft.Health.SqlServer
 {
@@ -16,21 +14,21 @@ namespace Microsoft.Health.SqlServer
     {
         private readonly ISqlConnectionStringProvider _sqlConnectionStringProvider;
         private readonly IAccessTokenHandler _accessTokenHandler;
-        private readonly SqlServerTransientFaultRetryPolicyConfiguration _transientFaultRetryPolicyConfiguration;
+        private readonly SqlRetryLogicBaseProvider _sqlRetryLogicBaseProvider;
         private readonly string _azureResource = "https://database.windows.net/";
 
         public ManagedIdentitySqlConnectionBuilder(
             ISqlConnectionStringProvider sqlConnectionStringProvider,
             IAccessTokenHandler accessTokenHandler,
-            IOptions<SqlServerDataStoreConfiguration> sqlServerDataStoreConfiguration)
+            SqlRetryLogicBaseProvider sqlRetryLogicBaseProvider)
         {
             EnsureArg.IsNotNull(sqlConnectionStringProvider, nameof(sqlConnectionStringProvider));
             EnsureArg.IsNotNull(accessTokenHandler, nameof(accessTokenHandler));
-            EnsureArg.IsNotNull(sqlServerDataStoreConfiguration?.Value, nameof(sqlServerDataStoreConfiguration));
+            EnsureArg.IsNotNull(sqlRetryLogicBaseProvider, nameof(sqlRetryLogicBaseProvider));
 
             _sqlConnectionStringProvider = sqlConnectionStringProvider;
             _accessTokenHandler = accessTokenHandler;
-            _transientFaultRetryPolicyConfiguration = sqlServerDataStoreConfiguration.Value.TransientFaultRetryPolicy;
+            _sqlRetryLogicBaseProvider = sqlRetryLogicBaseProvider;
         }
 
         /// <inheritdoc />
@@ -38,7 +36,7 @@ namespace Microsoft.Health.SqlServer
         {
             SqlConnection sqlConnection = await SqlConnectionHelper.GetBaseSqlConnectionAsync(
                                                                         _sqlConnectionStringProvider,
-                                                                        _transientFaultRetryPolicyConfiguration,
+                                                                        _sqlRetryLogicBaseProvider,
                                                                         initialCatalog,
                                                                         cancellationToken);
 

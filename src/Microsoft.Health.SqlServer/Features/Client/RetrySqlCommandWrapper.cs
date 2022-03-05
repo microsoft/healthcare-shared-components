@@ -8,7 +8,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using EnsureThat;
 using Microsoft.Data.SqlClient;
-using Polly;
 
 namespace Microsoft.Health.SqlServer.Features.Client
 {
@@ -18,56 +17,43 @@ namespace Microsoft.Health.SqlServer.Features.Client
     internal class RetrySqlCommandWrapper : SqlCommandWrapper
     {
         private readonly SqlCommandWrapper _sqlCommandWrapper;
-        private readonly IAsyncPolicy _retryPolicy;
 
-        public RetrySqlCommandWrapper(SqlCommandWrapper sqlCommandWrapper, IAsyncPolicy retryPolicy)
+        public RetrySqlCommandWrapper(SqlCommandWrapper sqlCommandWrapper, SqlRetryLogicBaseProvider sqlRetryLogicBaseProvider)
             : base(sqlCommandWrapper)
         {
             EnsureArg.IsNotNull(sqlCommandWrapper, nameof(sqlCommandWrapper));
-            EnsureArg.IsNotNull(retryPolicy, nameof(retryPolicy));
+            EnsureArg.IsNotNull(sqlRetryLogicBaseProvider, nameof(sqlRetryLogicBaseProvider));
 
             _sqlCommandWrapper = sqlCommandWrapper;
-            _retryPolicy = retryPolicy;
+            _sqlCommandWrapper.RetryLogicProvider = sqlRetryLogicBaseProvider;
         }
 
         /// <inheritdoc/>
-        public override Task<int> ExecuteNonQueryAsync(CancellationToken cancellationToken)
+        public override async Task<int> ExecuteNonQueryAsync(CancellationToken cancellationToken)
         {
-            return _retryPolicy.ExecuteAsync(async () =>
-            {
-                await EnsureConnectionOpenAsync(cancellationToken);
-                return await _sqlCommandWrapper.ExecuteNonQueryAsync(cancellationToken);
-            });
+           await EnsureConnectionOpenAsync(cancellationToken);
+           return await _sqlCommandWrapper.ExecuteNonQueryAsync(cancellationToken);
         }
 
         /// <inheritdoc/>
-        public override Task<object> ExecuteScalarAsync(CancellationToken cancellationToken)
+        public override async Task<object> ExecuteScalarAsync(CancellationToken cancellationToken)
         {
-            return _retryPolicy.ExecuteAsync(async () =>
-            {
-                await EnsureConnectionOpenAsync(cancellationToken);
-                return await _sqlCommandWrapper.ExecuteScalarAsync(cancellationToken);
-            });
+            await EnsureConnectionOpenAsync(cancellationToken);
+            return await _sqlCommandWrapper.ExecuteScalarAsync(cancellationToken);
         }
 
         /// <inheritdoc/>
-        public override Task<SqlDataReader> ExecuteReaderAsync(CancellationToken cancellationToken)
+        public override async Task<SqlDataReader> ExecuteReaderAsync(CancellationToken cancellationToken)
         {
-            return _retryPolicy.ExecuteAsync(async () =>
-            {
-                await EnsureConnectionOpenAsync(cancellationToken);
-                return await _sqlCommandWrapper.ExecuteReaderAsync(cancellationToken);
-            });
+            await EnsureConnectionOpenAsync(cancellationToken);
+            return await _sqlCommandWrapper.ExecuteReaderAsync(cancellationToken);
         }
 
         /// <inheritdoc/>
-        public override Task<SqlDataReader> ExecuteReaderAsync(CommandBehavior behavior, CancellationToken cancellationToken)
+        public override async Task<SqlDataReader> ExecuteReaderAsync(CommandBehavior behavior, CancellationToken cancellationToken)
         {
-            return _retryPolicy.ExecuteAsync(async () =>
-            {
-                await EnsureConnectionOpenAsync(cancellationToken);
-                return await _sqlCommandWrapper.ExecuteReaderAsync(behavior, cancellationToken);
-            });
+           await EnsureConnectionOpenAsync(cancellationToken);
+           return await _sqlCommandWrapper.ExecuteReaderAsync(behavior, cancellationToken);
         }
 
         private Task EnsureConnectionOpenAsync(CancellationToken cancellationToken)

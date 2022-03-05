@@ -7,6 +7,7 @@ using System;
 using System.Linq;
 using EnsureThat;
 using Microsoft.Azure.Services.AppAuthentication;
+using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
@@ -48,9 +49,27 @@ namespace Microsoft.Health.SqlServer.Registration
             services.TryAddSingleton(p => p.GetRequiredService<IScriptProvider>() as ScriptProvider<TSchemaVersionEnum>);
             services.TryAddSingleton(p => p.GetRequiredService<IBaseScriptProvider>() as BaseScriptProvider);
             services.TryAddSingleton(p => p.GetRequiredService<ISchemaManagerDataStore>() as SchemaManagerDataStore);
-            services.TryAddSingleton(p => p.GetRequiredService<IPollyRetryLoggerFactory>() as PollyRetryLoggerFactory);
             services.TryAddSingleton(p => p.GetRequiredService<SqlCommandWrapperFactory>() as RetrySqlCommandWrapperFactory);
-            services.TryAddSingleton(p => p.GetRequiredService<ISqlServerTransientFaultRetryPolicyFactory>() as SqlServerTransientFaultRetryPolicyFactory);
+            services.TryAddSingleton<SqlRetryLogicBaseProvider>(p =>
+            {
+                SqlServerDataStoreConfiguration config = p.GetRequiredService<IOptions<SqlServerDataStoreConfiguration>>().Value;
+
+                // using the default transient error codes here https://github.com/dotnet/SqlClient/blob/main/src/Microsoft.Data.SqlClient/src/Microsoft/Data/SqlClient/Reliability/SqlConfigurableRetryFactory.cs
+                var options = new SqlRetryLogicOption()
+                {
+                    // Tries 5 times before throwing an exception
+                    NumberOfTries = config.TransientFaultRetryPolicy.ConnectRetryCount,
+
+                    // Preferred gap time to delay before retry
+                    DeltaTime = TimeSpan.FromSeconds(config.TransientFaultRetryPolicy.ConnectRetryIntervalInSeconds),
+
+                    // Maximum gap time for each delay time before retry
+                    MaxTimeInterval = TimeSpan.FromSeconds(config.TransientFaultRetryPolicy.ConnectMaxTimeIntervalInSeconds),
+                };
+
+                // Create a retry logic provider
+                return SqlConfigurableRetryFactory.CreateExponentialRetryProvider(options);
+            });
 
             return services;
         }
@@ -69,28 +88,37 @@ namespace Microsoft.Health.SqlServer.Registration
 
             services.AddOptions();
             services.TryAddSingleton<ISqlConnectionStringProvider, DefaultSqlConnectionStringProvider>();
+            services.TryAddSingleton<SqlRetryLogicBaseProvider>(p =>
+            {
+                SqlServerDataStoreConfiguration config = p.GetRequiredService<IOptions<SqlServerDataStoreConfiguration>>().Value;
 
+                // using the default transient error codes here https://github.com/dotnet/SqlClient/blob/main/src/Microsoft.Data.SqlClient/src/Microsoft/Data/SqlClient/Reliability/SqlConfigurableRetryFactory.cs
+                var options = new SqlRetryLogicOption()
+                {
+                    // Tries 5 times before throwing an exception
+                    NumberOfTries = config.TransientFaultRetryPolicy.ConnectRetryCount,
+
+                    // Preferred gap time to delay before retry
+                    DeltaTime = TimeSpan.FromSeconds(config.TransientFaultRetryPolicy.ConnectRetryIntervalInSeconds),
+
+                    // Maximum gap time for each delay time before retry
+                    MaxTimeInterval = TimeSpan.FromSeconds(config.TransientFaultRetryPolicy.ConnectMaxTimeIntervalInSeconds),
+                };
+
+                // Create a retry logic provider
+                return SqlConfigurableRetryFactory.CreateExponentialRetryProvider(options);
+            });
             services.TryAddSingleton<ISqlConnectionBuilder>(
                  p =>
                  {
                      var sqlServerDataStoreConfigOption = p.GetRequiredService<IOptions<SqlServerDataStoreConfiguration>>();
                      SqlServerDataStoreConfiguration config = sqlServerDataStoreConfigOption.Value;
                      ISqlConnectionStringProvider sqlConnectionStringProvider = p.GetRequiredService<ISqlConnectionStringProvider>();
+                     SqlRetryLogicBaseProvider sqlRetryLogic = p.GetRequiredService<SqlRetryLogicBaseProvider>();
                      return config.AuthenticationType == SqlServerAuthenticationType.ManagedIdentity
-                         ? new ManagedIdentitySqlConnectionBuilder(sqlConnectionStringProvider, p.GetRequiredService<IAccessTokenHandler>(), sqlServerDataStoreConfigOption)
-                         : new DefaultSqlConnectionBuilder(sqlConnectionStringProvider, sqlServerDataStoreConfigOption);
+                         ? new ManagedIdentitySqlConnectionBuilder(sqlConnectionStringProvider, p.GetRequiredService<IAccessTokenHandler>(), sqlRetryLogic)
+                         : new DefaultSqlConnectionBuilder(sqlConnectionStringProvider, sqlRetryLogic);
                  });
-
-            // We build SqlConnection object differently for different Authentication Type.
-            // For ManagedIdentity access we set the access token
-            services.TryAddSingleton<ISqlConnectionBuilder>(
-                p =>
-                {
-                    SqlServerDataStoreConfiguration config = p.GetRequiredService<IOptions<SqlServerDataStoreConfiguration>>().Value;
-                    return config.AuthenticationType == SqlServerAuthenticationType.ManagedIdentity
-                        ? p.GetRequiredService<ManagedIdentitySqlConnectionBuilder>()
-                        : p.GetRequiredService<DefaultSqlConnectionBuilder>();
-                });
 
             // The following are only used in case of managed identity
             services.AddSingleton<IAccessTokenHandler, ManagedIdentityAccessTokenHandler>();
@@ -115,8 +143,6 @@ namespace Microsoft.Health.SqlServer.Registration
             services.TryAddScoped<SqlConnectionWrapperFactory>();
             services.TryAddScoped<SqlTransactionHandler>();
             services.TryAddScoped<ITransactionHandler>(handlerFactory);
-            services.TryAddSingleton<IPollyRetryLoggerFactory, PollyRetryLoggerFactory>();
-            services.TryAddSingleton<ISqlServerTransientFaultRetryPolicyFactory, SqlServerTransientFaultRetryPolicyFactory>();
             services.TryAddSingleton<SqlCommandWrapperFactory, RetrySqlCommandWrapperFactory>();
             services.TryAddSingleton<IReadOnlySchemaManagerDataStore, SchemaManagerDataStore>();
 

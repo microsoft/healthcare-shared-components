@@ -7,8 +7,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using EnsureThat;
 using Microsoft.Data.SqlClient;
-using Microsoft.Extensions.Options;
-using Microsoft.Health.SqlServer.Configs;
 
 namespace Microsoft.Health.SqlServer
 {
@@ -19,17 +17,17 @@ namespace Microsoft.Health.SqlServer
     public class DefaultSqlConnectionBuilder : ISqlConnectionBuilder
     {
         private readonly ISqlConnectionStringProvider _sqlConnectionStringProvider;
-        private readonly SqlServerTransientFaultRetryPolicyConfiguration _transientFaultRetryPolicyConfiguration;
+        private readonly SqlRetryLogicBaseProvider _sqlRetryLogicBaseProvider;
 
         public DefaultSqlConnectionBuilder(
             ISqlConnectionStringProvider sqlConnectionStringProvider,
-            IOptions<SqlServerDataStoreConfiguration> sqlServerDataStoreConfiguration)
+            SqlRetryLogicBaseProvider sqlRetryLogicBaseProvider)
         {
             EnsureArg.IsNotNull(sqlConnectionStringProvider, nameof(sqlConnectionStringProvider));
-            EnsureArg.IsNotNull(sqlServerDataStoreConfiguration?.Value, nameof(sqlServerDataStoreConfiguration));
+            EnsureArg.IsNotNull(sqlRetryLogicBaseProvider, nameof(sqlRetryLogicBaseProvider));
 
             _sqlConnectionStringProvider = sqlConnectionStringProvider;
-            _transientFaultRetryPolicyConfiguration = sqlServerDataStoreConfiguration.Value.TransientFaultRetryPolicy;
+            _sqlRetryLogicBaseProvider = sqlRetryLogicBaseProvider;
         }
 
         /// <inheritdoc />
@@ -37,7 +35,7 @@ namespace Microsoft.Health.SqlServer
         {
             return await SqlConnectionHelper.GetBaseSqlConnectionAsync(
                 _sqlConnectionStringProvider,
-                _transientFaultRetryPolicyConfiguration,
+                _sqlRetryLogicBaseProvider,
                 initialCatalog,
                 cancellationToken);
         }

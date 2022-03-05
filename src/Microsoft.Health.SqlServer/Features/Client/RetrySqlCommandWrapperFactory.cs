@@ -5,7 +5,6 @@
 
 using EnsureThat;
 using Microsoft.Data.SqlClient;
-using Polly;
 
 namespace Microsoft.Health.SqlServer.Features.Client
 {
@@ -14,13 +13,12 @@ namespace Microsoft.Health.SqlServer.Features.Client
     /// </summary>
     internal class RetrySqlCommandWrapperFactory : SqlCommandWrapperFactory
     {
-        private readonly IAsyncPolicy _retryPolicy;
+        private readonly SqlRetryLogicBaseProvider _sqlRetryLogicBaseProvider;
 
-        public RetrySqlCommandWrapperFactory(ISqlServerTransientFaultRetryPolicyFactory sqlTransientFaultRetryPolicyFactory)
+        public RetrySqlCommandWrapperFactory(SqlRetryLogicBaseProvider sqlRetryLogicBaseProvider)
         {
-            EnsureArg.IsNotNull(sqlTransientFaultRetryPolicyFactory, nameof(sqlTransientFaultRetryPolicyFactory));
-
-            _retryPolicy = sqlTransientFaultRetryPolicyFactory.Create();
+            EnsureArg.IsNotNull(sqlRetryLogicBaseProvider, nameof(sqlRetryLogicBaseProvider));
+            _sqlRetryLogicBaseProvider = sqlRetryLogicBaseProvider;
         }
 
         /// <inheritdoc/>
@@ -28,7 +26,7 @@ namespace Microsoft.Health.SqlServer.Features.Client
         {
             return new RetrySqlCommandWrapper(
                 base.Create(sqlCommand),
-                _retryPolicy);
+                _sqlRetryLogicBaseProvider);
         }
     }
 }

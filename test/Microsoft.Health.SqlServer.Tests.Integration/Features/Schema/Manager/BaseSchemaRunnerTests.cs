@@ -5,6 +5,7 @@
 
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 using Microsoft.Health.SqlServer.Configs;
@@ -24,7 +25,7 @@ namespace Microsoft.Health.SqlServer.Tests.Integration.Features.Schema.Manager
             : base(output)
         {
             var config = Options.Create(new SqlServerDataStoreConfiguration());
-            var sqlConnection = new DefaultSqlConnectionBuilder(ConnectionStringProvider, config);
+            var sqlConnection = new DefaultSqlConnectionBuilder(ConnectionStringProvider, SqlConfigurableRetryFactory.CreateNoneRetryProvider());
             _dataStore = new SchemaManagerDataStore(sqlConnection, config, NullLogger<SchemaManagerDataStore>.Instance);
 
             _runner = new BaseSchemaRunner(sqlConnection, _dataStore, ConnectionStringProvider, NullLogger<BaseSchemaRunner>.Instance);

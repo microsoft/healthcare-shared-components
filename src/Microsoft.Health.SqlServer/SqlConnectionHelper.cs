@@ -7,7 +7,6 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Data.SqlClient;
-using Microsoft.Health.SqlServer.Configs;
 
 namespace Microsoft.Health.SqlServer
 {
@@ -21,14 +20,14 @@ namespace Microsoft.Health.SqlServer
         /// Get the SqlConnection object with right connection properties to retry
         /// </summary>
         /// <param name="sqlConnectionStringProvider">sqlConnectionStringProvider</param>
-        /// <param name="sqlServerTransientFaultRetryPolicyConfiguration">sqlServerTransientFaultRetryPolicyConfiguration</param>
+        /// <param name="sqlRetryLogic"><see cref="SqlRetryLogicBaseProvider"/>.</param>
         /// <param name="initialCatalog">initialCatalog</param>
         /// <param name="cancellationToken">cancellationToken</param>
         /// <returns>SqlConnection</returns>
         /// <exception cref="InvalidOperationException">Empty sql connection string</exception>
         internal static async Task<SqlConnection> GetBaseSqlConnectionAsync(
             ISqlConnectionStringProvider sqlConnectionStringProvider,
-            SqlServerTransientFaultRetryPolicyConfiguration sqlServerTransientFaultRetryPolicyConfiguration,
+            SqlRetryLogicBaseProvider sqlRetryLogic,
             string initialCatalog = null,
             CancellationToken cancellationToken = default)
         {
@@ -40,22 +39,18 @@ namespace Microsoft.Health.SqlServer
 
             var connectionStringBuilder = new SqlConnectionStringBuilder(sqlConnectionString);
 
-            // https://docs.microsoft.com/en-us/azure/azure-sql/database/troubleshoot-common-connectivity-issues
-            // Change from default 1 to 6
-            connectionStringBuilder.ConnectRetryCount = sqlServerTransientFaultRetryPolicyConfiguration.ConnectRetryCount;
-
-            // Change from default 10 to 60
-            connectionStringBuilder.ConnectTimeout = sqlServerTransientFaultRetryPolicyConfiguration.ConnectTimeoutInSeconds;
-
-            // Change from default 10 to 10
-            connectionStringBuilder.ConnectRetryInterval = sqlServerTransientFaultRetryPolicyConfiguration.ConnectRetryIntervalInSeconds;
-
             if (initialCatalog != null)
             {
                 connectionStringBuilder.InitialCatalog = initialCatalog;
             }
 
-            return new SqlConnection(connectionStringBuilder.ToString());
+            var sqlConnection = new SqlConnection(connectionStringBuilder.ToString());
+
+            // Create a retry logic provider
+            SqlRetryLogicBaseProvider provider = sqlRetryLogic;
+
+            sqlConnection.RetryLogicProvider = provider;
+            return sqlConnection;
         }
     }
 }

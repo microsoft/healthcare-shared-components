@@ -52,7 +52,7 @@ namespace Microsoft.Health.SqlServer.Features.Client
             }
         }
 
-        internal async Task InitializeAsync(CancellationToken cancellationToken, bool openConnection = true)
+        internal async Task InitializeAsync(CancellationToken cancellationToken)
         {
             if (_enlistInTransactionIfPresent && _sqlTransactionHandler.SqlTransactionScope?.SqlConnection != null)
             {
@@ -68,7 +68,7 @@ namespace Microsoft.Health.SqlServer.Features.Client
                 _sqlTransactionHandler.SqlTransactionScope.SqlConnection = SqlConnection;
             }
 
-            if (openConnection && SqlConnection.State != ConnectionState.Open)
+            if (SqlConnection.State != ConnectionState.Open)
             {
                 await SqlConnection.OpenAsync(cancellationToken);
             }

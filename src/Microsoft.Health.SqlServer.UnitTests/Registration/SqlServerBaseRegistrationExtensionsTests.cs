@@ -44,13 +44,10 @@ namespace Microsoft.Health.SqlServer.UnitTests.Registration
             Assert.True(services.ContainsSingleton<IAccessTokenHandler, ManagedIdentityAccessTokenHandler>());
             Assert.True(services.ContainsSingleton<IBaseScriptProvider, BaseScriptProvider>());
             Assert.True(services.ContainsSingleton<IHostedService, SchemaInitializer>());
-            Assert.True(services.ContainsSingleton<IPollyRetryLoggerFactory, PollyRetryLoggerFactory>());
             Assert.True(services.ContainsSingleton<ISchemaManagerDataStore>());
             Assert.True(services.ContainsSingleton<IScriptProvider, ScriptProvider<ExampleVersion>>());
             Assert.True(services.ContainsSingleton<ISqlConnectionBuilder>());
             Assert.True(services.ContainsSingleton<ISqlConnectionStringProvider, DefaultSqlConnectionStringProvider>());
-            Assert.True(services.ContainsSingleton<ISqlServerTransientFaultRetryPolicyFactory, SqlServerTransientFaultRetryPolicyFactory>());
-            Assert.True(services.ContainsSingleton<PollyRetryLoggerFactory>());
             Assert.True(services.ContainsSingleton<RetrySqlCommandWrapperFactory>());
             Assert.True(services.ContainsSingleton<SchemaInitializer>());
             Assert.True(services.ContainsSingleton<SchemaJobWorker>());
@@ -59,7 +56,6 @@ namespace Microsoft.Health.SqlServer.UnitTests.Registration
             Assert.True(services.ContainsSingleton<ScriptProvider<ExampleVersion>>());
             Assert.True(services.ContainsSingleton<SqlCommandWrapperFactory, RetrySqlCommandWrapperFactory>());
             Assert.True(services.ContainsSingleton<SqlServerDataStoreConfiguration>());
-            Assert.True(services.ContainsSingleton<SqlServerTransientFaultRetryPolicyFactory>());
         }
 
         [Fact]
@@ -74,10 +70,8 @@ namespace Microsoft.Health.SqlServer.UnitTests.Registration
 
             Assert.True(services.ContainsSingleton<AzureServiceTokenProvider>());
             Assert.True(services.ContainsSingleton<IAccessTokenHandler, ManagedIdentityAccessTokenHandler>());
-            Assert.True(services.ContainsSingleton<IPollyRetryLoggerFactory, PollyRetryLoggerFactory>());
             Assert.True(services.ContainsSingleton<ISqlConnectionBuilder>());
             Assert.True(services.ContainsSingleton<ISqlConnectionStringProvider, DefaultSqlConnectionStringProvider>());
-            Assert.True(services.ContainsSingleton<ISqlServerTransientFaultRetryPolicyFactory, SqlServerTransientFaultRetryPolicyFactory>());
             Assert.True(services.ContainsSingleton<SqlCommandWrapperFactory, RetrySqlCommandWrapperFactory>());
             Assert.True(services.ContainsSingleton<IReadOnlySchemaManagerDataStore, SchemaManagerDataStore>());
         }
