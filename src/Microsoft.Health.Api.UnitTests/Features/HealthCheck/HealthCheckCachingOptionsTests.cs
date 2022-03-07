@@ -103,7 +103,7 @@ namespace Microsoft.Health.Api.UnitTests.Features.HealthCheck
         }
 
         [Fact]
-        public void GivenConfiguration_WhenCreatingHealthCheckOptions_ThenPopulateProperties()
+        public void GivenNoConfiguration_WhenCreatingHealthCheckOptions_ThenPopulateDefaults()
         {
             IConfiguration config = new ConfigurationBuilder()
                 .AddInMemoryCollection(
@@ -112,13 +112,29 @@ namespace Microsoft.Health.Api.UnitTests.Features.HealthCheck
                         KeyValuePair.Create(nameof(HealthCheckCachingOptions.CacheFailure), "false"),
                         KeyValuePair.Create(nameof(HealthCheckCachingOptions.Expiry), "00:00:15"),
                         KeyValuePair.Create(nameof(HealthCheckCachingOptions.RefreshOffset), "00:00:05"),
+                        KeyValuePair.Create(nameof(HealthCheckCachingOptions.MaxRefreshThreads), "6"),
                     })
                 .Build();
 
-            IOptions<HealthCheckCachingOptions> options = GetOptions(config);
-            Assert.False(options.Value.CacheFailure);
-            Assert.Equal(TimeSpan.FromSeconds(15), options.Value.Expiry);
-            Assert.Equal(TimeSpan.FromSeconds(5), options.Value.RefreshOffset);
+            HealthCheckCachingOptions options = GetOptions(config)?.Value;
+            Assert.False(options.CacheFailure);
+            Assert.Equal(TimeSpan.FromSeconds(15), options.Expiry);
+            Assert.Equal(TimeSpan.FromSeconds(5), options.RefreshOffset);
+            Assert.Equal(6, options.MaxRefreshThreads);
+        }
+
+        [Fact]
+        public void GivenConfiguration_WhenCreatingHealthCheckOptions_ThenPopulateProperties()
+        {
+            IServiceCollection services = new ServiceCollection();
+            new HealthCheckModule().Load(services);
+            IServiceProvider provider = services.BuildServiceProvider();
+
+            HealthCheckCachingOptions options = provider.GetRequiredService<IOptions<HealthCheckCachingOptions>>()?.Value;
+            Assert.True(options.CacheFailure);
+            Assert.Equal(TimeSpan.FromSeconds(1), options.Expiry);
+            Assert.Equal(TimeSpan.Zero, options.RefreshOffset);
+            Assert.Equal(1, options.MaxRefreshThreads);
         }
 
         private static IOptions<HealthCheckCachingOptions> GetOptions(IConfiguration config)
