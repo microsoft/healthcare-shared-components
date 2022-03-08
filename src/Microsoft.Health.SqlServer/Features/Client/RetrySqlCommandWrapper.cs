@@ -14,54 +14,50 @@ namespace Microsoft.Health.SqlServer.Features.Client
     /// <summary>
     /// A wrapper around <see cref="SqlCommand"/> to provide automatic retries for transient errors.
     /// </summary>
-    internal class RetrySqlCommandWrapper : SqlCommandWrapper
+    public class RetrySqlCommandWrapper : SqlCommandWrapper
     {
-        private readonly SqlCommandWrapper _sqlCommandWrapper;
-
-        public RetrySqlCommandWrapper(SqlCommandWrapper sqlCommandWrapper, SqlRetryLogicBaseProvider sqlRetryLogicBaseProvider)
-            : base(sqlCommandWrapper)
+        public RetrySqlCommandWrapper(SqlCommand sqlCommand, SqlRetryLogicBaseProvider sqlRetryLogicBaseProvider)
+            : base(sqlCommand)
         {
-            EnsureArg.IsNotNull(sqlCommandWrapper, nameof(sqlCommandWrapper));
             EnsureArg.IsNotNull(sqlRetryLogicBaseProvider, nameof(sqlRetryLogicBaseProvider));
 
-            _sqlCommandWrapper = sqlCommandWrapper;
-            _sqlCommandWrapper.RetryLogicProvider = sqlRetryLogicBaseProvider;
+            RetryLogicProvider = sqlRetryLogicBaseProvider;
         }
 
         /// <inheritdoc/>
         public override async Task<int> ExecuteNonQueryAsync(CancellationToken cancellationToken)
         {
            await EnsureConnectionOpenAsync(cancellationToken);
-           return await _sqlCommandWrapper.ExecuteNonQueryAsync(cancellationToken);
+           return await ExecuteNonQueryAsync(cancellationToken);
         }
 
         /// <inheritdoc/>
         public override async Task<object> ExecuteScalarAsync(CancellationToken cancellationToken)
         {
             await EnsureConnectionOpenAsync(cancellationToken);
-            return await _sqlCommandWrapper.ExecuteScalarAsync(cancellationToken);
+            return await ExecuteScalarAsync(cancellationToken);
         }
 
         /// <inheritdoc/>
         public override async Task<SqlDataReader> ExecuteReaderAsync(CancellationToken cancellationToken)
         {
             await EnsureConnectionOpenAsync(cancellationToken);
-            return await _sqlCommandWrapper.ExecuteReaderAsync(cancellationToken);
+            return await ExecuteReaderAsync(cancellationToken);
         }
 
         /// <inheritdoc/>
         public override async Task<SqlDataReader> ExecuteReaderAsync(CommandBehavior behavior, CancellationToken cancellationToken)
         {
            await EnsureConnectionOpenAsync(cancellationToken);
-           return await _sqlCommandWrapper.ExecuteReaderAsync(behavior, cancellationToken);
+           return await ExecuteReaderAsync(behavior, cancellationToken);
         }
 
         private Task EnsureConnectionOpenAsync(CancellationToken cancellationToken)
         {
             // null check on connection is to handle unit test that cannot mock a sealed sqlConnection type
-            if (_sqlCommandWrapper.Connection != null && _sqlCommandWrapper.Connection.State != ConnectionState.Open)
+            if (Connection != null && Connection.State != ConnectionState.Open)
             {
-                return _sqlCommandWrapper.Connection.OpenAsync(cancellationToken);
+                return Connection.OpenAsync(cancellationToken);
             }
 
             return Task.CompletedTask;

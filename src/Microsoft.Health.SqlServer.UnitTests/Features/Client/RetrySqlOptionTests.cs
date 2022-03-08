@@ -23,8 +23,8 @@ namespace Microsoft.Health.SqlServer.UnitTests.Features.Client
                 NumberOfTries = 3,
             });
             var sqlCommandWrapper = new RetrySqlCommandWrapper(
-                                        new SqlCommandWrapper(new Data.SqlClient.SqlCommand()),
-                                        retryOption);
+                    new Data.SqlClient.SqlCommand(),
+                    retryOption);
 
             Assert.True(sqlCommandWrapper.RetryLogicProvider == retryOption);
         }

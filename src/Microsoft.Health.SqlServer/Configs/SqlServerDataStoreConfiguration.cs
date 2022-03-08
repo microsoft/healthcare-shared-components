@@ -35,9 +35,9 @@ namespace Microsoft.Health.SqlServer.Configs
         public SqlServerAuthenticationType AuthenticationType { get; set; } = SqlServerAuthenticationType.ConnectionString;
 
         /// <summary>
-        /// Configuration for transient fault retry policy.
+        /// Configuration for Sql Client retry policy.
         /// </summary>
-        public SqlServerTransientFaultRetryPolicyConfiguration TransientFaultRetryPolicy { get; set; } = new SqlServerTransientFaultRetryPolicyConfiguration();
+        public SqlClientRetryOptions Retry { get; set; }
 
         /// <summary>
         /// Updates the schema migration options

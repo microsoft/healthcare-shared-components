@@ -34,7 +34,7 @@ namespace Microsoft.Health.SqlServer.Features.Health
             try
             {
                 using SqlConnectionWrapper sqlConnectionWrapper = await _sqlConnectionWrapperFactory.ObtainSqlConnectionWrapperAsync(cancellationToken);
-                using SqlCommandWrapper sqlCommandWrapper = sqlConnectionWrapper.CreateSqlCommand();
+                using SqlCommandWrapper sqlCommandWrapper = sqlConnectionWrapper.CreateRetrySqlCommand();
 
                 sqlCommandWrapper.CommandText = "select @@DBTS";
 

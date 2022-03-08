@@ -28,13 +28,6 @@ namespace Microsoft.Health.SqlServer.Features.Client
             _sqlCommand = sqlCommand;
         }
 
-        protected SqlCommandWrapper(SqlCommandWrapper sqlCommandWrapper)
-        {
-            EnsureArg.IsNotNull(sqlCommandWrapper, nameof(sqlCommandWrapper));
-
-            _sqlCommand = sqlCommandWrapper._sqlCommand;
-        }
-
         /// <summary>
         /// <see cref="SqlCommand.CommandType"/>.
         /// </summary>
