@@ -5,6 +5,9 @@
 
 namespace Microsoft.Health.SqlServer.Configs
 {
+    /// <summary>
+    /// Used in SqlClientRetryOptions to specify the retry mode
+    /// </summary>
     public enum SqlRetryMode
     {
         None,
