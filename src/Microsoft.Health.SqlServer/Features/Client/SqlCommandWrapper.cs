@@ -89,15 +89,6 @@ namespace Microsoft.Health.SqlServer.Features.Client
         }
 
         /// <summary>
-        /// <see cref="SqlCommand.RetryLogicProvider"/>.
-        /// </summary>
-        public SqlRetryLogicBaseProvider RetryLogicProvider
-        {
-            get => _sqlCommand.RetryLogicProvider;
-            set => _sqlCommand.RetryLogicProvider = value;
-        }
-
-        /// <summary>
         /// <see cref="SqlCommand.Cancel"/>.
         /// </summary>
         public virtual void Cancel()
