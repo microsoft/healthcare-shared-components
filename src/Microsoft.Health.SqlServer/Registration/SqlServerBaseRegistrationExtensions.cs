@@ -186,12 +186,6 @@ namespace Microsoft.Health.SqlServer.Registration
             {
                 SqlServerDataStoreConfiguration config = p.GetRequiredService<IOptions<SqlServerDataStoreConfiguration>>().Value;
 
-                // set default
-                if (config.Retry == null)
-                {
-                    config.Retry = new SqlClientRetryOptions();
-                }
-
                 return config.Retry.Mode switch
                 {
                     SqlRetryMode.None => SqlConfigurableRetryFactory.CreateNoneRetryProvider(),

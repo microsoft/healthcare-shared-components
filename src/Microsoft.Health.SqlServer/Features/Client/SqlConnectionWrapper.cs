@@ -86,20 +86,19 @@ namespace Microsoft.Health.SqlServer.Features.Client
         [Obsolete("Please use " + nameof(CreateRetrySqlCommand) + " or " + nameof(CreateNonRetrySqlCommand) + " instead.")]
         public SqlCommandWrapper CreateSqlCommand()
         {
-            SqlCommand sqlCommand = SqlConnection.CreateCommand();
-            sqlCommand.Transaction = SqlTransaction;
-            return new RetrySqlCommandWrapper(sqlCommand, _sqlRetryLogicBaseProvider);
+            return CreateRetrySqlCommand();
         }
 
         /// <summary>
         /// Sql statements that are idempotent should get this SqlCommand which retries on transient failures.
         /// </summary>
-        /// <returns>The <see cref="RetrySqlCommandWrapper"/></returns>
-        public RetrySqlCommandWrapper CreateRetrySqlCommand()
+        /// <returns>The <see cref="SqlCommandWrapper"/></returns>
+        public SqlCommandWrapper CreateRetrySqlCommand()
         {
             SqlCommand sqlCommand = SqlConnection.CreateCommand();
             sqlCommand.Transaction = SqlTransaction;
-            return new RetrySqlCommandWrapper(sqlCommand, _sqlRetryLogicBaseProvider);
+            sqlCommand.RetryLogicProvider = _sqlRetryLogicBaseProvider;
+            return new SqlCommandWrapper(sqlCommand);
         }
 
         /// <summary>

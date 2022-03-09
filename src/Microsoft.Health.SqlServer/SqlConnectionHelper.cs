@@ -44,12 +44,10 @@ namespace Microsoft.Health.SqlServer
                 connectionStringBuilder.InitialCatalog = initialCatalog;
             }
 
-            var sqlConnection = new SqlConnection(connectionStringBuilder.ToString());
-
-            // Create a retry logic provider
-            SqlRetryLogicBaseProvider provider = sqlRetryLogic;
-
-            sqlConnection.RetryLogicProvider = provider;
+            var sqlConnection = new SqlConnection(connectionStringBuilder.ToString())
+                {
+                    RetryLogicProvider = sqlRetryLogic,
+                };
             return sqlConnection;
         }
     }

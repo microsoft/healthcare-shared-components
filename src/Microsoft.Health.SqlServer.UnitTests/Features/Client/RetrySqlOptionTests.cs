@@ -7,7 +7,6 @@ using System.Threading.Tasks;
 using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.Options;
 using Microsoft.Health.SqlServer.Configs;
-using Microsoft.Health.SqlServer.Features.Client;
 using NSubstitute;
 using Xunit;
 
@@ -15,20 +14,6 @@ namespace Microsoft.Health.SqlServer.UnitTests.Features.Client
 {
     public class RetrySqlOptionTests
     {
-        [Fact]
-        public void GivenASqlCommandWrapper_ItsRetryPolicy_IsSet()
-        {
-            var retryOption = SqlConfigurableRetryFactory.CreateExponentialRetryProvider(new SqlRetryLogicOption
-            {
-                NumberOfTries = 3,
-            });
-            var sqlCommandWrapper = new RetrySqlCommandWrapper(
-                    new Data.SqlClient.SqlCommand(),
-                    retryOption);
-
-            Assert.True(sqlCommandWrapper.RetryLogicProvider == retryOption);
-        }
-
         [Fact]
         public async Task GivenASqlConnectionWrapper_ItsRetryPolicy_IsSet()
         {

@@ -19,7 +19,7 @@ namespace Microsoft.Health.SqlServer.Configs
 
         // Default from https://docs.microsoft.com/en-us/sql/connect/ado-net/configurable-retry-logic-sqlclient-introduction?view=sql-server-ver15
         // Default transient error codes here https://github.com/dotnet/SqlClient/blob/main/src/Microsoft.Data.SqlClient/src/Microsoft/Data/SqlClient/Reliability/SqlConfigurableRetryFactory.cs
-        public SqlRetryLogicOption Settings { get; set; } = new SqlRetryLogicOption()
+        public SqlRetryLogicOption Settings { get; set; } = new SqlRetryLogicOption
             {
                 NumberOfTries = 5,
                 DeltaTime = TimeSpan.FromSeconds(1),

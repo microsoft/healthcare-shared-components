@@ -37,7 +37,7 @@ namespace Microsoft.Health.SqlServer.Configs
         /// <summary>
         /// Configuration for Sql Client retry policy.
         /// </summary>
-        public SqlClientRetryOptions Retry { get; set; }
+        public SqlClientRetryOptions Retry { get; set; } = new SqlClientRetryOptions();
 
         /// <summary>
         /// Updates the schema migration options
