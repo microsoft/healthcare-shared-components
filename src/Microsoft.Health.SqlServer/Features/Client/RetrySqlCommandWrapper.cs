@@ -28,28 +28,28 @@ namespace Microsoft.Health.SqlServer.Features.Client
         public override async Task<int> ExecuteNonQueryAsync(CancellationToken cancellationToken)
         {
            await EnsureConnectionOpenAsync(cancellationToken);
-           return await ExecuteNonQueryAsync(cancellationToken);
+           return await base.ExecuteNonQueryAsync(cancellationToken);
         }
 
         /// <inheritdoc/>
         public override async Task<object> ExecuteScalarAsync(CancellationToken cancellationToken)
         {
             await EnsureConnectionOpenAsync(cancellationToken);
-            return await ExecuteScalarAsync(cancellationToken);
+            return await base.ExecuteScalarAsync(cancellationToken);
         }
 
         /// <inheritdoc/>
         public override async Task<SqlDataReader> ExecuteReaderAsync(CancellationToken cancellationToken)
         {
             await EnsureConnectionOpenAsync(cancellationToken);
-            return await ExecuteReaderAsync(cancellationToken);
+            return await base.ExecuteReaderAsync(cancellationToken);
         }
 
         /// <inheritdoc/>
         public override async Task<SqlDataReader> ExecuteReaderAsync(CommandBehavior behavior, CancellationToken cancellationToken)
         {
            await EnsureConnectionOpenAsync(cancellationToken);
-           return await ExecuteReaderAsync(behavior, cancellationToken);
+           return await base.ExecuteReaderAsync(behavior, cancellationToken);
         }
 
         private Task EnsureConnectionOpenAsync(CancellationToken cancellationToken)
