@@ -6,7 +6,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Azure.Messaging.EventGrid" Version="4.8.2" />
+    <PackageReference Include="Azure.Messaging.EventGrid" Version="4.9.0" />
     <PackageReference Include="Ensure.That" Version="10.1.0" />
   </ItemGroup>
 
