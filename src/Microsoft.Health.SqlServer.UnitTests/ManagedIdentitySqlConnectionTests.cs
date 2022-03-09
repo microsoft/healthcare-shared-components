@@ -35,7 +35,7 @@ namespace Microsoft.Health.SqlServer.UnitTests
 
             var sqlConfigOptions = Options.Create(sqlServerDataStoreConfiguration);
             _sqlConnectionFactory = new ManagedIdentitySqlConnectionBuilder(
-                new DefaultSqlConnectionStringProvider(sqlConfigOptions), accessTokenHandler, sqlConfigOptions);
+                new DefaultSqlConnectionStringProvider(sqlConfigOptions), accessTokenHandler, SqlConfigurableRetryFactory.CreateNoneRetryProvider());
         }
 
         [Fact]

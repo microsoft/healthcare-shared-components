@@ -7,6 +7,7 @@ using System;
 using System.Linq;
 using EnsureThat;
 using Microsoft.Azure.Services.AppAuthentication;
+using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
@@ -48,9 +49,7 @@ namespace Microsoft.Health.SqlServer.Registration
             services.TryAddSingleton(p => p.GetRequiredService<IScriptProvider>() as ScriptProvider<TSchemaVersionEnum>);
             services.TryAddSingleton(p => p.GetRequiredService<IBaseScriptProvider>() as BaseScriptProvider);
             services.TryAddSingleton(p => p.GetRequiredService<ISchemaManagerDataStore>() as SchemaManagerDataStore);
-            services.TryAddSingleton(p => p.GetRequiredService<IPollyRetryLoggerFactory>() as PollyRetryLoggerFactory);
-            services.TryAddSingleton(p => p.GetRequiredService<SqlCommandWrapperFactory>() as RetrySqlCommandWrapperFactory);
-            services.TryAddSingleton(p => p.GetRequiredService<ISqlServerTransientFaultRetryPolicyFactory>() as SqlServerTransientFaultRetryPolicyFactory);
+            services.AddSqlRetryLogicProvider();
 
             return services;
         }
@@ -69,28 +68,18 @@ namespace Microsoft.Health.SqlServer.Registration
 
             services.AddOptions();
             services.TryAddSingleton<ISqlConnectionStringProvider, DefaultSqlConnectionStringProvider>();
-
+            services.AddSqlRetryLogicProvider();
             services.TryAddSingleton<ISqlConnectionBuilder>(
                  p =>
                  {
                      var sqlServerDataStoreConfigOption = p.GetRequiredService<IOptions<SqlServerDataStoreConfiguration>>();
                      SqlServerDataStoreConfiguration config = sqlServerDataStoreConfigOption.Value;
                      ISqlConnectionStringProvider sqlConnectionStringProvider = p.GetRequiredService<ISqlConnectionStringProvider>();
+                     SqlRetryLogicBaseProvider sqlRetryLogic = p.GetRequiredService<SqlRetryLogicBaseProvider>();
                      return config.AuthenticationType == SqlServerAuthenticationType.ManagedIdentity
-                         ? new ManagedIdentitySqlConnectionBuilder(sqlConnectionStringProvider, p.GetRequiredService<IAccessTokenHandler>(), sqlServerDataStoreConfigOption)
-                         : new DefaultSqlConnectionBuilder(sqlConnectionStringProvider, sqlServerDataStoreConfigOption);
+                         ? new ManagedIdentitySqlConnectionBuilder(sqlConnectionStringProvider, p.GetRequiredService<IAccessTokenHandler>(), sqlRetryLogic)
+                         : new DefaultSqlConnectionBuilder(sqlConnectionStringProvider, sqlRetryLogic);
                  });
-
-            // We build SqlConnection object differently for different Authentication Type.
-            // For ManagedIdentity access we set the access token
-            services.TryAddSingleton<ISqlConnectionBuilder>(
-                p =>
-                {
-                    SqlServerDataStoreConfiguration config = p.GetRequiredService<IOptions<SqlServerDataStoreConfiguration>>().Value;
-                    return config.AuthenticationType == SqlServerAuthenticationType.ManagedIdentity
-                        ? p.GetRequiredService<ManagedIdentitySqlConnectionBuilder>()
-                        : p.GetRequiredService<DefaultSqlConnectionBuilder>();
-                });
 
             // The following are only used in case of managed identity
             services.AddSingleton<IAccessTokenHandler, ManagedIdentityAccessTokenHandler>();
@@ -115,9 +104,6 @@ namespace Microsoft.Health.SqlServer.Registration
             services.TryAddScoped<SqlConnectionWrapperFactory>();
             services.TryAddScoped<SqlTransactionHandler>();
             services.TryAddScoped<ITransactionHandler>(handlerFactory);
-            services.TryAddSingleton<IPollyRetryLoggerFactory, PollyRetryLoggerFactory>();
-            services.TryAddSingleton<ISqlServerTransientFaultRetryPolicyFactory, SqlServerTransientFaultRetryPolicyFactory>();
-            services.TryAddSingleton<SqlCommandWrapperFactory, RetrySqlCommandWrapperFactory>();
             services.TryAddSingleton<IReadOnlySchemaManagerDataStore, SchemaManagerDataStore>();
 
             return services;
@@ -185,6 +171,30 @@ namespace Microsoft.Health.SqlServer.Registration
                         : new SchemaManagerDataStore(p.GetRequiredService<ISqlConnectionBuilder>(), p.GetRequiredService<IOptions<SqlServerDataStoreConfiguration>>(), p.GetRequiredService<ILogger<SchemaManagerDataStore>>());
                 });
 
+            return services;
+        }
+
+        /// <summary>
+        /// Adds an <see cref="SqlRetryLogicBaseProvider"/> to be used by SqlConnection and SqlCommand
+        /// </summary>
+        /// <param name="services">The <see cref="IServiceCollection"/> to be updated.</param>
+        /// <returns>The <paramref name="services"/> for additional method invocations.</returns>
+        /// <exception cref="NotImplementedException">When the retry mode is unkown</exception>
+        private static IServiceCollection AddSqlRetryLogicProvider(this IServiceCollection services)
+        {
+            services.TryAddSingleton<SqlRetryLogicBaseProvider>(p =>
+            {
+                SqlServerDataStoreConfiguration config = p.GetRequiredService<IOptions<SqlServerDataStoreConfiguration>>().Value;
+
+                return config.Retry.Mode switch
+                {
+                    SqlRetryMode.None => SqlConfigurableRetryFactory.CreateNoneRetryProvider(),
+                    SqlRetryMode.Fixed => SqlConfigurableRetryFactory.CreateFixedRetryProvider(config.Retry.Settings),
+                    SqlRetryMode.Incremental => SqlConfigurableRetryFactory.CreateIncrementalRetryProvider(config.Retry.Settings),
+                    SqlRetryMode.Exponential => SqlConfigurableRetryFactory.CreateExponentialRetryProvider(config.Retry.Settings),
+                    _ => throw new NotImplementedException(),
+                };
+            });
             return services;
         }
     }

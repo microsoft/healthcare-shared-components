@@ -27,7 +27,7 @@ namespace Microsoft.Health.SqlServer.UnitTests.Features
             };
 
             var sqlConfigOptions = Options.Create(sqlServerDataStoreConfiguration);
-            _sqlConnectionFactory = new DefaultSqlConnectionBuilder(new DefaultSqlConnectionStringProvider(sqlConfigOptions), sqlConfigOptions);
+            _sqlConnectionFactory = new DefaultSqlConnectionBuilder(new DefaultSqlConnectionStringProvider(sqlConfigOptions), SqlConfigurableRetryFactory.CreateNoneRetryProvider());
         }
 
         [Fact]

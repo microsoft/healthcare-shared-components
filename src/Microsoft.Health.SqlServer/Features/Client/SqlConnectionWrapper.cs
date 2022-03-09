@@ -17,26 +17,25 @@ namespace Microsoft.Health.SqlServer.Features.Client
     {
         private readonly bool _enlistInTransactionIfPresent;
         private readonly SqlTransactionHandler _sqlTransactionHandler;
-        private readonly SqlCommandWrapperFactory _sqlCommandWrapperFactory;
         private readonly ISqlConnectionBuilder _sqlConnectionBuilder;
-
+        private readonly SqlRetryLogicBaseProvider _sqlRetryLogicBaseProvider;
         private SqlConnection _sqlConnection;
         private SqlTransaction _sqlTransaction;
 
         internal SqlConnectionWrapper(
             SqlTransactionHandler sqlTransactionHandler,
-            SqlCommandWrapperFactory sqlCommandWrapperFactory,
             ISqlConnectionBuilder connectionBuilder,
+            SqlRetryLogicBaseProvider sqlRetryLogicBaseProvider,
             bool enlistInTransactionIfPresent)
         {
             EnsureArg.IsNotNull(sqlTransactionHandler, nameof(sqlTransactionHandler));
-            EnsureArg.IsNotNull(sqlCommandWrapperFactory, nameof(sqlCommandWrapperFactory));
             EnsureArg.IsNotNull(connectionBuilder, nameof(connectionBuilder));
+            EnsureArg.IsNotNull(sqlRetryLogicBaseProvider, nameof(sqlRetryLogicBaseProvider));
 
             _sqlTransactionHandler = sqlTransactionHandler;
             _enlistInTransactionIfPresent = enlistInTransactionIfPresent;
-            _sqlCommandWrapperFactory = sqlCommandWrapperFactory;
             _sqlConnectionBuilder = connectionBuilder;
+            _sqlRetryLogicBaseProvider = sqlRetryLogicBaseProvider;
         }
 
         public SqlConnection SqlConnection
@@ -52,7 +51,7 @@ namespace Microsoft.Health.SqlServer.Features.Client
             }
         }
 
-        internal async Task InitializeAsync(CancellationToken cancellationToken, bool openConnection = true)
+        internal async Task InitializeAsync(CancellationToken cancellationToken)
         {
             if (_enlistInTransactionIfPresent && _sqlTransactionHandler.SqlTransactionScope?.SqlConnection != null)
             {
@@ -68,7 +67,7 @@ namespace Microsoft.Health.SqlServer.Features.Client
                 _sqlTransactionHandler.SqlTransactionScope.SqlConnection = SqlConnection;
             }
 
-            if (openConnection && SqlConnection.State != ConnectionState.Open)
+            if (SqlConnection.State != ConnectionState.Open)
             {
                 await SqlConnection.OpenAsync(cancellationToken);
             }
@@ -84,13 +83,33 @@ namespace Microsoft.Health.SqlServer.Features.Client
             }
         }
 
+        [Obsolete("Please use " + nameof(CreateRetrySqlCommand) + " or " + nameof(CreateNonRetrySqlCommand) + " instead.")]
         public SqlCommandWrapper CreateSqlCommand()
         {
+            return CreateRetrySqlCommand();
+        }
+
+        /// <summary>
+        /// Sql statements that are idempotent should get this SqlCommand which retries on transient failures.
+        /// </summary>
+        /// <returns>The <see cref="SqlCommandWrapper"/></returns>
+        public SqlCommandWrapper CreateRetrySqlCommand()
+        {
             SqlCommand sqlCommand = SqlConnection.CreateCommand();
-
             sqlCommand.Transaction = SqlTransaction;
+            sqlCommand.RetryLogicProvider = _sqlRetryLogicBaseProvider;
+            return new SqlCommandWrapper(sqlCommand);
+        }
 
-            return _sqlCommandWrapperFactory.Create(sqlCommand);
+        /// <summary>
+        /// Sql statements that cannot be retried should get this SqlCommand
+        /// </summary>
+        /// <returns>The <see cref="SqlCommandWrapper"/></returns>
+        public SqlCommandWrapper CreateNonRetrySqlCommand()
+        {
+            SqlCommand sqlCommand = SqlConnection.CreateCommand();
+            sqlCommand.Transaction = SqlTransaction;
+            return new SqlCommandWrapper(sqlCommand);
         }
 
         protected virtual void Dispose(bool disposing)

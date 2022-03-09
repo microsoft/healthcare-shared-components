@@ -3,20 +3,16 @@
 // Licensed under the MIT License (MIT). See LICENSE in the repo root for license information.
 // -------------------------------------------------------------------------------------------------
 
-using System;
-using Polly;
-
-namespace Microsoft.Health.SqlServer.Features.Client
+namespace Microsoft.Health.SqlServer.Configs
 {
     /// <summary>
-    /// Provides functionality for creating a logger for the <see cref="Polly"/> retry policy.
+    /// Used in SqlClientRetryOptions to specify the retry mode
     /// </summary>
-    internal interface IPollyRetryLoggerFactory
+    public enum SqlRetryMode
     {
-        /// <summary>
-        /// Creates a logger.
-        /// </summary>
-        /// <returns>A logger delegate.</returns>
-        Action<Exception, TimeSpan, int, Context> Create();
+        None,
+        Exponential,
+        Incremental,
+        Fixed,
     }
 }
