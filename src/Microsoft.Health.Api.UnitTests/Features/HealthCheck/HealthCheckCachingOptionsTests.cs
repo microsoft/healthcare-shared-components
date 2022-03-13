@@ -109,16 +109,16 @@ namespace Microsoft.Health.Api.UnitTests.Features.HealthCheck
                 .AddInMemoryCollection(
                     new KeyValuePair<string, string>[]
                     {
-                        KeyValuePair.Create(nameof(HealthCheckCachingOptions.CacheFailure), "false"),
                         KeyValuePair.Create(nameof(HealthCheckCachingOptions.Expiry), "00:00:15"),
                         KeyValuePair.Create(nameof(HealthCheckCachingOptions.RefreshOffset), "00:00:05"),
+                        KeyValuePair.Create(nameof(HealthCheckCachingOptions.MaxRefreshThreads), "4"),
                     })
                 .Build();
 
             IOptions<HealthCheckCachingOptions> options = GetOptions(config);
-            Assert.False(options.Value.CacheFailure);
             Assert.Equal(TimeSpan.FromSeconds(15), options.Value.Expiry);
             Assert.Equal(TimeSpan.FromSeconds(5), options.Value.RefreshOffset);
+            Assert.Equal(4, options.Value.MaxRefreshThreads);
         }
 
         private static IOptions<HealthCheckCachingOptions> GetOptions(IConfiguration config)

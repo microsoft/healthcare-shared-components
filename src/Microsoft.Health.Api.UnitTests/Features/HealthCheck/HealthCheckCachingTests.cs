@@ -6,9 +6,9 @@
 using System;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 using Microsoft.Health.Api.Features.HealthChecks;
 using Microsoft.Health.Core.Internal;
@@ -22,17 +22,19 @@ namespace Microsoft.Health.Api.UnitTests.Features.HealthCheck
     {
         private readonly HealthCheckContext _context = new HealthCheckContext();
         private readonly IHealthCheck _healthCheck = Substitute.For<IHealthCheck>();
-        private readonly DateTimeOffset _currentTime = DateTimeOffset.UtcNow;
         private readonly HealthCheckCachingOptions _options = new HealthCheckCachingOptions();
 
-        [Fact]
-        public async Task GivenTheHealthCheckCache_WhenCacheFresh_ThenDoNotRefresh()
+        [Theory]
+        [InlineData(HealthStatus.Unhealthy)]
+        [InlineData(HealthStatus.Degraded)]
+        [InlineData(HealthStatus.Healthy)]
+        public async Task GivenTheHealthCheckCache_WhenCacheFresh_ThenDoNotRefresh(HealthStatus status)
         {
             using CancellationTokenSource tokenSource = new CancellationTokenSource();
 
             _healthCheck
                 .CheckHealthAsync(_context, tokenSource.Token)
-                .Returns(Task.FromResult(HealthCheckResult.Healthy()));
+                .Returns(Task.FromResult(new HealthCheckResult(status)));
 
             _options.Expiry = TimeSpan.FromDays(1);
 
@@ -45,7 +47,7 @@ namespace Microsoft.Health.Api.UnitTests.Features.HealthCheck
                 cache.CheckHealthAsync(_context, tokenSource.Token));
 
             await _healthCheck.Received(1).CheckHealthAsync(_context, tokenSource.Token);
-            Assert.All(actual, x => Assert.Equal(HealthStatus.Healthy, x.Status));
+            Assert.All(actual, x => Assert.Equal(status, x.Status));
         }
 
         [Fact]
@@ -336,80 +338,6 @@ namespace Microsoft.Health.Api.UnitTests.Features.HealthCheck
         }
 
         [Theory]
-        [InlineData(false)]
-        [InlineData(true)]
-        public async Task GivenTheHealthCheckCache_WhenCachingFailure_ThenStoreBasedOnConfig(bool cacheFailure)
-        {
-            HealthCheckResult result;
-            using CancellationTokenSource tokenSource = new CancellationTokenSource();
-
-            _healthCheck
-                .CheckHealthAsync(_context, tokenSource.Token)
-                .Returns(Task.FromResult(HealthCheckResult.Unhealthy()));
-
-            _options.CacheFailure = cacheFailure;
-            _options.Expiry = TimeSpan.FromDays(1);
-
-            CachedHealthCheck cache = CreateHealthCheck();
-
-            // Populate cache (if caching)
-            result = await cache.CheckHealthAsync(_context, tokenSource.Token);
-
-            Assert.Equal(HealthStatus.Unhealthy, result.Status);
-            await _healthCheck.Received(1).CheckHealthAsync(_context, tokenSource.Token);
-
-            // Check again
-            result = await cache.CheckHealthAsync(_context, tokenSource.Token);
-
-            Assert.Equal(HealthStatus.Unhealthy, result.Status);
-            await _healthCheck.Received(cacheFailure ? 1 : 2).CheckHealthAsync(_context, tokenSource.Token);
-        }
-
-        [Fact]
-        public async Task GivenTheHealthCheckCacheWithNoFailureCaching_WhenRefreshingWhileStale_ThenDoNotReturnNewUnhealthy()
-        {
-            HealthCheckResult result;
-            using CancellationTokenSource tokenSource = new CancellationTokenSource();
-
-            _healthCheck
-                .CheckHealthAsync(_context, tokenSource.Token)
-                .Returns(
-                    Task.FromResult(HealthCheckResult.Degraded()),
-                    Task.FromResult(HealthCheckResult.Unhealthy()),
-                    Task.FromResult(HealthCheckResult.Healthy()));
-
-            _options.CacheFailure = false;
-            _options.Expiry = TimeSpan.FromSeconds(60);
-            _options.RefreshOffset = TimeSpan.FromSeconds(50);
-
-            CachedHealthCheck cache = CreateHealthCheck();
-
-            // Populate cache
-            result = await cache.CheckHealthAsync(_context, tokenSource.Token);
-
-            await _healthCheck.Received(1).CheckHealthAsync(_context, tokenSource.Token);
-            Assert.Equal(HealthStatus.Degraded, result.Status);
-
-            // Attempt to refresh
-            DateTimeOffset futureTime = DateTimeOffset.UtcNow.AddSeconds(10);
-            using (Mock.Property(() => ClockResolver.UtcNowFunc, () => futureTime))
-            {
-                // Attempt refresh but retrieve unhealthy status
-                // Because we don't cache failures, and because the last status is still valid, return the old value
-                result = await cache.CheckHealthAsync(_context, tokenSource.Token);
-
-                await _healthCheck.Received(2).CheckHealthAsync(_context, tokenSource.Token);
-                Assert.Equal(HealthStatus.Degraded, result.Status);
-
-                // Try to get the status again (as the cache wasn't updated)
-                result = await cache.CheckHealthAsync(_context, tokenSource.Token);
-
-                await _healthCheck.Received(3).CheckHealthAsync(_context, tokenSource.Token);
-                Assert.Equal(HealthStatus.Healthy, result.Status);
-            }
-        }
-
-        [Theory]
         [InlineData(HealthStatus.Healthy, HealthStatus.Degraded, HealthStatus.Healthy)]
         [InlineData(HealthStatus.Degraded, HealthStatus.Healthy, HealthStatus.Healthy)]
         [InlineData(HealthStatus.Degraded, HealthStatus.Unhealthy, HealthStatus.Degraded)]
@@ -470,24 +398,9 @@ namespace Microsoft.Health.Api.UnitTests.Features.HealthCheck
         }
 
         private CachedHealthCheck CreateHealthCheck()
-        {
-            IServiceProvider provider = new ServiceCollection()
-                .AddLogging()
-                .AddSingleton(() => _currentTime)
-                .Configure<HealthCheckCachingOptions>(x =>
-                {
-                    x.CacheFailure = _options.CacheFailure;
-                    x.Expiry = _options.Expiry;
-                    x.RefreshOffset = _options.RefreshOffset;
-                    x.MaxRefreshThreads = _options.MaxRefreshThreads;
-                })
-                .BuildServiceProvider();
-
-            return new CachedHealthCheck(
-                provider,
-                s => _healthCheck,
-                provider.GetRequiredService<IOptions<HealthCheckCachingOptions>>().Value,
-                provider.GetRequiredService<ILogger<CachedHealthCheck>>());
-        }
+            => new CachedHealthCheck(
+                _healthCheck,
+                Options.Create(_options),
+                LoggerFactory.Create(x => x.AddProvider(NullLoggerProvider.Instance)));
     }
 }
