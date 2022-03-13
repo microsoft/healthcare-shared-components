@@ -8,23 +8,22 @@ using System.Threading.Tasks;
 using EnsureThat;
 using Microsoft.Azure.Services.AppAuthentication;
 
-namespace Microsoft.Health.SqlServer
+namespace Microsoft.Health.SqlServer;
+
+public class ManagedIdentityAccessTokenHandler : IAccessTokenHandler
 {
-    public class ManagedIdentityAccessTokenHandler : IAccessTokenHandler
+    private readonly AzureServiceTokenProvider _azureServiceTokenProvider;
+
+    public ManagedIdentityAccessTokenHandler(AzureServiceTokenProvider azureServiceTokenProvider)
     {
-        private readonly AzureServiceTokenProvider _azureServiceTokenProvider;
+        EnsureArg.IsNotNull(azureServiceTokenProvider, nameof(azureServiceTokenProvider));
 
-        public ManagedIdentityAccessTokenHandler(AzureServiceTokenProvider azureServiceTokenProvider)
-        {
-            EnsureArg.IsNotNull(azureServiceTokenProvider, nameof(azureServiceTokenProvider));
+        _azureServiceTokenProvider = azureServiceTokenProvider;
+    }
 
-            _azureServiceTokenProvider = azureServiceTokenProvider;
-        }
-
-        /// <inheritdoc />
-        public Task<string> GetAccessTokenAsync(string resource, CancellationToken cancellationToken)
-        {
-            return _azureServiceTokenProvider.GetAccessTokenAsync(resource, cancellationToken: cancellationToken);
-        }
+    /// <inheritdoc />
+    public Task<string> GetAccessTokenAsync(string resource, CancellationToken cancellationToken)
+    {
+        return _azureServiceTokenProvider.GetAccessTokenAsync(resource, cancellationToken: cancellationToken);
     }
 }

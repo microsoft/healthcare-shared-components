@@ -7,17 +7,16 @@ using EnsureThat;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Health.Core.Features.Context;
 
-namespace Microsoft.Health.Api.Features.Context
-{
-    public static class RequestContextAfterAuthenticationMiddlewareExtensions
-    {
-        public static IApplicationBuilder UseRequestContextAfterAuthentication<T>(
-            this IApplicationBuilder builder)
-            where T : IRequestContext
-        {
-            EnsureArg.IsNotNull(builder, nameof(builder));
+namespace Microsoft.Health.Api.Features.Context;
 
-            return builder.UseMiddleware<RequestContextAfterAuthenticationMiddleware<T>>();
-        }
+public static class RequestContextAfterAuthenticationMiddlewareExtensions
+{
+    public static IApplicationBuilder UseRequestContextAfterAuthentication<T>(
+        this IApplicationBuilder builder)
+        where T : IRequestContext
+    {
+        EnsureArg.IsNotNull(builder, nameof(builder));
+
+        return builder.UseMiddleware<RequestContextAfterAuthenticationMiddleware<T>>();
     }
 }

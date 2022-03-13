@@ -7,13 +7,12 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace Microsoft.Health.Core.Extensions
+namespace Microsoft.Health.Core.Extensions;
+
+public static class KeyValuePairExtensions
 {
-    public static class KeyValuePairExtensions
+    public static IReadOnlyList<Tuple<T1, T2>> AsTuples<T1, T2>(this IEnumerable<KeyValuePair<T1, T2>> collection)
     {
-        public static IReadOnlyList<Tuple<T1, T2>> AsTuples<T1, T2>(this IEnumerable<KeyValuePair<T1, T2>> collection)
-        {
-            return collection.Select(x => Tuple.Create(x.Key, x.Value)).ToArray();
-        }
+        return collection.Select(x => Tuple.Create(x.Key, x.Value)).ToArray();
     }
 }

@@ -8,40 +8,39 @@ using System.Diagnostics;
 using Microsoft.Health.Abstractions.Exceptions;
 using Microsoft.Health.Abstractions.Features.Transactions;
 
-namespace Microsoft.Health.SqlServer.Features.Storage
+namespace Microsoft.Health.SqlServer.Features.Storage;
+
+public class SqlTransactionHandler : ITransactionHandler
 {
-    public class SqlTransactionHandler : ITransactionHandler
+    public SqlTransactionScope SqlTransactionScope { get; private set; }
+
+    public ITransactionScope BeginTransaction()
     {
-        public SqlTransactionScope SqlTransactionScope { get; private set; }
+        Debug.Assert(SqlTransactionScope == null, "The existing SQL transaction scope should be completed before starting a new transaction.");
 
-        public ITransactionScope BeginTransaction()
+        if (SqlTransactionScope != null)
         {
-            Debug.Assert(SqlTransactionScope == null, "The existing SQL transaction scope should be completed before starting a new transaction.");
-
-            if (SqlTransactionScope != null)
-            {
-                throw new TransactionFailedException();
-            }
-
-            SqlTransactionScope = new SqlTransactionScope(this);
-
-            return SqlTransactionScope;
+            throw new TransactionFailedException();
         }
 
-        protected virtual void Dispose(bool disposing)
-        {
-            if (disposing)
-            {
-                SqlTransactionScope?.Dispose();
+        SqlTransactionScope = new SqlTransactionScope(this);
 
-                SqlTransactionScope = null;
-            }
-        }
+        return SqlTransactionScope;
+    }
 
-        public void Dispose()
+    protected virtual void Dispose(bool disposing)
+    {
+        if (disposing)
         {
-            Dispose(true);
-            GC.SuppressFinalize(this);
+            SqlTransactionScope?.Dispose();
+
+            SqlTransactionScope = null;
         }
+    }
+
+    public void Dispose()
+    {
+        Dispose(true);
+        GC.SuppressFinalize(this);
     }
 }

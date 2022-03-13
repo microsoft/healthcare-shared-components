@@ -10,25 +10,24 @@ using Microsoft.Extensions.Options;
 using NSubstitute;
 using Xunit;
 
-namespace Microsoft.Health.Api.UnitTests.Features.HealthCheck
-{
-    public class HealthCheckTimeoutPostConfigureTests
-    {
-        [Fact]
-        public void GivenHealthChecks_WhenOverridingTimeout_ThenReplaceTimeout()
-        {
-            IServiceProvider provider = new ServiceCollection()
-                .AddHealthChecks()
-                .AddCheck("Foo", Substitute.For<IHealthCheck>())
-                .AddCheck("Bar", Substitute.For<IHealthCheck>(), timeout: TimeSpan.FromMinutes(1))
-                .AddCheck("Baz", Substitute.For<IHealthCheck>(), timeout: TimeSpan.FromSeconds(30))
-                .Services
-                .ConfigureHealthCheckTimeout(TimeSpan.FromSeconds(30))
-                .BuildServiceProvider();
+namespace Microsoft.Health.Api.UnitTests.Features.HealthCheck;
 
-            IOptions<HealthCheckServiceOptions> options = provider.GetRequiredService<IOptions<HealthCheckServiceOptions>>();
-            Assert.Equal(3, options.Value.Registrations.Count);
-            Assert.All(options.Value.Registrations, r => Assert.Equal(TimeSpan.FromSeconds(30), r.Timeout));
-        }
+public class HealthCheckTimeoutPostConfigureTests
+{
+    [Fact]
+    public void GivenHealthChecks_WhenOverridingTimeout_ThenReplaceTimeout()
+    {
+        IServiceProvider provider = new ServiceCollection()
+            .AddHealthChecks()
+            .AddCheck("Foo", Substitute.For<IHealthCheck>())
+            .AddCheck("Bar", Substitute.For<IHealthCheck>(), timeout: TimeSpan.FromMinutes(1))
+            .AddCheck("Baz", Substitute.For<IHealthCheck>(), timeout: TimeSpan.FromSeconds(30))
+            .Services
+            .ConfigureHealthCheckTimeout(TimeSpan.FromSeconds(30))
+            .BuildServiceProvider();
+
+        IOptions<HealthCheckServiceOptions> options = provider.GetRequiredService<IOptions<HealthCheckServiceOptions>>();
+        Assert.Equal(3, options.Value.Registrations.Count);
+        Assert.All(options.Value.Registrations, r => Assert.Equal(TimeSpan.FromSeconds(30), r.Timeout));
     }
 }

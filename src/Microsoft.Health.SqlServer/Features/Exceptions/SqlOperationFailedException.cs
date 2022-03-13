@@ -6,14 +6,13 @@
 using EnsureThat;
 using Microsoft.Health.Abstractions.Exceptions;
 
-namespace Microsoft.Health.SqlServer.Features.Exceptions
+namespace Microsoft.Health.SqlServer.Features.Exceptions;
+
+public class SqlOperationFailedException : MicrosoftHealthException
 {
-    public class SqlOperationFailedException : MicrosoftHealthException
+    public SqlOperationFailedException(string message)
+        : base(message)
     {
-        public SqlOperationFailedException(string message)
-            : base(message)
-        {
-            EnsureArg.IsNotNullOrWhiteSpace(message, nameof(message));
-        }
+        EnsureArg.IsNotNullOrWhiteSpace(message, nameof(message));
     }
 }

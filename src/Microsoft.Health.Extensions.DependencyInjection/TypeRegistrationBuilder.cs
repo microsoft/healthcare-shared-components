@@ -11,205 +11,248 @@ using EnsureThat;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 
-namespace Microsoft.Health.Extensions.DependencyInjection
+namespace Microsoft.Health.Extensions.DependencyInjection;
+
+public class TypeRegistrationBuilder
 {
-    public class TypeRegistrationBuilder
+    private readonly MethodInfo _factoryGenericMethod = typeof(TypeRegistrationExtensions).GetMethod(nameof(TypeRegistrationExtensions.AddFactory), BindingFlags.Public | BindingFlags.Static);
+    private readonly MethodInfo _factoryDelegateMethod = typeof(TypeRegistrationExtensions).GetMethod(nameof(TypeRegistrationExtensions.AddDelegate), BindingFlags.Public | BindingFlags.Static);
+    private readonly IServiceCollection _serviceCollection;
+    private readonly Type _type;
+    private readonly Func<IServiceProvider, object> _delegateRegistration;
+    private readonly TypeRegistration.RegistrationMode _registrationMode;
+
+    private Func<IServiceProvider, object> _cachedResolver;
+    private Type _firstRegisteredType;
+
+    internal TypeRegistrationBuilder(
+        IServiceCollection serviceCollection,
+        Type type,
+        Func<IServiceProvider, object> delegateRegistration,
+        TypeRegistration.RegistrationMode registrationMode)
     {
-        private readonly MethodInfo _factoryGenericMethod = typeof(TypeRegistrationExtensions).GetMethod(nameof(TypeRegistrationExtensions.AddFactory), BindingFlags.Public | BindingFlags.Static);
-        private readonly MethodInfo _factoryDelegateMethod = typeof(TypeRegistrationExtensions).GetMethod(nameof(TypeRegistrationExtensions.AddDelegate), BindingFlags.Public | BindingFlags.Static);
-        private readonly IServiceCollection _serviceCollection;
-        private readonly Type _type;
-        private readonly Func<IServiceProvider, object> _delegateRegistration;
-        private readonly TypeRegistration.RegistrationMode _registrationMode;
+        _serviceCollection = serviceCollection;
+        _type = type;
+        _delegateRegistration = delegateRegistration;
+        _registrationMode = registrationMode;
+    }
 
-        private Func<IServiceProvider, object> _cachedResolver;
-        private Type _firstRegisteredType;
+    /// <summary>
+    /// Creates a service registration for the specified interface
+    /// </summary>
+    /// <typeparam name="T">Type of service to be registered</typeparam>
+    /// <returns>The registration builder</returns>
+    public TypeRegistrationBuilder AsService<T>() => AsService(typeof(T));
 
-        internal TypeRegistrationBuilder(
-            IServiceCollection serviceCollection,
-            Type type,
-            Func<IServiceProvider, object> delegateRegistration,
-            TypeRegistration.RegistrationMode registrationMode)
+    /// <summary>
+    /// Creates a service registration for the specified interface
+    /// </summary>
+    /// <param name="serviceType">The service type to be registered</param>
+    /// <returns>The registration builder</returns>
+    public TypeRegistrationBuilder AsService(Type serviceType)
+    {
+        EnsureArg.IsNotNull(serviceType, nameof(serviceType));
+
+        Debug.Assert(serviceType != _type, $"The \"AsSelf()\" registration should be used instead of \"AsService<{_type.Name}>()\".");
+
+        RegisterType(serviceType);
+
+        return this;
+    }
+
+    /// <summary>
+    /// Creates a service registration for the specified interface that can be resolved with Func
+    /// </summary>
+    /// <typeparam name="T">Type of service to be registered</typeparam>
+    /// <returns>The registration builder</returns>
+    public TypeRegistrationBuilder AsFactory<T>()
+    {
+        var factoryMethod = _factoryGenericMethod.MakeGenericMethod(typeof(T));
+
+        factoryMethod.Invoke(null, new object[] { _serviceCollection });
+
+        return this;
+    }
+
+    /// <summary>
+    /// Creates a service registration for the specified interface that can be resolved with Func
+    /// </summary>
+    /// <returns>The registration builder</returns>
+    public TypeRegistrationBuilder AsFactory()
+    {
+        var factoryMethod = _factoryGenericMethod.MakeGenericMethod(_type);
+
+        factoryMethod.Invoke(null, new object[] { _serviceCollection });
+
+        return this;
+    }
+
+    /// <summary>
+    /// Creates a service registration for the specified interface that can be resolved with a custom delegate
+    /// </summary>
+    /// <typeparam name="TDelegate">Custom delegate that will resolve the service</typeparam>
+    /// <returns>The registration builder</returns>
+    public TypeRegistrationBuilder AsDelegate<TDelegate>()
+        where TDelegate : Delegate
+    {
+        var factoryMethod = _factoryDelegateMethod.MakeGenericMethod(typeof(TDelegate), _type);
+
+        factoryMethod.Invoke(null, new object[] { _serviceCollection });
+
+        return this;
+    }
+
+    /// <summary>
+    /// Replaces a service registration for the specified interface
+    /// </summary>
+    /// <typeparam name="T">Type of service to be registered</typeparam>
+    /// <returns>The registration builder</returns>
+    public TypeRegistrationBuilder ReplaceService<T>()
+    {
+        RegisterType(typeof(T), true);
+
+        return this;
+    }
+
+    /// <summary>
+    /// Creates a service registration for all interfaces implemented by the type
+    /// </summary>
+    /// <param name="interfaceFilter">A predicate specifying which interfaces to register.</param>
+    /// <returns>The registration builder</returns>
+    /// <exception cref="NotSupportedException">Throws when Type was not explicitly defined</exception>
+    public TypeRegistrationBuilder AsImplementedInterfaces(Predicate<Type> interfaceFilter = null)
+    {
+        Debug.Assert(
+            _firstRegisteredType != null || _registrationMode == TypeRegistration.RegistrationMode.Transient,
+            $"Using \"AsImplementedInterfaces()\" without calling \"AsSelf()\" first in registration for \"{_type.Name}\" could have inconsistent results.");
+
+        if (interfaceFilter == null)
         {
-            _serviceCollection = serviceCollection;
-            _type = type;
-            _delegateRegistration = delegateRegistration;
-            _registrationMode = registrationMode;
+            interfaceFilter = x => x != typeof(IDisposable);
         }
 
-        /// <summary>
-        /// Creates a service registration for the specified interface
-        /// </summary>
-        /// <typeparam name="T">Type of service to be registered</typeparam>
-        /// <returns>The registration builder</returns>
-        public TypeRegistrationBuilder AsService<T>() => AsService(typeof(T));
+        var interfaces = _type.GetInterfaces().Where(x => interfaceFilter(x));
 
-        /// <summary>
-        /// Creates a service registration for the specified interface
-        /// </summary>
-        /// <param name="serviceType">The service type to be registered</param>
-        /// <returns>The registration builder</returns>
-        public TypeRegistrationBuilder AsService(Type serviceType)
+        foreach (var typeInterface in interfaces)
         {
-            EnsureArg.IsNotNull(serviceType, nameof(serviceType));
-
-            Debug.Assert(serviceType != _type, $"The \"AsSelf()\" registration should be used instead of \"AsService<{_type.Name}>()\".");
-
-            RegisterType(serviceType);
-
-            return this;
+            RegisterType(typeInterface);
         }
 
-        /// <summary>
-        /// Creates a service registration for the specified interface that can be resolved with Func
-        /// </summary>
-        /// <typeparam name="T">Type of service to be registered</typeparam>
-        /// <returns>The registration builder</returns>
-        public TypeRegistrationBuilder AsFactory<T>()
+        return this;
+    }
+
+    /// <summary>
+    /// Create a service registration for the concrete type
+    /// </summary>
+    /// <returns>The registration builder</returns>
+    /// <exception cref="NotSupportedException">Throws when Type was not explicitly defined</exception>
+    public TypeRegistrationBuilder AsSelf()
+    {
+        Debug.Assert(_firstRegisteredType == null, $"The \"AsSelf()\" registration for \"{_type.Name}\" should come first.");
+
+        RegisterType(_type);
+
+        return this;
+    }
+
+    /// <summary>
+    /// Replaces a service registration for the concrete type
+    /// </summary>
+    /// <returns>The registration builder</returns>
+    /// <exception cref="NotSupportedException">Throws when Type was not explicitly defined</exception>
+    public TypeRegistrationBuilder ReplaceSelf()
+    {
+        Debug.Assert(_firstRegisteredType == null, $"The \"ReplaceSelf()\" registration for \"{_type.Name}\" should come first.");
+
+        RegisterType(_type, replace: true);
+
+        return this;
+    }
+
+    private void RegisterType(Type serviceType, bool replace = false)
+    {
+        EnsureArg.IsNotNull(serviceType, nameof(serviceType));
+
+        if (_firstRegisteredType == null && _registrationMode != TypeRegistration.RegistrationMode.Transient)
         {
-            var factoryMethod = _factoryGenericMethod.MakeGenericMethod(typeof(T));
+            SetupRootRegistration(serviceType, replace);
 
-            factoryMethod.Invoke(null, new object[] { _serviceCollection });
-
-            return this;
+            return;
         }
 
-        /// <summary>
-        /// Creates a service registration for the specified interface that can be resolved with Func
-        /// </summary>
-        /// <returns>The registration builder</returns>
-        public TypeRegistrationBuilder AsFactory()
+        ServiceDescriptor serviceDescriptor;
+
+        switch (_registrationMode)
         {
-            var factoryMethod = _factoryGenericMethod.MakeGenericMethod(_type);
+            case TypeRegistration.RegistrationMode.Transient:
 
-            factoryMethod.Invoke(null, new object[] { _serviceCollection });
+                if (_delegateRegistration != null)
+                {
+                    serviceDescriptor = ServiceDescriptor.Transient(serviceType, _delegateRegistration);
+                }
+                else
+                {
+                    serviceDescriptor = ServiceDescriptor.Transient(serviceType, _type);
+                }
 
-            return this;
+                break;
+            case TypeRegistration.RegistrationMode.Scoped:
+
+                serviceDescriptor = ServiceDescriptor.Scoped(serviceType, _cachedResolver);
+
+                break;
+            case TypeRegistration.RegistrationMode.Singleton:
+
+                serviceDescriptor = ServiceDescriptor.Singleton(serviceType, _cachedResolver);
+
+                break;
+            default:
+                throw new NotSupportedException();
         }
 
-        /// <summary>
-        /// Creates a service registration for the specified interface that can be resolved with a custom delegate
-        /// </summary>
-        /// <typeparam name="TDelegate">Custom delegate that will resolve the service</typeparam>
-        /// <returns>The registration builder</returns>
-        public TypeRegistrationBuilder AsDelegate<TDelegate>()
-            where TDelegate : Delegate
+        serviceDescriptor = serviceDescriptor.WithMetadata(_type);
+
+        if (replace)
         {
-            var factoryMethod = _factoryDelegateMethod.MakeGenericMethod(typeof(TDelegate), _type);
-
-            factoryMethod.Invoke(null, new object[] { _serviceCollection });
-
-            return this;
+            _serviceCollection.Replace(serviceDescriptor);
         }
-
-        /// <summary>
-        /// Replaces a service registration for the specified interface
-        /// </summary>
-        /// <typeparam name="T">Type of service to be registered</typeparam>
-        /// <returns>The registration builder</returns>
-        public TypeRegistrationBuilder ReplaceService<T>()
+        else
         {
-            RegisterType(typeof(T), true);
-
-            return this;
+            _serviceCollection.Add(serviceDescriptor);
         }
+    }
 
-        /// <summary>
-        /// Creates a service registration for all interfaces implemented by the type
-        /// </summary>
-        /// <param name="interfaceFilter">A predicate specifying which interfaces to register.</param>
-        /// <returns>The registration builder</returns>
-        /// <exception cref="NotSupportedException">Throws when Type was not explicitly defined</exception>
-        public TypeRegistrationBuilder AsImplementedInterfaces(Predicate<Type> interfaceFilter = null)
+    private void SetupRootRegistration(Type serviceType, bool replace)
+    {
+        _firstRegisteredType = serviceType;
+
+        ServiceDescriptor serviceDescriptor = null;
+
+        if (_delegateRegistration == null)
         {
-            Debug.Assert(
-                _firstRegisteredType != null || _registrationMode == TypeRegistration.RegistrationMode.Transient,
-                $"Using \"AsImplementedInterfaces()\" without calling \"AsSelf()\" first in registration for \"{_type.Name}\" could have inconsistent results.");
-
-            if (interfaceFilter == null)
+            if (_registrationMode == TypeRegistration.RegistrationMode.Scoped)
             {
-                interfaceFilter = x => x != typeof(IDisposable);
+                serviceDescriptor = ServiceDescriptor.Scoped(serviceType, _type);
             }
-
-            var interfaces = _type.GetInterfaces().Where(x => interfaceFilter(x));
-
-            foreach (var typeInterface in interfaces)
+            else if (_registrationMode == TypeRegistration.RegistrationMode.Singleton)
             {
-                RegisterType(typeInterface);
+                serviceDescriptor = ServiceDescriptor.Singleton(serviceType, _type);
             }
-
-            return this;
+        }
+        else
+        {
+            if (_registrationMode == TypeRegistration.RegistrationMode.Scoped)
+            {
+                serviceDescriptor = ServiceDescriptor.Scoped(serviceType, _delegateRegistration);
+            }
+            else if (_registrationMode == TypeRegistration.RegistrationMode.Singleton)
+            {
+                serviceDescriptor = ServiceDescriptor.Singleton(serviceType, _delegateRegistration);
+            }
         }
 
-        /// <summary>
-        /// Create a service registration for the concrete type
-        /// </summary>
-        /// <returns>The registration builder</returns>
-        /// <exception cref="NotSupportedException">Throws when Type was not explicitly defined</exception>
-        public TypeRegistrationBuilder AsSelf()
+        if (serviceDescriptor != null)
         {
-            Debug.Assert(_firstRegisteredType == null, $"The \"AsSelf()\" registration for \"{_type.Name}\" should come first.");
-
-            RegisterType(_type);
-
-            return this;
-        }
-
-        /// <summary>
-        /// Replaces a service registration for the concrete type
-        /// </summary>
-        /// <returns>The registration builder</returns>
-        /// <exception cref="NotSupportedException">Throws when Type was not explicitly defined</exception>
-        public TypeRegistrationBuilder ReplaceSelf()
-        {
-            Debug.Assert(_firstRegisteredType == null, $"The \"ReplaceSelf()\" registration for \"{_type.Name}\" should come first.");
-
-            RegisterType(_type, replace: true);
-
-            return this;
-        }
-
-        private void RegisterType(Type serviceType, bool replace = false)
-        {
-            EnsureArg.IsNotNull(serviceType, nameof(serviceType));
-
-            if (_firstRegisteredType == null && _registrationMode != TypeRegistration.RegistrationMode.Transient)
-            {
-                SetupRootRegistration(serviceType, replace);
-
-                return;
-            }
-
-            ServiceDescriptor serviceDescriptor;
-
-            switch (_registrationMode)
-            {
-                case TypeRegistration.RegistrationMode.Transient:
-
-                    if (_delegateRegistration != null)
-                    {
-                        serviceDescriptor = ServiceDescriptor.Transient(serviceType, _delegateRegistration);
-                    }
-                    else
-                    {
-                        serviceDescriptor = ServiceDescriptor.Transient(serviceType, _type);
-                    }
-
-                    break;
-                case TypeRegistration.RegistrationMode.Scoped:
-
-                    serviceDescriptor = ServiceDescriptor.Scoped(serviceType, _cachedResolver);
-
-                    break;
-                case TypeRegistration.RegistrationMode.Singleton:
-
-                    serviceDescriptor = ServiceDescriptor.Singleton(serviceType, _cachedResolver);
-
-                    break;
-                default:
-                    throw new NotSupportedException();
-            }
-
             serviceDescriptor = serviceDescriptor.WithMetadata(_type);
 
             if (replace)
@@ -222,50 +265,6 @@ namespace Microsoft.Health.Extensions.DependencyInjection
             }
         }
 
-        private void SetupRootRegistration(Type serviceType, bool replace)
-        {
-            _firstRegisteredType = serviceType;
-
-            ServiceDescriptor serviceDescriptor = null;
-
-            if (_delegateRegistration == null)
-            {
-                if (_registrationMode == TypeRegistration.RegistrationMode.Scoped)
-                {
-                    serviceDescriptor = ServiceDescriptor.Scoped(serviceType, _type);
-                }
-                else if (_registrationMode == TypeRegistration.RegistrationMode.Singleton)
-                {
-                    serviceDescriptor = ServiceDescriptor.Singleton(serviceType, _type);
-                }
-            }
-            else
-            {
-                if (_registrationMode == TypeRegistration.RegistrationMode.Scoped)
-                {
-                    serviceDescriptor = ServiceDescriptor.Scoped(serviceType, _delegateRegistration);
-                }
-                else if (_registrationMode == TypeRegistration.RegistrationMode.Singleton)
-                {
-                    serviceDescriptor = ServiceDescriptor.Singleton(serviceType, _delegateRegistration);
-                }
-            }
-
-            if (serviceDescriptor != null)
-            {
-                serviceDescriptor = serviceDescriptor.WithMetadata(_type);
-
-                if (replace)
-                {
-                    _serviceCollection.Replace(serviceDescriptor);
-                }
-                else
-                {
-                    _serviceCollection.Add(serviceDescriptor);
-                }
-            }
-
-            _cachedResolver = provider => provider.GetService(_firstRegisteredType);
-        }
+        _cachedResolver = provider => provider.GetService(_firstRegisteredType);
     }
 }

@@ -5,13 +5,12 @@
 
 using Microsoft.Health.Abstractions.Exceptions;
 
-namespace Microsoft.Health.Api.Features.Audit
+namespace Microsoft.Health.Api.Features.Audit;
+
+public class AuditHeaderException : MicrosoftHealthException
 {
-    public class AuditHeaderException : MicrosoftHealthException
+    public AuditHeaderException(string message)
+        : base(message)
     {
-        public AuditHeaderException(string message)
-            : base(message)
-        {
-        }
     }
 }

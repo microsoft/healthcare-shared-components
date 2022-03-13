@@ -5,14 +5,13 @@
 
 using System.Threading;
 
-namespace Microsoft.Health.Core.Features.Control
+namespace Microsoft.Health.Core.Features.Control;
+
+public interface IProcessTerminator
 {
-    public interface IProcessTerminator
-    {
-        /// <summary>
-        /// Terminates the current process.
-        /// </summary>
-        /// <param name="cancellationToken">A cancellation token.</param>
-        public void Terminate(CancellationToken cancellationToken);
-    }
+    /// <summary>
+    /// Terminates the current process.
+    /// </summary>
+    /// <param name="cancellationToken">A cancellation token.</param>
+    public void Terminate(CancellationToken cancellationToken);
 }

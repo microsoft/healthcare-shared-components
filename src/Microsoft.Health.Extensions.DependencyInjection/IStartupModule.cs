@@ -5,17 +5,16 @@
 
 using Microsoft.Extensions.DependencyInjection;
 
-namespace Microsoft.Health.Extensions.DependencyInjection
+namespace Microsoft.Health.Extensions.DependencyInjection;
+
+/// <summary>
+///  Provides a contract that enables extensible IoC configuration for the application
+/// </summary>
+public interface IStartupModule
 {
     /// <summary>
-    ///  Provides a contract that enables extensible IoC configuration for the application
+    /// Loads IoC configuration
     /// </summary>
-    public interface IStartupModule
-    {
-        /// <summary>
-        /// Loads IoC configuration
-        /// </summary>
-        /// <param name="services">The collection.</param>
-        void Load(IServiceCollection services);
-    }
+    /// <param name="services">The collection.</param>
+    void Load(IServiceCollection services);
 }

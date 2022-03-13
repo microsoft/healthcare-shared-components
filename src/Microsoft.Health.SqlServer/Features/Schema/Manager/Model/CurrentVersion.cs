@@ -6,24 +6,23 @@
 using System.Collections.Generic;
 using EnsureThat;
 
-namespace Microsoft.Health.SqlServer.Features.Schema.Manager.Model
+namespace Microsoft.Health.SqlServer.Features.Schema.Manager.Model;
+
+public class CurrentVersion
 {
-    public class CurrentVersion
+    public CurrentVersion(int id, string status, IReadOnlyList<string> servers)
     {
-        public CurrentVersion(int id, string status, IReadOnlyList<string> servers)
-        {
-            EnsureArg.IsNotNullOrWhiteSpace(status, nameof(status));
-            EnsureArg.IsNotNull(servers, nameof(servers));
+        EnsureArg.IsNotNullOrWhiteSpace(status, nameof(status));
+        EnsureArg.IsNotNull(servers, nameof(servers));
 
-            Id = id;
-            Status = status;
-            Servers = servers;
-        }
-
-        public int Id { get; }
-
-        public string Status { get; }
-
-        public IReadOnlyList<string> Servers { get; }
+        Id = id;
+        Status = status;
+        Servers = servers;
     }
+
+    public int Id { get; }
+
+    public string Status { get; }
+
+    public IReadOnlyList<string> Servers { get; }
 }

@@ -6,12 +6,11 @@
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Microsoft.Health.SqlServer.Features.Schema.Manager
-{
-    public interface IBaseSchemaRunner
-    {
-        public Task EnsureBaseSchemaExistsAsync(CancellationToken cancellationToken);
+namespace Microsoft.Health.SqlServer.Features.Schema.Manager;
 
-        public Task EnsureInstanceSchemaRecordExistsAsync(CancellationToken cancellationToken);
-    }
+public interface IBaseSchemaRunner
+{
+    public Task EnsureBaseSchemaExistsAsync(CancellationToken cancellationToken);
+
+    public Task EnsureInstanceSchemaRecordExistsAsync(CancellationToken cancellationToken);
 }

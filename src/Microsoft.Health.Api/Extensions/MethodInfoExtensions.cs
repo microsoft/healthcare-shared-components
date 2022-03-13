@@ -9,16 +9,15 @@ using System.Linq;
 using System.Reflection;
 using EnsureThat;
 
-namespace Microsoft.Health.Api.Extensions
-{
-    public static class MethodInfoExtensions
-    {
-        public static IEnumerable<T> GetCustomAttributes<T>(this MethodInfo methodInfo, bool inherit = false)
-            where T : Attribute
-        {
-            EnsureArg.IsNotNull(methodInfo, nameof(methodInfo));
+namespace Microsoft.Health.Api.Extensions;
 
-            return methodInfo.GetCustomAttributes(typeof(T), inherit)?.Cast<T>();
-        }
+public static class MethodInfoExtensions
+{
+    public static IEnumerable<T> GetCustomAttributes<T>(this MethodInfo methodInfo, bool inherit = false)
+        where T : Attribute
+    {
+        EnsureArg.IsNotNull(methodInfo, nameof(methodInfo));
+
+        return methodInfo.GetCustomAttributes(typeof(T), inherit)?.Cast<T>();
     }
 }

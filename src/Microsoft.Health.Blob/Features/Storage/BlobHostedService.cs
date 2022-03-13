@@ -16,48 +16,47 @@ using Polly;
 using Polly.Retry;
 using Polly.Timeout;
 
-namespace Microsoft.Health.Blob.Features.Storage
+namespace Microsoft.Health.Blob.Features.Storage;
+
+/// <summary>
+/// Called from the webHost startup. Will make sure the Blob containers are initialized before the webservice is ready
+/// </summary>
+public class BlobHostedService : IHostedService
 {
-    /// <summary>
-    /// Called from the webHost startup. Will make sure the Blob containers are initialized before the webservice is ready
-    /// </summary>
-    public class BlobHostedService : IHostedService
+    private readonly IBlobInitializer _blobInitializer;
+    private readonly ILogger<BlobHostedService> _logger;
+    private readonly BlobInitializerOptions _options;
+    private readonly IEnumerable<IBlobContainerInitializer> _collectionInitializers;
+
+    public BlobHostedService(
+        IBlobInitializer blobInitializer,
+        IEnumerable<IBlobContainerInitializer> collectionInitializers,
+        IOptions<BlobInitializerOptions> options,
+        ILogger<BlobHostedService> logger)
     {
-        private readonly IBlobInitializer _blobInitializer;
-        private readonly ILogger<BlobHostedService> _logger;
-        private readonly BlobInitializerOptions _options;
-        private readonly IEnumerable<IBlobContainerInitializer> _collectionInitializers;
-
-        public BlobHostedService(
-            IBlobInitializer blobInitializer,
-            IEnumerable<IBlobContainerInitializer> collectionInitializers,
-            IOptions<BlobInitializerOptions> options,
-            ILogger<BlobHostedService> logger)
-        {
-            _blobInitializer = EnsureArg.IsNotNull(blobInitializer, nameof(blobInitializer));
-            _collectionInitializers = EnsureArg.IsNotNull(collectionInitializers, nameof(collectionInitializers));
-            _options = EnsureArg.IsNotNull(options?.Value, nameof(options));
-            _logger = EnsureArg.IsNotNull(logger, nameof(logger));
-        }
-
-        /// <inheritdoc />
-        public async Task StartAsync(CancellationToken cancellationToken)
-        {
-            // Handle RBAC propogation delays for compute identity to talk to storage account
-            TimeSpan retryDelay = _options.RetryDelay;
-            AsyncTimeoutPolicy timeoutPolicy = Policy.TimeoutAsync(_options.Timeout);
-            AsyncRetryPolicy retryPolicy = Policy.Handle<Azure.RequestFailedException>(exp => exp.Status == 403).WaitAndRetryForeverAsync(_ => retryDelay);
-
-            await timeoutPolicy
-                .WrapAsync(retryPolicy)
-                .ExecuteAsync((token) => _blobInitializer.InitializeDataStoreAsync(_collectionInitializers, token), cancellationToken)
-                .ConfigureAwait(false);
-
-            _logger.LogInformation("Blob containers initialized");
-        }
-
-        /// <inheritdoc />
-        public Task StopAsync(CancellationToken cancellationToken)
-            => Task.CompletedTask;
+        _blobInitializer = EnsureArg.IsNotNull(blobInitializer, nameof(blobInitializer));
+        _collectionInitializers = EnsureArg.IsNotNull(collectionInitializers, nameof(collectionInitializers));
+        _options = EnsureArg.IsNotNull(options?.Value, nameof(options));
+        _logger = EnsureArg.IsNotNull(logger, nameof(logger));
     }
+
+    /// <inheritdoc />
+    public async Task StartAsync(CancellationToken cancellationToken)
+    {
+        // Handle RBAC propogation delays for compute identity to talk to storage account
+        TimeSpan retryDelay = _options.RetryDelay;
+        AsyncTimeoutPolicy timeoutPolicy = Policy.TimeoutAsync(_options.Timeout);
+        AsyncRetryPolicy retryPolicy = Policy.Handle<Azure.RequestFailedException>(exp => exp.Status == 403).WaitAndRetryForeverAsync(_ => retryDelay);
+
+        await timeoutPolicy
+            .WrapAsync(retryPolicy)
+            .ExecuteAsync((token) => _blobInitializer.InitializeDataStoreAsync(_collectionInitializers, token), cancellationToken)
+            .ConfigureAwait(false);
+
+        _logger.LogInformation("Blob containers initialized");
+    }
+
+    /// <inheritdoc />
+    public Task StopAsync(CancellationToken cancellationToken)
+        => Task.CompletedTask;
 }

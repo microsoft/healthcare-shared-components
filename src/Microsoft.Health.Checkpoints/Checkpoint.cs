@@ -5,18 +5,17 @@
 
 using System;
 
-namespace Microsoft.Health.Checkpoints
+namespace Microsoft.Health.Checkpoints;
+
+public class Checkpoint : ICheckpoint
 {
-    public class Checkpoint : ICheckpoint
-    {
-        public string Partition { get; set; }
+    public string Partition { get; set; }
 
-        public string Identifier { get; set; }
+    public string Identifier { get; set; }
 
-        public string ETag { get; set; }
+    public string ETag { get; set; }
 
-        public DateTimeOffset LastProcessedDateTime { get; set; }
+    public DateTimeOffset LastProcessedDateTime { get; set; }
 
-        public string LastProcessedIdentifier { get; set; }
-    }
+    public string LastProcessedIdentifier { get; set; }
 }

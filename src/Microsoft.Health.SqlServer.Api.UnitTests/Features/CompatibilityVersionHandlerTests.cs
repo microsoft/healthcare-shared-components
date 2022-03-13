@@ -17,34 +17,33 @@ using Microsoft.Health.SqlServer.Features.Schema.Model;
 using NSubstitute;
 using Xunit;
 
-namespace Microsoft.Health.SqlServer.Api.UnitTests.Features
+namespace Microsoft.Health.SqlServer.Api.UnitTests.Features;
+
+public class CompatibilityVersionHandlerTests
 {
-    public class CompatibilityVersionHandlerTests
+    private readonly ISchemaDataStore _schemaMigrationDataStore;
+    private readonly IMediator _mediator;
+    private readonly CancellationToken _cancellationToken;
+
+    public CompatibilityVersionHandlerTests()
     {
-        private readonly ISchemaDataStore _schemaMigrationDataStore;
-        private readonly IMediator _mediator;
-        private readonly CancellationToken _cancellationToken;
+        _schemaMigrationDataStore = Substitute.For<ISchemaDataStore>();
+        var collection = new ServiceCollection();
+        collection.Add(sp => new CompatibilityVersionHandler(_schemaMigrationDataStore)).Singleton().AsSelf().AsImplementedInterfaces();
 
-        public CompatibilityVersionHandlerTests()
-        {
-            _schemaMigrationDataStore = Substitute.For<ISchemaDataStore>();
-            var collection = new ServiceCollection();
-            collection.Add(sp => new CompatibilityVersionHandler(_schemaMigrationDataStore)).Singleton().AsSelf().AsImplementedInterfaces();
+        ServiceProvider provider = collection.BuildServiceProvider();
+        _mediator = new Mediator(type => provider.GetService(type));
+        _cancellationToken = new CancellationTokenSource().Token;
+    }
 
-            ServiceProvider provider = collection.BuildServiceProvider();
-            _mediator = new Mediator(type => provider.GetService(type));
-            _cancellationToken = new CancellationTokenSource().Token;
-        }
+    [Fact]
+    public async Task GivenAMediator_WhenCompatibleRequest_ThenReturnsCompatibleVersions()
+    {
+        _schemaMigrationDataStore.GetLatestCompatibleVersionsAsync(Arg.Any<CancellationToken>())
+                .Returns(new CompatibleVersions(1, 3));
+        GetCompatibilityVersionResponse response = await _mediator.GetCompatibleVersionAsync(_cancellationToken);
 
-        [Fact]
-        public async Task GivenAMediator_WhenCompatibleRequest_ThenReturnsCompatibleVersions()
-        {
-            _schemaMigrationDataStore.GetLatestCompatibleVersionsAsync(Arg.Any<CancellationToken>())
-                    .Returns(new CompatibleVersions(1, 3));
-            GetCompatibilityVersionResponse response = await _mediator.GetCompatibleVersionAsync(_cancellationToken);
-
-            Assert.Equal(1, response.CompatibleVersions.Min);
-            Assert.Equal(3, response.CompatibleVersions.Max);
-        }
+        Assert.Equal(1, response.CompatibleVersions.Min);
+        Assert.Equal(3, response.CompatibleVersions.Max);
     }
 }

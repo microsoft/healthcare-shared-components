@@ -10,60 +10,59 @@ using EnsureThat;
 using Microsoft.Data.SqlClient;
 using Microsoft.Data.SqlClient.Server;
 
-namespace Microsoft.Health.SqlServer.Features.Schema.Model
+namespace Microsoft.Health.SqlServer.Features.Schema.Model;
+
+/// <summary>
+/// Represents a table-valued parameter.
+/// </summary>
+/// <typeparam name="TRow">The struct type that hold CLR data for a row.</typeparam>
+public abstract class TableValuedParameterDefinition<TRow> : ParameterDefinition<IEnumerable<TRow>>
+    where TRow : struct
 {
-    /// <summary>
-    /// Represents a table-valued parameter.
-    /// </summary>
-    /// <typeparam name="TRow">The struct type that hold CLR data for a row.</typeparam>
-    public abstract class TableValuedParameterDefinition<TRow> : ParameterDefinition<IEnumerable<TRow>>
-        where TRow : struct
+    private readonly string _tableTypeName;
+    private SqlMetaData[] _columnMetadata;
+
+    protected TableValuedParameterDefinition(string parameterName, string tableTypeName)
+        : base(parameterName, SqlDbType.Structured, false)
     {
-        private readonly string _tableTypeName;
-        private SqlMetaData[] _columnMetadata;
+        EnsureArg.IsNotNullOrWhiteSpace(tableTypeName, nameof(tableTypeName));
+        _tableTypeName = tableTypeName;
+    }
 
-        protected TableValuedParameterDefinition(string parameterName, string tableTypeName)
-            : base(parameterName, SqlDbType.Structured, false)
-        {
-            EnsureArg.IsNotNullOrWhiteSpace(tableTypeName, nameof(tableTypeName));
-            _tableTypeName = tableTypeName;
-        }
+    private SqlMetaData[] ColumnMetadata => _columnMetadata ??= Columns.Select(c => c.Metadata).ToArray();
 
-        private SqlMetaData[] ColumnMetadata => _columnMetadata ??= Columns.Select(c => c.Metadata).ToArray();
+    /// <summary>
+    /// Gets the columns that make up the table type. In order.
+    /// </summary>
+    protected abstract IEnumerable<Column> Columns { get; }
 
-        /// <summary>
-        /// Gets the columns that make up the table type. In order.
-        /// </summary>
-        protected abstract IEnumerable<Column> Columns { get; }
+    protected abstract void FillSqlDataRecord(SqlDataRecord record, TRow rowData);
 
-        protected abstract void FillSqlDataRecord(SqlDataRecord record, TRow rowData);
+    public override SqlParameter AddParameter(SqlParameterCollection parameters, IEnumerable<TRow> value)
+    {
+        EnsureArg.IsNotNull(parameters, nameof(parameters));
 
-        public override SqlParameter AddParameter(SqlParameterCollection parameters, IEnumerable<TRow> value)
-        {
-            EnsureArg.IsNotNull(parameters, nameof(parameters));
+        // An empty TVP is required to be null.
 
-            // An empty TVP is required to be null.
+        value = value.NullIfEmpty();
 
-            value = value.NullIfEmpty();
-
-            return parameters.Add(
-                new SqlParameter(Name, SqlDbType.Structured)
-                {
-                    TypeName = _tableTypeName,
-                    Value = value == null ? null : ToDataRecordEnumerable(value),
-                });
-        }
-
-        private IEnumerable<SqlDataRecord> ToDataRecordEnumerable(IEnumerable<TRow> rows)
-        {
-            var sqlDataRecord = new SqlDataRecord(ColumnMetadata);
-            foreach (TRow row in rows)
+        return parameters.Add(
+            new SqlParameter(Name, SqlDbType.Structured)
             {
-                FillSqlDataRecord(sqlDataRecord, row);
+                TypeName = _tableTypeName,
+                Value = value == null ? null : ToDataRecordEnumerable(value),
+            });
+    }
 
-                // deliberately not allocating a new SqlDataRecord instance per row.
-                yield return sqlDataRecord;
-            }
+    private IEnumerable<SqlDataRecord> ToDataRecordEnumerable(IEnumerable<TRow> rows)
+    {
+        var sqlDataRecord = new SqlDataRecord(ColumnMetadata);
+        foreach (TRow row in rows)
+        {
+            FillSqlDataRecord(sqlDataRecord, row);
+
+            // deliberately not allocating a new SqlDataRecord instance per row.
+            yield return sqlDataRecord;
         }
     }
 }

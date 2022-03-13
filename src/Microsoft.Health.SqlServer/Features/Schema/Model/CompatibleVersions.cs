@@ -5,20 +5,19 @@
 
 using EnsureThat;
 
-namespace Microsoft.Health.SqlServer.Features.Schema.Model
+namespace Microsoft.Health.SqlServer.Features.Schema.Model;
+
+public class CompatibleVersions
 {
-    public class CompatibleVersions
+    public CompatibleVersions(int min, int max)
     {
-        public CompatibleVersions(int min, int max)
-        {
-            EnsureArg.IsLte(min, max);
+        EnsureArg.IsLte(min, max);
 
-            Min = min;
-            Max = max;
-        }
-
-        public int Min { get; }
-
-        public int Max { get; }
+        Min = min;
+        Max = max;
     }
+
+    public int Min { get; }
+
+    public int Max { get; }
 }

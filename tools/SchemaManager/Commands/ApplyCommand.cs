@@ -15,54 +15,53 @@ using SchemaManager.Core;
 using SchemaManager.Core.Model;
 using SchemaManager.Validators;
 
-namespace SchemaManager.Commands
+namespace SchemaManager.Commands;
+
+public class ApplyCommand : Command
 {
-    public class ApplyCommand : Command
+    private readonly ISchemaManager _schemaManager;
+    private readonly ILogger<ApplyCommand> _logger;
+
+    public ApplyCommand(
+        ISchemaManager schemaManager,
+        ILogger<ApplyCommand> logger)
+        : base(CommandNames.Apply, Resources.ApplyCommandDescription)
     {
-        private readonly ISchemaManager _schemaManager;
-        private readonly ILogger<ApplyCommand> _logger;
+        AddOption(CommandOptions.ConnectionStringOption());
+        AddOption(CommandOptions.ServerOption());
+        AddOption(CommandOptions.VersionOption());
+        AddOption(CommandOptions.NextOption());
+        AddOption(CommandOptions.LatestOption());
+        AddOption(CommandOptions.ForceOption());
 
-        public ApplyCommand(
-            ISchemaManager schemaManager,
-            ILogger<ApplyCommand> logger)
-            : base(CommandNames.Apply, Resources.ApplyCommandDescription)
+        Handler = CommandHandler.Create(
+            (string connectionString, Uri server, MutuallyExclusiveType type, bool force, CancellationToken token)
+            => HandlerAsync(connectionString, server, type, force, token));
+
+        Argument.AddValidator(symbol => RequiredOptionValidator.Validate(symbol, CommandOptions.ConnectionStringOption(), Resources.ConnectionStringRequiredValidation));
+        Argument.AddValidator(symbol => RequiredOptionValidator.Validate(symbol, CommandOptions.ServerOption(), Resources.ServerRequiredValidation));
+        Argument.AddValidator(symbol => MutuallyExclusiveOptionValidator.Validate(symbol, new List<Option> { CommandOptions.VersionOption(), CommandOptions.NextOption(), CommandOptions.LatestOption() }, Resources.MutuallyExclusiveValidation));
+
+        EnsureArg.IsNotNull(logger, nameof(logger));
+        EnsureArg.IsNotNull(schemaManager, nameof(schemaManager));
+
+        _logger = logger;
+        _schemaManager = schemaManager;
+    }
+
+    private async Task HandlerAsync(string connectionString, Uri server, MutuallyExclusiveType exclusiveType, bool force, CancellationToken cancellationToken = default)
+    {
+        if (force && !EnsureForce())
         {
-            AddOption(CommandOptions.ConnectionStringOption());
-            AddOption(CommandOptions.ServerOption());
-            AddOption(CommandOptions.VersionOption());
-            AddOption(CommandOptions.NextOption());
-            AddOption(CommandOptions.LatestOption());
-            AddOption(CommandOptions.ForceOption());
-
-            Handler = CommandHandler.Create(
-                (string connectionString, Uri server, MutuallyExclusiveType type, bool force, CancellationToken token)
-                => HandlerAsync(connectionString, server, type, force, token));
-
-            Argument.AddValidator(symbol => RequiredOptionValidator.Validate(symbol, CommandOptions.ConnectionStringOption(), Resources.ConnectionStringRequiredValidation));
-            Argument.AddValidator(symbol => RequiredOptionValidator.Validate(symbol, CommandOptions.ServerOption(), Resources.ServerRequiredValidation));
-            Argument.AddValidator(symbol => MutuallyExclusiveOptionValidator.Validate(symbol, new List<Option> { CommandOptions.VersionOption(), CommandOptions.NextOption(), CommandOptions.LatestOption() }, Resources.MutuallyExclusiveValidation));
-
-            EnsureArg.IsNotNull(logger, nameof(logger));
-            EnsureArg.IsNotNull(schemaManager, nameof(schemaManager));
-
-            _logger = logger;
-            _schemaManager = schemaManager;
+            return;
         }
 
-        private async Task HandlerAsync(string connectionString, Uri server, MutuallyExclusiveType exclusiveType, bool force, CancellationToken cancellationToken = default)
-        {
-            if (force && !EnsureForce())
-            {
-                return;
-            }
+        await _schemaManager.ApplySchema(connectionString, server, exclusiveType, cancellationToken).ConfigureAwait(false);
+    }
 
-            await _schemaManager.ApplySchema(connectionString, server, exclusiveType, cancellationToken).ConfigureAwait(false);
-        }
-
-        private bool EnsureForce()
-        {
-            _logger.LogWarning("Are you sure to apply command with force option? Type 'yes' to confirm.");
-            return string.Equals(Console.ReadLine(), "yes", StringComparison.OrdinalIgnoreCase);
-        }
+    private bool EnsureForce()
+    {
+        _logger.LogWarning("Are you sure to apply command with force option? Type 'yes' to confirm.");
+        return string.Equals(Console.ReadLine(), "yes", StringComparison.OrdinalIgnoreCase);
     }
 }

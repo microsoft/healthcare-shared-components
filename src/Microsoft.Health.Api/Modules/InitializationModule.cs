@@ -11,58 +11,57 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Health.Extensions.DependencyInjection;
 
-namespace Microsoft.Health.Api.Modules
+namespace Microsoft.Health.Api.Modules;
+
+/// <summary>
+/// Ensures that all <see cref="IRequireInitializationOnFirstRequest"/> instances are
+/// initialized before any controllers are invoked.
+/// </summary>
+public class InitializationModule : IStartupModule, IStartupFilter
 {
-    /// <summary>
-    /// Ensures that all <see cref="IRequireInitializationOnFirstRequest"/> instances are
-    /// initialized before any controllers are invoked.
-    /// </summary>
-    public class InitializationModule : IStartupModule, IStartupFilter
+    /// <inheritdoc />
+    public void Load(IServiceCollection services)
     {
-        /// <inheritdoc />
-        public void Load(IServiceCollection services)
+        services.AddSingleton<IStartupFilter>(this);
+    }
+
+    public Action<IApplicationBuilder> Configure(Action<IApplicationBuilder> next)
+    {
+        return builder =>
         {
-            services.AddSingleton<IStartupFilter>(this);
+            Configure(builder);
+            next(builder);
+        };
+    }
+
+    private static void Configure(IApplicationBuilder app)
+    {
+        // If there are any IRequireInitializationOnFirstRequest services, ensure they are initialized on the first request.
+
+        IRequireInitializationOnFirstRequest[] requireInitializationsOnFirstRequest = app.ApplicationServices.GetService<IEnumerable<IRequireInitializationOnFirstRequest>>().ToArray();
+        if (requireInitializationsOnFirstRequest.Length == 0)
+        {
+            return;
         }
 
-        public Action<IApplicationBuilder> Configure(Action<IApplicationBuilder> next)
+        // Register a middleware component that will be called on every request,
+        // ensuring that all components are initialized before a controller
+        // handles the request.
+
+        bool initializationComplete = false;
+        app.Use(async (httpContext, next) =>
         {
-            return builder =>
+            if (!initializationComplete)
             {
-                Configure(builder);
-                next(builder);
-            };
-        }
-
-        private static void Configure(IApplicationBuilder app)
-        {
-            // If there are any IRequireInitializationOnFirstRequest services, ensure they are initialized on the first request.
-
-            IRequireInitializationOnFirstRequest[] requireInitializationsOnFirstRequest = app.ApplicationServices.GetService<IEnumerable<IRequireInitializationOnFirstRequest>>().ToArray();
-            if (requireInitializationsOnFirstRequest.Length == 0)
-            {
-                return;
-            }
-
-            // Register a middleware component that will be called on every request,
-            // ensuring that all components are initialized before a controller
-            // handles the request.
-
-            bool initializationComplete = false;
-            app.Use(async (httpContext, next) =>
-            {
-                if (!initializationComplete)
+                foreach (var initializable in requireInitializationsOnFirstRequest)
                 {
-                    foreach (var initializable in requireInitializationsOnFirstRequest)
-                    {
-                        await initializable.EnsureInitialized();
-                    }
-
-                    initializationComplete = true;
+                    await initializable.EnsureInitialized();
                 }
 
-                await next();
-            });
-        }
+                initializationComplete = true;
+            }
+
+            await next();
+        });
     }
 }

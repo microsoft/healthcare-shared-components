@@ -5,26 +5,25 @@
 
 using System;
 
-namespace Microsoft.Health.Abstractions.Exceptions
+namespace Microsoft.Health.Abstractions.Exceptions;
+
+/// <summary>
+/// An exception indicating that the request rate has exceeded the maximum API request rate.
+/// </summary>
+public class RequestRateExceededException : MicrosoftHealthException
 {
     /// <summary>
-    /// An exception indicating that the request rate has exceeded the maximum API request rate.
+    /// Initializes a new instance of the <see cref="RequestRateExceededException"/> class.
     /// </summary>
-    public class RequestRateExceededException : MicrosoftHealthException
+    /// <param name="retryAfter">The amount of time the client should wait before retrying again.</param>
+    public RequestRateExceededException(TimeSpan? retryAfter)
+        : base(Resources.RequestRateExceeded)
     {
-        /// <summary>
-        /// Initializes a new instance of the <see cref="RequestRateExceededException"/> class.
-        /// </summary>
-        /// <param name="retryAfter">The amount of time the client should wait before retrying again.</param>
-        public RequestRateExceededException(TimeSpan? retryAfter)
-            : base(Resources.RequestRateExceeded)
-        {
-            RetryAfter = retryAfter;
-        }
-
-        /// <summary>
-        /// Gets the amount of time the client should wait before retrying again.
-        /// </summary>
-        public TimeSpan? RetryAfter { get; }
+        RetryAfter = retryAfter;
     }
+
+    /// <summary>
+    /// Gets the amount of time the client should wait before retrying again.
+    /// </summary>
+    public TimeSpan? RetryAfter { get; }
 }

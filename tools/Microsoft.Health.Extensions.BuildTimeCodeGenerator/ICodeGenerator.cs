@@ -5,10 +5,9 @@
 
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 
-namespace Microsoft.Health.Extensions.BuildTimeCodeGenerator
+namespace Microsoft.Health.Extensions.BuildTimeCodeGenerator;
+
+public interface ICodeGenerator
 {
-    public interface ICodeGenerator
-    {
-        (MemberDeclarationSyntax[], UsingDirectiveSyntax[]) Generate(string typeName);
-    }
+    (MemberDeclarationSyntax[], UsingDirectiveSyntax[]) Generate(string typeName);
 }

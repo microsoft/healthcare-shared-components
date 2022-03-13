@@ -14,91 +14,90 @@ using Microsoft.Health.SqlServer.Features.Schema.Manager.Exceptions;
 using Microsoft.Health.SqlServer.Features.Schema.Manager.Model;
 using Newtonsoft.Json;
 
-namespace Microsoft.Health.SqlServer.Features.Schema.Manager
+namespace Microsoft.Health.SqlServer.Features.Schema.Manager;
+
+public class SchemaClient : ISchemaClient
 {
-    public class SchemaClient : ISchemaClient
+    private readonly HttpClient _httpClient;
+
+    public SchemaClient(IHttpClientFactory httpClientFactory)
     {
-        private readonly HttpClient _httpClient;
+        _httpClient = httpClientFactory.CreateClient();
+    }
 
-        public SchemaClient(IHttpClientFactory httpClientFactory)
+    public void SetUri(Uri uri)
+    {
+        if (_httpClient.BaseAddress == null)
         {
-            _httpClient = httpClientFactory.CreateClient();
+            _httpClient.BaseAddress = uri;
         }
+    }
 
-        public void SetUri(Uri uri)
+    public async Task<List<CurrentVersion>> GetCurrentVersionInformationAsync(CancellationToken cancellationToken)
+    {
+        HttpResponseMessage response = await _httpClient.GetAsync(KnownRoutes.RootedCurrentUri, cancellationToken).ConfigureAwait(false);
+        if (response.IsSuccessStatusCode)
         {
-            if (_httpClient.BaseAddress == null)
-            {
-                _httpClient.BaseAddress = uri;
-            }
+            var responseBodyAsString = await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
+            return JsonConvert.DeserializeObject<List<CurrentVersion>>(responseBodyAsString);
         }
-
-        public async Task<List<CurrentVersion>> GetCurrentVersionInformationAsync(CancellationToken cancellationToken)
+        else
         {
-            HttpResponseMessage response = await _httpClient.GetAsync(KnownRoutes.RootedCurrentUri, cancellationToken).ConfigureAwait(false);
-            if (response.IsSuccessStatusCode)
-            {
-                var responseBodyAsString = await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
-                return JsonConvert.DeserializeObject<List<CurrentVersion>>(responseBodyAsString);
-            }
-            else
-            {
-                throw new SchemaManagerException(string.Format(CultureInfo.InvariantCulture, Resources.CurrentDefaultErrorDescription, response.StatusCode));
-            }
+            throw new SchemaManagerException(string.Format(CultureInfo.InvariantCulture, Resources.CurrentDefaultErrorDescription, response.StatusCode));
         }
+    }
 
-        public async Task<string> GetScriptAsync(Uri scriptUri, CancellationToken cancellationToken)
+    public async Task<string> GetScriptAsync(Uri scriptUri, CancellationToken cancellationToken)
+    {
+        HttpResponseMessage response = await _httpClient.GetAsync(scriptUri, cancellationToken).ConfigureAwait(false);
+        if (response.IsSuccessStatusCode)
         {
-            HttpResponseMessage response = await _httpClient.GetAsync(scriptUri, cancellationToken).ConfigureAwait(false);
-            if (response.IsSuccessStatusCode)
-            {
-                return await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
-            }
-            else
-            {
-                throw new SchemaManagerException(string.Format(CultureInfo.InvariantCulture, Resources.ScriptNotFound, response.StatusCode));
-            }
+            return await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
         }
-
-        public async Task<CompatibleVersion> GetCompatibilityAsync(CancellationToken cancellationToken)
+        else
         {
-            HttpResponseMessage response = await _httpClient.GetAsync(KnownRoutes.RootedCompatibilityUri, cancellationToken).ConfigureAwait(false);
-            if (response.IsSuccessStatusCode)
-            {
-                var responseBodyAsString = await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
-                return JsonConvert.DeserializeObject<CompatibleVersion>(responseBodyAsString);
-            }
-            else
-            {
-                throw new SchemaManagerException(string.Format(CultureInfo.InvariantCulture, Resources.CompatibilityDefaultErrorMessage, response.StatusCode));
-            }
+            throw new SchemaManagerException(string.Format(CultureInfo.InvariantCulture, Resources.ScriptNotFound, response.StatusCode));
         }
+    }
 
-        public async Task<List<AvailableVersion>> GetAvailabilityAsync(CancellationToken cancellationToken)
+    public async Task<CompatibleVersion> GetCompatibilityAsync(CancellationToken cancellationToken)
+    {
+        HttpResponseMessage response = await _httpClient.GetAsync(KnownRoutes.RootedCompatibilityUri, cancellationToken).ConfigureAwait(false);
+        if (response.IsSuccessStatusCode)
         {
-            HttpResponseMessage response = await _httpClient.GetAsync(KnownRoutes.RootedVersionsUri, cancellationToken).ConfigureAwait(false);
-            if (response.IsSuccessStatusCode)
-            {
-                var responseBodyAsString = await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
-                return JsonConvert.DeserializeObject<List<AvailableVersion>>(responseBodyAsString);
-            }
-            else
-            {
-                throw new SchemaManagerException(string.Format(CultureInfo.InvariantCulture, Resources.AvailableVersionsDefaultErrorMessage, response.StatusCode));
-            }
+            var responseBodyAsString = await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
+            return JsonConvert.DeserializeObject<CompatibleVersion>(responseBodyAsString);
         }
-
-        public async Task<string> GetDiffScriptAsync(Uri diffScriptUri, CancellationToken cancellationToken)
+        else
         {
-            HttpResponseMessage response = await _httpClient.GetAsync(diffScriptUri, cancellationToken).ConfigureAwait(false);
-            if (response.IsSuccessStatusCode)
-            {
-                return await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
-            }
-            else
-            {
-                throw new SchemaManagerException(string.Format(CultureInfo.InvariantCulture, Resources.ScriptNotFound, response.StatusCode));
-            }
+            throw new SchemaManagerException(string.Format(CultureInfo.InvariantCulture, Resources.CompatibilityDefaultErrorMessage, response.StatusCode));
+        }
+    }
+
+    public async Task<List<AvailableVersion>> GetAvailabilityAsync(CancellationToken cancellationToken)
+    {
+        HttpResponseMessage response = await _httpClient.GetAsync(KnownRoutes.RootedVersionsUri, cancellationToken).ConfigureAwait(false);
+        if (response.IsSuccessStatusCode)
+        {
+            var responseBodyAsString = await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
+            return JsonConvert.DeserializeObject<List<AvailableVersion>>(responseBodyAsString);
+        }
+        else
+        {
+            throw new SchemaManagerException(string.Format(CultureInfo.InvariantCulture, Resources.AvailableVersionsDefaultErrorMessage, response.StatusCode));
+        }
+    }
+
+    public async Task<string> GetDiffScriptAsync(Uri diffScriptUri, CancellationToken cancellationToken)
+    {
+        HttpResponseMessage response = await _httpClient.GetAsync(diffScriptUri, cancellationToken).ConfigureAwait(false);
+        if (response.IsSuccessStatusCode)
+        {
+            return await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
+        }
+        else
+        {
+            throw new SchemaManagerException(string.Format(CultureInfo.InvariantCulture, Resources.ScriptNotFound, response.StatusCode));
         }
     }
 }

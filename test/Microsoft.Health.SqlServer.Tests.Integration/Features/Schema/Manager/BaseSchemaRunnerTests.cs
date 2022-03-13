@@ -14,45 +14,44 @@ using Microsoft.Health.SqlServer.Features.Schema.Manager.Exceptions;
 using Xunit;
 using Xunit.Abstractions;
 
-namespace Microsoft.Health.SqlServer.Tests.Integration.Features.Schema.Manager
+namespace Microsoft.Health.SqlServer.Tests.Integration.Features.Schema.Manager;
+
+public class BaseSchemaRunnerTests : SqlIntegrationTestBase
 {
-    public class BaseSchemaRunnerTests : SqlIntegrationTestBase
+    private readonly BaseSchemaRunner _runner;
+    private readonly ISchemaManagerDataStore _dataStore;
+
+    public BaseSchemaRunnerTests(ITestOutputHelper output)
+        : base(output)
     {
-        private readonly BaseSchemaRunner _runner;
-        private readonly ISchemaManagerDataStore _dataStore;
+        var config = Options.Create(new SqlServerDataStoreConfiguration());
+        var sqlConnection = new DefaultSqlConnectionBuilder(ConnectionStringProvider, SqlConfigurableRetryFactory.CreateNoneRetryProvider());
+        _dataStore = new SchemaManagerDataStore(sqlConnection, config, NullLogger<SchemaManagerDataStore>.Instance);
 
-        public BaseSchemaRunnerTests(ITestOutputHelper output)
-            : base(output)
-        {
-            var config = Options.Create(new SqlServerDataStoreConfiguration());
-            var sqlConnection = new DefaultSqlConnectionBuilder(ConnectionStringProvider, SqlConfigurableRetryFactory.CreateNoneRetryProvider());
-            _dataStore = new SchemaManagerDataStore(sqlConnection, config, NullLogger<SchemaManagerDataStore>.Instance);
+        _runner = new BaseSchemaRunner(sqlConnection, _dataStore, ConnectionStringProvider, NullLogger<BaseSchemaRunner>.Instance);
+    }
 
-            _runner = new BaseSchemaRunner(sqlConnection, _dataStore, ConnectionStringProvider, NullLogger<BaseSchemaRunner>.Instance);
-        }
+    [Fact]
+    public async Task EnsureBaseSchemaExist_DoesNotExist_CreatesIt()
+    {
+        Assert.False(await _dataStore.BaseSchemaExistsAsync(CancellationToken.None));
+        await _runner.EnsureBaseSchemaExistsAsync(CancellationToken.None);
+        Assert.True(await _dataStore.BaseSchemaExistsAsync(CancellationToken.None));
+    }
 
-        [Fact]
-        public async Task EnsureBaseSchemaExist_DoesNotExist_CreatesIt()
-        {
-            Assert.False(await _dataStore.BaseSchemaExistsAsync(CancellationToken.None));
-            await _runner.EnsureBaseSchemaExistsAsync(CancellationToken.None);
-            Assert.True(await _dataStore.BaseSchemaExistsAsync(CancellationToken.None));
-        }
+    [Fact]
+    public async Task EnsureBaseSchemaExist_Exists_DoesNothing()
+    {
+        Assert.False(await _dataStore.BaseSchemaExistsAsync(CancellationToken.None));
+        await _runner.EnsureBaseSchemaExistsAsync(CancellationToken.None);
+        Assert.True(await _dataStore.BaseSchemaExistsAsync(CancellationToken.None));
+        await _runner.EnsureBaseSchemaExistsAsync(CancellationToken.None);
+        Assert.True(await _dataStore.BaseSchemaExistsAsync(CancellationToken.None));
+    }
 
-        [Fact]
-        public async Task EnsureBaseSchemaExist_Exists_DoesNothing()
-        {
-            Assert.False(await _dataStore.BaseSchemaExistsAsync(CancellationToken.None));
-            await _runner.EnsureBaseSchemaExistsAsync(CancellationToken.None);
-            Assert.True(await _dataStore.BaseSchemaExistsAsync(CancellationToken.None));
-            await _runner.EnsureBaseSchemaExistsAsync(CancellationToken.None);
-            Assert.True(await _dataStore.BaseSchemaExistsAsync(CancellationToken.None));
-        }
-
-        [Fact]
-        public async Task EnsureInstanceSchemaRecordExists_WhenNotExists_Throws()
-        {
-            await Assert.ThrowsAsync<SchemaManagerException>(() => _runner.EnsureInstanceSchemaRecordExistsAsync(CancellationToken.None));
-        }
+    [Fact]
+    public async Task EnsureInstanceSchemaRecordExists_WhenNotExists_Throws()
+    {
+        await Assert.ThrowsAsync<SchemaManagerException>(() => _runner.EnsureInstanceSchemaRecordExistsAsync(CancellationToken.None));
     }
 }

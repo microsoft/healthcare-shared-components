@@ -8,22 +8,21 @@ using System.Threading.Tasks;
 using EnsureThat;
 using Microsoft.AspNetCore.Http;
 
-namespace Microsoft.Health.Api.Features.Security
+namespace Microsoft.Health.Api.Features.Security;
+
+internal static class SecurityHeadersHelper
 {
-    internal static class SecurityHeadersHelper
+    private const string XContentTypeOptions = "X-Content-Type-Options";
+    private const string XContentTypeOptionsValue = "nosniff";
+
+    internal static Task SetSecurityHeaders(object context)
     {
-        private const string XContentTypeOptions = "X-Content-Type-Options";
-        private const string XContentTypeOptionsValue = "nosniff";
+        EnsureArg.IsNotNull(context, nameof(context));
+        EnsureArg.IsTrue(context is HttpContext, nameof(context));
+        var httpContext = (HttpContext)context;
 
-        internal static Task SetSecurityHeaders(object context)
-        {
-            EnsureArg.IsNotNull(context, nameof(context));
-            EnsureArg.IsTrue(context is HttpContext, nameof(context));
-            var httpContext = (HttpContext)context;
+        httpContext.Response.Headers.TryAdd(XContentTypeOptions, XContentTypeOptionsValue);
 
-            httpContext.Response.Headers.TryAdd(XContentTypeOptions, XContentTypeOptionsValue);
-
-            return Task.CompletedTask;
-        }
+        return Task.CompletedTask;
     }
 }

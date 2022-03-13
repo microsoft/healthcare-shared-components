@@ -3,14 +3,13 @@
 // Licensed under the MIT License (MIT). See LICENSE in the repo root for license information.
 // -------------------------------------------------------------------------------------------------
 
-namespace SchemaManager.Core.Model
+namespace SchemaManager.Core.Model;
+
+public class MutuallyExclusiveType
 {
-    public class MutuallyExclusiveType
-    {
-        public int Version { get; set; }
+    public int Version { get; set; }
 
-        public bool Next { get; set; }
+    public bool Next { get; set; }
 
-        public bool Latest { get; set; }
-    }
+    public bool Latest { get; set; }
 }

@@ -5,18 +5,17 @@
 
 using System;
 
-namespace Microsoft.Health.Abstractions.Exceptions
-{
-    public class MicrosoftHealthException : Exception
-    {
-        public MicrosoftHealthException(string message)
-            : base(message)
-        {
-        }
+namespace Microsoft.Health.Abstractions.Exceptions;
 
-        public MicrosoftHealthException(string message, Exception innerException)
-            : base(message, innerException)
-        {
-        }
+public class MicrosoftHealthException : Exception
+{
+    public MicrosoftHealthException(string message)
+        : base(message)
+    {
+    }
+
+    public MicrosoftHealthException(string message, Exception innerException)
+        : base(message, innerException)
+    {
     }
 }

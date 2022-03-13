@@ -5,22 +5,21 @@
 
 using System;
 
-namespace Microsoft.Health.Checkpoints.Storage
+namespace Microsoft.Health.Checkpoints.Storage;
+
+public class StorageCheckpointClientException : Exception
 {
-    public class StorageCheckpointClientException : Exception
+    public StorageCheckpointClientException()
     {
-        public StorageCheckpointClientException()
-        {
-        }
+    }
 
-        public StorageCheckpointClientException(string message)
-            : base(message)
-        {
-        }
+    public StorageCheckpointClientException(string message)
+        : base(message)
+    {
+    }
 
-        public StorageCheckpointClientException(string message, Exception inner)
-            : base(message, inner)
-        {
-        }
+    public StorageCheckpointClientException(string message, Exception inner)
+        : base(message, inner)
+    {
     }
 }

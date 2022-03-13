@@ -8,36 +8,35 @@ using System.Threading.Tasks;
 using EnsureThat;
 using Microsoft.Data.SqlClient;
 
-namespace Microsoft.Health.SqlServer
+namespace Microsoft.Health.SqlServer;
+
+/// <summary>
+/// Default Sql Connection Factory is responsible to handle Sql connections that can be made purely based on connection string.
+/// Connection string containing user name and password, or integrated auth are perfect examples for this.
+/// </summary>
+public class DefaultSqlConnectionBuilder : ISqlConnectionBuilder
 {
-    /// <summary>
-    /// Default Sql Connection Factory is responsible to handle Sql connections that can be made purely based on connection string.
-    /// Connection string containing user name and password, or integrated auth are perfect examples for this.
-    /// </summary>
-    public class DefaultSqlConnectionBuilder : ISqlConnectionBuilder
+    private readonly ISqlConnectionStringProvider _sqlConnectionStringProvider;
+    private readonly SqlRetryLogicBaseProvider _sqlRetryLogicBaseProvider;
+
+    public DefaultSqlConnectionBuilder(
+        ISqlConnectionStringProvider sqlConnectionStringProvider,
+        SqlRetryLogicBaseProvider sqlRetryLogicBaseProvider)
     {
-        private readonly ISqlConnectionStringProvider _sqlConnectionStringProvider;
-        private readonly SqlRetryLogicBaseProvider _sqlRetryLogicBaseProvider;
+        EnsureArg.IsNotNull(sqlConnectionStringProvider, nameof(sqlConnectionStringProvider));
+        EnsureArg.IsNotNull(sqlRetryLogicBaseProvider, nameof(sqlRetryLogicBaseProvider));
 
-        public DefaultSqlConnectionBuilder(
-            ISqlConnectionStringProvider sqlConnectionStringProvider,
-            SqlRetryLogicBaseProvider sqlRetryLogicBaseProvider)
-        {
-            EnsureArg.IsNotNull(sqlConnectionStringProvider, nameof(sqlConnectionStringProvider));
-            EnsureArg.IsNotNull(sqlRetryLogicBaseProvider, nameof(sqlRetryLogicBaseProvider));
+        _sqlConnectionStringProvider = sqlConnectionStringProvider;
+        _sqlRetryLogicBaseProvider = sqlRetryLogicBaseProvider;
+    }
 
-            _sqlConnectionStringProvider = sqlConnectionStringProvider;
-            _sqlRetryLogicBaseProvider = sqlRetryLogicBaseProvider;
-        }
-
-        /// <inheritdoc />
-        public async Task<SqlConnection> GetSqlConnectionAsync(string initialCatalog = null, CancellationToken cancellationToken = default)
-        {
-            return await SqlConnectionHelper.GetBaseSqlConnectionAsync(
-                _sqlConnectionStringProvider,
-                _sqlRetryLogicBaseProvider,
-                initialCatalog,
-                cancellationToken);
-        }
+    /// <inheritdoc />
+    public async Task<SqlConnection> GetSqlConnectionAsync(string initialCatalog = null, CancellationToken cancellationToken = default)
+    {
+        return await SqlConnectionHelper.GetBaseSqlConnectionAsync(
+            _sqlConnectionStringProvider,
+            _sqlRetryLogicBaseProvider,
+            initialCatalog,
+            cancellationToken);
     }
 }

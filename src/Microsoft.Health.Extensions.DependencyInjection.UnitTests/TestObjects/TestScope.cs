@@ -5,19 +5,18 @@
 
 using System.Collections.Generic;
 
-namespace Microsoft.Health.Extensions.DependencyInjection.UnitTests.TestObjects
+namespace Microsoft.Health.Extensions.DependencyInjection.UnitTests.TestObjects;
+
+public class TestScope : IScoped<IList<string>>
 {
-    public class TestScope : IScoped<IList<string>>
+    public TestScope(IList<string> value)
     {
-        public TestScope(IList<string> value)
-        {
-            Value = value;
-        }
+        Value = value;
+    }
 
-        public IList<string> Value { get; }
+    public IList<string> Value { get; }
 
-        public void Dispose()
-        {
-        }
+    public void Dispose()
+    {
     }
 }

@@ -5,13 +5,12 @@
 
 using System;
 
-namespace Microsoft.Health.Api.Features.Audit
+namespace Microsoft.Health.Api.Features.Audit;
+
+public class MissingAuditEventTypeMappingException : Exception
 {
-    public class MissingAuditEventTypeMappingException : Exception
+    public MissingAuditEventTypeMappingException(string controllerName, string actionName)
+        : base(string.Format(Resources.MissingAuditInformation, controllerName, actionName))
     {
-        public MissingAuditEventTypeMappingException(string controllerName, string actionName)
-            : base(string.Format(Resources.MissingAuditInformation, controllerName, actionName))
-        {
-        }
     }
 }

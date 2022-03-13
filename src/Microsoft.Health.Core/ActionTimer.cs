@@ -8,35 +8,34 @@ using System.Diagnostics;
 using EnsureThat;
 using Microsoft.Extensions.Logging;
 
-namespace Microsoft.Health.Core
+namespace Microsoft.Health.Core;
+
+public sealed class ActionTimer : IDisposable
 {
-    public sealed class ActionTimer : IDisposable
+    private readonly ILogger _logger;
+    private readonly string _componentName;
+    private readonly Stopwatch _stopwatch;
+    private readonly IDisposable _scope;
+
+    public ActionTimer(ILogger logger, string componentName)
     {
-        private readonly ILogger _logger;
-        private readonly string _componentName;
-        private readonly Stopwatch _stopwatch;
-        private readonly IDisposable _scope;
+        EnsureArg.IsNotNull(logger, nameof(logger));
+        EnsureArg.IsNotNull(componentName, nameof(componentName));
 
-        public ActionTimer(ILogger logger, string componentName)
-        {
-            EnsureArg.IsNotNull(logger, nameof(logger));
-            EnsureArg.IsNotNull(componentName, nameof(componentName));
+        _logger = logger;
+        _componentName = componentName;
+        _stopwatch = new Stopwatch();
 
-            _logger = logger;
-            _componentName = componentName;
-            _stopwatch = new Stopwatch();
+        _scope = _logger.BeginScope($"Beginning execution of {componentName}");
+        _stopwatch.Start();
+    }
 
-            _scope = _logger.BeginScope($"Beginning execution of {componentName}");
-            _stopwatch.Start();
-        }
+    public TimeSpan ElapsedTime => _stopwatch.Elapsed;
 
-        public TimeSpan ElapsedTime => _stopwatch.Elapsed;
-
-        public void Dispose()
-        {
-            _stopwatch.Stop();
-            _logger.LogInformation("{Component} executed in {Duration}.", _componentName, _stopwatch.Elapsed);
-            _scope.Dispose();
-        }
+    public void Dispose()
+    {
+        _stopwatch.Stop();
+        _logger.LogInformation("{Component} executed in {Duration}.", _componentName, _stopwatch.Elapsed);
+        _scope.Dispose();
     }
 }

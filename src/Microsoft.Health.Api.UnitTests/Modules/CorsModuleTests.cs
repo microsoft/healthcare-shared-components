@@ -12,105 +12,104 @@ using Microsoft.Health.Api.Modules;
 using NSubstitute;
 using Xunit;
 
-namespace Microsoft.Health.Api.UnitTests.Modules
+namespace Microsoft.Health.Api.UnitTests.Modules;
+
+public class CorsModuleTests
 {
-    public class CorsModuleTests
+    private readonly CorsModule _corsModule;
+    private readonly CorsConfiguration _corsConfiguration = Substitute.For<CorsConfiguration>();
+    private readonly IServiceCollection _servicesCollection = Substitute.For<IServiceCollection>();
+
+    public CorsModuleTests()
     {
-        private readonly CorsModule _corsModule;
-        private readonly CorsConfiguration _corsConfiguration = Substitute.For<CorsConfiguration>();
-        private readonly IServiceCollection _servicesCollection = Substitute.For<IServiceCollection>();
+        var apiConfiguration = Substitute.For<IApiConfiguration>();
+        apiConfiguration.Cors.Returns(_corsConfiguration);
+        _corsModule = new CorsModule(apiConfiguration);
+    }
 
-        public CorsModuleTests()
-        {
-            var apiConfiguration = Substitute.For<IApiConfiguration>();
-            apiConfiguration.Cors.Returns(_corsConfiguration);
-            _corsModule = new CorsModule(apiConfiguration);
-        }
+    [Fact]
+    public void GivenACorsConfiguration_WhenNoValuesSet_PolicyHasOnlyDefaults()
+    {
+        _corsModule.Load(_servicesCollection);
 
-        [Fact]
-        public void GivenACorsConfiguration_WhenNoValuesSet_PolicyHasOnlyDefaults()
-        {
-            _corsModule.Load(_servicesCollection);
+        CorsPolicy corsPolicy = _corsModule.DefaultCorsPolicy;
+        Assert.Empty(corsPolicy.Origins);
+        Assert.Empty(corsPolicy.Headers);
+        Assert.Empty(corsPolicy.Methods);
+        Assert.False(corsPolicy.SupportsCredentials);
+        Assert.Null(corsPolicy.PreflightMaxAge);
+    }
 
-            CorsPolicy corsPolicy = _corsModule.DefaultCorsPolicy;
-            Assert.Empty(corsPolicy.Origins);
-            Assert.Empty(corsPolicy.Headers);
-            Assert.Empty(corsPolicy.Methods);
-            Assert.False(corsPolicy.SupportsCredentials);
-            Assert.Null(corsPolicy.PreflightMaxAge);
-        }
+    [Fact]
+    public void GivenACorsConfiguration_WhenAllOriginsSet_PolicyHasAllowAnyOrigin()
+    {
+        _corsConfiguration.Origins.Add("*");
+        _corsModule.Load(_servicesCollection);
 
-        [Fact]
-        public void GivenACorsConfiguration_WhenAllOriginsSet_PolicyHasAllowAnyOrigin()
-        {
-            _corsConfiguration.Origins.Add("*");
-            _corsModule.Load(_servicesCollection);
+        Assert.True(_corsModule.DefaultCorsPolicy.AllowAnyOrigin);
+    }
 
-            Assert.True(_corsModule.DefaultCorsPolicy.AllowAnyOrigin);
-        }
+    [Fact]
+    public void GivenACorsConfiguration_WhenAllMethodsSet_PolicyHasAllowAnyMethod()
+    {
+        _corsConfiguration.Methods.Add("*");
+        _corsModule.Load(_servicesCollection);
 
-        [Fact]
-        public void GivenACorsConfiguration_WhenAllMethodsSet_PolicyHasAllowAnyMethod()
-        {
-            _corsConfiguration.Methods.Add("*");
-            _corsModule.Load(_servicesCollection);
+        Assert.True(_corsModule.DefaultCorsPolicy.AllowAnyMethod);
+    }
 
-            Assert.True(_corsModule.DefaultCorsPolicy.AllowAnyMethod);
-        }
+    [Fact]
+    public void GivenACorsConfiguration_WhenAllHeadersSet_PolicyHasAllowAnyHeader()
+    {
+        _corsConfiguration.Headers.Add("*");
+        _corsModule.Load(_servicesCollection);
 
-        [Fact]
-        public void GivenACorsConfiguration_WhenAllHeadersSet_PolicyHasAllowAnyHeader()
-        {
-            _corsConfiguration.Headers.Add("*");
-            _corsModule.Load(_servicesCollection);
+        Assert.True(_corsModule.DefaultCorsPolicy.AllowAnyHeader);
+    }
 
-            Assert.True(_corsModule.DefaultCorsPolicy.AllowAnyHeader);
-        }
+    [Fact]
+    public void GivenACorsConfiguration_WhenAllowCredentials_PolicyHasSupportsCredentials()
+    {
+        _corsConfiguration.AllowCredentials = true;
+        _corsModule.Load(_servicesCollection);
 
-        [Fact]
-        public void GivenACorsConfiguration_WhenAllowCredentials_PolicyHasSupportsCredentials()
-        {
-            _corsConfiguration.AllowCredentials = true;
-            _corsModule.Load(_servicesCollection);
+        Assert.True(_corsModule.DefaultCorsPolicy.SupportsCredentials);
+    }
 
-            Assert.True(_corsModule.DefaultCorsPolicy.SupportsCredentials);
-        }
+    [Fact]
+    public void GivenACorsConfiguration_WhenMaxAgeSet_PolicyHasMaxAge()
+    {
+        _corsConfiguration.MaxAge = 100;
+        _corsModule.Load(_servicesCollection);
 
-        [Fact]
-        public void GivenACorsConfiguration_WhenMaxAgeSet_PolicyHasMaxAge()
-        {
-            _corsConfiguration.MaxAge = 100;
-            _corsModule.Load(_servicesCollection);
+        Assert.Equal(TimeSpan.FromSeconds(100), _corsModule.DefaultCorsPolicy.PreflightMaxAge);
+    }
 
-            Assert.Equal(TimeSpan.FromSeconds(100), _corsModule.DefaultCorsPolicy.PreflightMaxAge);
-        }
+    [Fact]
+    public void GivenACorsConfiguration_WhenMultipleValuesSet_PolicyHasSpecifiedValues()
+    {
+        _corsConfiguration.Origins.Add("https://example.com");
+        _corsConfiguration.Origins.Add("https://contoso");
 
-        [Fact]
-        public void GivenACorsConfiguration_WhenMultipleValuesSet_PolicyHasSpecifiedValues()
-        {
-            _corsConfiguration.Origins.Add("https://example.com");
-            _corsConfiguration.Origins.Add("https://contoso");
+        _corsConfiguration.Methods.Add("PATCH");
+        _corsConfiguration.Methods.Add("DELETE");
 
-            _corsConfiguration.Methods.Add("PATCH");
-            _corsConfiguration.Methods.Add("DELETE");
+        _corsConfiguration.Headers.Add("authorization");
+        _corsConfiguration.Headers.Add("content-type");
 
-            _corsConfiguration.Headers.Add("authorization");
-            _corsConfiguration.Headers.Add("content-type");
+        _corsModule.Load(_servicesCollection);
 
-            _corsModule.Load(_servicesCollection);
+        Assert.Equal(2, _corsModule.DefaultCorsPolicy.Origins.Count);
+        Assert.Equal(2, _corsModule.DefaultCorsPolicy.Methods.Count);
+        Assert.Equal(2, _corsModule.DefaultCorsPolicy.Headers.Count);
 
-            Assert.Equal(2, _corsModule.DefaultCorsPolicy.Origins.Count);
-            Assert.Equal(2, _corsModule.DefaultCorsPolicy.Methods.Count);
-            Assert.Equal(2, _corsModule.DefaultCorsPolicy.Headers.Count);
+        Assert.Contains("https://example.com", _corsModule.DefaultCorsPolicy.Origins);
+        Assert.Contains("https://contoso", _corsModule.DefaultCorsPolicy.Origins);
 
-            Assert.Contains("https://example.com", _corsModule.DefaultCorsPolicy.Origins);
-            Assert.Contains("https://contoso", _corsModule.DefaultCorsPolicy.Origins);
+        Assert.Contains("PATCH", _corsModule.DefaultCorsPolicy.Methods);
+        Assert.Contains("DELETE", _corsModule.DefaultCorsPolicy.Methods);
 
-            Assert.Contains("PATCH", _corsModule.DefaultCorsPolicy.Methods);
-            Assert.Contains("DELETE", _corsModule.DefaultCorsPolicy.Methods);
-
-            Assert.Contains("authorization", _corsModule.DefaultCorsPolicy.Headers);
-            Assert.Contains("content-type", _corsModule.DefaultCorsPolicy.Headers);
-        }
+        Assert.Contains("authorization", _corsModule.DefaultCorsPolicy.Headers);
+        Assert.Contains("content-type", _corsModule.DefaultCorsPolicy.Headers);
     }
 }

@@ -6,12 +6,11 @@
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Microsoft.Health.Checkpoints
-{
-    public interface ICheckpointClient
-    {
-        Task<ICheckpoint> GetCheckpointAsync(string partition, string checkpointIdentifier, CancellationToken token = default);
+namespace Microsoft.Health.Checkpoints;
 
-        Task<ICheckpoint> SetCheckpointAsync(ICheckpoint checkpoint, CancellationToken token = default);
-    }
+public interface ICheckpointClient
+{
+    Task<ICheckpoint> GetCheckpointAsync(string partition, string checkpointIdentifier, CancellationToken token = default);
+
+    Task<ICheckpoint> SetCheckpointAsync(ICheckpoint checkpoint, CancellationToken token = default);
 }

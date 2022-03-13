@@ -16,77 +16,76 @@ using Microsoft.Health.SqlServer.Features.Storage;
 using Microsoft.Health.SqlServer.Registration;
 using Xunit;
 
-namespace Microsoft.Health.SqlServer.UnitTests.Registration
+namespace Microsoft.Health.SqlServer.UnitTests.Registration;
+
+public class SqlServerBaseRegistrationExtensionsTests
 {
-    public class SqlServerBaseRegistrationExtensionsTests
+    private enum ExampleVersion
     {
-        private enum ExampleVersion
-        {
-            V0,
-            V1,
-        }
+        V0,
+        V1,
+    }
 
-        [Fact]
-        [Obsolete]
-        public void GivenEmptyServiceCollection_WhenAddingSqlServerBase_ThenAddNewServices()
-        {
-            var services = new ServiceCollection();
-            services.AddSqlServerBase<ExampleVersion>(null);
+    [Fact]
+    [Obsolete]
+    public void GivenEmptyServiceCollection_WhenAddingSqlServerBase_ThenAddNewServices()
+    {
+        var services = new ServiceCollection();
+        services.AddSqlServerBase<ExampleVersion>(null);
 
-            Assert.True(services.ContainsScoped<ISchemaDataStore, SqlServerSchemaDataStore>());
-            Assert.True(services.ContainsScoped<ITransactionHandler, SqlTransactionHandler>());
-            Assert.True(services.ContainsScoped<SqlConnectionWrapperFactory>());
-            Assert.True(services.ContainsScoped<SqlServerSchemaDataStore>());
-            Assert.True(services.ContainsScoped<SqlTransactionHandler>());
+        Assert.True(services.ContainsScoped<ISchemaDataStore, SqlServerSchemaDataStore>());
+        Assert.True(services.ContainsScoped<ITransactionHandler, SqlTransactionHandler>());
+        Assert.True(services.ContainsScoped<SqlConnectionWrapperFactory>());
+        Assert.True(services.ContainsScoped<SqlServerSchemaDataStore>());
+        Assert.True(services.ContainsScoped<SqlTransactionHandler>());
 
-            Assert.True(services.ContainsSingleton<AzureServiceTokenProvider>());
-            Assert.True(services.ContainsSingleton<BaseScriptProvider>());
-            Assert.True(services.ContainsSingleton<IAccessTokenHandler, ManagedIdentityAccessTokenHandler>());
-            Assert.True(services.ContainsSingleton<IBaseScriptProvider, BaseScriptProvider>());
-            Assert.True(services.ContainsSingleton<IHostedService, SchemaInitializer>());
-            Assert.True(services.ContainsSingleton<ISchemaManagerDataStore>());
-            Assert.True(services.ContainsSingleton<IScriptProvider, ScriptProvider<ExampleVersion>>());
-            Assert.True(services.ContainsSingleton<ISqlConnectionBuilder>());
-            Assert.True(services.ContainsSingleton<ISqlConnectionStringProvider, DefaultSqlConnectionStringProvider>());
-            Assert.True(services.ContainsSingleton<SchemaInitializer>());
-            Assert.True(services.ContainsSingleton<SchemaJobWorker>());
-            Assert.True(services.ContainsSingleton<SchemaUpgradeRunner>());
-            Assert.True(services.ContainsSingleton<SchemaManagerDataStore>());
-            Assert.True(services.ContainsSingleton<ScriptProvider<ExampleVersion>>());
-            Assert.True(services.ContainsSingleton<SqlServerDataStoreConfiguration>());
-        }
+        Assert.True(services.ContainsSingleton<AzureServiceTokenProvider>());
+        Assert.True(services.ContainsSingleton<BaseScriptProvider>());
+        Assert.True(services.ContainsSingleton<IAccessTokenHandler, ManagedIdentityAccessTokenHandler>());
+        Assert.True(services.ContainsSingleton<IBaseScriptProvider, BaseScriptProvider>());
+        Assert.True(services.ContainsSingleton<IHostedService, SchemaInitializer>());
+        Assert.True(services.ContainsSingleton<ISchemaManagerDataStore>());
+        Assert.True(services.ContainsSingleton<IScriptProvider, ScriptProvider<ExampleVersion>>());
+        Assert.True(services.ContainsSingleton<ISqlConnectionBuilder>());
+        Assert.True(services.ContainsSingleton<ISqlConnectionStringProvider, DefaultSqlConnectionStringProvider>());
+        Assert.True(services.ContainsSingleton<SchemaInitializer>());
+        Assert.True(services.ContainsSingleton<SchemaJobWorker>());
+        Assert.True(services.ContainsSingleton<SchemaUpgradeRunner>());
+        Assert.True(services.ContainsSingleton<SchemaManagerDataStore>());
+        Assert.True(services.ContainsSingleton<ScriptProvider<ExampleVersion>>());
+        Assert.True(services.ContainsSingleton<SqlServerDataStoreConfiguration>());
+    }
 
-        [Fact]
-        public void GivenEmptyServiceCollection_WhenAddingSqlServerConnection_ThenAddNewServices()
-        {
-            var services = new ServiceCollection();
-            services.AddSqlServerConnection();
+    [Fact]
+    public void GivenEmptyServiceCollection_WhenAddingSqlServerConnection_ThenAddNewServices()
+    {
+        var services = new ServiceCollection();
+        services.AddSqlServerConnection();
 
-            Assert.True(services.ContainsScoped<SqlConnectionWrapperFactory>());
-            Assert.True(services.ContainsScoped<SqlTransactionHandler>());
-            Assert.True(services.ContainsScoped<ITransactionHandler, SqlTransactionHandler>());
+        Assert.True(services.ContainsScoped<SqlConnectionWrapperFactory>());
+        Assert.True(services.ContainsScoped<SqlTransactionHandler>());
+        Assert.True(services.ContainsScoped<ITransactionHandler, SqlTransactionHandler>());
 
-            Assert.True(services.ContainsSingleton<AzureServiceTokenProvider>());
-            Assert.True(services.ContainsSingleton<IAccessTokenHandler, ManagedIdentityAccessTokenHandler>());
-            Assert.True(services.ContainsSingleton<ISqlConnectionBuilder>());
-            Assert.True(services.ContainsSingleton<ISqlConnectionStringProvider, DefaultSqlConnectionStringProvider>());
-            Assert.True(services.ContainsSingleton<IReadOnlySchemaManagerDataStore, SchemaManagerDataStore>());
-        }
+        Assert.True(services.ContainsSingleton<AzureServiceTokenProvider>());
+        Assert.True(services.ContainsSingleton<IAccessTokenHandler, ManagedIdentityAccessTokenHandler>());
+        Assert.True(services.ContainsSingleton<ISqlConnectionBuilder>());
+        Assert.True(services.ContainsSingleton<ISqlConnectionStringProvider, DefaultSqlConnectionStringProvider>());
+        Assert.True(services.ContainsSingleton<IReadOnlySchemaManagerDataStore, SchemaManagerDataStore>());
+    }
 
-        [Fact]
-        public void GivenEmptyServiceCollection_WhenAddingSqlServerManagement_ThenAddNewServices()
-        {
-            var services = new ServiceCollection();
-            services.AddSqlServerManagement<ExampleVersion>();
+    [Fact]
+    public void GivenEmptyServiceCollection_WhenAddingSqlServerManagement_ThenAddNewServices()
+    {
+        var services = new ServiceCollection();
+        services.AddSqlServerManagement<ExampleVersion>();
 
-            Assert.True(services.ContainsScoped<ISchemaDataStore, SqlServerSchemaDataStore>());
+        Assert.True(services.ContainsScoped<ISchemaDataStore, SqlServerSchemaDataStore>());
 
-            Assert.True(services.ContainsSingleton<IBaseScriptProvider, BaseScriptProvider>());
-            Assert.True(services.ContainsSingleton<IHostedService, SchemaInitializer>());
-            Assert.True(services.ContainsSingleton<ISchemaManagerDataStore>());
-            Assert.True(services.ContainsSingleton<IScriptProvider, ScriptProvider<ExampleVersion>>());
-            Assert.True(services.ContainsSingleton<SchemaJobWorker>());
-            Assert.True(services.ContainsSingleton<SchemaUpgradeRunner>());
-        }
+        Assert.True(services.ContainsSingleton<IBaseScriptProvider, BaseScriptProvider>());
+        Assert.True(services.ContainsSingleton<IHostedService, SchemaInitializer>());
+        Assert.True(services.ContainsSingleton<ISchemaManagerDataStore>());
+        Assert.True(services.ContainsSingleton<IScriptProvider, ScriptProvider<ExampleVersion>>());
+        Assert.True(services.ContainsSingleton<SchemaJobWorker>());
+        Assert.True(services.ContainsSingleton<SchemaUpgradeRunner>());
     }
 }

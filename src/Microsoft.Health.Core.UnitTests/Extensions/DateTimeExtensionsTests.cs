@@ -6,15 +6,14 @@
 using System;
 using Xunit;
 
-namespace Microsoft.Health.Core.Extensions.UnitTests
+namespace Microsoft.Health.Core.Extensions.UnitTests;
+
+public class DateTimeExtensionsTests
 {
-    public class DateTimeExtensionsTests
+    [Fact]
+    public void GivenADateTime_WhenTruncated_HasNoFractionalMilliseconds()
     {
-        [Fact]
-        public void GivenADateTime_WhenTruncated_HasNoFractionalMilliseconds()
-        {
-            var dateTime = new DateTime(2019, 1, 1);
-            Assert.Equal(dateTime, dateTime.AddTicks(1).TruncateToMillisecond());
-        }
+        var dateTime = new DateTime(2019, 1, 1);
+        Assert.Equal(dateTime, dateTime.AddTicks(1).TruncateToMillisecond());
     }
 }

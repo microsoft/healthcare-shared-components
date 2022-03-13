@@ -10,17 +10,16 @@ using Microsoft.Extensions.Options;
 using Microsoft.Health.Api.Features.HealthChecks;
 using Microsoft.Health.Extensions.DependencyInjection;
 
-namespace Microsoft.Health.Api.Modules
-{
-    public class HealthCheckModule : IStartupModule
-    {
-        public void Load(IServiceCollection services)
-        {
-            EnsureArg.IsNotNull(services, nameof(services));
+namespace Microsoft.Health.Api.Modules;
 
-            services.Add<HealthCheckCachingPostConfigure>()
-                .Transient()
-                .AsService<IPostConfigureOptions<HealthCheckServiceOptions>>();
-        }
+public class HealthCheckModule : IStartupModule
+{
+    public void Load(IServiceCollection services)
+    {
+        EnsureArg.IsNotNull(services, nameof(services));
+
+        services.Add<HealthCheckCachingPostConfigure>()
+            .Transient()
+            .AsService<IPostConfigureOptions<HealthCheckServiceOptions>>();
     }
 }

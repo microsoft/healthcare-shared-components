@@ -5,25 +5,24 @@
 
 using Xunit;
 
-namespace Microsoft.Health.Core.Extensions.UnitTests
+namespace Microsoft.Health.Core.Extensions.UnitTests;
+
+public class DecimalExtensionsTests
 {
-    public class DecimalExtensionsTests
+    [Theory]
+    [InlineData("100", ".5")]
+    [InlineData("100.0", ".05")]
+    [InlineData("100.00", ".005")]
+    [InlineData("100.000", ".0005")]
+    [InlineData("100.010", ".0005")]
+    [InlineData("100.0000", ".00005")]
+    [InlineData("100.00000", ".000005")]
+    [InlineData("100.12345", ".000005")]
+    [InlineData(".1234567890123456789012345678", "0")]
+    public void GivenADecimal_WhenGetPrecisionModifierIsCalled_ThenCorrectDecimalIsReturned(string input, string expected)
     {
-        [Theory]
-        [InlineData("100", ".5")]
-        [InlineData("100.0", ".05")]
-        [InlineData("100.00", ".005")]
-        [InlineData("100.000", ".0005")]
-        [InlineData("100.010", ".0005")]
-        [InlineData("100.0000", ".00005")]
-        [InlineData("100.00000", ".000005")]
-        [InlineData("100.12345", ".000005")]
-        [InlineData(".1234567890123456789012345678", "0")]
-        public void GivenADecimal_WhenGetPrecisionModifierIsCalled_ThenCorrectDecimalIsReturned(string input, string expected)
-        {
-            var inputDecimal = decimal.Parse(input);
-            var expectedDecimal = decimal.Parse(expected);
-            Assert.Equal(expectedDecimal, inputDecimal.GetPrescisionModifier());
-        }
+        var inputDecimal = decimal.Parse(input);
+        var expectedDecimal = decimal.Parse(expected);
+        Assert.Equal(expectedDecimal, inputDecimal.GetPrescisionModifier());
     }
 }

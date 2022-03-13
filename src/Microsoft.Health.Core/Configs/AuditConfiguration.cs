@@ -5,37 +5,36 @@
 
 using Microsoft.Health.Core.Exceptions;
 
-namespace Microsoft.Health.Core.Configs
+namespace Microsoft.Health.Core.Configs;
+
+public class AuditConfiguration
 {
-    public class AuditConfiguration
+    private string _customAuditHeaderPrefix;
+
+    public AuditConfiguration()
     {
-        private string _customAuditHeaderPrefix;
+    }
 
-        public AuditConfiguration()
+    public AuditConfiguration(string customAuditHeaderPrefix)
+    {
+        CustomAuditHeaderPrefix = customAuditHeaderPrefix;
+    }
+
+    public string CustomAuditHeaderPrefix
+    {
+        get
         {
+            return _customAuditHeaderPrefix;
         }
 
-        public AuditConfiguration(string customAuditHeaderPrefix)
+        set
         {
-            CustomAuditHeaderPrefix = customAuditHeaderPrefix;
-        }
-
-        public string CustomAuditHeaderPrefix
-        {
-            get
+            if (string.IsNullOrEmpty(value))
             {
-                return _customAuditHeaderPrefix;
+                throw new InvalidDefinitionException(Resources.CustomHeaderPrefixCannotBeEmpty);
             }
 
-            set
-            {
-                if (string.IsNullOrEmpty(value))
-                {
-                    throw new InvalidDefinitionException(Resources.CustomHeaderPrefixCannotBeEmpty);
-                }
-
-                _customAuditHeaderPrefix = value;
-            }
+            _customAuditHeaderPrefix = value;
         }
     }
 }

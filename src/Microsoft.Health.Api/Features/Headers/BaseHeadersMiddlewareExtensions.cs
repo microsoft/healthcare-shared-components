@@ -5,14 +5,13 @@
 
 using Microsoft.AspNetCore.Builder;
 
-namespace Microsoft.Health.Api.Features.Headers
+namespace Microsoft.Health.Api.Features.Headers;
+
+public static class BaseHeadersMiddlewareExtensions
 {
-    public static class BaseHeadersMiddlewareExtensions
+    public static IApplicationBuilder UseBaseHeaders(
+        this IApplicationBuilder builder)
     {
-        public static IApplicationBuilder UseBaseHeaders(
-            this IApplicationBuilder builder)
-        {
-            return builder.UseMiddleware<BaseHeadersMiddleware>();
-        }
+        return builder.UseMiddleware<BaseHeadersMiddleware>();
     }
 }

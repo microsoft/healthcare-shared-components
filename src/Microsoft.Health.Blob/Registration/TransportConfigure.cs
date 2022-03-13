@@ -8,16 +8,15 @@ using EnsureThat;
 using Microsoft.Extensions.Options;
 using Microsoft.Health.Blob.Configs;
 
-namespace Microsoft.Health.Blob.Registration
+namespace Microsoft.Health.Blob.Registration;
+
+internal class TransportConfigure : IConfigureOptions<BlobClientOptions>
 {
-    internal class TransportConfigure : IConfigureOptions<BlobClientOptions>
-    {
-        private readonly TransportOverrideOptions _desiredOptions;
+    private readonly TransportOverrideOptions _desiredOptions;
 
-        public TransportConfigure(TransportOverrideOptions options)
-            => _desiredOptions = EnsureArg.IsNotNull(options, nameof(options));
+    public TransportConfigure(TransportOverrideOptions options)
+        => _desiredOptions = EnsureArg.IsNotNull(options, nameof(options));
 
-        public void Configure(BlobClientOptions options)
-            => options.Transport = _desiredOptions.Transport;
-    }
+    public void Configure(BlobClientOptions options)
+        => options.Transport = _desiredOptions.Transport;
 }

@@ -9,31 +9,30 @@ using System.Threading.Tasks;
 using Azure;
 using Azure.Messaging.EventGrid;
 
-namespace Microsoft.Health.EventGrid
+namespace Microsoft.Health.EventGrid;
+
+/// <summary>
+/// Abstraction for the Azure.Messaging.EventGridPublisherClient
+/// </summary>
+public interface IEventGridPublisher
 {
     /// <summary>
-    /// Abstraction for the Azure.Messaging.EventGridPublisherClient
+    /// SendEventAsync
     /// </summary>
-    public interface IEventGridPublisher
-    {
-        /// <summary>
-        /// SendEventAsync
-        /// </summary>
-        /// <param name="eventGridEvent">EventGridEvent</param>
-        /// <param name="cancellationToken">CancellationToken</param>
-        /// <returns>Task</returns>
-        public Task<Response> SendEventAsync(
-            EventGridEvent eventGridEvent,
-            CancellationToken cancellationToken = default);
+    /// <param name="eventGridEvent">EventGridEvent</param>
+    /// <param name="cancellationToken">CancellationToken</param>
+    /// <returns>Task</returns>
+    public Task<Response> SendEventAsync(
+        EventGridEvent eventGridEvent,
+        CancellationToken cancellationToken = default);
 
-        /// <summary>
-        /// SendEventsAsync
-        /// </summary>
-        /// <param name="eventGridEvents">EventGridEvent</param>
-        /// <param name="cancellationToken">CancellationToken</param>
-        /// <returns>Task</returns>
-        public Task<Response> SendEventsAsync(
-            IEnumerable<EventGridEvent> eventGridEvents,
-            CancellationToken cancellationToken = default);
-    }
+    /// <summary>
+    /// SendEventsAsync
+    /// </summary>
+    /// <param name="eventGridEvents">EventGridEvent</param>
+    /// <param name="cancellationToken">CancellationToken</param>
+    /// <returns>Task</returns>
+    public Task<Response> SendEventsAsync(
+        IEnumerable<EventGridEvent> eventGridEvents,
+        CancellationToken cancellationToken = default);
 }

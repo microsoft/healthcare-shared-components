@@ -5,18 +5,17 @@
 
 using System;
 
-namespace Microsoft.Health.Core
+namespace Microsoft.Health.Core;
+
+public static class Clock
 {
-    public static class Clock
+    private static Func<DateTimeOffset> _utcNowFunc = () => DateTimeOffset.UtcNow;
+
+    public static DateTimeOffset UtcNow => _utcNowFunc();
+
+    internal static Func<DateTimeOffset> UtcNowFunc
     {
-        private static Func<DateTimeOffset> _utcNowFunc = () => DateTimeOffset.UtcNow;
-
-        public static DateTimeOffset UtcNow => _utcNowFunc();
-
-        internal static Func<DateTimeOffset> UtcNowFunc
-        {
-            get => _utcNowFunc;
-            set => _utcNowFunc = value;
-        }
+        get => _utcNowFunc;
+        set => _utcNowFunc = value;
     }
 }

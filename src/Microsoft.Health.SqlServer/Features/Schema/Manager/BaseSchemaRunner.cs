@@ -13,137 +13,136 @@ using Microsoft.Health.SqlServer.Extensions;
 using Microsoft.Health.SqlServer.Features.Schema.Manager.Exceptions;
 using Polly;
 
-namespace Microsoft.Health.SqlServer.Features.Schema.Manager
+namespace Microsoft.Health.SqlServer.Features.Schema.Manager;
+
+public class BaseSchemaRunner : IBaseSchemaRunner
 {
-    public class BaseSchemaRunner : IBaseSchemaRunner
+    private static readonly TimeSpan RetrySleepDuration = TimeSpan.FromSeconds(20);
+    private const int RetryAttempts = 3;
+    private readonly ISqlConnectionBuilder _sqlConnectionBuilder;
+    private readonly ISchemaManagerDataStore _schemaManagerDataStore;
+    private readonly ISqlConnectionStringProvider _sqlConnectionStringProvider;
+    private readonly ILogger<BaseSchemaRunner> _logger;
+
+    public BaseSchemaRunner(
+        ISqlConnectionBuilder sqlConnectionBuilder,
+        ISchemaManagerDataStore schemaManagerDataStore,
+        ISqlConnectionStringProvider sqlConnectionStringProvider,
+        ILogger<BaseSchemaRunner> logger)
     {
-        private static readonly TimeSpan RetrySleepDuration = TimeSpan.FromSeconds(20);
-        private const int RetryAttempts = 3;
-        private readonly ISqlConnectionBuilder _sqlConnectionBuilder;
-        private readonly ISchemaManagerDataStore _schemaManagerDataStore;
-        private readonly ISqlConnectionStringProvider _sqlConnectionStringProvider;
-        private readonly ILogger<BaseSchemaRunner> _logger;
+        EnsureArg.IsNotNull(sqlConnectionBuilder);
+        EnsureArg.IsNotNull(schemaManagerDataStore);
+        EnsureArg.IsNotNull(sqlConnectionStringProvider);
+        EnsureArg.IsNotNull(logger, nameof(logger));
 
-        public BaseSchemaRunner(
-            ISqlConnectionBuilder sqlConnectionBuilder,
-            ISchemaManagerDataStore schemaManagerDataStore,
-            ISqlConnectionStringProvider sqlConnectionStringProvider,
-            ILogger<BaseSchemaRunner> logger)
+        _sqlConnectionBuilder = sqlConnectionBuilder;
+        _schemaManagerDataStore = schemaManagerDataStore;
+        _sqlConnectionStringProvider = sqlConnectionStringProvider;
+        _logger = logger;
+    }
+
+    public async Task EnsureBaseSchemaExistsAsync(CancellationToken cancellationToken)
+    {
+        IBaseScriptProvider baseScriptProvider = new BaseScriptProvider();
+
+        await InitializeAsync(cancellationToken);
+
+        if (!await _schemaManagerDataStore.BaseSchemaExistsAsync(cancellationToken))
         {
-            EnsureArg.IsNotNull(sqlConnectionBuilder);
-            EnsureArg.IsNotNull(schemaManagerDataStore);
-            EnsureArg.IsNotNull(sqlConnectionStringProvider);
-            EnsureArg.IsNotNull(logger, nameof(logger));
+            var script = baseScriptProvider.GetScript();
 
-            _sqlConnectionBuilder = sqlConnectionBuilder;
-            _schemaManagerDataStore = schemaManagerDataStore;
-            _sqlConnectionStringProvider = sqlConnectionStringProvider;
-            _logger = logger;
+            _logger.LogInformation("The base schema execution is started.");
+
+            await _schemaManagerDataStore.ExecuteScriptAsync(script, cancellationToken);
+
+            _logger.LogInformation("The base schema execution is completed.");
         }
-
-        public async Task EnsureBaseSchemaExistsAsync(CancellationToken cancellationToken)
+        else
         {
-            IBaseScriptProvider baseScriptProvider = new BaseScriptProvider();
+            _logger.LogWarning("The base schema already exists.");
+        }
+    }
 
-            await InitializeAsync(cancellationToken);
+    public async Task EnsureInstanceSchemaRecordExistsAsync(CancellationToken cancellationToken)
+    {
+        // Ensure that the current version record is inserted into InstanceSchema table
+        int attempts = 1;
 
-            if (!await _schemaManagerDataStore.BaseSchemaExistsAsync(cancellationToken))
+        await Policy.Handle<SchemaManagerException>()
+        .WaitAndRetryAsync(
+            retryCount: RetryAttempts,
+            sleepDurationProvider: (retryCount) => RetrySleepDuration,
+            onRetry: (exception, retryCount) =>
             {
-                var script = baseScriptProvider.GetScript();
+                _logger.LogWarning(
+                    exception,
+                    "Attempt {Attempt} of {MaxAttempts} to verify if the base schema is synced up with the service.",
+                    attempts++,
+                    RetryAttempts);
+            })
+        .ExecuteAsync(token => InstanceSchemaRecordCreatedAsync(token), cancellationToken);
+    }
 
-                _logger.LogInformation("The base schema execution is started.");
-
-                await _schemaManagerDataStore.ExecuteScriptAsync(script, cancellationToken);
-
-                _logger.LogInformation("The base schema execution is completed.");
+    private async Task InstanceSchemaRecordCreatedAsync(CancellationToken cancellationToken)
+    {
+        try
+        {
+            if (!await _schemaManagerDataStore.InstanceSchemaRecordExistsAsync(cancellationToken))
+            {
+                throw new SchemaManagerException(Resources.InstanceSchemaRecordErrorMessage);
             }
-            else
-            {
-                _logger.LogWarning("The base schema already exists.");
-            }
+        }
+        catch (SqlException e) when (e.Message.Contains("Invalid object name", StringComparison.OrdinalIgnoreCase))
+        {
+            // Table doesn't exist
+            throw new SchemaManagerException(Resources.InstanceSchemaRecordTableNotFound, e);
+        }
+    }
+
+    private async Task InitializeAsync(CancellationToken cancellationToken)
+    {
+        string sqlConnectionString = await _sqlConnectionStringProvider.GetSqlConnectionString(cancellationToken);
+        var configuredConnectionBuilder = new SqlConnectionStringBuilder(sqlConnectionString);
+        string databaseName = configuredConnectionBuilder.InitialCatalog;
+
+        SchemaInitializer.ValidateDatabaseName(databaseName);
+
+        await CreateDatabaseIfNotExists(databaseName, cancellationToken);
+
+        bool canInitialize = false;
+
+        // now switch to the target database
+        using (var connection = await _sqlConnectionBuilder.GetSqlConnectionAsync(cancellationToken: cancellationToken))
+        {
+            canInitialize = await SchemaInitializer.CheckDatabasePermissionsAsync(connection, cancellationToken);
         }
 
-        public async Task EnsureInstanceSchemaRecordExistsAsync(CancellationToken cancellationToken)
+        if (!canInitialize)
         {
-            // Ensure that the current version record is inserted into InstanceSchema table
-            int attempts = 1;
-
-            await Policy.Handle<SchemaManagerException>()
-            .WaitAndRetryAsync(
-                retryCount: RetryAttempts,
-                sleepDurationProvider: (retryCount) => RetrySleepDuration,
-                onRetry: (exception, retryCount) =>
-                {
-                    _logger.LogWarning(
-                        exception,
-                        "Attempt {Attempt} of {MaxAttempts} to verify if the base schema is synced up with the service.",
-                        attempts++,
-                        RetryAttempts);
-                })
-            .ExecuteAsync(token => InstanceSchemaRecordCreatedAsync(token), cancellationToken);
+            throw new SchemaManagerException(Resources.InsufficientTablesPermissionsMessage);
         }
+    }
 
-        private async Task InstanceSchemaRecordCreatedAsync(CancellationToken cancellationToken)
+    private async Task CreateDatabaseIfNotExists(string databaseName, CancellationToken cancellationToken)
+    {
+        using (var connection = await _sqlConnectionBuilder.GetSqlConnectionAsync(cancellationToken: cancellationToken))
         {
-            try
+            await connection.TryOpenAsync(cancellationToken);
+
+            bool doesDatabaseExist = await SchemaInitializer.DoesDatabaseExistAsync(connection, databaseName, cancellationToken);
+            if (!doesDatabaseExist)
             {
-                if (!await _schemaManagerDataStore.InstanceSchemaRecordExistsAsync(cancellationToken))
+                _logger.LogInformation("The database does not exists.");
+
+                bool created = await SchemaInitializer.CreateDatabaseAsync(connection, databaseName, cancellationToken);
+
+                if (created)
                 {
-                    throw new SchemaManagerException(Resources.InstanceSchemaRecordErrorMessage);
+                    _logger.LogInformation("The database is created.");
                 }
-            }
-            catch (SqlException e) when (e.Message.Contains("Invalid object name", StringComparison.OrdinalIgnoreCase))
-            {
-                // Table doesn't exist
-                throw new SchemaManagerException(Resources.InstanceSchemaRecordTableNotFound, e);
-            }
-        }
-
-        private async Task InitializeAsync(CancellationToken cancellationToken)
-        {
-            string sqlConnectionString = await _sqlConnectionStringProvider.GetSqlConnectionString(cancellationToken);
-            var configuredConnectionBuilder = new SqlConnectionStringBuilder(sqlConnectionString);
-            string databaseName = configuredConnectionBuilder.InitialCatalog;
-
-            SchemaInitializer.ValidateDatabaseName(databaseName);
-
-            await CreateDatabaseIfNotExists(databaseName, cancellationToken);
-
-            bool canInitialize = false;
-
-            // now switch to the target database
-            using (var connection = await _sqlConnectionBuilder.GetSqlConnectionAsync(cancellationToken: cancellationToken))
-            {
-                canInitialize = await SchemaInitializer.CheckDatabasePermissionsAsync(connection, cancellationToken);
-            }
-
-            if (!canInitialize)
-            {
-                throw new SchemaManagerException(Resources.InsufficientTablesPermissionsMessage);
-            }
-        }
-
-        private async Task CreateDatabaseIfNotExists(string databaseName, CancellationToken cancellationToken)
-        {
-            using (var connection = await _sqlConnectionBuilder.GetSqlConnectionAsync(cancellationToken: cancellationToken))
-            {
-                await connection.TryOpenAsync(cancellationToken);
-
-                bool doesDatabaseExist = await SchemaInitializer.DoesDatabaseExistAsync(connection, databaseName, cancellationToken);
-                if (!doesDatabaseExist)
+                else
                 {
-                    _logger.LogInformation("The database does not exists.");
-
-                    bool created = await SchemaInitializer.CreateDatabaseAsync(connection, databaseName, cancellationToken);
-
-                    if (created)
-                    {
-                        _logger.LogInformation("The database is created.");
-                    }
-                    else
-                    {
-                        throw new SchemaManagerException(Resources.InsufficientDatabasePermissionsMessage);
-                    }
+                    throw new SchemaManagerException(Resources.InsufficientDatabasePermissionsMessage);
                 }
             }
         }

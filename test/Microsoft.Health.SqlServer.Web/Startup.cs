@@ -15,41 +15,40 @@ using Microsoft.Health.SqlServer.Features.Schema;
 using Microsoft.Health.SqlServer.Registration;
 using Microsoft.Health.SqlServer.Web.Features.Schema;
 
-namespace Microsoft.Health.SqlServer.Web
+namespace Microsoft.Health.SqlServer.Web;
+
+public class Startup
 {
-    public class Startup
+    public Startup(IConfiguration configuration)
     {
-        public Startup(IConfiguration configuration)
-        {
-            Configuration = configuration;
-        }
+        Configuration = configuration;
+    }
 
-        public IConfiguration Configuration { get; }
+    public IConfiguration Configuration { get; }
 
-        // This method gets called by the runtime. Use this method to add services to the container.
-        public virtual void ConfigureServices(IServiceCollection services)
-        {
-            services
-                .AddMvc(options => { options.EnableEndpointRouting = false; })
-                .AddNewtonsoftJson();
+    // This method gets called by the runtime. Use this method to add services to the container.
+    public virtual void ConfigureServices(IServiceCollection services)
+    {
+        services
+            .AddMvc(options => { options.EnableEndpointRouting = false; })
+            .AddNewtonsoftJson();
 
-            services
-                .AddSqlServerConnection(c => Configuration.GetSection(SqlServerDataStoreConfiguration.SectionName).Bind(c))
-                .AddSqlServerManagement<SchemaVersion>()
-                .AddSqlServerApi();
+        services
+            .AddSqlServerConnection(c => Configuration.GetSection(SqlServerDataStoreConfiguration.SectionName).Bind(c))
+            .AddSqlServerManagement<SchemaVersion>()
+            .AddSqlServerApi();
 
-            services.AddMediatR(typeof(CompatibilityVersionHandler).Assembly);
+        services.AddMediatR(typeof(CompatibilityVersionHandler).Assembly);
 
-            services.Add(provider => new SchemaInformation((int)SchemaVersion.Version1, (int)SchemaVersion.Version2))
-                .Singleton()
-                .AsSelf()
-                .AsImplementedInterfaces();
-        }
+        services.Add(provider => new SchemaInformation((int)SchemaVersion.Version1, (int)SchemaVersion.Version2))
+            .Singleton()
+            .AsSelf()
+            .AsImplementedInterfaces();
+    }
 
-        // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-        public virtual void Configure(IApplicationBuilder app)
-        {
-            app.UseMvc();
-        }
+    // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
+    public virtual void Configure(IApplicationBuilder app)
+    {
+        app.UseMvc();
     }
 }
