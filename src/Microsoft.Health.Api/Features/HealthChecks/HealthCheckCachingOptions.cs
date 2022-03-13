@@ -27,6 +27,6 @@ namespace Microsoft.Health.Api.Features.HealthChecks
         /// <summary>
         /// Gets or sets the maximum number of threads that can refresh the cache concurrently.
         /// </summary>
-        public int MaxRefreshThreads { get; set; } = 1;
+        public int MaxRefreshThreads { get; set; } = 2;
     }
 }

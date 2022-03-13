@@ -37,6 +37,7 @@ namespace Microsoft.Health.Api.UnitTests.Features.HealthCheck
                 .Returns(Task.FromResult(new HealthCheckResult(status)));
 
             _options.Expiry = TimeSpan.FromDays(1);
+            _options.MaxRefreshThreads = 1;
 
             CachedHealthCheck cache = CreateHealthCheck();
 
@@ -71,6 +72,7 @@ namespace Microsoft.Health.Api.UnitTests.Features.HealthCheck
 
             _options.Expiry = TimeSpan.FromSeconds(30);
             _options.RefreshOffset = TimeSpan.FromSeconds(28);
+            _options.MaxRefreshThreads = 1;
 
             CachedHealthCheck cache = CreateHealthCheck();
 
@@ -115,6 +117,7 @@ namespace Microsoft.Health.Api.UnitTests.Features.HealthCheck
                 .Returns(Task.FromResult(HealthCheckResult.Healthy()));
 
             _options.Expiry = TimeSpan.FromSeconds(1);
+            _options.MaxRefreshThreads = 1;
 
             CachedHealthCheck cache = CreateHealthCheck();
 
@@ -238,6 +241,7 @@ namespace Microsoft.Health.Api.UnitTests.Features.HealthCheck
 
             _options.Expiry = TimeSpan.FromSeconds(expirySeconds);
             _options.RefreshOffset = TimeSpan.FromSeconds(refreshOffsetSeconds);
+            _options.MaxRefreshThreads = 1;
 
             CachedHealthCheck cache = CreateHealthCheck();
 
@@ -297,6 +301,7 @@ namespace Microsoft.Health.Api.UnitTests.Features.HealthCheck
 
             _options.Expiry = TimeSpan.FromSeconds(expirySeconds);
             _options.RefreshOffset = TimeSpan.FromSeconds(refreshOffsetSeconds);
+            _options.MaxRefreshThreads = 1;
 
             CachedHealthCheck cache = CreateHealthCheck();
 

@@ -115,10 +115,23 @@ namespace Microsoft.Health.Api.UnitTests.Features.HealthCheck
                     })
                 .Build();
 
-            IOptions<HealthCheckCachingOptions> options = GetOptions(config);
-            Assert.Equal(TimeSpan.FromSeconds(15), options.Value.Expiry);
-            Assert.Equal(TimeSpan.FromSeconds(5), options.Value.RefreshOffset);
-            Assert.Equal(4, options.Value.MaxRefreshThreads);
+            HealthCheckCachingOptions options = GetOptions(config)?.Value;
+            Assert.Equal(TimeSpan.FromSeconds(15), options.Expiry);
+            Assert.Equal(TimeSpan.FromSeconds(5), options.RefreshOffset);
+            Assert.Equal(4, options.MaxRefreshThreads);
+        }
+
+        [Fact]
+        public void GivenNoConfiguration_WhenCreatingHealthCheckOptions_ThenPopulateDefault()
+        {
+            IServiceCollection services = new ServiceCollection();
+            new HealthCheckModule().Load(services);
+            IServiceProvider provider = services.BuildServiceProvider();
+
+            HealthCheckCachingOptions options = provider.GetRequiredService<IOptions<HealthCheckCachingOptions>>()?.Value;
+            Assert.Equal(TimeSpan.FromSeconds(1), options.Expiry);
+            Assert.Equal(TimeSpan.Zero, options.RefreshOffset);
+            Assert.Equal(2, options.MaxRefreshThreads);
         }
 
         private static IOptions<HealthCheckCachingOptions> GetOptions(IConfiguration config)
