@@ -22,7 +22,7 @@ namespace Microsoft.Health.Api.Features.HealthChecks
         private readonly SemaphoreSlim _semaphore;
 
         // By default, the times are DateTimeOffset.MinValue such that they are always considered invalid
-        private CachedHealthCheckResult _cachedResult = new CachedHealthCheckResult();
+        private CachedHealthCheckResult _cache = new CachedHealthCheckResult();
 
         public CachedHealthCheck(
             IHealthCheck healthCheck,
@@ -37,8 +37,10 @@ namespace Microsoft.Health.Api.Features.HealthChecks
 
         public Task<HealthCheckResult> CheckHealthAsync(HealthCheckContext context, CancellationToken cancellationToken = default)
         {
-            CacheSnapshot current = GetCacheSnapshot();
-            return current.RequiresRefresh ? RefreshCache(context, current, cancellationToken) : Task.FromResult(current.Result);
+            DateTimeOffset currentTime = Clock.UtcNow;
+            return IsUpToDate(currentTime)
+                ? Task.FromResult(_cache.Result)
+                : RefreshCache(context, !HasExpired(currentTime), cancellationToken);
         }
 
         public void Dispose()
@@ -47,14 +49,11 @@ namespace Microsoft.Health.Api.Features.HealthChecks
             GC.SuppressFinalize(this);
         }
 
-        private async Task<HealthCheckResult> RefreshCache(
-            HealthCheckContext context,
-            CacheSnapshot current,
-            CancellationToken cancellationToken)
+        private async Task<HealthCheckResult> RefreshCache(HealthCheckContext context, bool canSkip, CancellationToken cancellationToken)
         {
             // If the cache is stale but not expired, then we make a best effort to refresh if the semaphore isn't
             // currently occupied by another thread. Otherwise, we'll use the cached value.
-            TimeSpan maxWait = current.HasExpired ? Timeout.InfiniteTimeSpan : TimeSpan.Zero;
+            TimeSpan maxWait = canSkip ? TimeSpan.Zero : Timeout.InfiniteTimeSpan;
 
             try
             {
@@ -62,29 +61,21 @@ namespace Microsoft.Health.Api.Features.HealthChecks
                 //       If the token is canceled, the method throws instead an OperationCanceledException.
                 if (!await _semaphore.WaitAsync(maxWait, cancellationToken).ConfigureAwait(false))
                 {
-                    return _cachedResult.Result;
+                    return _cache.Result;
                 }
             }
-            catch (OperationCanceledException oce)
+            catch (OperationCanceledException oce) when (!HasExpired(Clock.UtcNow))
             {
-                // Re-evaluate the current time and return the cached value if it's still valid
-                current = GetCacheSnapshot();
-                if (current.HasExpired)
-                {
-                    _logger.LogWarning(oce, $"Cancellation was requested for {nameof(CheckHealthAsync)}.");
-                    throw;
-                }
-
-                return current.Result;
+                _logger.LogWarning(oce, "Token canceled while waiting for semaphore. Falling back to cache.");
+                return _cache.Result;
             }
 
             try
             {
                 // Once we've entered the semaphore, check the cache again for its freshness
-                current = GetCacheSnapshot();
-                if (!current.RequiresRefresh)
+                if (IsUpToDate(Clock.UtcNow))
                 {
-                    return current.Result;
+                    return _cache.Result;
                 }
 
                 HealthCheckResult result;
@@ -92,26 +83,19 @@ namespace Microsoft.Health.Api.Features.HealthChecks
                 {
                     result = await _healthCheck.CheckHealthAsync(context, cancellationToken).ConfigureAwait(false);
                 }
-                catch (OperationCanceledException oce)
+                catch (OperationCanceledException oce) when (!HasExpired(Clock.UtcNow))
                 {
-                    // Re-evaluate the current time and return the cached value if it's still valid
-                    current = GetCacheSnapshot();
-                    if (current.HasExpired)
-                    {
-                        _logger.LogWarning(oce, $"Cancellation was requested for {nameof(CheckHealthAsync)}.");
-                        throw;
-                    }
-
-                    return current.Result;
+                    _logger.LogWarning(oce, "Token canceled while waiting for health check. Falling back to cache.");
+                    return _cache.Result;
                 }
-                catch (Exception ex)
+                catch (Exception ex) when (ex is not OperationCanceledException)
                 {
                     _logger.LogError(ex, "Health check failed to complete.");
                     result = HealthCheckResult.Unhealthy(Resources.FailedHealthCheckMessage); // Do not pass error to caller
                 }
 
                 // Update cache based on the latest snapshot
-                return RefreshCache(GetCacheSnapshot(), result);
+                return RefreshCache(result);
             }
             finally
             {
@@ -119,43 +103,36 @@ namespace Microsoft.Health.Api.Features.HealthChecks
             }
         }
 
-        private HealthCheckResult RefreshCache(CacheSnapshot expectedCurrent, HealthCheckResult newResult)
+        private HealthCheckResult RefreshCache(HealthCheckResult newResult)
         {
             // The cache if it's not up-to-date or we found a better status
-            if (expectedCurrent.RequiresRefresh || newResult.Status > expectedCurrent.Result.Status)
+            DateTimeOffset currentTime = Clock.UtcNow;
+            CachedHealthCheckResult currentCache = _cache;
+
+            if (currentTime >= currentCache.StaleTime || newResult.Status > currentCache.Result.Status)
             {
                 var newCache = new CachedHealthCheckResult
                 {
-                    ExpireTime = expectedCurrent.Timestamp + _options.Expiry,
-                    StaleTime = expectedCurrent.Timestamp + _options.Expiry - _options.RefreshOffset,
+                    ExpireTime = currentTime + _options.Expiry,
+                    StaleTime = currentTime + _options.Expiry - _options.RefreshOffset,
                     Result = newResult,
                 };
 
                 // Other threads may have updated it while we were checking the cache's validity,
                 // so we need to check what Interlock.CompareExchange found to be the previous cached value.
-                CachedHealthCheckResult actualCurrentCache = Interlocked.CompareExchange(ref _cachedResult, newCache, expectedCurrent.Cache);
-                return ReferenceEquals(actualCurrentCache, expectedCurrent.Cache) ? newResult : actualCurrentCache.Result;
+                CachedHealthCheckResult actualCurrentCache = Interlocked.CompareExchange(ref _cache, newCache, currentCache);
+                return ReferenceEquals(actualCurrentCache, currentCache) ? newResult : actualCurrentCache.Result;
             }
 
             // Otherwise, return whatever is the current cache
-            return _cachedResult.Result;
+            return _cache.Result;
         }
 
-        private CacheSnapshot GetCacheSnapshot()
-            => new CacheSnapshot { Cache = _cachedResult, Timestamp = Clock.UtcNow };
+        private bool HasExpired(DateTimeOffset timestamp)
+            => timestamp >= _cache.ExpireTime;
 
-        private readonly struct CacheSnapshot
-        {
-            public DateTimeOffset Timestamp { get; init; }
-
-            public CachedHealthCheckResult Cache { get; init; }
-
-            public HealthCheckResult Result => Cache.Result;
-
-            public bool RequiresRefresh => Timestamp >= Cache.StaleTime;
-
-            public bool HasExpired => Timestamp >= Cache.ExpireTime;
-        }
+        private bool IsUpToDate(DateTimeOffset timestamp)
+            => timestamp < _cache.StaleTime;
 
         private sealed class CachedHealthCheckResult
         {
