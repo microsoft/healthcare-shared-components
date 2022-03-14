@@ -4,6 +4,7 @@
 // -------------------------------------------------------------------------------------------------
 
 using System;
+using System.Globalization;
 
 namespace Microsoft.Health.Api.Features.Audit
 {
@@ -24,7 +25,7 @@ namespace Microsoft.Health.Api.Features.Audit
         }
 
         public DuplicateActionForAuditEventException(string controllerName, string actionName)
-            : base(string.Format(Resources.DuplicateActionForAuditEvent, controllerName, actionName))
+            : base(string.Format(CultureInfo.CurrentCulture, Resources.DuplicateActionForAuditEvent, controllerName, actionName))
         {
         }
     }

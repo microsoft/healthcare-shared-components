@@ -5,6 +5,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -71,7 +72,7 @@ namespace Microsoft.Health.SqlServer.Features.Storage
                 }
                 else
                 {
-                    return Convert.ToInt32(o);
+                    return Convert.ToInt32(o, CultureInfo.InvariantCulture);
                 }
             }
         }

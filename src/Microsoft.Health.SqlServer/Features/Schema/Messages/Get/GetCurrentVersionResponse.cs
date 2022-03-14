@@ -7,6 +7,8 @@ using System.Collections.Generic;
 using EnsureThat;
 using Microsoft.Health.SqlServer.Features.Schema.Model;
 
+#pragma warning disable CA1716 // Identifiers should not match keywords
+
 namespace Microsoft.Health.SqlServer.Features.Schema.Messages.Get
 {
     public class GetCurrentVersionResponse
@@ -21,3 +23,5 @@ namespace Microsoft.Health.SqlServer.Features.Schema.Messages.Get
         public IList<CurrentVersionInformation> CurrentVersions { get; }
     }
 }
+
+#pragma warning restore CA1716 // Identifiers should not match keywords
