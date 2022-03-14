@@ -6,7 +6,7 @@ steps:
 
 # All variables from the GitVersion task are prefixed by "GitVersion." (eg. GitVersion.SemVer)
 - task: gitversion/execute@0
-  name: 'DicomVersion'
+  name: 'SharedComponentsVersioning'
   displayName: 'Run GitVersion'
   inputs:
     configFilePath: 'GitVersion.yml'

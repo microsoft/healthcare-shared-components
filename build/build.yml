@@ -1,5 +1,5 @@
 parameters:
-  package: 'true'
+  pack: 'true'
 
 steps:
 - task: UseDotNet@2
@@ -26,7 +26,7 @@ steps:
     projects: '**/*UnitTests/*.csproj'
     arguments: '--configuration $(buildConfiguration) --no-build'
 
-- ${{ if eq(parameters.package, 'true') }}:
+- ${{ if eq(parameters.pack, 'true') }}:
   - task: DotNetCoreCLI@2
     displayName: 'dotnet pack'
     inputs:
@@ -36,4 +36,3 @@ steps:
       versioningScheme: 'byEnvVar'
       versionEnvVar: 'nuGetVersion'
       nobuild: true
-      zipAfterPublish: true

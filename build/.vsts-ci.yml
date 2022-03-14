@@ -36,15 +36,15 @@ jobs:
   dependsOn:
   - Semver
   variables:
-    assemblySemVer: $[dependencies.Semver.outputs['SetVariablesFromGitVersion.assemblySemVer']]
-    assemblySemFileVer: $[dependencies.Semver.outputs['SetVariablesFromGitVersion.assemblySemFileVer']]
-    informationalVersion: $[dependencies.Semver.outputs['SetVariablesFromGitVersion.informationalVersion']]
-    majorMinorPatch: $[dependencies.Semver.outputs['SetVariablesFromGitVersion.majorMinorPatch']]
-    nuGetVersion: $[dependencies.Semver.outputs['SetVariablesFromGitVersion.nuGetVersion']]
+    assemblySemVer: $[dependencies.Semver.outputs['SharedComponentsVersioning.GitVersion.AssemblySemVer']]
+    assemblySemFileVer: $[dependencies.Semver.outputs['SharedComponentsVersioning.GitVersion.AssemblySemFileVer']]
+    informationalVersion: $[dependencies.Semver.outputs['SharedComponentsVersioning.GitVersion.InformationalVersion']]
+    majorMinorPatch: $[dependencies.Semver.outputs['SharedComponentsVersioning.GitVersion.MajorMinorPatch']]
+    nuGetVersion: $[dependencies.Semver.outputs['SharedComponentsVersioning.GitVersion.SemVer']]
   steps:
   - template: build.yml
     parameters:
-      package: 'false'
+      pack: 'false'
 
 - job: WindowsBuild
   displayName: 'Build (Windows)'
@@ -53,11 +53,11 @@ jobs:
   dependsOn:
   - Semver
   variables:
-    assemblySemVer: $[dependencies.Semver.outputs['SetVariablesFromGitVersion.assemblySemVer']]
-    assemblySemFileVer: $[dependencies.Semver.outputs['SetVariablesFromGitVersion.assemblySemFileVer']]
-    informationalVersion: $[dependencies.Semver.outputs['SetVariablesFromGitVersion.informationalVersion']]
-    majorMinorPatch: $[dependencies.Semver.outputs['SetVariablesFromGitVersion.majorMinorPatch']]
-    nuGetVersion: $[dependencies.Semver.outputs['SetVariablesFromGitVersion.nuGetVersion']]
+    assemblySemVer: $[dependencies.Semver.outputs['SharedComponentsVersioning.GitVersion.AssemblySemVer']]
+    assemblySemFileVer: $[dependencies.Semver.outputs['SharedComponentsVersioning.GitVersion.AssemblySemFileVer']]
+    informationalVersion: $[dependencies.Semver.outputs['SharedComponentsVersioning.GitVersion.InformationalVersion']]
+    majorMinorPatch: $[dependencies.Semver.outputs['SharedComponentsVersioning.GitVersion.MajorMinorPatch']]
+    nuGetVersion: $[dependencies.Semver.outputs['SharedComponentsVersioning.GitVersion.SemVer']]
   steps:
   - template: build.yml
   - template: analyze.yml
