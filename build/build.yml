@@ -26,6 +26,14 @@ steps:
     projects: '**/*UnitTests/*.csproj'
     arguments: '--configuration $(buildConfiguration) --no-build'
 
+- task: ComponentGovernanceComponentDetection@0
+  displayName: 'Component Governance'
+  inputs:
+    scanType: 'Register'
+    verbosity: 'Verbose'
+    alertWarningLevel: 'High'
+    failOnAlert: true
+
 - ${{ if eq(parameters.pack, 'true') }}:
   - task: DotNetCoreCLI@2
     displayName: 'dotnet pack'
