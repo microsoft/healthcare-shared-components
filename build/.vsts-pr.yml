@@ -16,6 +16,7 @@ pr:
 
 jobs:
 - job: Semver
+  displayName: 'Update Semantic Version'
   pool:
     vmImage: 'windows-latest'
   steps:
@@ -27,6 +28,7 @@ jobs:
     name: SetBuildVersion
 
 - job: LinuxBuild
+  displayName: 'Build (Linux)'
   pool:
     vmImage: 'ubuntu-latest'
   dependsOn:
@@ -41,6 +43,7 @@ jobs:
   - template: build.yml
 
 - job: WindowsBuild
+  displayName: 'Build (Windows)'
   pool:
     vmImage: 'windows-latest'
   dependsOn:

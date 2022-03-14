@@ -22,7 +22,7 @@ steps:
 
   - task: PublishSymbols@2
     displayName: 'Publish Symbols'
-    condition: eq(parameters.publishSymbols, 'true')
+    condition: eq('${{ parameters.publishSymbols }}', 'true')
     inputs:
       symbolsFolder: '$(build.sourcesDirectory)'
       searchPattern: '**/bin/**/*.pdb'
