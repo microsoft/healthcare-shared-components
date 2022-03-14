@@ -6,6 +6,8 @@ variables:
   buildConfiguration: 'Release'
   skipNugetSecurityAnalysis: 'true'
 
+trigger: none
+
 pr:
   branches:
     include:
@@ -41,6 +43,8 @@ jobs:
     nuGetVersion: $[dependencies.Semver.outputs['SetVariablesFromGitVersion.nuGetVersion']]
   steps:
   - template: build.yml
+    parameters:
+      package: 'false'
 
 - job: WindowsBuild
   displayName: 'Build (Windows)'
@@ -57,4 +61,4 @@ jobs:
   steps:
   - template: build.yml
   - template: analyze.yml
-  - template: package.yml
+  - template: publish.yml

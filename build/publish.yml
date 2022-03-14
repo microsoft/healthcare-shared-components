@@ -1,0 +1,16 @@
+parameters:
+  includeSymbols: false
+
+steps:
+# Publish Artifacts
+- publish: '$(build.artifactStagingDirectory)/nupkgs'
+  artifact: 'nuget'
+
+- ${{ if eq(parameters.includeSymbols, 'true') }}:
+  - task: PublishSymbols@2
+    displayName: 'Publish Symbols'
+    inputs:
+      symbolsFolder: '$(build.sourcesDirectory)'
+      searchPattern: '**/bin/**/*.pdb'
+      symbolServerType: 'TeamServices'
+      indexSources: false # done in build step
