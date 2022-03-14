@@ -9,29 +9,28 @@ using System.Threading;
 using System.Threading.Tasks;
 using EnsureThat;
 
-namespace Microsoft.Health.Client
+namespace Microsoft.Health.Client;
+
+public class AuthenticationHttpMessageHandler : DelegatingHandler
 {
-    public class AuthenticationHttpMessageHandler : DelegatingHandler
+    private readonly ICredentialProvider _credentialProvider;
+
+    public AuthenticationHttpMessageHandler(ICredentialProvider credentialProvider)
     {
-        private readonly ICredentialProvider _credentialProvider;
+        EnsureArg.IsNotNull(credentialProvider, nameof(credentialProvider));
 
-        public AuthenticationHttpMessageHandler(ICredentialProvider credentialProvider)
-        {
-            EnsureArg.IsNotNull(credentialProvider, nameof(credentialProvider));
+        _credentialProvider = credentialProvider;
+    }
 
-            _credentialProvider = credentialProvider;
-        }
+    protected override async Task<HttpResponseMessage> SendAsync(
+        HttpRequestMessage request,
+        CancellationToken cancellationToken)
+    {
+        EnsureArg.IsNotNull(request, nameof(request));
 
-        protected override async Task<HttpResponseMessage> SendAsync(
-            HttpRequestMessage request,
-            CancellationToken cancellationToken)
-        {
-            EnsureArg.IsNotNull(request, nameof(request));
+        request.Headers.Authorization =
+            new AuthenticationHeaderValue("Bearer", await _credentialProvider.GetBearerToken(cancellationToken).ConfigureAwait(false));
 
-            request.Headers.Authorization =
-                new AuthenticationHeaderValue("Bearer", await _credentialProvider.GetBearerToken(cancellationToken).ConfigureAwait(false));
-
-            return await base.SendAsync(request, cancellationToken).ConfigureAwait(false);
-        }
+        return await base.SendAsync(request, cancellationToken).ConfigureAwait(false);
     }
 }

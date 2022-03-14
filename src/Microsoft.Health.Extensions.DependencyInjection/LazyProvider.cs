@@ -7,25 +7,24 @@ using System;
 using EnsureThat;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace Microsoft.Health.Extensions.DependencyInjection
+namespace Microsoft.Health.Extensions.DependencyInjection;
+
+/// <summary>
+/// Enables generic resolution of Lazy services from IoC
+/// </summary>
+/// <typeparam name="T">Type of service to resolve</typeparam>
+/// <seealso cref="System.Lazy{T}" />
+public class LazyProvider<T> : Lazy<T>
 {
-    /// <summary>
-    /// Enables generic resolution of Lazy services from IoC
-    /// </summary>
-    /// <typeparam name="T">Type of service to resolve</typeparam>
-    /// <seealso cref="System.Lazy{T}" />
-    public class LazyProvider<T> : Lazy<T>
+    public LazyProvider(IServiceProvider serviceProvider)
+        : base(() => IsNotNull(serviceProvider).GetService<T>())
     {
-        public LazyProvider(IServiceProvider serviceProvider)
-            : base(() => IsNotNull(serviceProvider).GetService<T>())
-        {
-        }
+    }
 
-        private static IServiceProvider IsNotNull(IServiceProvider serviceProvider)
-        {
-            EnsureArg.IsNotNull(serviceProvider, nameof(serviceProvider));
+    private static IServiceProvider IsNotNull(IServiceProvider serviceProvider)
+    {
+        EnsureArg.IsNotNull(serviceProvider, nameof(serviceProvider));
 
-            return serviceProvider;
-        }
+        return serviceProvider;
     }
 }

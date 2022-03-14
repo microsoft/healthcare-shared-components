@@ -3,10 +3,9 @@
 // Licensed under the MIT License (MIT). See LICENSE in the repo root for license information.
 // -------------------------------------------------------------------------------------------------
 
-namespace Microsoft.Health.Core.Features.Context
+namespace Microsoft.Health.Core.Features.Context;
+
+public abstract class RequestContextAccessor<T>
 {
-    public abstract class RequestContextAccessor<T>
-    {
-        public abstract T RequestContext { get; set; }
-    }
+    public abstract T RequestContext { get; set; }
 }

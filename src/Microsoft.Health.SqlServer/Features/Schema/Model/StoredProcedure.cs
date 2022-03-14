@@ -5,28 +5,27 @@
 
 using EnsureThat;
 
-namespace Microsoft.Health.SqlServer.Features.Schema.Model
+namespace Microsoft.Health.SqlServer.Features.Schema.Model;
+
+/// <summary>
+/// Represents a stored procedure
+/// </summary>
+public class StoredProcedure
 {
-    /// <summary>
-    /// Represents a stored procedure
-    /// </summary>
-    public class StoredProcedure
+    public StoredProcedure(string procedureName)
     {
-        public StoredProcedure(string procedureName)
-        {
-            EnsureArg.IsNotNullOrWhiteSpace(procedureName, nameof(procedureName));
+        EnsureArg.IsNotNullOrWhiteSpace(procedureName, nameof(procedureName));
 
-            ProcedureName = procedureName;
-        }
-
-        public string ProcedureName { get; }
-
-        public static implicit operator string(StoredProcedure p)
-        {
-            EnsureArg.IsNotNull(p, nameof(p));
-            return p.ToString();
-        }
-
-        public override string ToString() => ProcedureName;
+        ProcedureName = procedureName;
     }
+
+    public string ProcedureName { get; }
+
+    public static implicit operator string(StoredProcedure p)
+    {
+        EnsureArg.IsNotNull(p, nameof(p));
+        return p.ToString();
+    }
+
+    public override string ToString() => ProcedureName;
 }

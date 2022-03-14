@@ -6,24 +6,23 @@
 using System;
 using System.Runtime.Serialization;
 
-namespace Microsoft.Health.Core.UnitTests.Features.Security.Samples
+namespace Microsoft.Health.Core.UnitTests.Features.Security.Samples;
+
+[Flags]
+internal enum DataActions
 {
-    [Flags]
-    internal enum DataActions
-    {
-        [EnumMember(Value = "none")]
-        None = 0,
+    [EnumMember(Value = "none")]
+    None = 0,
 
-        [EnumMember(Value = "read")]
-        Read = 1,
+    [EnumMember(Value = "read")]
+    Read = 1,
 
-        [EnumMember(Value = "write")]
-        Write = 1 << 1,
+    [EnumMember(Value = "write")]
+    Write = 1 << 1,
 
-        [EnumMember(Value = "delete")]
-        Delete = 1 << 2,
+    [EnumMember(Value = "delete")]
+    Delete = 1 << 2,
 
-        [EnumMember(Value = "*")]
-        All = (Delete << 1) - 1,
-    }
+    [EnumMember(Value = "*")]
+    All = (Delete << 1) - 1,
 }

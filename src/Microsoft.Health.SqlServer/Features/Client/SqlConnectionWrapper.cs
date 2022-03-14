@@ -11,104 +11,122 @@ using EnsureThat;
 using Microsoft.Data.SqlClient;
 using Microsoft.Health.SqlServer.Features.Storage;
 
-namespace Microsoft.Health.SqlServer.Features.Client
+namespace Microsoft.Health.SqlServer.Features.Client;
+
+public class SqlConnectionWrapper : IDisposable
 {
-    public class SqlConnectionWrapper : IDisposable
+    private readonly bool _enlistInTransactionIfPresent;
+    private readonly SqlTransactionHandler _sqlTransactionHandler;
+    private readonly ISqlConnectionBuilder _sqlConnectionBuilder;
+    private readonly SqlRetryLogicBaseProvider _sqlRetryLogicBaseProvider;
+    private SqlConnection _sqlConnection;
+    private SqlTransaction _sqlTransaction;
+
+    internal SqlConnectionWrapper(
+        SqlTransactionHandler sqlTransactionHandler,
+        ISqlConnectionBuilder connectionBuilder,
+        SqlRetryLogicBaseProvider sqlRetryLogicBaseProvider,
+        bool enlistInTransactionIfPresent)
     {
-        private readonly bool _enlistInTransactionIfPresent;
-        private readonly SqlTransactionHandler _sqlTransactionHandler;
-        private readonly SqlCommandWrapperFactory _sqlCommandWrapperFactory;
-        private readonly ISqlConnectionBuilder _sqlConnectionBuilder;
+        EnsureArg.IsNotNull(sqlTransactionHandler, nameof(sqlTransactionHandler));
+        EnsureArg.IsNotNull(connectionBuilder, nameof(connectionBuilder));
+        EnsureArg.IsNotNull(sqlRetryLogicBaseProvider, nameof(sqlRetryLogicBaseProvider));
 
-        private SqlConnection _sqlConnection;
-        private SqlTransaction _sqlTransaction;
+        _sqlTransactionHandler = sqlTransactionHandler;
+        _enlistInTransactionIfPresent = enlistInTransactionIfPresent;
+        _sqlConnectionBuilder = connectionBuilder;
+        _sqlRetryLogicBaseProvider = sqlRetryLogicBaseProvider;
+    }
 
-        internal SqlConnectionWrapper(
-            SqlTransactionHandler sqlTransactionHandler,
-            SqlCommandWrapperFactory sqlCommandWrapperFactory,
-            ISqlConnectionBuilder connectionBuilder,
-            bool enlistInTransactionIfPresent)
+    public SqlConnection SqlConnection
+    {
+        get { return _sqlConnection; }
+    }
+
+    public SqlTransaction SqlTransaction
+    {
+        get
         {
-            EnsureArg.IsNotNull(sqlTransactionHandler, nameof(sqlTransactionHandler));
-            EnsureArg.IsNotNull(sqlCommandWrapperFactory, nameof(sqlCommandWrapperFactory));
-            EnsureArg.IsNotNull(connectionBuilder, nameof(connectionBuilder));
+            return _sqlTransaction;
+        }
+    }
 
-            _sqlTransactionHandler = sqlTransactionHandler;
-            _enlistInTransactionIfPresent = enlistInTransactionIfPresent;
-            _sqlCommandWrapperFactory = sqlCommandWrapperFactory;
-            _sqlConnectionBuilder = connectionBuilder;
+    internal async Task InitializeAsync(CancellationToken cancellationToken)
+    {
+        if (_enlistInTransactionIfPresent && _sqlTransactionHandler.SqlTransactionScope?.SqlConnection != null)
+        {
+            _sqlConnection = _sqlTransactionHandler.SqlTransactionScope.SqlConnection;
+        }
+        else
+        {
+            _sqlConnection = await _sqlConnectionBuilder.GetSqlConnectionAsync(cancellationToken: cancellationToken);
         }
 
-        public SqlConnection SqlConnection
+        if (_enlistInTransactionIfPresent && _sqlTransactionHandler.SqlTransactionScope != null && _sqlTransactionHandler.SqlTransactionScope.SqlConnection == null)
         {
-            get { return _sqlConnection; }
+            _sqlTransactionHandler.SqlTransactionScope.SqlConnection = SqlConnection;
         }
 
-        public SqlTransaction SqlTransaction
+        if (SqlConnection.State != ConnectionState.Open)
         {
-            get
-            {
-                return _sqlTransaction;
-            }
+            await SqlConnection.OpenAsync(cancellationToken);
         }
 
-        internal async Task InitializeAsync(CancellationToken cancellationToken, bool openConnection = true)
+        if (_enlistInTransactionIfPresent && _sqlTransactionHandler.SqlTransactionScope != null)
         {
-            if (_enlistInTransactionIfPresent && _sqlTransactionHandler.SqlTransactionScope?.SqlConnection != null)
-            {
-                _sqlConnection = _sqlTransactionHandler.SqlTransactionScope.SqlConnection;
-            }
-            else
-            {
-                _sqlConnection = await _sqlConnectionBuilder.GetSqlConnectionAsync(cancellationToken: cancellationToken);
-            }
+            _sqlTransaction = _sqlTransactionHandler.SqlTransactionScope.SqlTransaction ?? SqlConnection.BeginTransaction();
 
-            if (_enlistInTransactionIfPresent && _sqlTransactionHandler.SqlTransactionScope != null && _sqlTransactionHandler.SqlTransactionScope.SqlConnection == null)
+            if (_sqlTransactionHandler.SqlTransactionScope.SqlTransaction == null)
             {
-                _sqlTransactionHandler.SqlTransactionScope.SqlConnection = SqlConnection;
-            }
-
-            if (openConnection && SqlConnection.State != ConnectionState.Open)
-            {
-                await SqlConnection.OpenAsync(cancellationToken);
-            }
-
-            if (_enlistInTransactionIfPresent && _sqlTransactionHandler.SqlTransactionScope != null)
-            {
-                _sqlTransaction = _sqlTransactionHandler.SqlTransactionScope.SqlTransaction ?? SqlConnection.BeginTransaction();
-
-                if (_sqlTransactionHandler.SqlTransactionScope.SqlTransaction == null)
-                {
-                    _sqlTransactionHandler.SqlTransactionScope.SqlTransaction = SqlTransaction;
-                }
+                _sqlTransactionHandler.SqlTransactionScope.SqlTransaction = SqlTransaction;
             }
         }
+    }
 
-        public SqlCommandWrapper CreateSqlCommand()
+    [Obsolete("Please use " + nameof(CreateRetrySqlCommand) + " or " + nameof(CreateNonRetrySqlCommand) + " instead.")]
+    public SqlCommandWrapper CreateSqlCommand()
+    {
+        return CreateRetrySqlCommand();
+    }
+
+    /// <summary>
+    /// Sql statements that are idempotent should get this SqlCommand which retries on transient failures.
+    /// </summary>
+    /// <returns>The <see cref="SqlCommandWrapper"/></returns>
+    public SqlCommandWrapper CreateRetrySqlCommand()
+    {
+        SqlCommand sqlCommand = SqlConnection.CreateCommand();
+        sqlCommand.Transaction = SqlTransaction;
+        sqlCommand.RetryLogicProvider = _sqlRetryLogicBaseProvider;
+        return new SqlCommandWrapper(sqlCommand);
+    }
+
+    /// <summary>
+    /// Sql statements that cannot be retried should get this SqlCommand
+    /// </summary>
+    /// <returns>The <see cref="SqlCommandWrapper"/></returns>
+    public SqlCommandWrapper CreateNonRetrySqlCommand()
+    {
+        SqlCommand sqlCommand = SqlConnection.CreateCommand();
+        sqlCommand.Transaction = SqlTransaction;
+        return new SqlCommandWrapper(sqlCommand);
+    }
+
+    protected virtual void Dispose(bool disposing)
+    {
+        if (disposing)
         {
-            SqlCommand sqlCommand = SqlConnection.CreateCommand();
-
-            sqlCommand.Transaction = SqlTransaction;
-
-            return _sqlCommandWrapperFactory.Create(sqlCommand);
-        }
-
-        protected virtual void Dispose(bool disposing)
-        {
-            if (disposing)
+            if (!_enlistInTransactionIfPresent || _sqlTransactionHandler.SqlTransactionScope == null)
             {
-                if (!_enlistInTransactionIfPresent || _sqlTransactionHandler.SqlTransactionScope == null)
-                {
-                    SqlConnection?.Dispose();
-                    SqlTransaction?.Dispose();
-                }
+                SqlConnection?.Dispose();
+                SqlTransaction?.Dispose();
             }
         }
+    }
 
-        public void Dispose()
-        {
-            Dispose(true);
-            GC.SuppressFinalize(this);
-        }
+    public void Dispose()
+    {
+        Dispose(true);
+        GC.SuppressFinalize(this);
     }
 }

@@ -10,23 +10,22 @@ using Microsoft.Extensions.Options;
 using Microsoft.Health.Api.Features.HealthChecks;
 using Microsoft.Health.Extensions.DependencyInjection;
 
-namespace Microsoft.Health.Api.Modules
+namespace Microsoft.Health.Api.Modules;
+
+public class HealthCheckModule : IStartupModule
 {
-    public class HealthCheckModule : IStartupModule
+    public void Load(IServiceCollection services)
     {
-        public void Load(IServiceCollection services)
-        {
-            EnsureArg.IsNotNull(services, nameof(services));
+        EnsureArg.IsNotNull(services, nameof(services));
 
-            services.AddOptions();
+        services.AddOptions();
 
-            services.Add<HealthCheckCachingOptionsValidation>()
-                .Singleton()
-                .AsService<IValidateOptions<HealthCheckCachingOptions>>();
+        services.Add<HealthCheckCachingOptionsValidation>()
+            .Singleton()
+            .AsService<IValidateOptions<HealthCheckCachingOptions>>();
 
-            services.Add<HealthCheckCachingPostConfigure>()
-                .Transient()
-                .AsService<IPostConfigureOptions<HealthCheckServiceOptions>>();
-        }
+        services.Add<HealthCheckCachingPostConfigure>()
+            .Transient()
+            .AsService<IPostConfigureOptions<HealthCheckServiceOptions>>();
     }
 }

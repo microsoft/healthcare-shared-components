@@ -6,10 +6,9 @@
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Microsoft.Health.Client
+namespace Microsoft.Health.Client;
+
+public interface ICredentialProvider
 {
-    public interface ICredentialProvider
-    {
-        Task<string> GetBearerToken(CancellationToken cancellationToken = default);
-    }
+    Task<string> GetBearerToken(CancellationToken cancellationToken = default);
 }

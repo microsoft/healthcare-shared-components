@@ -3,11 +3,15 @@
 // Licensed under the MIT License (MIT). See LICENSE in the repo root for license information.
 // -------------------------------------------------------------------------------------------------
 
-namespace Microsoft.Health.Extensions.DependencyInjection.UnitTests.TestObjects;
+namespace Microsoft.Health.SqlServer.Configs;
 
-public class ComponentB : IComponent
+/// <summary>
+/// Used in SqlClientRetryOptions to specify the retry mode
+/// </summary>
+public enum SqlRetryMode
 {
-    public delegate IComponent Factory();
-
-    public string Name { get; } = nameof(ComponentB);
+    None,
+    Exponential,
+    Incremental,
+    Fixed,
 }

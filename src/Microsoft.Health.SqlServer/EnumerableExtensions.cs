@@ -6,76 +6,75 @@
 using System.Collections;
 using System.Collections.Generic;
 
-namespace Microsoft.Health.SqlServer
+namespace Microsoft.Health.SqlServer;
+
+public static class EnumerableExtensions
 {
-    public static class EnumerableExtensions
+    /// <summary>
+    /// If the given sequence is null or empty, returns null. Otherwise returns
+    /// an equivalent sequence.
+    /// </summary>
+    /// <typeparam name="T">The element type</typeparam>
+    /// <param name="enumerable">The input sequence</param>
+    /// <returns>An equivalent sequence, or null if given one is empty or null.</returns>
+    public static IEnumerable<T> NullIfEmpty<T>(this IEnumerable<T> enumerable)
     {
-        /// <summary>
-        /// If the given sequence is null or empty, returns null. Otherwise returns
-        /// an equivalent sequence.
-        /// </summary>
-        /// <typeparam name="T">The element type</typeparam>
-        /// <param name="enumerable">The input sequence</param>
-        /// <returns>An equivalent sequence, or null if given one is empty or null.</returns>
-        public static IEnumerable<T> NullIfEmpty<T>(this IEnumerable<T> enumerable)
+        if (enumerable == null)
         {
-            if (enumerable == null)
-            {
-                return null;
-            }
-
-            IEnumerator<T> enumerator = enumerable.GetEnumerator();
-            if (!enumerator.MoveNext())
-            {
-                return null;
-            }
-
-            return new EnumerableFromStartedEnumerator<T>(enumerator, enumerable);
+            return null;
         }
 
-        private class EnumerableFromStartedEnumerator<T> : IEnumerable<T>
+        IEnumerator<T> enumerator = enumerable.GetEnumerator();
+        if (!enumerator.MoveNext())
         {
-            private readonly IEnumerable<T> _original;
-            private IEnumerator<T> _startedEnumerator;
+            return null;
+        }
 
-            public EnumerableFromStartedEnumerator(IEnumerator<T> startedEnumerator, IEnumerable<T> original)
-            {
-                _original = original;
-                _startedEnumerator = startedEnumerator;
-            }
+        return new EnumerableFromStartedEnumerator<T>(enumerator, enumerable);
+    }
 
-            public IEnumerator<T> GetEnumerator()
+    private class EnumerableFromStartedEnumerator<T> : IEnumerable<T>
+    {
+        private readonly IEnumerable<T> _original;
+        private IEnumerator<T> _startedEnumerator;
+
+        public EnumerableFromStartedEnumerator(IEnumerator<T> startedEnumerator, IEnumerable<T> original)
+        {
+            _original = original;
+            _startedEnumerator = startedEnumerator;
+        }
+
+        public IEnumerator<T> GetEnumerator()
+        {
+            IEnumerable<T> Inner(IEnumerator<T> e)
             {
-                IEnumerable<T> Inner(IEnumerator<T> e)
+                try
                 {
-                    try
+                    do
                     {
-                        do
-                        {
-                            yield return e.Current;
-                        }
-                        while (e.MoveNext());
+                        yield return e.Current;
                     }
-                    finally
-                    {
-                        e.Dispose();
-                    }
+                    while (e.MoveNext());
                 }
-
-                if (_startedEnumerator != null)
+                finally
                 {
-                    IEnumerator<T> e = _startedEnumerator;
-                    _startedEnumerator = null;
-                    return Inner(e).GetEnumerator();
+                    e.Dispose();
                 }
-
-                return _original.GetEnumerator();
             }
 
-            IEnumerator IEnumerable.GetEnumerator()
+            if (_startedEnumerator != null)
             {
-                return ((IEnumerable)this).GetEnumerator();
+                IEnumerator<T> e = _startedEnumerator;
+                _startedEnumerator = null;
+                return Inner(e).GetEnumerator();
             }
+
+            return _original.GetEnumerator();
+        }
+
+        IEnumerator IEnumerable.GetEnumerator()
+        {
+            return ((IEnumerable)this).GetEnumerator();
         }
     }
 }

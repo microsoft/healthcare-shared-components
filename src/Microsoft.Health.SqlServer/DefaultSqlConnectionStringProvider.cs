@@ -9,24 +9,23 @@ using EnsureThat;
 using Microsoft.Extensions.Options;
 using Microsoft.Health.SqlServer.Configs;
 
-namespace Microsoft.Health.SqlServer
+namespace Microsoft.Health.SqlServer;
+
+/// <summary>
+/// The default SQL connection string provider uses the connection string specified in configuration.
+/// </summary>
+public class DefaultSqlConnectionStringProvider : ISqlConnectionStringProvider
 {
-    /// <summary>
-    /// The default SQL connection string provider uses the connection string specified in configuration.
-    /// </summary>
-    public class DefaultSqlConnectionStringProvider : ISqlConnectionStringProvider
+    private readonly SqlServerDataStoreConfiguration _sqlServerDataStoreConfiguration;
+
+    public DefaultSqlConnectionStringProvider(IOptions<SqlServerDataStoreConfiguration> sqlServerDataStoreConfiguration)
     {
-        private readonly SqlServerDataStoreConfiguration _sqlServerDataStoreConfiguration;
+        _sqlServerDataStoreConfiguration = EnsureArg.IsNotNull(sqlServerDataStoreConfiguration?.Value, nameof(sqlServerDataStoreConfiguration));
+    }
 
-        public DefaultSqlConnectionStringProvider(IOptions<SqlServerDataStoreConfiguration> sqlServerDataStoreConfiguration)
-        {
-            _sqlServerDataStoreConfiguration = EnsureArg.IsNotNull(sqlServerDataStoreConfiguration?.Value, nameof(sqlServerDataStoreConfiguration));
-        }
-
-        /// <inheritdoc />
-        public Task<string> GetSqlConnectionString(CancellationToken cancellationToken)
-        {
-            return Task.FromResult(_sqlServerDataStoreConfiguration.ConnectionString);
-        }
+    /// <inheritdoc />
+    public Task<string> GetSqlConnectionString(CancellationToken cancellationToken)
+    {
+        return Task.FromResult(_sqlServerDataStoreConfiguration.ConnectionString);
     }
 }

@@ -5,28 +5,27 @@
 
 using EnsureThat;
 
-namespace Microsoft.Health.SqlServer.Features.Schema.Model
+namespace Microsoft.Health.SqlServer.Features.Schema.Model;
+
+/// <summary>
+/// Represents a SQL table.
+/// </summary>
+public class Table
 {
-    /// <summary>
-    /// Represents a SQL table.
-    /// </summary>
-    public class Table
+    public Table(string tableName)
     {
-        public Table(string tableName)
-        {
-            EnsureArg.IsNotNullOrWhiteSpace(tableName, nameof(tableName));
+        EnsureArg.IsNotNullOrWhiteSpace(tableName, nameof(tableName));
 
-            TableName = tableName;
-        }
-
-        public string TableName { get; }
-
-        public static implicit operator string(Table t)
-        {
-            EnsureArg.IsNotNull(t, nameof(t));
-            return t.ToString();
-        }
-
-        public override string ToString() => TableName;
+        TableName = tableName;
     }
+
+    public string TableName { get; }
+
+    public static implicit operator string(Table t)
+    {
+        EnsureArg.IsNotNull(t, nameof(t));
+        return t.ToString();
+    }
+
+    public override string ToString() => TableName;
 }

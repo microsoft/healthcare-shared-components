@@ -7,16 +7,15 @@ using Microsoft.Extensions.Options;
 using Microsoft.Health.Blob.Configs;
 using Microsoft.Health.Blob.Features.Storage;
 
-namespace Microsoft.Health.Blob.Registration
+namespace Microsoft.Health.Blob.Registration;
+
+internal class BlobDataStorePostConfigure : IPostConfigureOptions<BlobDataStoreConfiguration>
 {
-    internal class BlobDataStorePostConfigure : IPostConfigureOptions<BlobDataStoreConfiguration>
+    public void PostConfigure(string name, BlobDataStoreConfiguration options)
     {
-        public void PostConfigure(string name, BlobDataStoreConfiguration options)
+        if (string.IsNullOrEmpty(options.ConnectionString) && options.AuthenticationType == BlobDataStoreAuthenticationType.ConnectionString)
         {
-            if (string.IsNullOrEmpty(options.ConnectionString) && options.AuthenticationType == BlobDataStoreAuthenticationType.ConnectionString)
-            {
-                options.ConnectionString = BlobLocalEmulator.ConnectionString;
-            }
+            options.ConnectionString = BlobLocalEmulator.ConnectionString;
         }
     }
 }

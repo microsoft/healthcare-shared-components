@@ -5,16 +5,15 @@
 
 using System.Collections.Generic;
 
-namespace Microsoft.Health.SqlServer.Features.Schema.Model
+namespace Microsoft.Health.SqlServer.Features.Schema.Model;
+
+/// <summary>
+/// Generates a sequence of row structs for a table-valued parameter.
+/// </summary>
+/// <typeparam name="TInput">The input type</typeparam>
+/// <typeparam name="TRow">The row struct type</typeparam>
+public interface ITableValuedParameterRowGenerator<in TInput,  out TRow>
+    where TRow : struct
 {
-    /// <summary>
-    /// Generates a sequence of row structs for a table-valued parameter.
-    /// </summary>
-    /// <typeparam name="TInput">The input type</typeparam>
-    /// <typeparam name="TRow">The row struct type</typeparam>
-    public interface ITableValuedParameterRowGenerator<in TInput,  out TRow>
-        where TRow : struct
-    {
-        IEnumerable<TRow> GenerateRows(TInput input);
-    }
+    IEnumerable<TRow> GenerateRows(TInput input);
 }

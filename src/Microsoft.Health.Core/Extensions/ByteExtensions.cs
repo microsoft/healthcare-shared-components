@@ -7,26 +7,25 @@ using System;
 using System.Text;
 using EnsureThat;
 
-namespace Microsoft.Health.Core.Extensions
+namespace Microsoft.Health.Core.Extensions;
+
+public static class ByteExtensions
 {
-    public static class ByteExtensions
+    /// <summary>
+    /// Encodes a Byte array to Base64 safely, this can be used in URLs.
+    /// </summary>
+    /// <param name="bytes">The bytes to encode.</param>
+    /// <returns>An encoded string that's safe to be used in URLs.</returns>
+    public static string ToSafeBase64(this byte[] bytes)
     {
-        /// <summary>
-        /// Encodes a Byte array to Base64 safely, this can be used in URLs.
-        /// </summary>
-        /// <param name="bytes">The bytes to encode.</param>
-        /// <returns>An encoded string that's safe to be used in URLs.</returns>
-        public static string ToSafeBase64(this byte[] bytes)
-        {
-            EnsureArg.IsNotNull(bytes, nameof(bytes));
+        EnsureArg.IsNotNull(bytes, nameof(bytes));
 
-            string base64 = Convert.ToBase64String(bytes);
+        string base64 = Convert.ToBase64String(bytes);
 
-            StringBuilder sb = new StringBuilder(base64.TrimEnd('='));
+        StringBuilder sb = new StringBuilder(base64.TrimEnd('='));
 
-            sb.Replace('+', '-').Replace('/', '_');
+        sb.Replace('+', '-').Replace('/', '_');
 
-            return sb.ToString();
-        }
+        return sb.ToString();
     }
 }

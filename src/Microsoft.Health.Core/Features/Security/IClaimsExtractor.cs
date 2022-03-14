@@ -5,10 +5,9 @@
 
 using System.Collections.Generic;
 
-namespace Microsoft.Health.Core.Features.Security
+namespace Microsoft.Health.Core.Features.Security;
+
+public interface IClaimsExtractor
 {
-    public interface IClaimsExtractor
-    {
-        IReadOnlyCollection<KeyValuePair<string, string>> Extract();
-    }
+    IReadOnlyCollection<KeyValuePair<string, string>> Extract();
 }

@@ -6,26 +6,25 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
-namespace Microsoft.Health.Abstractions.Data
+namespace Microsoft.Health.Abstractions.Data;
+
+/// <summary>
+/// Generic Sink for writing change feed data to any destination.
+/// </summary>
+/// <typeparam name="T">Generic data type T to write</typeparam>
+public interface IChangeFeedSink<in T>
 {
     /// <summary>
-    /// Generic Sink for writing change feed data to any destination.
+    /// Write data to sink.
     /// </summary>
-    /// <typeparam name="T">Generic data type T to write</typeparam>
-    public interface IChangeFeedSink<in T>
-    {
-        /// <summary>
-        /// Write data to sink.
-        /// </summary>
-        /// <param name="data">Data of type T.</param>
-        /// <returns>Task.</returns>
-        Task WriteAsync(T data);
+    /// <param name="data">Data of type T.</param>
+    /// <returns>Task.</returns>
+    Task WriteAsync(T data);
 
-        /// <summary>
-        /// Write a collection of type T.
-        /// </summary>
-        /// <param name="data">Data of type T.</param>
-        /// <returns>Task.</returns>
-        Task WriteAsync(IReadOnlyCollection<T> data);
-    }
+    /// <summary>
+    /// Write a collection of type T.
+    /// </summary>
+    /// <param name="data">Data of type T.</param>
+    /// <returns>Task.</returns>
+    Task WriteAsync(IReadOnlyCollection<T> data);
 }

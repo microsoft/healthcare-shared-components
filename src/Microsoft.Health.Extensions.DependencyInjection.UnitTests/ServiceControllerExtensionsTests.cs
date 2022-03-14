@@ -9,23 +9,22 @@ using Microsoft.Health.Extensions.DependencyInjection.UnitTests.TestObjects;
 using NSubstitute;
 using Xunit;
 
-namespace Microsoft.Health.Extensions.DependencyInjection.UnitTests
-{
-    public class ServiceControllerExtensionsTests
-    {
-        [Fact]
-        public void GivenAnAssembly_WhenScanningForModules_ThenNewModulesShouldBeLoaded()
-        {
-            var collection = Substitute.For<IServiceCollection>();
-            collection.RegisterAssemblyModules(GetType().Assembly);
-            collection.Received().Add(Arg.Is<ServiceDescriptor>(descriptor => descriptor.ServiceType == typeof(TestComponent)));
-        }
+namespace Microsoft.Health.Extensions.DependencyInjection.UnitTests;
 
-        [Fact]
-        public void GivenANullAssembly_WhenScanningForModules_ThenAnArgumentExceptionShouldBeThrown()
-        {
-            var collection = Substitute.For<IServiceCollection>();
-            Assert.Throws<ArgumentNullException>(() => collection.RegisterAssemblyModules(null));
-        }
+public class ServiceControllerExtensionsTests
+{
+    [Fact]
+    public void GivenAnAssembly_WhenScanningForModules_ThenNewModulesShouldBeLoaded()
+    {
+        var collection = Substitute.For<IServiceCollection>();
+        collection.RegisterAssemblyModules(GetType().Assembly);
+        collection.Received().Add(Arg.Is<ServiceDescriptor>(descriptor => descriptor.ServiceType == typeof(TestComponent)));
+    }
+
+    [Fact]
+    public void GivenANullAssembly_WhenScanningForModules_ThenAnArgumentExceptionShouldBeThrown()
+    {
+        var collection = Substitute.For<IServiceCollection>();
+        Assert.Throws<ArgumentNullException>(() => collection.RegisterAssemblyModules(null));
     }
 }

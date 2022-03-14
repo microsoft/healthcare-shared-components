@@ -13,49 +13,48 @@ using Microsoft.Health.SqlServer;
 using Microsoft.Health.SqlServer.Features.Schema.Manager;
 using SchemaManager.Core;
 
-namespace SchemaManager
+namespace SchemaManager;
+
+internal class Program
 {
-    internal class Program
+    public static async Task<int> Main(string[] args)
     {
-        public static async Task<int> Main(string[] args)
-        {
-            ServiceProvider serviceProvider = BuildServiceProvider();
-            Parser parser = BuildParser(serviceProvider);
+        ServiceProvider serviceProvider = BuildServiceProvider();
+        Parser parser = BuildParser(serviceProvider);
 
-            return await parser.InvokeAsync(args).ConfigureAwait(false);
+        return await parser.InvokeAsync(args).ConfigureAwait(false);
+    }
+
+    private static Parser BuildParser(ServiceProvider serviceProvider)
+    {
+        var commandLineBuilder = new CommandLineBuilder();
+
+        foreach (Command command in serviceProvider.GetServices<Command>())
+        {
+            commandLineBuilder.AddCommand(command);
         }
 
-        private static Parser BuildParser(ServiceProvider serviceProvider)
-        {
-            var commandLineBuilder = new CommandLineBuilder();
+        return commandLineBuilder.UseDefaults().Build();
+    }
 
-            foreach (Command command in serviceProvider.GetServices<Command>())
-            {
-                commandLineBuilder.AddCommand(command);
-            }
+    private static ServiceProvider BuildServiceProvider()
+    {
+        var services = new ServiceCollection();
 
-            return commandLineBuilder.UseDefaults().Build();
-        }
+        services.AddCliCommands();
 
-        private static ServiceProvider BuildServiceProvider()
-        {
-            var services = new ServiceCollection();
+        // Add SqlServer services
+        services.AddOptions();
+        services.AddHttpClient();
 
-            services.AddCliCommands();
-
-            // Add SqlServer services
-            services.AddOptions();
-            services.AddHttpClient();
-
-            // TODO: this won't work in OSS if the AuthenticationType is set to ManagedIdentity
-            services.AddSingleton<ISqlConnectionBuilder, DefaultSqlConnectionBuilder>();
-            services.AddSingleton<ISqlConnectionStringProvider, DefaultSqlConnectionStringProvider>();
-            services.AddSingleton<IBaseSchemaRunner, BaseSchemaRunner>();
-            services.AddSingleton<ISchemaManagerDataStore, SchemaManagerDataStore>();
-            services.AddSingleton<ISchemaClient, SchemaClient>();
-            services.AddSingleton<ISchemaManager, SqlSchemaManager>();
-            services.AddLogging(configure => configure.AddConsole());
-            return services.BuildServiceProvider();
-        }
+        // TODO: this won't work in OSS if the AuthenticationType is set to ManagedIdentity
+        services.AddSingleton<ISqlConnectionBuilder, DefaultSqlConnectionBuilder>();
+        services.AddSingleton<ISqlConnectionStringProvider, DefaultSqlConnectionStringProvider>();
+        services.AddSingleton<IBaseSchemaRunner, BaseSchemaRunner>();
+        services.AddSingleton<ISchemaManagerDataStore, SchemaManagerDataStore>();
+        services.AddSingleton<ISchemaClient, SchemaClient>();
+        services.AddSingleton<ISchemaManager, SqlSchemaManager>();
+        services.AddLogging(configure => configure.AddConsole());
+        return services.BuildServiceProvider();
     }
 }

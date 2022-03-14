@@ -5,16 +5,15 @@
 
 using System.Collections.Generic;
 
-namespace Microsoft.Health.Core.Features.Security
+namespace Microsoft.Health.Core.Features.Security;
+
+public class RoleContract
 {
-    public class RoleContract
-    {
-        public string Name { get; set; }
+    public string Name { get; set; }
 
-        public IEnumerable<string> DataActions { get; set; }
+    public IEnumerable<string> DataActions { get; set; }
 
-        public IEnumerable<string> NotDataActions { get; set; }
+    public IEnumerable<string> NotDataActions { get; set; }
 
-        public IEnumerable<string> Scopes { get; set; }
-    }
+    public IEnumerable<string> Scopes { get; set; }
 }

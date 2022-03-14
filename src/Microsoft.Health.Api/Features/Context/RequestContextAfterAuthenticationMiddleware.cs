@@ -8,37 +8,36 @@ using EnsureThat;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Health.Core.Features.Context;
 
-namespace Microsoft.Health.Api.Features.Context
+namespace Microsoft.Health.Api.Features.Context;
+
+/// <summary>
+/// Middleware that runs after authentication middleware so that it can retrieved authenticated user claims.
+/// </summary>
+/// <typeparam name="TRequestContext">The type of the IRequestContext</typeparam>
+public class RequestContextAfterAuthenticationMiddleware<TRequestContext>
+    where TRequestContext : IRequestContext
 {
-    /// <summary>
-    /// Middleware that runs after authentication middleware so that it can retrieved authenticated user claims.
-    /// </summary>
-    /// <typeparam name="TRequestContext">The type of the IRequestContext</typeparam>
-    public class RequestContextAfterAuthenticationMiddleware<TRequestContext>
-        where TRequestContext : IRequestContext
+    private readonly RequestDelegate _next;
+
+    public RequestContextAfterAuthenticationMiddleware(RequestDelegate next)
     {
-        private readonly RequestDelegate _next;
+        EnsureArg.IsNotNull(next, nameof(next));
 
-        public RequestContextAfterAuthenticationMiddleware(RequestDelegate next)
+        _next = next;
+    }
+
+    public async Task Invoke(HttpContext context, RequestContextAccessor<TRequestContext> requestContextAccessor)
+    {
+        EnsureArg.IsNotNull(context, nameof(context));
+
+        // Now the authentication is completed successfully, sets the user.
+        if (context.User != null)
         {
-            EnsureArg.IsNotNull(next, nameof(next));
-
-            _next = next;
+            EnsureArg.IsNotNull(requestContextAccessor, nameof(requestContextAccessor));
+            requestContextAccessor.RequestContext.Principal = context.User;
         }
 
-        public async Task Invoke(HttpContext context, RequestContextAccessor<TRequestContext> requestContextAccessor)
-        {
-            EnsureArg.IsNotNull(context, nameof(context));
-
-            // Now the authentication is completed successfully, sets the user.
-            if (context.User != null)
-            {
-                EnsureArg.IsNotNull(requestContextAccessor, nameof(requestContextAccessor));
-                requestContextAccessor.RequestContext.Principal = context.User;
-            }
-
-            // Call the next delegate/middleware in the pipeline
-            await _next(context).ConfigureAwait(false);
-        }
+        // Call the next delegate/middleware in the pipeline
+        await _next(context).ConfigureAwait(false);
     }
 }

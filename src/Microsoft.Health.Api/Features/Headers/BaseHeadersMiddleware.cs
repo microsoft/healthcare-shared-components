@@ -8,27 +8,26 @@ using EnsureThat;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Health.Api.Features.Security;
 
-namespace Microsoft.Health.Api.Features.Headers
+namespace Microsoft.Health.Api.Features.Headers;
+
+public class BaseHeadersMiddleware
 {
-    public class BaseHeadersMiddleware
+    private readonly RequestDelegate _next;
+
+    public BaseHeadersMiddleware(RequestDelegate next)
     {
-        private readonly RequestDelegate _next;
+        EnsureArg.IsNotNull(next, nameof(next));
 
-        public BaseHeadersMiddleware(RequestDelegate next)
-        {
-            EnsureArg.IsNotNull(next, nameof(next));
+        _next = next;
+    }
 
-            _next = next;
-        }
+    public async Task Invoke(HttpContext context)
+    {
+        EnsureArg.IsNotNull(context, nameof(context));
 
-        public async Task Invoke(HttpContext context)
-        {
-            EnsureArg.IsNotNull(context, nameof(context));
+        context.Response.OnStarting(SecurityHeadersHelper.SetSecurityHeaders, state: context);
 
-            context.Response.OnStarting(SecurityHeadersHelper.SetSecurityHeaders, state: context);
-
-            // Call the next delegate/middleware in the pipeline
-            await _next(context).ConfigureAwait(false);
-        }
+        // Call the next delegate/middleware in the pipeline
+        await _next(context).ConfigureAwait(false);
     }
 }

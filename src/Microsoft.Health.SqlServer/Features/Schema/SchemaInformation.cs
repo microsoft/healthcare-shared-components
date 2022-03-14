@@ -3,20 +3,19 @@
 // Licensed under the MIT License (MIT). See LICENSE in the repo root for license information.
 // -------------------------------------------------------------------------------------------------
 
-namespace Microsoft.Health.SqlServer.Features.Schema
+namespace Microsoft.Health.SqlServer.Features.Schema;
+
+public class SchemaInformation
 {
-    public class SchemaInformation
+    public SchemaInformation(int minimumSupportedVersion, int maximumSupportedVersion)
     {
-        public SchemaInformation(int minimumSupportedVersion, int maximumSupportedVersion)
-        {
-            MinimumSupportedVersion = minimumSupportedVersion;
-            MaximumSupportedVersion = maximumSupportedVersion;
-        }
-
-        public int MinimumSupportedVersion { get; }
-
-        public int MaximumSupportedVersion { get; }
-
-        public int? Current { get; set; }
+        MinimumSupportedVersion = minimumSupportedVersion;
+        MaximumSupportedVersion = maximumSupportedVersion;
     }
+
+    public int MinimumSupportedVersion { get; }
+
+    public int MaximumSupportedVersion { get; }
+
+    public int? Current { get; set; }
 }

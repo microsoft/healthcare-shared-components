@@ -5,10 +5,9 @@
 
 using Microsoft.Health.Api.Features.Cors;
 
-namespace Microsoft.Health.Api.Configuration
+namespace Microsoft.Health.Api.Configuration;
+
+public interface IApiConfiguration
 {
-    public interface IApiConfiguration
-    {
-        CorsConfiguration Cors { get; }
-    }
+    CorsConfiguration Cors { get; }
 }

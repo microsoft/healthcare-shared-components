@@ -6,74 +6,73 @@
 using System;
 using System.CommandLine;
 
-namespace SchemaManager
+namespace SchemaManager;
+
+public static class CommandOptions
 {
-    public static class CommandOptions
+    public static Option ServerOption()
     {
-        public static Option ServerOption()
-        {
-            var serverOption = new Option(
-                OptionAliases.Server,
-                Resources.ServerOptionDescription,
-                new Argument<Uri> { Arity = ArgumentArity.ExactlyOne });
-            serverOption.AddAlias(OptionAliases.ShortServer);
+        var serverOption = new Option(
+            OptionAliases.Server,
+            Resources.ServerOptionDescription,
+            new Argument<Uri> { Arity = ArgumentArity.ExactlyOne });
+        serverOption.AddAlias(OptionAliases.ShortServer);
 
-            return serverOption;
-        }
+        return serverOption;
+    }
 
-        public static Option ConnectionStringOption()
-        {
-            var connectionStringOption = new Option(
-                OptionAliases.ConnectionString,
-                Resources.ConnectionStringOptionDescription,
-                new Argument<string> { Arity = ArgumentArity.ExactlyOne });
-            connectionStringOption.AddAlias(OptionAliases.ShortConnectionString);
+    public static Option ConnectionStringOption()
+    {
+        var connectionStringOption = new Option(
+            OptionAliases.ConnectionString,
+            Resources.ConnectionStringOptionDescription,
+            new Argument<string> { Arity = ArgumentArity.ExactlyOne });
+        connectionStringOption.AddAlias(OptionAliases.ShortConnectionString);
 
-            return connectionStringOption;
-        }
+        return connectionStringOption;
+    }
 
-        public static Option VersionOption()
-        {
-            var versionOption = new Option(
-                OptionAliases.Version,
-                Resources.VersionOptionDescription,
-                new Argument<int> { Arity = ArgumentArity.ExactlyOne });
-            versionOption.AddAlias(OptionAliases.ShortVersion);
+    public static Option VersionOption()
+    {
+        var versionOption = new Option(
+            OptionAliases.Version,
+            Resources.VersionOptionDescription,
+            new Argument<int> { Arity = ArgumentArity.ExactlyOne });
+        versionOption.AddAlias(OptionAliases.ShortVersion);
 
-            return versionOption;
-        }
+        return versionOption;
+    }
 
-        public static Option NextOption()
-        {
-            var nextOption = new Option(
-               OptionAliases.Next,
-               Resources.NextOptionDescritpion,
-               new Argument<bool> { Arity = ArgumentArity.ZeroOrOne });
-            nextOption.AddAlias(OptionAliases.ShortNext);
+    public static Option NextOption()
+    {
+        var nextOption = new Option(
+           OptionAliases.Next,
+           Resources.NextOptionDescritpion,
+           new Argument<bool> { Arity = ArgumentArity.ZeroOrOne });
+        nextOption.AddAlias(OptionAliases.ShortNext);
 
-            return nextOption;
-        }
+        return nextOption;
+    }
 
-        public static Option LatestOption()
-        {
-            var latestOption = new Option(
-               OptionAliases.Latest,
-               Resources.LatestOptionDescription,
-               new Argument<bool> { Arity = ArgumentArity.ZeroOrOne });
-            latestOption.AddAlias(OptionAliases.ShortLatest);
+    public static Option LatestOption()
+    {
+        var latestOption = new Option(
+           OptionAliases.Latest,
+           Resources.LatestOptionDescription,
+           new Argument<bool> { Arity = ArgumentArity.ZeroOrOne });
+        latestOption.AddAlias(OptionAliases.ShortLatest);
 
-            return latestOption;
-        }
+        return latestOption;
+    }
 
-        public static Option ForceOption()
-        {
-            var forceOption = new Option(
-                OptionAliases.Force,
-                Resources.ForceOptionDescription,
-                new Argument<bool> { Arity = ArgumentArity.ZeroOrOne });
-            forceOption.AddAlias(OptionAliases.ShortForce);
+    public static Option ForceOption()
+    {
+        var forceOption = new Option(
+            OptionAliases.Force,
+            Resources.ForceOptionDescription,
+            new Argument<bool> { Arity = ArgumentArity.ZeroOrOne });
+        forceOption.AddAlias(OptionAliases.ShortForce);
 
-            return forceOption;
-        }
+        return forceOption;
     }
 }

@@ -5,13 +5,12 @@
 
 using Microsoft.Extensions.DependencyInjection;
 
-namespace Microsoft.Health.Extensions.DependencyInjection.UnitTests.TestObjects
+namespace Microsoft.Health.Extensions.DependencyInjection.UnitTests.TestObjects;
+
+public class TestModule : IStartupModule
 {
-    public class TestModule : IStartupModule
+    public void Load(IServiceCollection services)
     {
-        public void Load(IServiceCollection services)
-        {
-            services.AddScoped<TestComponent>();
-        }
+        services.AddScoped<TestComponent>();
     }
 }

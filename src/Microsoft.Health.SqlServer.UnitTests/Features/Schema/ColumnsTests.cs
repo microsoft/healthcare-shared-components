@@ -9,25 +9,24 @@ using Microsoft.Data.SqlClient.Server;
 using Microsoft.Health.SqlServer.Features.Schema.Model;
 using Xunit;
 
-namespace Microsoft.Health.SqlServer.UnitTests.Features.Schema
+namespace Microsoft.Health.SqlServer.UnitTests.Features.Schema;
+
+public class ColumnsTests
 {
-    public class ColumnsTests
+    [Fact]
+    public void GivenSqlDataRecordWithVarBinaryColumn_WhenSetVarBinaryValueTwice_ThenFirstValueShouldBeCleaned()
     {
-        [Fact]
-        public void GivenSqlDataRecordWithVarBinaryColumn_WhenSetVarBinaryValueTwice_ThenFirstValueShouldBeCleaned()
-        {
-            VarBinaryColumn varBinaryColumn = new VarBinaryColumn("Col1", -1);
-            SqlDataRecord record = new SqlDataRecord(varBinaryColumn.Metadata);
+        VarBinaryColumn varBinaryColumn = new VarBinaryColumn("Col1", -1);
+        SqlDataRecord record = new SqlDataRecord(varBinaryColumn.Metadata);
 
-            byte[] data1 = new byte[] { 1, 1, 1, 1 };
-            byte[] data2 = new byte[] { 1, 1 };
-            using Stream input1 = new MemoryStream(data1);
-            using Stream input2 = new MemoryStream(data2);
+        byte[] data1 = new byte[] { 1, 1, 1, 1 };
+        byte[] data2 = new byte[] { 1, 1 };
+        using Stream input1 = new MemoryStream(data1);
+        using Stream input2 = new MemoryStream(data2);
 
-            varBinaryColumn.Set(record, 0, input1);
-            Assert.Equal(data1, ((SqlBinary)record.GetSqlValue(0)).Value);
-            varBinaryColumn.Set(record, 0, input2);
-            Assert.Equal(data2, ((SqlBinary)record.GetSqlValue(0)).Value);
-        }
+        varBinaryColumn.Set(record, 0, input1);
+        Assert.Equal(data1, ((SqlBinary)record.GetSqlValue(0)).Value);
+        varBinaryColumn.Set(record, 0, input2);
+        Assert.Equal(data2, ((SqlBinary)record.GetSqlValue(0)).Value);
     }
 }

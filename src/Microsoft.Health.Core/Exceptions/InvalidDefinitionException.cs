@@ -5,16 +5,15 @@
 
 using Microsoft.Health.Abstractions.Exceptions;
 
-namespace Microsoft.Health.Core.Exceptions
+namespace Microsoft.Health.Core.Exceptions;
+
+/// <summary>
+/// The exception that is thrown when provided definition is invalid.
+/// </summary>
+public class InvalidDefinitionException : MicrosoftHealthException
 {
-    /// <summary>
-    /// The exception that is thrown when provided definition is invalid.
-    /// </summary>
-    public class InvalidDefinitionException : MicrosoftHealthException
+    public InvalidDefinitionException(string message)
+        : base(message)
     {
-        public InvalidDefinitionException(string message)
-            : base(message)
-        {
-        }
     }
 }

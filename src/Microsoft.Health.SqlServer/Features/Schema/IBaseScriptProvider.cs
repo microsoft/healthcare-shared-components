@@ -3,10 +3,9 @@
 // Licensed under the MIT License (MIT). See LICENSE in the repo root for license information.
 // -------------------------------------------------------------------------------------------------
 
-namespace Microsoft.Health.SqlServer.Features.Schema
+namespace Microsoft.Health.SqlServer.Features.Schema;
+
+public interface IBaseScriptProvider
 {
-    public interface IBaseScriptProvider
-    {
-        string GetScript();
-    }
+    string GetScript();
 }

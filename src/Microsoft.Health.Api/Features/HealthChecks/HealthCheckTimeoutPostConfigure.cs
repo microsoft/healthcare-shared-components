@@ -8,23 +8,22 @@ using EnsureThat;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Options;
 
-namespace Microsoft.Health.Api.Features.HealthChecks
+namespace Microsoft.Health.Api.Features.HealthChecks;
+
+internal sealed class HealthCheckTimeoutPostConfigure : IPostConfigureOptions<HealthCheckServiceOptions>
 {
-    internal sealed class HealthCheckTimeoutPostConfigure : IPostConfigureOptions<HealthCheckServiceOptions>
+    private readonly TimeSpan _timeout;
+
+    public HealthCheckTimeoutPostConfigure(TimeSpan timeout)
+        => _timeout = EnsureArg.IsGte(timeout, TimeSpan.Zero, nameof(timeout));
+
+    public void PostConfigure(string name, HealthCheckServiceOptions options)
     {
-        private readonly TimeSpan _timeout;
+        EnsureArg.IsNotNull(options, nameof(options));
 
-        public HealthCheckTimeoutPostConfigure(TimeSpan timeout)
-            => _timeout = EnsureArg.IsGte(timeout, TimeSpan.Zero, nameof(timeout));
-
-        public void PostConfigure(string name, HealthCheckServiceOptions options)
+        foreach (HealthCheckRegistration registration in options.Registrations)
         {
-            EnsureArg.IsNotNull(options, nameof(options));
-
-            foreach (HealthCheckRegistration registration in options.Registrations)
-            {
-                registration.Timeout = _timeout;
-            }
+            registration.Timeout = _timeout;
         }
     }
 }

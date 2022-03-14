@@ -6,14 +6,13 @@
 using EnsureThat;
 using Microsoft.Health.Abstractions.Exceptions;
 
-namespace Microsoft.Health.SqlServer.Features.Exceptions
+namespace Microsoft.Health.SqlServer.Features.Exceptions;
+
+public class SqlRecordNotFoundException : MicrosoftHealthException
 {
-    public class SqlRecordNotFoundException : MicrosoftHealthException
+    public SqlRecordNotFoundException(string message)
+        : base(message)
     {
-        public SqlRecordNotFoundException(string message)
-            : base(message)
-        {
-            EnsureArg.IsNotNullOrWhiteSpace(message, nameof(message));
-        }
+        EnsureArg.IsNotNullOrWhiteSpace(message, nameof(message));
     }
 }

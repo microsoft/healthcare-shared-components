@@ -8,29 +8,28 @@ using System.Collections.Generic;
 using System.Security.Claims;
 using Microsoft.Extensions.Primitives;
 
-namespace Microsoft.Health.Core.Features.Context
+namespace Microsoft.Health.Core.Features.Context;
+
+public interface IRequestContext
 {
-    public interface IRequestContext
-    {
-        string Method { get; }
+    string Method { get; }
 
-        Uri BaseUri { get; }
+    Uri BaseUri { get; }
 
-        Uri Uri { get; }
+    Uri Uri { get; }
 
-        string CorrelationId { get; }
+    string CorrelationId { get; }
 
-        string RouteName { get; set; }
+    string RouteName { get; set; }
 
-        // We want to log anonymous calls (FhirAnonymousOperationType) in RequestMetric with valid operation type e.g. Metadata and Versions and not just limit to standard AuditEventTypes
-        // This property holds value for both the AuditEventTypes and FhirAnonymousOperationType
-        // We will still continue to log audit logs for AuditEventTypes only. This change is made in AuditHelper class
-        string AuditEventType { get; set; }
+    // We want to log anonymous calls (FhirAnonymousOperationType) in RequestMetric with valid operation type e.g. Metadata and Versions and not just limit to standard AuditEventTypes
+    // This property holds value for both the AuditEventTypes and FhirAnonymousOperationType
+    // We will still continue to log audit logs for AuditEventTypes only. This change is made in AuditHelper class
+    string AuditEventType { get; set; }
 
-        ClaimsPrincipal Principal { get; set; }
+    ClaimsPrincipal Principal { get; set; }
 
-        IDictionary<string, StringValues> RequestHeaders { get; }
+    IDictionary<string, StringValues> RequestHeaders { get; }
 
-        IDictionary<string, StringValues> ResponseHeaders { get; }
-    }
+    IDictionary<string, StringValues> ResponseHeaders { get; }
 }
