@@ -6,83 +6,82 @@
 using System;
 using Xunit;
 
-namespace Microsoft.Health.Test.Utilities.UnitTests
+namespace Microsoft.Health.Test.Utilities.UnitTests;
+
+public class MockTests
 {
-    public class MockTests
+    [Fact]
+    public void GivenAnInstance_WhenMockingAProperty_ThenThePropertyIsMockedAndReset()
     {
-        [Fact]
-        public void GivenAnInstance_WhenMockingAProperty_ThenThePropertyIsMockedAndReset()
+        var magic = "magic";
+        var newvalue = "newValue";
+
+        var p = new TestType
         {
-            var magic = "magic";
-            var newvalue = "newValue";
+            Property1 = magic,
+        };
 
-            var p = new TestType
-            {
-                Property1 = magic,
-            };
-
-            using (Mock.Property(() => p.Property1, newvalue))
-            {
-                Assert.Equal(newvalue, p.Property1);
-            }
-
-            Assert.Equal(magic, p.Property1);
+        using (Mock.Property(() => p.Property1, newvalue))
+        {
+            Assert.Equal(newvalue, p.Property1);
         }
 
-        [Fact]
-        public void GivenAStatic_WhenMockingAProperty_ThenThePropertyIsMockedAndReset()
+        Assert.Equal(magic, p.Property1);
+    }
+
+    [Fact]
+    public void GivenAStatic_WhenMockingAProperty_ThenThePropertyIsMockedAndReset()
+    {
+        var initial = "Initial";
+        var newvalue = "newValue";
+
+        Assert.Equal(initial, TestType.StaticProperty);
+
+        using (Mock.Property(() => TestType.StaticProperty, newvalue))
         {
-            var initial = "Initial";
-            var newvalue = "newValue";
-
-            Assert.Equal(initial, TestType.StaticProperty);
-
-            using (Mock.Property(() => TestType.StaticProperty, newvalue))
-            {
-                Assert.Equal(newvalue, TestType.StaticProperty);
-            }
-
-            Assert.Equal(initial, TestType.StaticProperty);
+            Assert.Equal(newvalue, TestType.StaticProperty);
         }
 
-        [Fact]
-        public void GivenAnInstance_WhenMockingAMethod_ThenANotSupportedExceptionIsThrown()
-        {
-            var p = new TestType();
+        Assert.Equal(initial, TestType.StaticProperty);
+    }
 
-            Assert.Throws<NotSupportedException>(() => Mock.Property(() => p.CallMe(), "test"));
-        }
+    [Fact]
+    public void GivenAnInstance_WhenMockingAMethod_ThenANotSupportedExceptionIsThrown()
+    {
+        var p = new TestType();
 
-        [Fact]
-        public void GivenAType_WhenMockingAnInstance_TheConstructorWithLeastArgumentsIsUsed()
-        {
-            var instance = Mock.TypeWithArguments<TestTypeWithArgs>();
+        Assert.Throws<NotSupportedException>(() => Mock.Property(() => p.CallMe(), "test"));
+    }
 
-            Assert.NotNull(instance);
-            Assert.NotNull(instance.OneArg);
-            Assert.Null(instance.SecondArg);
-        }
+    [Fact]
+    public void GivenAType_WhenMockingAnInstance_TheConstructorWithLeastArgumentsIsUsed()
+    {
+        var instance = Mock.TypeWithArguments<TestTypeWithArgs>();
 
-        [Fact]
-        public void GivenAType_WhenMockingAnInstance_ParametersCanBeUsed()
-        {
-            var parameter = new TestType();
-            var instance = Mock.TypeWithArguments<TestTypeWithArgs>(parameter);
+        Assert.NotNull(instance);
+        Assert.NotNull(instance.OneArg);
+        Assert.Null(instance.SecondArg);
+    }
 
-            Assert.Equal(parameter, instance.OneArg);
-        }
+    [Fact]
+    public void GivenAType_WhenMockingAnInstance_ParametersCanBeUsed()
+    {
+        var parameter = new TestType();
+        var instance = Mock.TypeWithArguments<TestTypeWithArgs>(parameter);
 
-        [Fact]
-        public void GivenAType_WhenMockingAnInstance_ParameterWithDerivedTypeCanBeUsed()
-        {
-            var parameter = new DerivedTestType();
-            var instance = Mock.TypeWithArguments<TestTypeWithArgs>(parameter);
+        Assert.Equal(parameter, instance.OneArg);
+    }
 
-            Assert.Equal(parameter, instance.OneArg);
-        }
+    [Fact]
+    public void GivenAType_WhenMockingAnInstance_ParameterWithDerivedTypeCanBeUsed()
+    {
+        var parameter = new DerivedTestType();
+        var instance = Mock.TypeWithArguments<TestTypeWithArgs>(parameter);
 
-        private class DerivedTestType : TestType
-        {
-        }
+        Assert.Equal(parameter, instance.OneArg);
+    }
+
+    private class DerivedTestType : TestType
+    {
     }
 }

@@ -5,18 +5,17 @@
 
 using System;
 
-namespace Microsoft.Health.Core.Extensions
+namespace Microsoft.Health.Core.Extensions;
+
+public static class DateTimeExtensions
 {
-    public static class DateTimeExtensions
+    /// <summary>
+    /// Truncates a DateTime to millisecond precision
+    /// </summary>
+    /// <param name="dateTime">The DateTime</param>
+    /// <returns>The truncated dateTime</returns>
+    public static DateTime TruncateToMillisecond(this DateTime dateTime)
     {
-        /// <summary>
-        /// Truncates a DateTime to millisecond precision
-        /// </summary>
-        /// <param name="dateTime">The DateTime</param>
-        /// <returns>The truncated dateTime</returns>
-        public static DateTime TruncateToMillisecond(this DateTime dateTime)
-        {
-            return new DateTime(dateTime.Ticks / TimeSpan.TicksPerMillisecond * TimeSpan.TicksPerMillisecond, dateTime.Kind);
-        }
+        return new DateTime(dateTime.Ticks / TimeSpan.TicksPerMillisecond * TimeSpan.TicksPerMillisecond, dateTime.Kind);
     }
 }

@@ -14,38 +14,37 @@ using Microsoft.Health.Blob.Features.Storage;
 using NSubstitute;
 using Xunit;
 
-namespace Microsoft.Health.Blob.UnitTests.Features.Storage
+namespace Microsoft.Health.Blob.UnitTests.Features.Storage;
+
+public class BlobContainerInitializerTests
 {
-    public class BlobContainerInitializerTests
+    private const string TestContainerName = "testcontainer1";
+    private readonly NullLogger<BlobContainerInitializer> _logger;
+    private readonly BlobServiceClient _blobClient;
+
+    public BlobContainerInitializerTests()
     {
-        private const string TestContainerName = "testcontainer1";
-        private readonly NullLogger<BlobContainerInitializer> _logger;
-        private readonly BlobServiceClient _blobClient;
+        _logger = new NullLogger<BlobContainerInitializer>();
 
-        public BlobContainerInitializerTests()
-        {
-            _logger = new NullLogger<BlobContainerInitializer>();
+        var blobContainerClient = Substitute.For<BlobContainerClient>(new Uri("https://www.microsoft.com/"), new BlobClientOptions());
+        blobContainerClient.CreateIfNotExistsAsync(cancellationToken: Arg.Any<CancellationToken>())
+            .Returns(x =>
+            {
+                x.Arg<CancellationToken>().ThrowIfCancellationRequested();
+                return Substitute.For<Task<Response<BlobContainerInfo>>>();
+            });
 
-            var blobContainerClient = Substitute.For<BlobContainerClient>(new Uri("https://www.microsoft.com/"), new BlobClientOptions());
-            blobContainerClient.CreateIfNotExistsAsync(cancellationToken: Arg.Any<CancellationToken>())
-                .Returns(x =>
-                {
-                    x.Arg<CancellationToken>().ThrowIfCancellationRequested();
-                    return Substitute.For<Task<Response<BlobContainerInfo>>>();
-                });
+        _blobClient = Substitute.For<BlobServiceClient>(new Uri("https://www.microsoft.com/"), null);
+        _blobClient.GetBlobContainerClient(TestContainerName).Returns(blobContainerClient);
+    }
 
-            _blobClient = Substitute.For<BlobServiceClient>(new Uri("https://www.microsoft.com/"), null);
-            _blobClient.GetBlobContainerClient(TestContainerName).Returns(blobContainerClient);
-        }
+    [Fact]
+    public async void GivenCancelation_WhenInitializingContainer_ThenOperationCanceledExceptionIsThrown()
+    {
+        var blobContainerInitializer = new BlobContainerInitializer(TestContainerName, _logger);
+        using var cancellationTokenSource = new CancellationTokenSource();
+        cancellationTokenSource.Cancel();
 
-        [Fact]
-        public async void GivenCancelation_WhenInitializingContainer_ThenOperationCanceledExceptionIsThrown()
-        {
-            var blobContainerInitializer = new BlobContainerInitializer(TestContainerName, _logger);
-            using var cancellationTokenSource = new CancellationTokenSource();
-            cancellationTokenSource.Cancel();
-
-            await Assert.ThrowsAsync<OperationCanceledException>(() => blobContainerInitializer.InitializeContainerAsync(_blobClient, cancellationTokenSource.Token));
-        }
+        await Assert.ThrowsAsync<OperationCanceledException>(() => blobContainerInitializer.InitializeContainerAsync(_blobClient, cancellationTokenSource.Token));
     }
 }

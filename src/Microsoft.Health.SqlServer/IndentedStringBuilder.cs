@@ -12,250 +12,249 @@ using System.Text;
 using EnsureThat;
 using Microsoft.Health.SqlServer.Features.Schema.Model;
 
-namespace Microsoft.Health.SqlServer
+namespace Microsoft.Health.SqlServer;
+
+/// <summary>
+/// A wrapper around <see cref="StringBuilder"/> that provides methods that insert a indent string and track the current indentation level.
+/// Inspired by <see cref="IndentedTextWriter"/>
+/// </summary>
+public partial class IndentedStringBuilder
 {
-    /// <summary>
-    /// A wrapper around <see cref="StringBuilder"/> that provides methods that insert a indent string and track the current indentation level.
-    /// Inspired by <see cref="IndentedTextWriter"/>
-    /// </summary>
-    public partial class IndentedStringBuilder
+    private const char IndentChar = ' ';
+    private const int CharCountPerIndent = 4;
+
+    private bool _indentPending;
+    private int _indentLevel;
+    private readonly List<bool> _delimitedScopes = new List<bool>();
+
+    internal int IndentLevel
     {
-        private const char IndentChar = ' ';
-        private const int CharCountPerIndent = 4;
+        get => _indentLevel;
+        set => _indentLevel = EnsureArg.IsGte(value, 0);
+    }
 
-        private bool _indentPending;
-        private int _indentLevel;
-        private readonly List<bool> _delimitedScopes = new List<bool>();
+    /// <summary>
+    /// Increments the indent level until the returned object is disposed.
+    /// </summary>
+    /// <returns>A scope to be disposed when the indentation level is to be restored</returns>
+    public IndentedScope Indent() => new IndentedScope(this);
 
-        internal int IndentLevel
+    /// <summary>
+    /// Appends a column name to this instance.
+    /// </summary>
+    /// <param name="column">The column</param>
+    /// <returns>This instance</returns>
+    [Obsolete("Use overload with table alias instead")] // Catch calls an raise compiler warnings.
+    public IndentedStringBuilder Append(Column column)
+    {
+        return Append(column, null);
+    }
+
+    /// <summary>
+    /// Appends a column name to this instance.
+    /// </summary>
+    /// <param name="column">The column</param>
+    /// <param name="tableAlias">The table alias to quality the column reference with</param>
+    /// <returns>This instance</returns>
+    public IndentedStringBuilder Append(Column column, string tableAlias)
+    {
+        EnsureArg.IsNotNull(column, nameof(column));
+
+        if (!string.IsNullOrEmpty(tableAlias))
         {
-            get => _indentLevel;
-            set => _indentLevel = EnsureArg.IsGte(value, 0);
+            Append(tableAlias).Append('.');
         }
 
-        /// <summary>
-        /// Increments the indent level until the returned object is disposed.
-        /// </summary>
-        /// <returns>A scope to be disposed when the indentation level is to be restored</returns>
-        public IndentedScope Indent() => new IndentedScope(this);
+        return Append(column.ToString());
+    }
 
-        /// <summary>
-        /// Appends a column name to this instance.
-        /// </summary>
-        /// <param name="column">The column</param>
-        /// <returns>This instance</returns>
-        [Obsolete("Use overload with table alias instead")] // Catch calls an raise compiler warnings.
-        public IndentedStringBuilder Append(Column column)
+    /// <summary>
+    /// Appends a column name to this instance.
+    /// </summary>
+    /// <param name="column">The column</param>
+    /// <returns>This instance</returns>
+    [Obsolete("Use overload with table alias instead")] // Catch calls an raise compiler warnings.
+    public IndentedStringBuilder AppendLine(Column column)
+    {
+        return AppendLine(column, null);
+    }
+
+    /// <summary>
+    /// Appends a column name to this instance.
+    /// </summary>
+    /// <param name="column">The column</param>
+    /// <param name="tableAlias">The table alias to quality the column reference with</param>
+    /// <returns>This instance</returns>
+    public IndentedStringBuilder AppendLine(Column column, string tableAlias)
+    {
+        EnsureArg.IsNotNull(column, nameof(column));
+
+        if (!string.IsNullOrEmpty(tableAlias))
         {
-            return Append(column, null);
+            Append(tableAlias).Append('.');
         }
 
-        /// <summary>
-        /// Appends a column name to this instance.
-        /// </summary>
-        /// <param name="column">The column</param>
-        /// <param name="tableAlias">The table alias to quality the column reference with</param>
-        /// <returns>This instance</returns>
-        public IndentedStringBuilder Append(Column column, string tableAlias)
-        {
-            EnsureArg.IsNotNull(column, nameof(column));
+        return AppendLine(column.ToString());
+    }
 
-            if (!string.IsNullOrEmpty(tableAlias))
+    /// <summary>
+    /// Similar to <see cref="StringBuilder.AppendJoin{T}(string,IEnumerable{T})"/>, but without needing to build up intermediate strings.
+    /// </summary>
+    /// <typeparam name="T">The element type</typeparam>
+    /// <param name="delimiter">The delimiter to place between elements</param>
+    /// <param name="items">The input enumerable</param>
+    /// <param name="writer">A function that is invoked for each element in <paramref name="items"/></param>
+    /// <returns>This instance</returns>
+    public IndentedStringBuilder AppendDelimited<T>(string delimiter, IEnumerable<T> items, Action<IndentedStringBuilder, T> writer)
+    {
+        EnsureArg.IsNotNull(items, nameof(items));
+        EnsureArg.IsNotNull(writer, nameof(writer));
+
+        bool first = true;
+        foreach (T item in items)
+        {
+            if (first)
             {
-                Append(tableAlias).Append('.');
+                first = false;
+            }
+            else
+            {
+                Append(delimiter);
             }
 
-            return Append(column.ToString());
+            writer(this, item);
         }
 
-        /// <summary>
-        /// Appends a column name to this instance.
-        /// </summary>
-        /// <param name="column">The column</param>
-        /// <returns>This instance</returns>
-        [Obsolete("Use overload with table alias instead")] // Catch calls an raise compiler warnings.
-        public IndentedStringBuilder AppendLine(Column column)
+        return this;
+    }
+
+    /// <summary>
+    /// Similar to <see cref="StringBuilder.AppendJoin{T}(string,IEnumerable{T})"/>, but without needing to build up intermediate strings.
+    /// </summary>
+    /// <typeparam name="T">The element type</typeparam>
+    /// <param name="applyDelimiter">An action called to append a delimiter between elements</param>
+    /// <param name="items">The input enumerable</param>
+    /// <param name="writer">A function that is invoked for each element in <paramref name="items"/></param>
+    /// <returns>This instance</returns>
+    public IndentedStringBuilder AppendDelimited<T>(Action<IndentedStringBuilder> applyDelimiter, IEnumerable<T> items, Action<IndentedStringBuilder, T> writer)
+    {
+        EnsureArg.IsNotNull(applyDelimiter, nameof(applyDelimiter));
+        EnsureArg.IsNotNull(items, nameof(items));
+        EnsureArg.IsNotNull(writer, nameof(writer));
+
+        bool first = true;
+        foreach (T item in items)
         {
-            return AppendLine(column, null);
+            if (first)
+            {
+                first = false;
+            }
+            else
+            {
+                applyDelimiter(this);
+            }
+
+            writer(this, item);
         }
 
-        /// <summary>
-        /// Appends a column name to this instance.
-        /// </summary>
-        /// <param name="column">The column</param>
-        /// <param name="tableAlias">The table alias to quality the column reference with</param>
-        /// <returns>This instance</returns>
-        public IndentedStringBuilder AppendLine(Column column, string tableAlias)
+        return this;
+    }
+
+    /// <summary>
+    /// Helps with appending delimited items with a prefix, delimiter, and postfix, when the number of items to be appended is not
+    /// readily known.
+    /// </summary>
+    /// <param name="applyPrefix">A function that is called the first time <see cref="DelimitedScope.BeginDelimitedElement"/> is called</param>
+    /// <param name="applyDelimiter">A function that is called the every subsequent time <see cref="DelimitedScope.BeginDelimitedElement"/> is called</param>
+    /// <param name="applyPostfix">A function that is called one the <see cref="DelimitedScope"/> is disposed.</param>
+    /// <returns>A disposable scope on which to call <see cref="DelimitedScope.BeginDelimitedElement"/></returns>
+    public DelimitedScope BeginDelimitedScope(Action<IndentedStringBuilder> applyPrefix, Action<IndentedStringBuilder> applyDelimiter, Action<IndentedStringBuilder> applyPostfix)
+    {
+        return new DelimitedScope(this, applyPrefix, applyDelimiter, applyPostfix);
+    }
+
+    private void AppendIndent()
+    {
+        if (_indentPending)
         {
-            EnsureArg.IsNotNull(column, nameof(column));
+            _inner.Append(IndentChar, IndentLevel * CharCountPerIndent);
+            _indentPending = false;
+        }
+    }
 
-            if (!string.IsNullOrEmpty(tableAlias))
-            {
-                Append(tableAlias).Append('.');
-            }
+    [SuppressMessage("Microsoft.Design", "CA1034: Nested types should not be visible", Justification = "Type is only useful in context of IndentedStringBuilder.")]
+    [SuppressMessage("Microsoft.Performance", "CA1815: Override equals and operator equals on value types", Justification = "Instances are not compared.")]
+    public struct IndentedScope : IDisposable
+    {
+        private readonly IndentedStringBuilder _sb;
 
-            return AppendLine(column.ToString());
+        public IndentedScope(IndentedStringBuilder sb)
+        {
+            EnsureArg.IsNotNull(sb, nameof(sb));
+
+            _sb = sb;
+            _sb.IndentLevel++;
         }
 
-        /// <summary>
-        /// Similar to <see cref="StringBuilder.AppendJoin{T}(string,IEnumerable{T})"/>, but without needing to build up intermediate strings.
-        /// </summary>
-        /// <typeparam name="T">The element type</typeparam>
-        /// <param name="delimiter">The delimiter to place between elements</param>
-        /// <param name="items">The input enumerable</param>
-        /// <param name="writer">A function that is invoked for each element in <paramref name="items"/></param>
-        /// <returns>This instance</returns>
-        public IndentedStringBuilder AppendDelimited<T>(string delimiter, IEnumerable<T> items, Action<IndentedStringBuilder, T> writer)
+        public void Dispose()
         {
-            EnsureArg.IsNotNull(items, nameof(items));
-            EnsureArg.IsNotNull(writer, nameof(writer));
+            _sb.IndentLevel--;
+        }
+    }
 
-            bool first = true;
-            foreach (T item in items)
-            {
-                if (first)
-                {
-                    first = false;
-                }
-                else
-                {
-                    Append(delimiter);
-                }
+    [SuppressMessage("Microsoft.Design", "CA1034: Nested types should not be visible", Justification = "Type is only useful in context of IndentedStringBuilder.")]
+    [SuppressMessage("Microsoft.Performance", "CA1815: Override equals and operator equals on value types", Justification = "Instances are not compared.")]
+    public readonly struct DelimitedScope : IDisposable
+    {
+        private readonly IndentedStringBuilder _sb;
+        private readonly Action<IndentedStringBuilder> _applyPrefix;
+        private readonly Action<IndentedStringBuilder> _applyDelimiter;
+        private readonly Action<IndentedStringBuilder> _applyPostfix;
+        private readonly int _index;
 
-                writer(this, item);
-            }
+        public DelimitedScope(IndentedStringBuilder sb, Action<IndentedStringBuilder> applyPrefix, Action<IndentedStringBuilder> applyDelimiter, Action<IndentedStringBuilder> applyPostfix)
+        {
+            EnsureArg.IsNotNull(sb, nameof(sb));
 
-            return this;
+            _sb = sb;
+            _applyPrefix = applyPrefix;
+            _applyDelimiter = applyDelimiter;
+            _applyPostfix = applyPostfix;
+
+            _index = _sb._delimitedScopes.Count;
+            _sb._delimitedScopes.Add(false);
         }
 
-        /// <summary>
-        /// Similar to <see cref="StringBuilder.AppendJoin{T}(string,IEnumerable{T})"/>, but without needing to build up intermediate strings.
-        /// </summary>
-        /// <typeparam name="T">The element type</typeparam>
-        /// <param name="applyDelimiter">An action called to append a delimiter between elements</param>
-        /// <param name="items">The input enumerable</param>
-        /// <param name="writer">A function that is invoked for each element in <paramref name="items"/></param>
-        /// <returns>This instance</returns>
-        public IndentedStringBuilder AppendDelimited<T>(Action<IndentedStringBuilder> applyDelimiter, IEnumerable<T> items, Action<IndentedStringBuilder, T> writer)
+        private bool IsStarted => _sb._delimitedScopes[_index];
+
+        // Readonly structs cannot have property setters, so this is a method
+        private void SetIsStarted(bool value) => _sb._delimitedScopes[_index] = value;
+
+        public IndentedStringBuilder BeginDelimitedElement()
         {
-            EnsureArg.IsNotNull(applyDelimiter, nameof(applyDelimiter));
-            EnsureArg.IsNotNull(items, nameof(items));
-            EnsureArg.IsNotNull(writer, nameof(writer));
-
-            bool first = true;
-            foreach (T item in items)
+            if (!IsStarted)
             {
-                if (first)
-                {
-                    first = false;
-                }
-                else
-                {
-                    applyDelimiter(this);
-                }
-
-                writer(this, item);
+                _applyPrefix?.Invoke(_sb);
+                SetIsStarted(true);
+            }
+            else
+            {
+                _applyDelimiter?.Invoke(_sb);
             }
 
-            return this;
+            return _sb;
         }
 
-        /// <summary>
-        /// Helps with appending delimited items with a prefix, delimiter, and postfix, when the number of items to be appended is not
-        /// readily known.
-        /// </summary>
-        /// <param name="applyPrefix">A function that is called the first time <see cref="DelimitedScope.BeginDelimitedElement"/> is called</param>
-        /// <param name="applyDelimiter">A function that is called the every subsequent time <see cref="DelimitedScope.BeginDelimitedElement"/> is called</param>
-        /// <param name="applyPostfix">A function that is called one the <see cref="DelimitedScope"/> is disposed.</param>
-        /// <returns>A disposable scope on which to call <see cref="DelimitedScope.BeginDelimitedElement"/></returns>
-        public DelimitedScope BeginDelimitedScope(Action<IndentedStringBuilder> applyPrefix, Action<IndentedStringBuilder> applyDelimiter, Action<IndentedStringBuilder> applyPostfix)
+        public void Dispose()
         {
-            return new DelimitedScope(this, applyPrefix, applyDelimiter, applyPostfix);
-        }
-
-        private void AppendIndent()
-        {
-            if (_indentPending)
+            if (IsStarted)
             {
-                _inner.Append(IndentChar, IndentLevel * CharCountPerIndent);
-                _indentPending = false;
-            }
-        }
-
-        [SuppressMessage("Microsoft.Design", "CA1034: Nested types should not be visible", Justification = "Type is only useful in context of IndentedStringBuilder.")]
-        [SuppressMessage("Microsoft.Performance", "CA1815: Override equals and operator equals on value types", Justification = "Instances are not compared.")]
-        public struct IndentedScope : IDisposable
-        {
-            private readonly IndentedStringBuilder _sb;
-
-            public IndentedScope(IndentedStringBuilder sb)
-            {
-                EnsureArg.IsNotNull(sb, nameof(sb));
-
-                _sb = sb;
-                _sb.IndentLevel++;
+                _applyPostfix?.Invoke(_sb);
             }
 
-            public void Dispose()
-            {
-                _sb.IndentLevel--;
-            }
-        }
+            Debug.Assert(_sb._delimitedScopes.Count == (_index + 1), "Delimited scope being disposed is not at the top of the stack.");
 
-        [SuppressMessage("Microsoft.Design", "CA1034: Nested types should not be visible", Justification = "Type is only useful in context of IndentedStringBuilder.")]
-        [SuppressMessage("Microsoft.Performance", "CA1815: Override equals and operator equals on value types", Justification = "Instances are not compared.")]
-        public readonly struct DelimitedScope : IDisposable
-        {
-            private readonly IndentedStringBuilder _sb;
-            private readonly Action<IndentedStringBuilder> _applyPrefix;
-            private readonly Action<IndentedStringBuilder> _applyDelimiter;
-            private readonly Action<IndentedStringBuilder> _applyPostfix;
-            private readonly int _index;
-
-            public DelimitedScope(IndentedStringBuilder sb, Action<IndentedStringBuilder> applyPrefix, Action<IndentedStringBuilder> applyDelimiter, Action<IndentedStringBuilder> applyPostfix)
-            {
-                EnsureArg.IsNotNull(sb, nameof(sb));
-
-                _sb = sb;
-                _applyPrefix = applyPrefix;
-                _applyDelimiter = applyDelimiter;
-                _applyPostfix = applyPostfix;
-
-                _index = _sb._delimitedScopes.Count;
-                _sb._delimitedScopes.Add(false);
-            }
-
-            private bool IsStarted => _sb._delimitedScopes[_index];
-
-            // Readonly structs cannot have property setters, so this is a method
-            private void SetIsStarted(bool value) => _sb._delimitedScopes[_index] = value;
-
-            public IndentedStringBuilder BeginDelimitedElement()
-            {
-                if (!IsStarted)
-                {
-                    _applyPrefix?.Invoke(_sb);
-                    SetIsStarted(true);
-                }
-                else
-                {
-                    _applyDelimiter?.Invoke(_sb);
-                }
-
-                return _sb;
-            }
-
-            public void Dispose()
-            {
-                if (IsStarted)
-                {
-                    _applyPostfix?.Invoke(_sb);
-                }
-
-                Debug.Assert(_sb._delimitedScopes.Count == (_index + 1), "Delimited scope being disposed is not at the top of the stack.");
-
-                _sb._delimitedScopes.RemoveAt(_index);
-            }
+            _sb._delimitedScopes.RemoveAt(_index);
         }
     }
 }

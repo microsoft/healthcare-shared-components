@@ -10,26 +10,25 @@ using Microsoft.Extensions.Options;
 using Microsoft.Health.SqlServer.Configs;
 using Xunit;
 
-namespace Microsoft.Health.SqlServer.UnitTests.Features
+namespace Microsoft.Health.SqlServer.UnitTests.Features;
+
+public class DefaultSqlConnectionStringProviderTests
 {
-    public class DefaultSqlConnectionStringProviderTests
+    [Fact]
+    public void GivenNullSqlServerDataStoreConfiguration_CtorThrows()
     {
-        [Fact]
-        public void GivenNullSqlServerDataStoreConfiguration_CtorThrows()
-        {
-            Assert.Throws<ArgumentNullException>(() => new DefaultSqlConnectionStringProvider(sqlServerDataStoreConfiguration: null));
-        }
+        Assert.Throws<ArgumentNullException>(() => new DefaultSqlConnectionStringProvider(sqlServerDataStoreConfiguration: null));
+    }
 
-        [Theory]
-        [InlineData(null)]
-        [InlineData("")]
-        [InlineData("server=(local);Initial Catalog=Dicom;Integrated Security=true")]
-        public async Task GivenValidSqlServerDataStoreConfiguration_GetSqlConnectionString_ReturnsConnectionString(string sqlConnectionString)
-        {
-            var sqlServerDataStoreConfiguration = new SqlServerDataStoreConfiguration() { ConnectionString = sqlConnectionString };
-            ISqlConnectionStringProvider sqlConnectionStringProvider = new DefaultSqlConnectionStringProvider(Options.Create(sqlServerDataStoreConfiguration));
+    [Theory]
+    [InlineData(null)]
+    [InlineData("")]
+    [InlineData("server=(local);Initial Catalog=Dicom;Integrated Security=true")]
+    public async Task GivenValidSqlServerDataStoreConfiguration_GetSqlConnectionString_ReturnsConnectionString(string sqlConnectionString)
+    {
+        var sqlServerDataStoreConfiguration = new SqlServerDataStoreConfiguration() { ConnectionString = sqlConnectionString };
+        ISqlConnectionStringProvider sqlConnectionStringProvider = new DefaultSqlConnectionStringProvider(Options.Create(sqlServerDataStoreConfiguration));
 
-            Assert.Equal(sqlConnectionString, await sqlConnectionStringProvider.GetSqlConnectionString(CancellationToken.None));
-        }
+        Assert.Equal(sqlConnectionString, await sqlConnectionStringProvider.GetSqlConnectionString(CancellationToken.None));
     }
 }

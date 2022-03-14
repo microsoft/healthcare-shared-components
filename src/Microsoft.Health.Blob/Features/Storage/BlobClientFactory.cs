@@ -9,29 +9,28 @@ using Azure.Storage.Blobs;
 using EnsureThat;
 using Microsoft.Health.Blob.Configs;
 
-namespace Microsoft.Health.Blob.Features.Storage
+namespace Microsoft.Health.Blob.Features.Storage;
+
+internal static class BlobClientFactory
 {
-    internal static class BlobClientFactory
+    public static BlobServiceClient Create(BlobDataStoreConfiguration configuration)
     {
-        public static BlobServiceClient Create(BlobDataStoreConfiguration configuration)
+        EnsureArg.IsNotNull(configuration, nameof(configuration));
+
+        // Configure the blob client default request options and retry logic
+        var blobClientOptions = new BlobClientOptions();
+        blobClientOptions.Retry.MaxRetries = configuration.RequestOptions.ExponentialRetryMaxAttempts;
+        blobClientOptions.Retry.Mode = Azure.Core.RetryMode.Exponential;
+        blobClientOptions.Retry.Delay = TimeSpan.FromSeconds(configuration.RequestOptions.ExponentialRetryBackoffDeltaInSeconds);
+        blobClientOptions.Retry.NetworkTimeout = TimeSpan.FromMinutes(configuration.RequestOptions.ServerTimeoutInMinutes);
+
+        if (configuration.AuthenticationType == BlobDataStoreAuthenticationType.ManagedIdentity)
         {
-            EnsureArg.IsNotNull(configuration, nameof(configuration));
+            DefaultAzureCredential credential = new DefaultAzureCredential(configuration.Credentials);
 
-            // Configure the blob client default request options and retry logic
-            var blobClientOptions = new BlobClientOptions();
-            blobClientOptions.Retry.MaxRetries = configuration.RequestOptions.ExponentialRetryMaxAttempts;
-            blobClientOptions.Retry.Mode = Azure.Core.RetryMode.Exponential;
-            blobClientOptions.Retry.Delay = TimeSpan.FromSeconds(configuration.RequestOptions.ExponentialRetryBackoffDeltaInSeconds);
-            blobClientOptions.Retry.NetworkTimeout = TimeSpan.FromMinutes(configuration.RequestOptions.ServerTimeoutInMinutes);
-
-            if (configuration.AuthenticationType == BlobDataStoreAuthenticationType.ManagedIdentity)
-            {
-                DefaultAzureCredential credential = new DefaultAzureCredential(configuration.Credentials);
-
-                return new BlobServiceClient(new Uri(configuration.ConnectionString), credential, blobClientOptions);
-            }
-
-            return new BlobServiceClient(configuration.ConnectionString, blobClientOptions);
+            return new BlobServiceClient(new Uri(configuration.ConnectionString), credential, blobClientOptions);
         }
+
+        return new BlobServiceClient(configuration.ConnectionString, blobClientOptions);
     }
 }

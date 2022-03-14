@@ -5,12 +5,11 @@
 
 using System.Collections.Generic;
 
-namespace Microsoft.Health.Development.IdentityProvider.Configuration
-{
-    public class User
-    {
-        public string Id { get; set; }
+namespace Microsoft.Health.Development.IdentityProvider.Configuration;
 
-        public IList<string> Roles { get; } = new List<string>();
-    }
+public class User
+{
+    public string Id { get; set; }
+
+    public IList<string> Roles { get; } = new List<string>();
 }

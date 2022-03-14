@@ -19,58 +19,57 @@ using Microsoft.Health.SqlServer.Features.Schema.Model;
 using NSubstitute;
 using Xunit;
 
-namespace Microsoft.Health.SqlServer.Api.UnitTests.Features
+namespace Microsoft.Health.SqlServer.Api.UnitTests.Features;
+
+public class CurrentVersionHandlerTests
 {
-    public class CurrentVersionHandlerTests
+    private readonly ISchemaDataStore _schemaDataStore;
+    private readonly IMediator _mediator;
+    private readonly CancellationToken _cancellationToken;
+
+    public CurrentVersionHandlerTests()
     {
-        private readonly ISchemaDataStore _schemaDataStore;
-        private readonly IMediator _mediator;
-        private readonly CancellationToken _cancellationToken;
+        _schemaDataStore = Substitute.For<ISchemaDataStore>();
+        var collection = new ServiceCollection();
+        collection.Add(sp => new CurrentVersionHandler(_schemaDataStore)).Singleton().AsSelf().AsImplementedInterfaces();
 
-        public CurrentVersionHandlerTests()
+        ServiceProvider provider = collection.BuildServiceProvider();
+        _mediator = new Mediator(type => provider.GetService(type));
+        _cancellationToken = new CancellationTokenSource().Token;
+    }
+
+    [Fact]
+    public async Task GivenACurrentMediator_WhenCurrentRequest_ThenReturnsCurrentVersionInformation()
+    {
+        string status = "completed";
+
+        var mockCurrentVersions = new List<CurrentVersionInformation>()
         {
-            _schemaDataStore = Substitute.For<ISchemaDataStore>();
-            var collection = new ServiceCollection();
-            collection.Add(sp => new CurrentVersionHandler(_schemaDataStore)).Singleton().AsSelf().AsImplementedInterfaces();
+            new CurrentVersionInformation(1, (SchemaVersionStatus)Enum.Parse(typeof(SchemaVersionStatus), status, true), new List<string>() { "server1", "server2" }),
+            new CurrentVersionInformation(2, (SchemaVersionStatus)Enum.Parse(typeof(SchemaVersionStatus), status, true), new List<string>()),
+        };
 
-            ServiceProvider provider = collection.BuildServiceProvider();
-            _mediator = new Mediator(type => provider.GetService(type));
-            _cancellationToken = new CancellationTokenSource().Token;
-        }
+        _schemaDataStore.GetCurrentVersionAsync(Arg.Any<CancellationToken>())
+                .Returns(mockCurrentVersions);
+        GetCurrentVersionResponse response = await _mediator.GetCurrentVersionAsync(_cancellationToken);
+        var currentVersionsResponse = response.CurrentVersions;
 
-        [Fact]
-        public async Task GivenACurrentMediator_WhenCurrentRequest_ThenReturnsCurrentVersionInformation()
-        {
-            string status = "completed";
+        Assert.Equal(mockCurrentVersions.Count, currentVersionsResponse.Count);
+        Assert.Equal(1, currentVersionsResponse[0].Id);
+        Assert.Equal(SchemaVersionStatus.completed, currentVersionsResponse[0].Status);
+        Assert.Equal(2, currentVersionsResponse[0].Servers.Count);
+    }
 
-            var mockCurrentVersions = new List<CurrentVersionInformation>()
-            {
-                new CurrentVersionInformation(1, (SchemaVersionStatus)Enum.Parse(typeof(SchemaVersionStatus), status, true), new List<string>() { "server1", "server2" }),
-                new CurrentVersionInformation(2, (SchemaVersionStatus)Enum.Parse(typeof(SchemaVersionStatus), status, true), new List<string>()),
-            };
+    [Fact]
+    public async Task GivenACurrentMediator_WhenCurrentRequestAndEmptySchemaVersionTable_ThenReturnsEmptyArray()
+    {
+        var mockCurrentVersions = new List<CurrentVersionInformation>();
 
-            _schemaDataStore.GetCurrentVersionAsync(Arg.Any<CancellationToken>())
-                    .Returns(mockCurrentVersions);
-            GetCurrentVersionResponse response = await _mediator.GetCurrentVersionAsync(_cancellationToken);
-            var currentVersionsResponse = response.CurrentVersions;
+        _schemaDataStore.GetCurrentVersionAsync(Arg.Any<CancellationToken>())
+                .Returns(mockCurrentVersions);
 
-            Assert.Equal(mockCurrentVersions.Count, currentVersionsResponse.Count);
-            Assert.Equal(1, currentVersionsResponse[0].Id);
-            Assert.Equal(SchemaVersionStatus.completed, currentVersionsResponse[0].Status);
-            Assert.Equal(2, currentVersionsResponse[0].Servers.Count);
-        }
+        GetCurrentVersionResponse response = await _mediator.GetCurrentVersionAsync(_cancellationToken);
 
-        [Fact]
-        public async Task GivenACurrentMediator_WhenCurrentRequestAndEmptySchemaVersionTable_ThenReturnsEmptyArray()
-        {
-            var mockCurrentVersions = new List<CurrentVersionInformation>();
-
-            _schemaDataStore.GetCurrentVersionAsync(Arg.Any<CancellationToken>())
-                    .Returns(mockCurrentVersions);
-
-            GetCurrentVersionResponse response = await _mediator.GetCurrentVersionAsync(_cancellationToken);
-
-            Assert.Equal(0, response.CurrentVersions.Count);
-        }
+        Assert.Equal(0, response.CurrentVersions.Count);
     }
 }

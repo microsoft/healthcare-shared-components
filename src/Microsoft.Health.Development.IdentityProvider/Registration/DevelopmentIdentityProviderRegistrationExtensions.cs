@@ -20,238 +20,237 @@ using Microsoft.Extensions.Options;
 using Microsoft.Health.Core.Configs;
 using Microsoft.Health.Development.IdentityProvider.Configuration;
 
-namespace Microsoft.Health.Development.IdentityProvider.Registration
+namespace Microsoft.Health.Development.IdentityProvider.Registration;
+
+public static class DevelopmentIdentityProviderRegistrationExtensions
 {
-    public static class DevelopmentIdentityProviderRegistrationExtensions
+    private const string WrongAudienceClient = "wrongAudienceClient";
+
+    /// <summary>
+    /// Adds an in-process identity provider if enabled in configuration.
+    /// </summary>
+    /// <param name="services">The services collection.</param>
+    /// <param name="configuration">The configuration root. The "DevelopmentIdentityProvider" section will be used to populate configuration values.</param>
+    /// <param name="serverKey">The server key for the configuration (e.g. 'FhirServer' or 'DicomServer')</param>
+    /// <returns>The same services collection.</returns>
+    /// <typeparam name="TDataActions">Type representing the dataActions for the service</typeparam>
+    public static IServiceCollection AddDevelopmentIdentityProvider<TDataActions>(this IServiceCollection services, IConfiguration configuration, string serverKey)
+        where TDataActions : Enum
     {
-        private const string WrongAudienceClient = "wrongAudienceClient";
+        EnsureArg.IsNotNull(services, nameof(services));
+        EnsureArg.IsNotNull(configuration, nameof(configuration));
+        EnsureArg.IsNotNullOrWhiteSpace(serverKey, nameof(serverKey));
 
-        /// <summary>
-        /// Adds an in-process identity provider if enabled in configuration.
-        /// </summary>
-        /// <param name="services">The services collection.</param>
-        /// <param name="configuration">The configuration root. The "DevelopmentIdentityProvider" section will be used to populate configuration values.</param>
-        /// <param name="serverKey">The server key for the configuration (e.g. 'FhirServer' or 'DicomServer')</param>
-        /// <returns>The same services collection.</returns>
-        /// <typeparam name="TDataActions">Type representing the dataActions for the service</typeparam>
-        public static IServiceCollection AddDevelopmentIdentityProvider<TDataActions>(this IServiceCollection services, IConfiguration configuration, string serverKey)
-            where TDataActions : Enum
+        var authorizationConfiguration = new AuthorizationConfiguration<TDataActions>();
+        configuration.GetSection($"{serverKey}:Security:Authorization").Bind(authorizationConfiguration);
+
+        var developmentIdentityProviderConfiguration = new DevelopmentIdentityProviderConfiguration();
+        configuration.GetSection("DevelopmentIdentityProvider").Bind(developmentIdentityProviderConfiguration);
+        services.AddSingleton(Options.Create(developmentIdentityProviderConfiguration));
+
+        if (developmentIdentityProviderConfiguration.Enabled)
         {
-            EnsureArg.IsNotNull(services, nameof(services));
-            EnsureArg.IsNotNull(configuration, nameof(configuration));
-            EnsureArg.IsNotNullOrWhiteSpace(serverKey, nameof(serverKey));
-
-            var authorizationConfiguration = new AuthorizationConfiguration<TDataActions>();
-            configuration.GetSection($"{serverKey}:Security:Authorization").Bind(authorizationConfiguration);
-
-            var developmentIdentityProviderConfiguration = new DevelopmentIdentityProviderConfiguration();
-            configuration.GetSection("DevelopmentIdentityProvider").Bind(developmentIdentityProviderConfiguration);
-            services.AddSingleton(Options.Create(developmentIdentityProviderConfiguration));
-
-            if (developmentIdentityProviderConfiguration.Enabled)
-            {
-                services.AddIdentityServer()
-                    .AddDeveloperSigningCredential()
-                    .AddInMemoryApiScopes(new[] { new ApiScope(DevelopmentIdentityProviderConfiguration.Audience), new ApiScope(WrongAudienceClient),  })
-                    .AddInMemoryApiResources(new[]
+            services.AddIdentityServer()
+                .AddDeveloperSigningCredential()
+                .AddInMemoryApiScopes(new[] { new ApiScope(DevelopmentIdentityProviderConfiguration.Audience), new ApiScope(WrongAudienceClient),  })
+                .AddInMemoryApiResources(new[]
+                {
+                    new ApiResource(
+                        DevelopmentIdentityProviderConfiguration.Audience,
+                        userClaims: new[] { authorizationConfiguration.RolesClaim })
                     {
-                        new ApiResource(
-                            DevelopmentIdentityProviderConfiguration.Audience,
-                            userClaims: new[] { authorizationConfiguration.RolesClaim })
-                        {
-                            Scopes = { DevelopmentIdentityProviderConfiguration.Audience },
-                        },
-                        new ApiResource(
-                            WrongAudienceClient,
-                            userClaims: new[] { authorizationConfiguration.RolesClaim })
-                        {
-                            Scopes = { WrongAudienceClient },
-                        },
-                    })
-                    .AddTestUsers(developmentIdentityProviderConfiguration.Users?.Select(user =>
-                        new TestUser
-                        {
-                            Username = user.Id,
-                            Password = user.Id,
-                            IsActive = true,
-                            SubjectId = user.Id,
-                            Claims = user.Roles.Select(r => new Claim(authorizationConfiguration.RolesClaim, r)).ToList(),
-                        }).ToList())
-                    .AddInMemoryClients(
-                        developmentIdentityProviderConfiguration.ClientApplications.Select(
-                            applicationConfiguration =>
-                                new Client
-                                {
-                                    ClientId = applicationConfiguration.Id,
+                        Scopes = { DevelopmentIdentityProviderConfiguration.Audience },
+                    },
+                    new ApiResource(
+                        WrongAudienceClient,
+                        userClaims: new[] { authorizationConfiguration.RolesClaim })
+                    {
+                        Scopes = { WrongAudienceClient },
+                    },
+                })
+                .AddTestUsers(developmentIdentityProviderConfiguration.Users?.Select(user =>
+                    new TestUser
+                    {
+                        Username = user.Id,
+                        Password = user.Id,
+                        IsActive = true,
+                        SubjectId = user.Id,
+                        Claims = user.Roles.Select(r => new Claim(authorizationConfiguration.RolesClaim, r)).ToList(),
+                    }).ToList())
+                .AddInMemoryClients(
+                    developmentIdentityProviderConfiguration.ClientApplications.Select(
+                        applicationConfiguration =>
+                            new Client
+                            {
+                                ClientId = applicationConfiguration.Id,
 
-                                    // client credentials and ROPC for testing
-                                    AllowedGrantTypes = GrantTypes.ResourceOwnerPasswordAndClientCredentials,
+                                // client credentials and ROPC for testing
+                                AllowedGrantTypes = GrantTypes.ResourceOwnerPasswordAndClientCredentials,
 
-                                    // secret for authentication
-                                    ClientSecrets = { new Secret(applicationConfiguration.Id.Sha256()) },
+                                // secret for authentication
+                                ClientSecrets = { new Secret(applicationConfiguration.Id.Sha256()) },
 
-                                    // scopes that client has access to
-                                    AllowedScopes = { DevelopmentIdentityProviderConfiguration.Audience, WrongAudienceClient },
+                                // scopes that client has access to
+                                AllowedScopes = { DevelopmentIdentityProviderConfiguration.Audience, WrongAudienceClient },
 
-                                    // app roles that the client app may have
-                                    Claims = applicationConfiguration.Roles.Select(r => new ClientClaim(authorizationConfiguration.RolesClaim, r)).Concat(new[] { new ClientClaim("appid", applicationConfiguration.Id), }).ToList(),
+                                // app roles that the client app may have
+                                Claims = applicationConfiguration.Roles.Select(r => new ClientClaim(authorizationConfiguration.RolesClaim, r)).Concat(new[] { new ClientClaim("appid", applicationConfiguration.Id), }).ToList(),
 
-                                    ClientClaimsPrefix = string.Empty,
-                                }));
-            }
-
-            return services;
+                                ClientClaimsPrefix = string.Empty,
+                            }));
         }
 
-        /// <summary>
-        /// Adds the in-process identity provider to the pipeline if enabled in configuration.
-        /// </summary>
-        /// <param name="app">The application builder</param>
-        /// <returns>The application builder.</returns>
-        public static IApplicationBuilder UseDevelopmentIdentityProviderIfConfigured(this IApplicationBuilder app)
-        {
-            EnsureArg.IsNotNull(app, nameof(app));
-            if (app.ApplicationServices.GetService<IOptions<DevelopmentIdentityProviderConfiguration>>()?.Value?.Enabled == true)
-            {
-                app.UseIdentityServer();
-            }
+        return services;
+    }
 
-            return app;
+    /// <summary>
+    /// Adds the in-process identity provider to the pipeline if enabled in configuration.
+    /// </summary>
+    /// <param name="app">The application builder</param>
+    /// <returns>The application builder.</returns>
+    public static IApplicationBuilder UseDevelopmentIdentityProviderIfConfigured(this IApplicationBuilder app)
+    {
+        EnsureArg.IsNotNull(app, nameof(app));
+        if (app.ApplicationServices.GetService<IOptions<DevelopmentIdentityProviderConfiguration>>()?.Value?.Enabled == true)
+        {
+            app.UseIdentityServer();
         }
 
-        /// <summary>
-        /// If <paramref name="existingConfiguration"/> contains a value for TestAuthEnvironment:FilePath and the file exists, this method adds an <see cref="IConfigurationBuilder"/> that
-        /// reads a testauthenvironment.json file and reshapes it to fit into the expected schema of the FHIR server
-        /// configuration. Also sets the security audience and sets the development identity server as enabled.
-        /// This is an optional configuration source and is only intended to be used for local development.
-        /// </summary>
-        /// <param name="configurationBuilder">The configuration builder.</param>
-        /// <param name="existingConfiguration">Configuration root.</param>
-        /// <param name="serverKey">The server key for the configuration (e.g. 'FhirServer' or 'DicomServer')</param>
-        /// <returns>The same configuration builder.</returns>
-        public static IConfigurationBuilder AddDevelopmentAuthEnvironmentIfConfigured(this IConfigurationBuilder configurationBuilder, IConfigurationRoot existingConfiguration, string serverKey)
+        return app;
+    }
+
+    /// <summary>
+    /// If <paramref name="existingConfiguration"/> contains a value for TestAuthEnvironment:FilePath and the file exists, this method adds an <see cref="IConfigurationBuilder"/> that
+    /// reads a testauthenvironment.json file and reshapes it to fit into the expected schema of the FHIR server
+    /// configuration. Also sets the security audience and sets the development identity server as enabled.
+    /// This is an optional configuration source and is only intended to be used for local development.
+    /// </summary>
+    /// <param name="configurationBuilder">The configuration builder.</param>
+    /// <param name="existingConfiguration">Configuration root.</param>
+    /// <param name="serverKey">The server key for the configuration (e.g. 'FhirServer' or 'DicomServer')</param>
+    /// <returns>The same configuration builder.</returns>
+    public static IConfigurationBuilder AddDevelopmentAuthEnvironmentIfConfigured(this IConfigurationBuilder configurationBuilder, IConfigurationRoot existingConfiguration, string serverKey)
+    {
+        EnsureArg.IsNotNull(configurationBuilder, nameof(configurationBuilder));
+        EnsureArg.IsNotNull(existingConfiguration, nameof(existingConfiguration));
+        EnsureArg.IsNotNullOrWhiteSpace(serverKey, nameof(serverKey));
+
+        string testEnvironmentFilePath = existingConfiguration["TestAuthEnvironment:FilePath"];
+
+        if (string.IsNullOrWhiteSpace(testEnvironmentFilePath))
         {
-            EnsureArg.IsNotNull(configurationBuilder, nameof(configurationBuilder));
-            EnsureArg.IsNotNull(existingConfiguration, nameof(existingConfiguration));
+            return configurationBuilder;
+        }
+
+        testEnvironmentFilePath = Path.GetFullPath(testEnvironmentFilePath);
+        if (!File.Exists(testEnvironmentFilePath))
+        {
+            return configurationBuilder;
+        }
+
+        return configurationBuilder.Add(new DevelopmentAuthEnvironmentConfigurationSource(testEnvironmentFilePath, existingConfiguration, serverKey));
+    }
+
+    private class DevelopmentAuthEnvironmentConfigurationSource : IConfigurationSource
+    {
+        private readonly string _filePath;
+        private readonly IConfigurationRoot _existingConfiguration;
+        private readonly string _serverKey;
+
+        public DevelopmentAuthEnvironmentConfigurationSource(string filePath, IConfigurationRoot existingConfiguration, string serverKey)
+        {
+            EnsureArg.IsNotNullOrWhiteSpace(filePath, nameof(filePath));
             EnsureArg.IsNotNullOrWhiteSpace(serverKey, nameof(serverKey));
 
-            string testEnvironmentFilePath = existingConfiguration["TestAuthEnvironment:FilePath"];
-
-            if (string.IsNullOrWhiteSpace(testEnvironmentFilePath))
-            {
-                return configurationBuilder;
-            }
-
-            testEnvironmentFilePath = Path.GetFullPath(testEnvironmentFilePath);
-            if (!File.Exists(testEnvironmentFilePath))
-            {
-                return configurationBuilder;
-            }
-
-            return configurationBuilder.Add(new DevelopmentAuthEnvironmentConfigurationSource(testEnvironmentFilePath, existingConfiguration, serverKey));
+            _filePath = filePath;
+            _serverKey = serverKey;
+            _existingConfiguration = existingConfiguration;
         }
 
-        private class DevelopmentAuthEnvironmentConfigurationSource : IConfigurationSource
+        public IConfigurationProvider Build(IConfigurationBuilder builder)
         {
-            private readonly string _filePath;
+            var jsonConfigurationSource = new JsonConfigurationSource
+            {
+                Path = _filePath,
+                Optional = true,
+            };
+
+            jsonConfigurationSource.ResolveFileProvider();
+            return new Provider(jsonConfigurationSource, _existingConfiguration, _serverKey);
+        }
+
+        private class Provider : JsonConfigurationProvider
+        {
             private readonly IConfigurationRoot _existingConfiguration;
+
+            private static readonly Dictionary<string, string> Mappings = new Dictionary<string, string>
+            {
+                { "^users:", "DevelopmentIdentityProvider:Users:" },
+                { "^clientApplications:", "DevelopmentIdentityProvider:ClientApplications:" },
+            };
+
+            private const string DevelopmentIdpEnabledKey = "DevelopmentIdentityProvider:Enabled";
+
             private readonly string _serverKey;
 
-            public DevelopmentAuthEnvironmentConfigurationSource(string filePath, IConfigurationRoot existingConfiguration, string serverKey)
+            public Provider(JsonConfigurationSource source, IConfigurationRoot existingConfiguration, string serverKey)
+                : base(source)
             {
-                EnsureArg.IsNotNullOrWhiteSpace(filePath, nameof(filePath));
                 EnsureArg.IsNotNullOrWhiteSpace(serverKey, nameof(serverKey));
 
-                _filePath = filePath;
                 _serverKey = serverKey;
                 _existingConfiguration = existingConfiguration;
             }
 
-            public IConfigurationProvider Build(IConfigurationBuilder builder)
-            {
-                var jsonConfigurationSource = new JsonConfigurationSource
-                {
-                    Path = _filePath,
-                    Optional = true,
-                };
+            private string AuthorityKey => $"{_serverKey}:Security:Authentication:Authority";
 
-                jsonConfigurationSource.ResolveFileProvider();
-                return new Provider(jsonConfigurationSource, _existingConfiguration, _serverKey);
+            private string AudienceKey => $"{_serverKey}:Security:Authentication:Audience";
+
+            private string PrincipalClaimsKey => $"{_serverKey}:Security:PrincipalClaims";
+
+            public override void Load()
+            {
+                base.Load();
+
+                // remap the entries
+                Data = Data.ToDictionary(
+                    p => Mappings.Aggregate(p.Key, (acc, mapping) => Regex.Replace(acc, mapping.Key, mapping.Value, RegexOptions.IgnoreCase)),
+                    p => p.Value,
+                    StringComparer.OrdinalIgnoreCase);
+
+                // add properties related to the development identity provider.
+                Data[DevelopmentIdpEnabledKey] = bool.TrueString;
+
+                if (string.IsNullOrWhiteSpace(_existingConfiguration[AudienceKey]))
+                {
+                    Data[AudienceKey] = DevelopmentIdentityProviderConfiguration.Audience;
+                }
+
+                if (string.IsNullOrWhiteSpace(_existingConfiguration[AuthorityKey]))
+                {
+                    Data[AuthorityKey] = GetAuthority();
+                }
+
+                Data[$"{PrincipalClaimsKey}:0"] = DevelopmentIdentityProviderConfiguration.LastModifiedClaim;
+                Data[$"{PrincipalClaimsKey}:1"] = DevelopmentIdentityProviderConfiguration.ClientIdClaim;
             }
 
-            private class Provider : JsonConfigurationProvider
+            private string GetAuthority()
             {
-                private readonly IConfigurationRoot _existingConfiguration;
-
-                private static readonly Dictionary<string, string> Mappings = new Dictionary<string, string>
-                {
-                    { "^users:", "DevelopmentIdentityProvider:Users:" },
-                    { "^clientApplications:", "DevelopmentIdentityProvider:ClientApplications:" },
-                };
-
-                private const string DevelopmentIdpEnabledKey = "DevelopmentIdentityProvider:Enabled";
-
-                private readonly string _serverKey;
-
-                public Provider(JsonConfigurationSource source, IConfigurationRoot existingConfiguration, string serverKey)
-                    : base(source)
-                {
-                    EnsureArg.IsNotNullOrWhiteSpace(serverKey, nameof(serverKey));
-
-                    _serverKey = serverKey;
-                    _existingConfiguration = existingConfiguration;
-                }
-
-                private string AuthorityKey => $"{_serverKey}:Security:Authentication:Authority";
-
-                private string AudienceKey => $"{_serverKey}:Security:Authentication:Audience";
-
-                private string PrincipalClaimsKey => $"{_serverKey}:Security:PrincipalClaims";
-
-                public override void Load()
-                {
-                    base.Load();
-
-                    // remap the entries
-                    Data = Data.ToDictionary(
-                        p => Mappings.Aggregate(p.Key, (acc, mapping) => Regex.Replace(acc, mapping.Key, mapping.Value, RegexOptions.IgnoreCase)),
-                        p => p.Value,
-                        StringComparer.OrdinalIgnoreCase);
-
-                    // add properties related to the development identity provider.
-                    Data[DevelopmentIdpEnabledKey] = bool.TrueString;
-
-                    if (string.IsNullOrWhiteSpace(_existingConfiguration[AudienceKey]))
+                return _existingConfiguration["ASPNETCORE_URLS"]
+                    ?.Split(';', StringSplitOptions.RemoveEmptyEntries)
+                    .Where(u =>
                     {
-                        Data[AudienceKey] = DevelopmentIdentityProviderConfiguration.Audience;
-                    }
-
-                    if (string.IsNullOrWhiteSpace(_existingConfiguration[AuthorityKey]))
-                    {
-                        Data[AuthorityKey] = GetAuthority();
-                    }
-
-                    Data[$"{PrincipalClaimsKey}:0"] = DevelopmentIdentityProviderConfiguration.LastModifiedClaim;
-                    Data[$"{PrincipalClaimsKey}:1"] = DevelopmentIdentityProviderConfiguration.ClientIdClaim;
-                }
-
-                private string GetAuthority()
-                {
-                    return _existingConfiguration["ASPNETCORE_URLS"]
-                        ?.Split(';', StringSplitOptions.RemoveEmptyEntries)
-                        .Where(u =>
+                        if (Uri.TryCreate(u, UriKind.Absolute, out Uri uri))
                         {
-                            if (Uri.TryCreate(u, UriKind.Absolute, out Uri uri))
+                            if (uri.Scheme == "https")
                             {
-                                if (uri.Scheme == "https")
-                                {
-                                    return true;
-                                }
+                                return true;
                             }
+                        }
 
-                            return false;
-                        }).FirstOrDefault()?.TrimEnd('/');
-                }
+                        return false;
+                    }).FirstOrDefault()?.TrimEnd('/');
             }
         }
     }

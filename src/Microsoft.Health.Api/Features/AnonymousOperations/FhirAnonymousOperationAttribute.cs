@@ -7,17 +7,16 @@ using System;
 using EnsureThat;
 using Microsoft.AspNetCore.Authorization;
 
-namespace Microsoft.Health.Api.Features.AnonymousOperation
-{
-    [AttributeUsage(AttributeTargets.Method)]
-    public sealed class FhirAnonymousOperationAttribute : AllowAnonymousAttribute
-    {
-        public FhirAnonymousOperationAttribute(string fhirOperation)
-        {
-            EnsureArg.IsNotNull(fhirOperation, nameof(fhirOperation));
-            FhirOperation = fhirOperation;
-        }
+namespace Microsoft.Health.Api.Features.AnonymousOperation;
 
-        public string FhirOperation { get; }
+[AttributeUsage(AttributeTargets.Method)]
+public sealed class FhirAnonymousOperationAttribute : AllowAnonymousAttribute
+{
+    public FhirAnonymousOperationAttribute(string fhirOperation)
+    {
+        EnsureArg.IsNotNull(fhirOperation, nameof(fhirOperation));
+        FhirOperation = fhirOperation;
     }
+
+    public string FhirOperation { get; }
 }

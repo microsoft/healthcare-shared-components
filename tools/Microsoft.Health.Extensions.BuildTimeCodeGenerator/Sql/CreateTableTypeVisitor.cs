@@ -12,150 +12,149 @@ using Microsoft.Data.SqlClient.Server;
 using Microsoft.SqlServer.TransactSql.ScriptDom;
 using static Microsoft.CodeAnalysis.CSharp.SyntaxFactory;
 
-namespace Microsoft.Health.Extensions.BuildTimeCodeGenerator.Sql
+namespace Microsoft.Health.Extensions.BuildTimeCodeGenerator.Sql;
+
+/// <summary>
+/// Visits a SQL AST, creating a class and a struct for each CREATE TABLE TYPE statement.
+/// The class derives from TableValuedParameterDefinition and the struct represents a row
+/// of data, with a constructor signature and fields that match the columns of the table type.
+/// </summary>
+public class CreateTableTypeVisitor : SqlVisitor
 {
-    /// <summary>
-    /// Visits a SQL AST, creating a class and a struct for each CREATE TABLE TYPE statement.
-    /// The class derives from TableValuedParameterDefinition and the struct represents a row
-    /// of data, with a constructor signature and fields that match the columns of the table type.
-    /// </summary>
-    public class CreateTableTypeVisitor : SqlVisitor
+    private readonly HashSet<string> _visitedTypes = new HashSet<string>(StringComparer.Ordinal);
+
+    public override int ArtifactSortOder => 2;
+
+    public override void Visit(CreateTypeTableStatement node)
     {
-        private readonly HashSet<string> _visitedTypes = new HashSet<string>(StringComparer.Ordinal);
+        string tableTypeName = node.Name.BaseIdentifier.Value;
 
-        public override int ArtifactSortOder => 2;
-
-        public override void Visit(CreateTypeTableStatement node)
+        if (!_visitedTypes.Add(tableTypeName))
         {
-            string tableTypeName = node.Name.BaseIdentifier.Value;
+            // This table type has already been added from a previous .sql file.
+            return;
+        }
 
-            if (!_visitedTypes.Add(tableTypeName))
-            {
-                // This table type has already been added from a previous .sql file.
-                return;
-            }
+        string schemaQualifiedTableTypeName = $"{node.Name.SchemaIdentifier.Value}.{tableTypeName}";
+        string className = GetClassNameForTableValuedParameterDefinition(node.Name);
+        string rowStructName = GetRowStructNameForTableType(node.Name);
 
-            string schemaQualifiedTableTypeName = $"{node.Name.SchemaIdentifier.Value}.{tableTypeName}";
-            string className = GetClassNameForTableValuedParameterDefinition(node.Name);
-            string rowStructName = GetRowStructNameForTableType(node.Name);
+        TypeSyntax columnsEnumerableType = TypeExtensions.CreateGenericTypeFromGenericTypeDefinition(
+            typeof(IEnumerable<>).ToTypeSyntax(true),
+            IdentifierName("Column"));
 
-            TypeSyntax columnsEnumerableType = TypeExtensions.CreateGenericTypeFromGenericTypeDefinition(
-                typeof(IEnumerable<>).ToTypeSyntax(true),
-                IdentifierName("Column"));
+        ArrayTypeSyntax columnsArrayType = ArrayType(IdentifierName("Column")).AddRankSpecifiers(ArrayRankSpecifier());
 
-            ArrayTypeSyntax columnsArrayType = ArrayType(IdentifierName("Column")).AddRankSpecifiers(ArrayRankSpecifier());
-
-            ClassDeclarationSyntax classDeclarationSyntax =
-                ClassDeclaration(className)
-                    .WithModifiers(TokenList(Token(SyntaxKind.InternalKeyword)))
-                    .AddBaseListTypes(
-                        SimpleBaseType(
-                            GenericName("TableValuedParameterDefinition")
-                                .AddTypeArgumentListArguments(IdentifierName(rowStructName))))
-                    .AddMembers(
-                        ConstructorDeclaration(
-                                Identifier(className))
-                            .WithModifiers(
-                                TokenList(
-                                    Token(SyntaxKind.InternalKeyword)))
-                            .AddParameterListParameters(
-                                Parameter(Identifier("parameterName")).WithType(typeof(string).ToTypeSyntax(true)))
-                            .WithInitializer(
-                                ConstructorInitializer(
-                                    SyntaxKind.BaseConstructorInitializer,
-                                    ArgumentList(SeparatedList(new[]
-                                    {
-                                        Argument(IdentifierName("parameterName")),
-                                        Argument(
-                                            LiteralExpression(
-                                                SyntaxKind.StringLiteralExpression,
-                                                Literal(schemaQualifiedTableTypeName))),
-                                    }))))
-                            .WithBody(Block()))
-                    .AddMembers(node.Definition.ColumnDefinitions.Select(CreatePropertyForTableColumn).ToArray())
-
-                    // Add Columns property override
-                    .AddMembers(
-                        PropertyDeclaration(
-                                columnsEnumerableType,
-                                Identifier("Columns"))
-                            .AddModifiers(Token(SyntaxKind.ProtectedKeyword), Token(SyntaxKind.OverrideKeyword))
-                            .WithExpressionBody(
-                                ArrowExpressionClause(
-                                    ArrayCreationExpression(columnsArrayType)
-                                        .WithInitializer(
-                                            InitializerExpression(
-                                                SyntaxKind.ArrayInitializerExpression,
-                                                SeparatedList<ExpressionSyntax>(
-                                                    node.Definition.ColumnDefinitions.Select(c => IdentifierName(c.ColumnIdentifier.Value)))))))
-                            .WithSemicolonToken(Token(SyntaxKind.SemicolonToken)))
-
-                    // Add FillSqlDataRecord implementation
-                    .AddMembers(
-                        MethodDeclaration(typeof(void).ToTypeSyntax(), Identifier("FillSqlDataRecord"))
-                            .AddModifiers(Token(SyntaxKind.ProtectedKeyword), Token(SyntaxKind.OverrideKeyword))
-                            .AddParameterListParameters(
-                                Parameter(Identifier("record")).WithType(typeof(SqlDataRecord).ToTypeSyntax(useGlobalAlias: true)),
-                                Parameter(
-                                    Identifier("rowData")).WithType(IdentifierName(rowStructName)))
-                            .WithBody(
-                                Block(node.Definition.ColumnDefinitions.Select((c, i) =>
-                                    ExpressionStatement(
-                                        InvocationExpression(
-                                                MemberAccessExpression(
-                                                    SyntaxKind.SimpleMemberAccessExpression,
-                                                    IdentifierName(c.ColumnIdentifier.Value),
-                                                    IdentifierName("Set")))
-                                            .AddArgumentListArguments(
-                                                Argument(IdentifierName("record")),
-                                                Argument(
-                                                    LiteralExpression(
-                                                        SyntaxKind.NumericLiteralExpression,
-                                                        Literal(i))),
-                                                Argument(
-                                                    MemberAccessExpression(
-                                                        SyntaxKind.SimpleMemberAccessExpression,
-                                                        IdentifierName("rowData"),
-                                                        IdentifierName(c.ColumnIdentifier.Value)))))))));
-
-            StructDeclarationSyntax rowStruct = StructDeclaration(rowStructName)
-                .AddModifiers(Token(SyntaxKind.InternalKeyword))
-
-                // Add a constructor with parameters for each column, setting the associate property for each column.
+        ClassDeclarationSyntax classDeclarationSyntax =
+            ClassDeclaration(className)
+                .WithModifiers(TokenList(Token(SyntaxKind.InternalKeyword)))
+                .AddBaseListTypes(
+                    SimpleBaseType(
+                        GenericName("TableValuedParameterDefinition")
+                            .AddTypeArgumentListArguments(IdentifierName(rowStructName))))
                 .AddMembers(
                     ConstructorDeclaration(
-                            Identifier(rowStructName))
+                            Identifier(className))
                         .WithModifiers(
                             TokenList(
                                 Token(SyntaxKind.InternalKeyword)))
                         .AddParameterListParameters(
-                            node.Definition.ColumnDefinitions.Select(c =>
-                                Parameter(Identifier(c.ColumnIdentifier.Value))
-                                    .WithType(DataTypeReferenceToClrType(c.DataType, IsColumnNullable(c)))).ToArray())
+                            Parameter(Identifier("parameterName")).WithType(typeof(string).ToTypeSyntax(true)))
+                        .WithInitializer(
+                            ConstructorInitializer(
+                                SyntaxKind.BaseConstructorInitializer,
+                                ArgumentList(SeparatedList(new[]
+                                {
+                                    Argument(IdentifierName("parameterName")),
+                                    Argument(
+                                        LiteralExpression(
+                                            SyntaxKind.StringLiteralExpression,
+                                            Literal(schemaQualifiedTableTypeName))),
+                                }))))
+                        .WithBody(Block()))
+                .AddMembers(node.Definition.ColumnDefinitions.Select(CreatePropertyForTableColumn).ToArray())
+
+                // Add Columns property override
+                .AddMembers(
+                    PropertyDeclaration(
+                            columnsEnumerableType,
+                            Identifier("Columns"))
+                        .AddModifiers(Token(SyntaxKind.ProtectedKeyword), Token(SyntaxKind.OverrideKeyword))
+                        .WithExpressionBody(
+                            ArrowExpressionClause(
+                                ArrayCreationExpression(columnsArrayType)
+                                    .WithInitializer(
+                                        InitializerExpression(
+                                            SyntaxKind.ArrayInitializerExpression,
+                                            SeparatedList<ExpressionSyntax>(
+                                                node.Definition.ColumnDefinitions.Select(c => IdentifierName(c.ColumnIdentifier.Value)))))))
+                        .WithSemicolonToken(Token(SyntaxKind.SemicolonToken)))
+
+                // Add FillSqlDataRecord implementation
+                .AddMembers(
+                    MethodDeclaration(typeof(void).ToTypeSyntax(), Identifier("FillSqlDataRecord"))
+                        .AddModifiers(Token(SyntaxKind.ProtectedKeyword), Token(SyntaxKind.OverrideKeyword))
+                        .AddParameterListParameters(
+                            Parameter(Identifier("record")).WithType(typeof(SqlDataRecord).ToTypeSyntax(useGlobalAlias: true)),
+                            Parameter(
+                                Identifier("rowData")).WithType(IdentifierName(rowStructName)))
                         .WithBody(
-                            Block(node.Definition.ColumnDefinitions.Select(c =>
+                            Block(node.Definition.ColumnDefinitions.Select((c, i) =>
                                 ExpressionStatement(
-                                    AssignmentExpression(
-                                        SyntaxKind.SimpleAssignmentExpression,
-                                        left: MemberAccessExpression(
-                                            SyntaxKind.SimpleMemberAccessExpression,
-                                            ThisExpression(),
-                                            IdentifierName(c.ColumnIdentifier.Value)),
-                                        right: IdentifierName(c.ColumnIdentifier.Value)))))))
+                                    InvocationExpression(
+                                            MemberAccessExpression(
+                                                SyntaxKind.SimpleMemberAccessExpression,
+                                                IdentifierName(c.ColumnIdentifier.Value),
+                                                IdentifierName("Set")))
+                                        .AddArgumentListArguments(
+                                            Argument(IdentifierName("record")),
+                                            Argument(
+                                                LiteralExpression(
+                                                    SyntaxKind.NumericLiteralExpression,
+                                                    Literal(i))),
+                                            Argument(
+                                                MemberAccessExpression(
+                                                    SyntaxKind.SimpleMemberAccessExpression,
+                                                    IdentifierName("rowData"),
+                                                    IdentifierName(c.ColumnIdentifier.Value)))))))));
 
-                // Add a property for each column
-                .AddMembers(node.Definition.ColumnDefinitions.Select(c =>
-                    (MemberDeclarationSyntax)PropertyDeclaration(
-                            DataTypeReferenceToClrType(c.DataType, IsColumnNullable(c)),
-                            Identifier(c.ColumnIdentifier.Value))
-                        .AddModifiers(Token(SyntaxKind.InternalKeyword))
-                        .AddAccessorListAccessors(AccessorDeclaration(SyntaxKind.GetAccessorDeclaration)
-                            .WithSemicolonToken(Token(SyntaxKind.SemicolonToken)))).ToArray());
+        StructDeclarationSyntax rowStruct = StructDeclaration(rowStructName)
+            .AddModifiers(Token(SyntaxKind.InternalKeyword))
 
-            MembersToAdd.Add(classDeclarationSyntax.AddSortingKey(this, tableTypeName));
-            MembersToAdd.Add(rowStruct.AddSortingKey(this, tableTypeName));
+            // Add a constructor with parameters for each column, setting the associate property for each column.
+            .AddMembers(
+                ConstructorDeclaration(
+                        Identifier(rowStructName))
+                    .WithModifiers(
+                        TokenList(
+                            Token(SyntaxKind.InternalKeyword)))
+                    .AddParameterListParameters(
+                        node.Definition.ColumnDefinitions.Select(c =>
+                            Parameter(Identifier(c.ColumnIdentifier.Value))
+                                .WithType(DataTypeReferenceToClrType(c.DataType, IsColumnNullable(c)))).ToArray())
+                    .WithBody(
+                        Block(node.Definition.ColumnDefinitions.Select(c =>
+                            ExpressionStatement(
+                                AssignmentExpression(
+                                    SyntaxKind.SimpleAssignmentExpression,
+                                    left: MemberAccessExpression(
+                                        SyntaxKind.SimpleMemberAccessExpression,
+                                        ThisExpression(),
+                                        IdentifierName(c.ColumnIdentifier.Value)),
+                                    right: IdentifierName(c.ColumnIdentifier.Value)))))))
 
-            base.Visit(node);
-        }
+            // Add a property for each column
+            .AddMembers(node.Definition.ColumnDefinitions.Select(c =>
+                (MemberDeclarationSyntax)PropertyDeclaration(
+                        DataTypeReferenceToClrType(c.DataType, IsColumnNullable(c)),
+                        Identifier(c.ColumnIdentifier.Value))
+                    .AddModifiers(Token(SyntaxKind.InternalKeyword))
+                    .AddAccessorListAccessors(AccessorDeclaration(SyntaxKind.GetAccessorDeclaration)
+                        .WithSemicolonToken(Token(SyntaxKind.SemicolonToken)))).ToArray());
+
+        MembersToAdd.Add(classDeclarationSyntax.AddSortingKey(this, tableTypeName));
+        MembersToAdd.Add(rowStruct.AddSortingKey(this, tableTypeName));
+
+        base.Visit(node);
     }
 }

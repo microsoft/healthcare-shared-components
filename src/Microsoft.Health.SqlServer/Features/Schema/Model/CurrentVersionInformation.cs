@@ -5,21 +5,20 @@
 
 using System.Collections.Generic;
 
-namespace Microsoft.Health.SqlServer.Features.Schema.Model
+namespace Microsoft.Health.SqlServer.Features.Schema.Model;
+
+public class CurrentVersionInformation
 {
-    public class CurrentVersionInformation
+    public CurrentVersionInformation(int id, SchemaVersionStatus status, IList<string> servers)
     {
-        public CurrentVersionInformation(int id, SchemaVersionStatus status, IList<string> servers)
-        {
-            Id = id;
-            Status = status;
-            Servers = servers;
-        }
-
-        public int Id { get; }
-
-        public SchemaVersionStatus Status { get; }
-
-        public IList<string> Servers { get; }
+        Id = id;
+        Status = status;
+        Servers = servers;
     }
+
+    public int Id { get; }
+
+    public SchemaVersionStatus Status { get; }
+
+    public IList<string> Servers { get; }
 }

@@ -3,10 +3,9 @@
 // Licensed under the MIT License (MIT). See LICENSE in the repo root for license information.
 // -------------------------------------------------------------------------------------------------
 
-namespace Microsoft.Health.Extensions.DependencyInjection.UnitTests.TestObjects
+namespace Microsoft.Health.Extensions.DependencyInjection.UnitTests.TestObjects;
+
+public class ComponentA : IComponent
 {
-    public class ComponentA : IComponent
-    {
-        public string Name { get; } = nameof(ComponentA);
-    }
+    public string Name { get; } = nameof(ComponentA);
 }

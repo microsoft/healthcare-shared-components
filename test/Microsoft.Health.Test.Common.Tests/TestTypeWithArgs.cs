@@ -3,23 +3,22 @@
 // Licensed under the MIT License (MIT). See LICENSE in the repo root for license information.
 // -------------------------------------------------------------------------------------------------
 
-namespace Microsoft.Health.Test.Utilities.UnitTests
+namespace Microsoft.Health.Test.Utilities.UnitTests;
+
+public class TestTypeWithArgs
 {
-    public class TestTypeWithArgs
+    public TestTypeWithArgs(TestType oneArg)
+        : this(oneArg, null)
     {
-        public TestTypeWithArgs(TestType oneArg)
-            : this(oneArg, null)
-        {
-        }
-
-        public TestTypeWithArgs(TestType oneArg, string secondArg)
-        {
-            OneArg = oneArg;
-            SecondArg = secondArg;
-        }
-
-        public TestType OneArg { get; }
-
-        public string SecondArg { get; }
     }
+
+    public TestTypeWithArgs(TestType oneArg, string secondArg)
+    {
+        OneArg = oneArg;
+        SecondArg = secondArg;
+    }
+
+    public TestType OneArg { get; }
+
+    public string SecondArg { get; }
 }

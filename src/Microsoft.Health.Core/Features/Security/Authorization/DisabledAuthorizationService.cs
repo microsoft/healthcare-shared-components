@@ -7,14 +7,13 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Microsoft.Health.Core.Features.Security.Authorization
+namespace Microsoft.Health.Core.Features.Security.Authorization;
+
+public class DisabledAuthorizationService<T> : IAuthorizationService<T>
+    where T : Enum
 {
-    public class DisabledAuthorizationService<T> : IAuthorizationService<T>
-        where T : Enum
+    public ValueTask<T> CheckAccess(T dataActions, CancellationToken cancellationToken)
     {
-        public ValueTask<T> CheckAccess(T dataActions, CancellationToken cancellationToken)
-        {
-            return new ValueTask<T>(dataActions);
-        }
+        return new ValueTask<T>(dataActions);
     }
 }

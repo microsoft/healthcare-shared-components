@@ -3,18 +3,17 @@
 // Licensed under the MIT License (MIT). See LICENSE in the repo root for license information.
 // -------------------------------------------------------------------------------------------------
 
-namespace Microsoft.Health.Tools.Sql.Tasks.Helpers
+namespace Microsoft.Health.Tools.Sql.Tasks.Helpers;
+
+internal class SqlGenConstants
 {
-    internal class SqlGenConstants
-    {
-        public const string GeneratedHeader = @"
+    public const string GeneratedHeader = @"
 /*************************************************************************************************
     Auto-Generated from Sql build task. Do not manually edit it. 
 **************************************************************************************************/";
 
-        public const string BeginTransaction = "BEGIN TRAN";
-        public const string CommitTransaction = "COMMIT";
-        public const string Go = "GO";
-        public const string SetXabortOn = "SET XACT_ABORT ON";
-    }
+    public const string BeginTransaction = "BEGIN TRAN";
+    public const string CommitTransaction = "COMMIT";
+    public const string Go = "GO";
+    public const string SetXabortOn = "SET XACT_ABORT ON";
 }

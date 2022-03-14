@@ -11,32 +11,31 @@ using Microsoft.Health.SqlServer.Api.Features;
 using Microsoft.Health.SqlServer.Api.Features.Schema;
 using Microsoft.Health.SqlServer.Features.Health;
 
-namespace Microsoft.Health.SqlServer.Api.Registration
+namespace Microsoft.Health.SqlServer.Api.Registration;
+
+public static class SqlServerApiRegistrationExtensions
 {
-    public static class SqlServerApiRegistrationExtensions
+    public static IServiceCollection AddSqlServerApi(this IServiceCollection services)
     {
-        public static IServiceCollection AddSqlServerApi(this IServiceCollection services)
-        {
-            EnsureArg.IsNotNull(services);
+        EnsureArg.IsNotNull(services);
 
-            services.AddMvc()
-                .AddApplicationPart(typeof(SchemaController).Assembly);
+        services.AddMvc()
+            .AddApplicationPart(typeof(SchemaController).Assembly);
 
-            services
-                .AddHealthChecks()
-                .AddCheck<SqlServerHealthCheck>("DataStoreHealthCheck");
+        services
+            .AddHealthChecks()
+            .AddCheck<SqlServerHealthCheck>("DataStoreHealthCheck");
 
-            services.Add<CompatibilityVersionHandler>()
-                .Transient()
-                .AsImplementedInterfaces();
+        services.Add<CompatibilityVersionHandler>()
+            .Transient()
+            .AsImplementedInterfaces();
 
-            services.Add<CurrentVersionHandler>()
-                .Transient()
-                .AsImplementedInterfaces();
+        services.Add<CurrentVersionHandler>()
+            .Transient()
+            .AsImplementedInterfaces();
 
-            services.AddHostedService<SchemaJobWorkerBackgroundService>();
+        services.AddHostedService<SchemaJobWorkerBackgroundService>();
 
-            return services;
-        }
+        return services;
     }
 }

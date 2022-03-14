@@ -6,17 +6,16 @@
 using System;
 using EnsureThat;
 
-namespace Microsoft.Health.Api.Features.Audit
-{
-    [AttributeUsage(AttributeTargets.Method)]
-    public sealed class AuditEventTypeAttribute : Attribute
-    {
-        public AuditEventTypeAttribute(string auditEventType)
-        {
-            EnsureArg.IsNotNull(auditEventType, nameof(auditEventType));
-            AuditEventType = auditEventType;
-        }
+namespace Microsoft.Health.Api.Features.Audit;
 
-        public string AuditEventType { get; }
+[AttributeUsage(AttributeTargets.Method)]
+public sealed class AuditEventTypeAttribute : Attribute
+{
+    public AuditEventTypeAttribute(string auditEventType)
+    {
+        EnsureArg.IsNotNull(auditEventType, nameof(auditEventType));
+        AuditEventType = auditEventType;
     }
+
+    public string AuditEventType { get; }
 }

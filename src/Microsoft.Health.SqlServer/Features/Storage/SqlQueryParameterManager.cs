@@ -9,57 +9,56 @@ using EnsureThat;
 using Microsoft.Data.SqlClient;
 using Microsoft.Health.SqlServer.Features.Schema.Model;
 
-namespace Microsoft.Health.SqlServer.Features.Storage
+namespace Microsoft.Health.SqlServer.Features.Storage;
+
+public class SqlQueryParameterManager
 {
-    public class SqlQueryParameterManager
+    private readonly SqlParameterCollection _parameters;
+
+    private readonly Dictionary<(SqlDbType SqlDbType, long Length, byte Precision, byte Scale, object value), SqlParameter> _lookup =
+        new Dictionary<(SqlDbType SqlDbType, long Length, byte Precision, byte Scale, object value), SqlParameter>();
+
+    public SqlQueryParameterManager(SqlParameterCollection parameters)
     {
-        private readonly SqlParameterCollection _parameters;
-
-        private readonly Dictionary<(SqlDbType SqlDbType, long Length, byte Precision, byte Scale, object value), SqlParameter> _lookup =
-            new Dictionary<(SqlDbType SqlDbType, long Length, byte Precision, byte Scale, object value), SqlParameter>();
-
-        public SqlQueryParameterManager(SqlParameterCollection parameters)
-        {
-            EnsureArg.IsNotNull(parameters, nameof(parameters));
-            _parameters = parameters;
-        }
-
-        public SqlParameter AddParameter<T>(Column<T> column, T value)
-        {
-            return AddParameter((Column)column, value);
-        }
-
-        public SqlParameter AddParameter(Column column, object value)
-        {
-            EnsureArg.IsNotNull(column, nameof(column));
-            (SqlDbType, long, byte, byte, object) key = (column.Metadata.SqlDbType, column.Metadata.MaxLength, column.Metadata.Precision, column.Metadata.Scale, value);
-
-            if (!_lookup.TryGetValue(key, out SqlParameter parameter))
-            {
-                parameter = _parameters.Add(
-                    new SqlParameter(
-                        parameterName: NextParameterName(),
-                        dbType: column.Metadata.SqlDbType,
-                        size: (int)column.Metadata.MaxLength,
-                        direction: ParameterDirection.Input,
-                        isNullable: column.Nullable,
-                        precision: column.Metadata.Precision,
-                        scale: column.Metadata.Scale,
-                        sourceColumn: null,
-                        sourceVersion: DataRowVersion.Current,
-                        value: value));
-
-                _lookup.Add(key, parameter);
-            }
-
-            return parameter;
-        }
-
-        public SqlParameter AddParameter(object value)
-        {
-            return _parameters.AddWithValue(NextParameterName(), value);
-        }
-
-        private string NextParameterName() => $"@p{_parameters.Count}";
+        EnsureArg.IsNotNull(parameters, nameof(parameters));
+        _parameters = parameters;
     }
+
+    public SqlParameter AddParameter<T>(Column<T> column, T value)
+    {
+        return AddParameter((Column)column, value);
+    }
+
+    public SqlParameter AddParameter(Column column, object value)
+    {
+        EnsureArg.IsNotNull(column, nameof(column));
+        (SqlDbType, long, byte, byte, object) key = (column.Metadata.SqlDbType, column.Metadata.MaxLength, column.Metadata.Precision, column.Metadata.Scale, value);
+
+        if (!_lookup.TryGetValue(key, out SqlParameter parameter))
+        {
+            parameter = _parameters.Add(
+                new SqlParameter(
+                    parameterName: NextParameterName(),
+                    dbType: column.Metadata.SqlDbType,
+                    size: (int)column.Metadata.MaxLength,
+                    direction: ParameterDirection.Input,
+                    isNullable: column.Nullable,
+                    precision: column.Metadata.Precision,
+                    scale: column.Metadata.Scale,
+                    sourceColumn: null,
+                    sourceVersion: DataRowVersion.Current,
+                    value: value));
+
+            _lookup.Add(key, parameter);
+        }
+
+        return parameter;
+    }
+
+    public SqlParameter AddParameter(object value)
+    {
+        return _parameters.AddWithValue(NextParameterName(), value);
+    }
+
+    private string NextParameterName() => $"@p{_parameters.Count}";
 }

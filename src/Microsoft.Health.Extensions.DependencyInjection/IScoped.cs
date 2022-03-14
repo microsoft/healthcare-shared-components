@@ -5,14 +5,13 @@
 
 using System;
 
-namespace Microsoft.Health.Extensions.DependencyInjection
+namespace Microsoft.Health.Extensions.DependencyInjection;
+
+/// <summary>
+/// Represents a scoped usage of a component.
+/// </summary>
+/// <typeparam name="T">Component type to resolve</typeparam>
+public interface IScoped<T> : IDisposable
 {
-    /// <summary>
-    /// Represents a scoped usage of a component.
-    /// </summary>
-    /// <typeparam name="T">Component type to resolve</typeparam>
-    public interface IScoped<T> : IDisposable
-    {
-        T Value { get; }
-    }
+    T Value { get; }
 }

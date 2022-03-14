@@ -8,28 +8,27 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.IdentityModel.JsonWebTokens;
 
-namespace Microsoft.Health.Client
+namespace Microsoft.Health.Client;
+
+public abstract class CredentialProvider : ICredentialProvider
 {
-    public abstract class CredentialProvider : ICredentialProvider
+    private readonly TimeSpan _tokenTimeout = TimeSpan.FromMinutes(5);
+
+    internal string Token { get; private set; }
+
+    internal DateTime TokenExpiration { get; private set; }
+
+    public async Task<string> GetBearerToken(CancellationToken cancellationToken)
     {
-        private readonly TimeSpan _tokenTimeout = TimeSpan.FromMinutes(5);
-
-        internal string Token { get; private set; }
-
-        internal DateTime TokenExpiration { get; private set; }
-
-        public async Task<string> GetBearerToken(CancellationToken cancellationToken)
+        if (TokenExpiration < DateTime.UtcNow + _tokenTimeout)
         {
-            if (TokenExpiration < DateTime.UtcNow + _tokenTimeout)
-            {
-                Token = await BearerTokenFunction(cancellationToken);
-                var decodedToken = new JsonWebToken(Token);
-                TokenExpiration = decodedToken.ValidTo;
-            }
-
-            return Token;
+            Token = await BearerTokenFunction(cancellationToken);
+            var decodedToken = new JsonWebToken(Token);
+            TokenExpiration = decodedToken.ValidTo;
         }
 
-        protected abstract Task<string> BearerTokenFunction(CancellationToken cancellationToken);
+        return Token;
     }
+
+    protected abstract Task<string> BearerTokenFunction(CancellationToken cancellationToken);
 }

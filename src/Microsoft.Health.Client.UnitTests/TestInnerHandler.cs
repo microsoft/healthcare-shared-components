@@ -8,18 +8,17 @@ using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Microsoft.Health.Client.UnitTests
+namespace Microsoft.Health.Client.UnitTests;
+
+public class TestInnerHandler : DelegatingHandler
 {
-    public class TestInnerHandler : DelegatingHandler
+    protected override Task<HttpResponseMessage> SendAsync(
+        HttpRequestMessage request,
+        CancellationToken cancellationToken)
     {
-        protected override Task<HttpResponseMessage> SendAsync(
-            HttpRequestMessage request,
-            CancellationToken cancellationToken)
+        return Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK)
         {
-            return Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK)
-            {
-                RequestMessage = request,
-            });
-        }
+            RequestMessage = request,
+        });
     }
 }

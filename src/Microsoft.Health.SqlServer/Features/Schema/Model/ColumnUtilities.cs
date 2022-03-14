@@ -5,24 +5,23 @@
 
 using System;
 
-namespace Microsoft.Health.SqlServer.Features.Schema.Model
+namespace Microsoft.Health.SqlServer.Features.Schema.Model;
+
+internal static class ColumnUtilities
 {
-    internal static class ColumnUtilities
+    internal static long GetLengthForFloatColumn(byte precision)
     {
-        internal static long GetLengthForFloatColumn(byte precision)
+        if (precision >= 1 && precision <= 24)
         {
-            if (precision >= 1 && precision <= 24)
-            {
-                return 4;
-            }
-            else if (precision >= 25 && precision <= 53)
-            {
-                return 8;
-            }
-            else
-            {
-                throw new ArgumentOutOfRangeException(string.Format("Precision {0} must be between 1 & 53", precision));
-            }
+            return 4;
+        }
+        else if (precision >= 25 && precision <= 53)
+        {
+            return 8;
+        }
+        else
+        {
+            throw new ArgumentOutOfRangeException(string.Format("Precision {0} must be between 1 & 53", precision));
         }
     }
 }

@@ -6,170 +6,169 @@
 using System;
 using EnsureThat;
 
-namespace Microsoft.Health.SqlServer
+namespace Microsoft.Health.SqlServer;
+
+public static class IndentedStringBuilderExtensions
 {
-    public static class IndentedStringBuilderExtensions
+    /// <summary>
+    /// Appends a <see cref="Environment.NewLine"/> to the string builder if it does not already have a trailing newline.
+    /// </summary>
+    /// <param name="indentedStringBuilder">The string builder.</param>
+    /// <returns>The same string builder.</returns>
+    public static IndentedStringBuilder AppendLineIfNotConsecutive(this IndentedStringBuilder indentedStringBuilder)
     {
-        /// <summary>
-        /// Appends a <see cref="Environment.NewLine"/> to the string builder if it does not already have a trailing newline.
-        /// </summary>
-        /// <param name="indentedStringBuilder">The string builder.</param>
-        /// <returns>The same string builder.</returns>
-        public static IndentedStringBuilder AppendLineIfNotConsecutive(this IndentedStringBuilder indentedStringBuilder)
+        EnsureArg.IsNotNull(indentedStringBuilder, nameof(indentedStringBuilder));
+
+        var newLine = Environment.NewLine;
+
+        if (indentedStringBuilder.Length < newLine.Length)
         {
-            EnsureArg.IsNotNull(indentedStringBuilder, nameof(indentedStringBuilder));
+            return indentedStringBuilder.AppendLine();
+        }
 
-            var newLine = Environment.NewLine;
-
-            if (indentedStringBuilder.Length < newLine.Length)
+        for (int i = 1; i <= newLine.Length; i++)
+        {
+            if (indentedStringBuilder[^i] != newLine[^i])
             {
                 return indentedStringBuilder.AppendLine();
             }
+        }
 
-            for (int i = 1; i <= newLine.Length; i++)
+        return indentedStringBuilder;
+    }
+
+    /// <summary>
+    /// Helps with building a WHERE clause with 0 to many predicates ANDed together.
+    /// Call <see cref="IndentedStringBuilder.DelimitedScope.BeginDelimitedElement"/> before appending
+    /// a predicate and be sure to dispose the the <see cref="IndentedStringBuilder.DelimitedScope"/>
+    /// at the end.
+    /// </summary>
+    /// <param name="indentedStringBuilder">The string builder</param>
+    /// <returns>The scope</returns>
+    public static IndentedStringBuilder.DelimitedScope BeginDelimitedWhereClause(this IndentedStringBuilder indentedStringBuilder)
+    {
+        EnsureArg.IsNotNull(indentedStringBuilder, nameof(indentedStringBuilder));
+        return indentedStringBuilder.BeginDelimitedScope(
+            sb =>
             {
-                if (indentedStringBuilder[^i] != newLine[^i])
-                {
-                    return indentedStringBuilder.AppendLine();
-                }
-            }
+                sb.Append("WHERE ");
+                sb.IndentLevel++;
+            },
+            sb =>
+            {
+                sb.AppendLine();
+                sb.Append("AND ");
+            },
+            sb =>
+            {
+                sb.IndentLevel--;
+                sb.AppendLine();
+            });
+    }
 
-            return indentedStringBuilder;
-        }
+    public static IndentedStringBuilder.DelimitedScope BeginDelimitedOnClause(this IndentedStringBuilder indentedStringBuilder)
+    {
+        EnsureArg.IsNotNull(indentedStringBuilder, nameof(indentedStringBuilder));
+        return indentedStringBuilder.BeginDelimitedScope(
+            sb =>
+            {
+                sb.Append("ON ");
+                sb.IndentLevel++;
+            },
+            sb =>
+            {
+                sb.AppendLine();
+                sb.Append("AND ");
+            },
+            sb =>
+            {
+                sb.IndentLevel--;
+                sb.AppendLine();
+            });
+    }
 
-        /// <summary>
-        /// Helps with building a WHERE clause with 0 to many predicates ANDed together.
-        /// Call <see cref="IndentedStringBuilder.DelimitedScope.BeginDelimitedElement"/> before appending
-        /// a predicate and be sure to dispose the the <see cref="IndentedStringBuilder.DelimitedScope"/>
-        /// at the end.
-        /// </summary>
-        /// <param name="indentedStringBuilder">The string builder</param>
-        /// <returns>The scope</returns>
-        public static IndentedStringBuilder.DelimitedScope BeginDelimitedWhereClause(this IndentedStringBuilder indentedStringBuilder)
-        {
-            EnsureArg.IsNotNull(indentedStringBuilder, nameof(indentedStringBuilder));
-            return indentedStringBuilder.BeginDelimitedScope(
-                sb =>
-                {
-                    sb.Append("WHERE ");
-                    sb.IndentLevel++;
-                },
-                sb =>
-                {
-                    sb.AppendLine();
-                    sb.Append("AND ");
-                },
-                sb =>
-                {
-                    sb.IndentLevel--;
-                    sb.AppendLine();
-                });
-        }
+    public static IndentedStringBuilder.DelimitedScope BeginDelimitedClause(this IndentedStringBuilder indentedStringBuilder, string delimiter)
+    {
+        EnsureArg.IsNotNull(indentedStringBuilder, nameof(indentedStringBuilder));
+        return indentedStringBuilder.BeginDelimitedScope(
+            sb =>
+            {
+                sb.AppendLineIfNotConsecutive();
+                sb.AppendLine("(");
+                sb.IndentLevel++;
+            },
+            sb =>
+            {
+                sb.AppendLine();
+                sb.Append(delimiter);
+            },
+            sb =>
+            {
+                sb.AppendLine();
+                sb.IndentLevel--;
+                sb.Append(")");
+            });
+    }
 
-        public static IndentedStringBuilder.DelimitedScope BeginDelimitedOnClause(this IndentedStringBuilder indentedStringBuilder)
-        {
-            EnsureArg.IsNotNull(indentedStringBuilder, nameof(indentedStringBuilder));
-            return indentedStringBuilder.BeginDelimitedScope(
-                sb =>
-                {
-                    sb.Append("ON ");
-                    sb.IndentLevel++;
-                },
-                sb =>
-                {
-                    sb.AppendLine();
-                    sb.Append("AND ");
-                },
-                sb =>
-                {
-                    sb.IndentLevel--;
-                    sb.AppendLine();
-                });
-        }
+    /// <summary>
+    /// Helps with building a parenthesized nested clause with 0 to many predicates ANDed together.
+    /// Call <see cref="IndentedStringBuilder.DelimitedScope.BeginDelimitedElement"/> before appending
+    /// a predicate and be sure to dispose the the <see cref="IndentedStringBuilder.DelimitedScope"/>
+    /// at the end.
+    /// </summary>
+    /// <param name="indentedStringBuilder">The string builder</param>
+    /// <returns>The scope</returns>
+    public static IndentedStringBuilder.DelimitedScope BeginAndedDelimitedScope(this IndentedStringBuilder indentedStringBuilder)
+    {
+        EnsureArg.IsNotNull(indentedStringBuilder, nameof(indentedStringBuilder));
+        return indentedStringBuilder.BeginDelimitedScope(
+            sb =>
+            {
+                sb.AppendLineIfNotConsecutive();
+                sb.AppendLine("(");
+                sb.IndentLevel++;
+            },
+            sb =>
+            {
+                sb.AppendLine();
+                sb.Append("AND ");
+            },
+            sb =>
+            {
+                sb.AppendLine();
+                sb.IndentLevel--;
+                sb.Append(")");
+            });
+    }
 
-        public static IndentedStringBuilder.DelimitedScope BeginDelimitedClause(this IndentedStringBuilder indentedStringBuilder, string delimiter)
-        {
-            EnsureArg.IsNotNull(indentedStringBuilder, nameof(indentedStringBuilder));
-            return indentedStringBuilder.BeginDelimitedScope(
-                sb =>
-                {
-                    sb.AppendLineIfNotConsecutive();
-                    sb.AppendLine("(");
-                    sb.IndentLevel++;
-                },
-                sb =>
-                {
-                    sb.AppendLine();
-                    sb.Append(delimiter);
-                },
-                sb =>
-                {
-                    sb.AppendLine();
-                    sb.IndentLevel--;
-                    sb.Append(")");
-                });
-        }
-
-        /// <summary>
-        /// Helps with building a parenthesized nested clause with 0 to many predicates ANDed together.
-        /// Call <see cref="IndentedStringBuilder.DelimitedScope.BeginDelimitedElement"/> before appending
-        /// a predicate and be sure to dispose the the <see cref="IndentedStringBuilder.DelimitedScope"/>
-        /// at the end.
-        /// </summary>
-        /// <param name="indentedStringBuilder">The string builder</param>
-        /// <returns>The scope</returns>
-        public static IndentedStringBuilder.DelimitedScope BeginAndedDelimitedScope(this IndentedStringBuilder indentedStringBuilder)
-        {
-            EnsureArg.IsNotNull(indentedStringBuilder, nameof(indentedStringBuilder));
-            return indentedStringBuilder.BeginDelimitedScope(
-                sb =>
-                {
-                    sb.AppendLineIfNotConsecutive();
-                    sb.AppendLine("(");
-                    sb.IndentLevel++;
-                },
-                sb =>
-                {
-                    sb.AppendLine();
-                    sb.Append("AND ");
-                },
-                sb =>
-                {
-                    sb.AppendLine();
-                    sb.IndentLevel--;
-                    sb.Append(")");
-                });
-        }
-
-        /// <summary>
-        /// Helps with building a parenthesized nested clause with 0 to many predicates ORed together.
-        /// Call <see cref="IndentedStringBuilder.DelimitedScope.BeginDelimitedElement"/> before appending
-        /// a predicate and be sure to dispose the the <see cref="IndentedStringBuilder.DelimitedScope"/>
-        /// at the end.
-        /// </summary>
-        /// <param name="indentedStringBuilder">The string builder</param>
-        /// <returns>The scope</returns>
-        public static IndentedStringBuilder.DelimitedScope BeginOredDelimitedScope(this IndentedStringBuilder indentedStringBuilder)
-        {
-            EnsureArg.IsNotNull(indentedStringBuilder, nameof(indentedStringBuilder));
-            return indentedStringBuilder.BeginDelimitedScope(
-                sb =>
-                {
-                    sb.AppendLineIfNotConsecutive();
-                    sb.AppendLine("(");
-                    sb.IndentLevel++;
-                },
-                sb =>
-                {
-                    sb.AppendLine();
-                    sb.Append("OR ");
-                },
-                sb =>
-                {
-                    sb.AppendLine();
-                    sb.IndentLevel--;
-                    sb.Append(")");
-                });
-        }
+    /// <summary>
+    /// Helps with building a parenthesized nested clause with 0 to many predicates ORed together.
+    /// Call <see cref="IndentedStringBuilder.DelimitedScope.BeginDelimitedElement"/> before appending
+    /// a predicate and be sure to dispose the the <see cref="IndentedStringBuilder.DelimitedScope"/>
+    /// at the end.
+    /// </summary>
+    /// <param name="indentedStringBuilder">The string builder</param>
+    /// <returns>The scope</returns>
+    public static IndentedStringBuilder.DelimitedScope BeginOredDelimitedScope(this IndentedStringBuilder indentedStringBuilder)
+    {
+        EnsureArg.IsNotNull(indentedStringBuilder, nameof(indentedStringBuilder));
+        return indentedStringBuilder.BeginDelimitedScope(
+            sb =>
+            {
+                sb.AppendLineIfNotConsecutive();
+                sb.AppendLine("(");
+                sb.IndentLevel++;
+            },
+            sb =>
+            {
+                sb.AppendLine();
+                sb.Append("OR ");
+            },
+            sb =>
+            {
+                sb.AppendLine();
+                sb.IndentLevel--;
+                sb.Append(")");
+            });
     }
 }

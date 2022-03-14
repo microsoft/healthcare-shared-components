@@ -8,19 +8,18 @@ using System.Collections.Generic;
 using System.Collections.Immutable;
 using Microsoft.Health.Core.Features.Security;
 
-namespace Microsoft.Health.Core.Configs
+namespace Microsoft.Health.Core.Configs;
+
+/// <summary>
+/// Configuration settings for authorization
+/// </summary>
+/// <typeparam name="TDataActions">Type representing the dataActions for the service</typeparam>
+public class AuthorizationConfiguration<TDataActions>
+    where TDataActions : Enum
 {
-    /// <summary>
-    /// Configuration settings for authorization
-    /// </summary>
-    /// <typeparam name="TDataActions">Type representing the dataActions for the service</typeparam>
-    public class AuthorizationConfiguration<TDataActions>
-        where TDataActions : Enum
-    {
-        public string RolesClaim { get; set; } = "roles";
+    public string RolesClaim { get; set; } = "roles";
 
-        public bool Enabled { get; set; }
+    public bool Enabled { get; set; }
 
-        public IReadOnlyList<Role<TDataActions>> Roles { get; internal set; } = ImmutableList<Role<TDataActions>>.Empty;
-    }
+    public IReadOnlyList<Role<TDataActions>> Roles { get; internal set; } = ImmutableList<Role<TDataActions>>.Empty;
 }

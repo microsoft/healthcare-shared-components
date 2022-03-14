@@ -5,25 +5,24 @@
 
 using EnsureThat;
 
-namespace Microsoft.Health.Client
+namespace Microsoft.Health.Client;
+
+public class ManagedIdentityCredentialConfiguration
 {
-    public class ManagedIdentityCredentialConfiguration
+    public ManagedIdentityCredentialConfiguration()
     {
-        public ManagedIdentityCredentialConfiguration()
-        {
-        }
-
-        public ManagedIdentityCredentialConfiguration(string resource, string tenantId)
-        {
-            EnsureArg.IsNotNullOrWhiteSpace(resource, nameof(resource));
-            EnsureArg.IsNotNullOrWhiteSpace(tenantId, nameof(tenantId));
-
-            Resource = resource;
-            TenantId = tenantId;
-        }
-
-        public string Resource { get; set; }
-
-        public string TenantId { get; set; }
     }
+
+    public ManagedIdentityCredentialConfiguration(string resource, string tenantId)
+    {
+        EnsureArg.IsNotNullOrWhiteSpace(resource, nameof(resource));
+        EnsureArg.IsNotNullOrWhiteSpace(tenantId, nameof(tenantId));
+
+        Resource = resource;
+        TenantId = tenantId;
+    }
+
+    public string Resource { get; set; }
+
+    public string TenantId { get; set; }
 }

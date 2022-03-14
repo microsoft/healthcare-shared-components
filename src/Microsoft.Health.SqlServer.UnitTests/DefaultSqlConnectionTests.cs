@@ -9,49 +9,48 @@ using Microsoft.Extensions.Options;
 using Microsoft.Health.SqlServer.Configs;
 using Xunit;
 
-namespace Microsoft.Health.SqlServer.UnitTests.Features
+namespace Microsoft.Health.SqlServer.UnitTests.Features;
+
+public class DefaultSqlConnectionTests
 {
-    public class DefaultSqlConnectionTests
+    private const string DatabaseName = "Dicom";
+    private const string ServerName = "(local)";
+    private const string MasterDatabase = "master";
+
+    private readonly DefaultSqlConnectionBuilder _sqlConnectionFactory;
+
+    public DefaultSqlConnectionTests()
     {
-        private const string DatabaseName = "Dicom";
-        private const string ServerName = "(local)";
-        private const string MasterDatabase = "master";
-
-        private readonly DefaultSqlConnectionBuilder _sqlConnectionFactory;
-
-        public DefaultSqlConnectionTests()
+        var sqlServerDataStoreConfiguration = new SqlServerDataStoreConfiguration
         {
-            var sqlServerDataStoreConfiguration = new SqlServerDataStoreConfiguration
-            {
-                ConnectionString = $"server={ServerName};Initial Catalog={DatabaseName};Integrated Security=true",
-            };
+            ConnectionString = $"server={ServerName};Initial Catalog={DatabaseName};Integrated Security=true",
+        };
 
-            var sqlConfigOptions = Options.Create(sqlServerDataStoreConfiguration);
-            _sqlConnectionFactory = new DefaultSqlConnectionBuilder(new DefaultSqlConnectionStringProvider(sqlConfigOptions), SqlConfigurableRetryFactory.CreateNoneRetryProvider());
-        }
+        var sqlConfigOptions = Options.Create(sqlServerDataStoreConfiguration);
+        _sqlConnectionFactory = new DefaultSqlConnectionBuilder(new DefaultSqlConnectionStringProvider(sqlConfigOptions), SqlConfigurableRetryFactory.CreateNoneRetryProvider());
+    }
 
-        [Fact]
-        public async Task GivenDefaultConnectionType_WhenSqlConnectionRequested_AccessTokenIsNotSet()
-        {
-            SqlConnection sqlConnection = await _sqlConnectionFactory.GetSqlConnectionAsync();
+    [Fact]
+    public async Task GivenDefaultConnectionType_WhenSqlConnectionRequested_AccessTokenIsNotSet()
+    {
+        SqlConnection sqlConnection = await _sqlConnectionFactory.GetSqlConnectionAsync();
 
-            Assert.Null(sqlConnection.AccessToken);
-        }
+        Assert.Null(sqlConnection.AccessToken);
+    }
 
-        [Fact]
-        public async Task GivenDefaultConnectionType_WhenSqlConnectionRequested_DatabaseIsSet()
-        {
-            SqlConnection sqlConnection = await _sqlConnectionFactory.GetSqlConnectionAsync();
+    [Fact]
+    public async Task GivenDefaultConnectionType_WhenSqlConnectionRequested_DatabaseIsSet()
+    {
+        SqlConnection sqlConnection = await _sqlConnectionFactory.GetSqlConnectionAsync();
 
-            Assert.Equal(DatabaseName, sqlConnection.Database);
-        }
+        Assert.Equal(DatabaseName, sqlConnection.Database);
+    }
 
-        [Fact]
-        public async Task GivenDefaultConnectionType_WhenSqlConnectionToMasterRequested_MasterDatabaseIsSet()
-        {
-            SqlConnection sqlConnection = await _sqlConnectionFactory.GetSqlConnectionAsync(MasterDatabase);
+    [Fact]
+    public async Task GivenDefaultConnectionType_WhenSqlConnectionToMasterRequested_MasterDatabaseIsSet()
+    {
+        SqlConnection sqlConnection = await _sqlConnectionFactory.GetSqlConnectionAsync(MasterDatabase);
 
-            Assert.Equal(MasterDatabase, sqlConnection.Database);
-        }
+        Assert.Equal(MasterDatabase, sqlConnection.Database);
     }
 }

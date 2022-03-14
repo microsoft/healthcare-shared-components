@@ -5,9 +5,8 @@
 
 using MediatR;
 
-namespace Microsoft.Health.SqlServer.Features.Schema.Messages.Get
+namespace Microsoft.Health.SqlServer.Features.Schema.Messages.Get;
+
+public class GetCurrentVersionRequest : IRequest<GetCurrentVersionResponse>
 {
-    public class GetCurrentVersionRequest : IRequest<GetCurrentVersionResponse>
-    {
-    }
 }

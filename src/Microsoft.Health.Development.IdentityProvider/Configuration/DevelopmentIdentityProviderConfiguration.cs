@@ -5,18 +5,17 @@
 
 using System.Collections.Generic;
 
-namespace Microsoft.Health.Development.IdentityProvider.Configuration
+namespace Microsoft.Health.Development.IdentityProvider.Configuration;
+
+public class DevelopmentIdentityProviderConfiguration
 {
-    public class DevelopmentIdentityProviderConfiguration
-    {
-        public const string Audience = "health-api";
-        public const string LastModifiedClaim = "appid";
-        public const string ClientIdClaim = "client_id";
+    public const string Audience = "health-api";
+    public const string LastModifiedClaim = "appid";
+    public const string ClientIdClaim = "client_id";
 
-        public bool Enabled { get; set; }
+    public bool Enabled { get; set; }
 
-        public IList<Application> ClientApplications { get; } = new List<Application>();
+    public IList<Application> ClientApplications { get; } = new List<Application>();
 
-        public IList<User> Users { get; } = new List<User>();
-    }
+    public IList<User> Users { get; } = new List<User>();
 }

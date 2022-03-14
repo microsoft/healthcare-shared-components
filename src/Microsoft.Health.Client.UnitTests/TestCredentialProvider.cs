@@ -6,20 +6,19 @@
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Microsoft.Health.Client.UnitTests
+namespace Microsoft.Health.Client.UnitTests;
+
+public class TestCredentialProvider : CredentialProvider
 {
-    public class TestCredentialProvider : CredentialProvider
+    public TestCredentialProvider(string encodedToken = null)
     {
-        public TestCredentialProvider(string encodedToken = null)
-        {
-            EncodedToken = encodedToken;
-        }
+        EncodedToken = encodedToken;
+    }
 
-        public string EncodedToken { get; set; }
+    public string EncodedToken { get; set; }
 
-        protected override Task<string> BearerTokenFunction(CancellationToken cancellationToken)
-        {
-            return Task.FromResult(EncodedToken);
-        }
+    protected override Task<string> BearerTokenFunction(CancellationToken cancellationToken)
+    {
+        return Task.FromResult(EncodedToken);
     }
 }

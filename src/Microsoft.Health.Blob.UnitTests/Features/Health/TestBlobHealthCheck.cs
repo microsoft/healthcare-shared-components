@@ -10,24 +10,23 @@ using Microsoft.Health.Blob.Configs;
 using Microsoft.Health.Blob.Features.Health;
 using Microsoft.Health.Blob.Features.Storage;
 
-namespace Microsoft.Health.Blob.UnitTests.Features.Health
-{
-    internal class TestBlobHealthCheck : BlobHealthCheck
-    {
-        public const string TestBlobHealthCheckName = "TestBlobHealthCheck";
+namespace Microsoft.Health.Blob.UnitTests.Features.Health;
 
-        public TestBlobHealthCheck(
-            BlobServiceClient client,
-            IOptionsSnapshot<BlobContainerConfiguration> namedBlobContainerConfigurationAccessor,
-            IBlobClientTestProvider testProvider,
-            ILogger<TestBlobHealthCheck> logger)
-            : base(
-                  client,
-                  namedBlobContainerConfigurationAccessor,
-                  TestBlobHealthCheckName,
-                  testProvider,
-                  logger)
-        {
-        }
+internal class TestBlobHealthCheck : BlobHealthCheck
+{
+    public const string TestBlobHealthCheckName = "TestBlobHealthCheck";
+
+    public TestBlobHealthCheck(
+        BlobServiceClient client,
+        IOptionsSnapshot<BlobContainerConfiguration> namedBlobContainerConfigurationAccessor,
+        IBlobClientTestProvider testProvider,
+        ILogger<TestBlobHealthCheck> logger)
+        : base(
+              client,
+              namedBlobContainerConfigurationAccessor,
+              TestBlobHealthCheckName,
+              testProvider,
+              logger)
+    {
     }
 }
