@@ -5,10 +5,9 @@
 
 using System;
 
-namespace Microsoft.Health.Abstractions.Features.Transactions
+namespace Microsoft.Health.Abstractions.Features.Transactions;
+
+public interface ITransactionScope : IDisposable
 {
-    public interface ITransactionScope : IDisposable
-    {
-        void Complete();
-    }
+    void Complete();
 }

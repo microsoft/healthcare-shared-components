@@ -9,34 +9,33 @@ using EnsureThat;
 using Microsoft.Data.SqlClient;
 using Microsoft.Health.SqlServer.Features.Storage;
 
-namespace Microsoft.Health.SqlServer.Features.Client
+namespace Microsoft.Health.SqlServer.Features.Client;
+
+public class SqlConnectionWrapperFactory
 {
-    public class SqlConnectionWrapperFactory
+    private readonly SqlTransactionHandler _sqlTransactionHandler;
+    private readonly ISqlConnectionBuilder _sqlConnectionBuilder;
+    private readonly SqlRetryLogicBaseProvider _sqlRetryLogicBaseProvider;
+
+    public SqlConnectionWrapperFactory(
+        SqlTransactionHandler sqlTransactionHandler,
+        ISqlConnectionBuilder sqlConnectionBuilder,
+        SqlRetryLogicBaseProvider sqlRetryLogicBaseProvider)
     {
-        private readonly SqlTransactionHandler _sqlTransactionHandler;
-        private readonly ISqlConnectionBuilder _sqlConnectionBuilder;
-        private readonly SqlRetryLogicBaseProvider _sqlRetryLogicBaseProvider;
+        EnsureArg.IsNotNull(sqlTransactionHandler, nameof(sqlTransactionHandler));
+        EnsureArg.IsNotNull(sqlConnectionBuilder, nameof(sqlConnectionBuilder));
+        EnsureArg.IsNotNull(sqlRetryLogicBaseProvider, nameof(sqlRetryLogicBaseProvider));
 
-        public SqlConnectionWrapperFactory(
-            SqlTransactionHandler sqlTransactionHandler,
-            ISqlConnectionBuilder sqlConnectionBuilder,
-            SqlRetryLogicBaseProvider sqlRetryLogicBaseProvider)
-        {
-            EnsureArg.IsNotNull(sqlTransactionHandler, nameof(sqlTransactionHandler));
-            EnsureArg.IsNotNull(sqlConnectionBuilder, nameof(sqlConnectionBuilder));
-            EnsureArg.IsNotNull(sqlRetryLogicBaseProvider, nameof(sqlRetryLogicBaseProvider));
+        _sqlTransactionHandler = sqlTransactionHandler;
+        _sqlConnectionBuilder = sqlConnectionBuilder;
+        _sqlRetryLogicBaseProvider = sqlRetryLogicBaseProvider;
+    }
 
-            _sqlTransactionHandler = sqlTransactionHandler;
-            _sqlConnectionBuilder = sqlConnectionBuilder;
-            _sqlRetryLogicBaseProvider = sqlRetryLogicBaseProvider;
-        }
+    public async Task<SqlConnectionWrapper> ObtainSqlConnectionWrapperAsync(CancellationToken cancellationToken, bool enlistInTransaction = false)
+    {
+        SqlConnectionWrapper sqlConnectionWrapper = new SqlConnectionWrapper(_sqlTransactionHandler, _sqlConnectionBuilder, _sqlRetryLogicBaseProvider, enlistInTransaction);
+        await sqlConnectionWrapper.InitializeAsync(cancellationToken);
 
-        public async Task<SqlConnectionWrapper> ObtainSqlConnectionWrapperAsync(CancellationToken cancellationToken, bool enlistInTransaction = false)
-        {
-            SqlConnectionWrapper sqlConnectionWrapper = new SqlConnectionWrapper(_sqlTransactionHandler, _sqlConnectionBuilder, _sqlRetryLogicBaseProvider, enlistInTransaction);
-            await sqlConnectionWrapper.InitializeAsync(cancellationToken);
-
-            return sqlConnectionWrapper;
-        }
+        return sqlConnectionWrapper;
     }
 }

@@ -6,16 +6,15 @@
 using EnsureThat;
 using Microsoft.AspNetCore.Builder;
 
-namespace Microsoft.Health.Api.Features.Audit
-{
-    public static class AuditMiddlewareExtensions
-    {
-        public static IApplicationBuilder UseAudit(
-            this IApplicationBuilder builder)
-        {
-            EnsureArg.IsNotNull(builder, nameof(builder));
+namespace Microsoft.Health.Api.Features.Audit;
 
-            return builder.UseMiddleware<AuditMiddleware>();
-        }
+public static class AuditMiddlewareExtensions
+{
+    public static IApplicationBuilder UseAudit(
+        this IApplicationBuilder builder)
+    {
+        EnsureArg.IsNotNull(builder, nameof(builder));
+
+        return builder.UseMiddleware<AuditMiddleware>();
     }
 }

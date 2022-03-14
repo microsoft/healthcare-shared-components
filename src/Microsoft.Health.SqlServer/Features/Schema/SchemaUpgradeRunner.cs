@@ -14,99 +14,98 @@ using Microsoft.Health.SqlServer.Extensions;
 using Microsoft.Health.SqlServer.Features.Schema.Manager;
 using Microsoft.SqlServer.Management.Common;
 
-namespace Microsoft.Health.SqlServer.Features.Schema
+namespace Microsoft.Health.SqlServer.Features.Schema;
+
+public class SchemaUpgradeRunner
 {
-    public class SchemaUpgradeRunner
+    private readonly IScriptProvider _scriptProvider;
+    private readonly IBaseScriptProvider _baseScriptProvider;
+    private readonly ILogger<SchemaUpgradeRunner> _logger;
+    private readonly ISqlConnectionBuilder _sqlConnectionBuilder;
+    private ISchemaManagerDataStore _schemaManagerDataStore;
+
+    public SchemaUpgradeRunner(
+        IScriptProvider scriptProvider,
+        IBaseScriptProvider baseScriptProvider,
+        ILogger<SchemaUpgradeRunner> logger,
+        ISqlConnectionBuilder sqlConnectionBuilder,
+        ISchemaManagerDataStore schemaManagerDataStore)
     {
-        private readonly IScriptProvider _scriptProvider;
-        private readonly IBaseScriptProvider _baseScriptProvider;
-        private readonly ILogger<SchemaUpgradeRunner> _logger;
-        private readonly ISqlConnectionBuilder _sqlConnectionBuilder;
-        private ISchemaManagerDataStore _schemaManagerDataStore;
+        EnsureArg.IsNotNull(scriptProvider, nameof(scriptProvider));
+        EnsureArg.IsNotNull(baseScriptProvider, nameof(baseScriptProvider));
+        EnsureArg.IsNotNull(logger, nameof(logger));
+        EnsureArg.IsNotNull(sqlConnectionBuilder, nameof(sqlConnectionBuilder));
+        EnsureArg.IsNotNull(schemaManagerDataStore, nameof(schemaManagerDataStore));
 
-        public SchemaUpgradeRunner(
-            IScriptProvider scriptProvider,
-            IBaseScriptProvider baseScriptProvider,
-            ILogger<SchemaUpgradeRunner> logger,
-            ISqlConnectionBuilder sqlConnectionBuilder,
-            ISchemaManagerDataStore schemaManagerDataStore)
+        _scriptProvider = scriptProvider;
+        _baseScriptProvider = baseScriptProvider;
+        _logger = logger;
+        _sqlConnectionBuilder = sqlConnectionBuilder;
+        _schemaManagerDataStore = schemaManagerDataStore;
+    }
+
+    public async Task ApplySchemaAsync(int version, bool applyFullSchemaSnapshot, CancellationToken cancellationToken)
+    {
+        try
         {
-            EnsureArg.IsNotNull(scriptProvider, nameof(scriptProvider));
-            EnsureArg.IsNotNull(baseScriptProvider, nameof(baseScriptProvider));
-            EnsureArg.IsNotNull(logger, nameof(logger));
-            EnsureArg.IsNotNull(sqlConnectionBuilder, nameof(sqlConnectionBuilder));
-            EnsureArg.IsNotNull(schemaManagerDataStore, nameof(schemaManagerDataStore));
+            _logger.LogInformation("Applying schema {Version}", version);
 
-            _scriptProvider = scriptProvider;
-            _baseScriptProvider = baseScriptProvider;
-            _logger = logger;
-            _sqlConnectionBuilder = sqlConnectionBuilder;
-            _schemaManagerDataStore = schemaManagerDataStore;
-        }
+            await _schemaManagerDataStore.DeleteSchemaVersionAsync(version, SchemaVersionStatus.failed.ToString(), cancellationToken).ConfigureAwait(false);
 
-        public async Task ApplySchemaAsync(int version, bool applyFullSchemaSnapshot, CancellationToken cancellationToken)
-        {
-            try
+            if (!applyFullSchemaSnapshot)
             {
-                _logger.LogInformation("Applying schema {Version}", version);
-
-                await _schemaManagerDataStore.DeleteSchemaVersionAsync(version, SchemaVersionStatus.failed.ToString(), cancellationToken).ConfigureAwait(false);
-
-                if (!applyFullSchemaSnapshot)
-                {
-                    await InsertSchemaVersionAsync(version, cancellationToken);
-                }
-
-                await _schemaManagerDataStore.ExecuteScriptAsync(_scriptProvider.GetMigrationScript(version, applyFullSchemaSnapshot), cancellationToken);
-
-                await CompleteSchemaVersionAsync(version, cancellationToken);
-
-                _logger.LogInformation("Completed applying schema {Version}", version);
+                await InsertSchemaVersionAsync(version, cancellationToken);
             }
-            catch (Exception e) when (e is SqlException || e is ExecutionFailureException)
-            {
-                _logger.LogError(e, "Failed applying schema {Version}", version);
-                await FailSchemaVersionAsync(version, cancellationToken);
-                throw;
-            }
+
+            await _schemaManagerDataStore.ExecuteScriptAsync(_scriptProvider.GetMigrationScript(version, applyFullSchemaSnapshot), cancellationToken);
+
+            await CompleteSchemaVersionAsync(version, cancellationToken);
+
+            _logger.LogInformation("Completed applying schema {Version}", version);
         }
-
-        public async Task ApplyBaseSchemaAsync(CancellationToken cancellationToken)
+        catch (Exception e) when (e is SqlException || e is ExecutionFailureException)
         {
-            _logger.LogInformation("Applying base schema");
-
-            await _schemaManagerDataStore.ExecuteScriptAsync(_baseScriptProvider.GetScript(), cancellationToken);
-
-            _logger.LogInformation("Completed applying base schema");
+            _logger.LogError(e, "Failed applying schema {Version}", version);
+            await FailSchemaVersionAsync(version, cancellationToken);
+            throw;
         }
+    }
 
-        private async Task InsertSchemaVersionAsync(int schemaVersion, CancellationToken cancellationToken)
+    public async Task ApplyBaseSchemaAsync(CancellationToken cancellationToken)
+    {
+        _logger.LogInformation("Applying base schema");
+
+        await _schemaManagerDataStore.ExecuteScriptAsync(_baseScriptProvider.GetScript(), cancellationToken);
+
+        _logger.LogInformation("Completed applying base schema");
+    }
+
+    private async Task InsertSchemaVersionAsync(int schemaVersion, CancellationToken cancellationToken)
+    {
+        await UpsertSchemaVersionAsync(schemaVersion, "started", cancellationToken);
+    }
+
+    private async Task CompleteSchemaVersionAsync(int schemaVersion, CancellationToken cancellationToken)
+    {
+        await UpsertSchemaVersionAsync(schemaVersion, "completed", cancellationToken);
+    }
+
+    private async Task FailSchemaVersionAsync(int schemaVersion, CancellationToken cancellationToken)
+    {
+        await UpsertSchemaVersionAsync(schemaVersion, "failed", cancellationToken);
+    }
+
+    private async Task UpsertSchemaVersionAsync(int schemaVersion, string status, CancellationToken cancellationToken)
+    {
+        using (var connection = await _sqlConnectionBuilder.GetSqlConnectionAsync(cancellationToken: cancellationToken))
+        using (var upsertCommand = new SqlCommand("dbo.UpsertSchemaVersion", connection))
         {
-            await UpsertSchemaVersionAsync(schemaVersion, "started", cancellationToken);
-        }
+            upsertCommand.CommandType = CommandType.StoredProcedure;
+            upsertCommand.Parameters.AddWithValue("@version", schemaVersion);
+            upsertCommand.Parameters.AddWithValue("@status", status);
 
-        private async Task CompleteSchemaVersionAsync(int schemaVersion, CancellationToken cancellationToken)
-        {
-            await UpsertSchemaVersionAsync(schemaVersion, "completed", cancellationToken);
-        }
-
-        private async Task FailSchemaVersionAsync(int schemaVersion, CancellationToken cancellationToken)
-        {
-            await UpsertSchemaVersionAsync(schemaVersion, "failed", cancellationToken);
-        }
-
-        private async Task UpsertSchemaVersionAsync(int schemaVersion, string status, CancellationToken cancellationToken)
-        {
-            using (var connection = await _sqlConnectionBuilder.GetSqlConnectionAsync(cancellationToken: cancellationToken))
-            using (var upsertCommand = new SqlCommand("dbo.UpsertSchemaVersion", connection))
-            {
-                upsertCommand.CommandType = CommandType.StoredProcedure;
-                upsertCommand.Parameters.AddWithValue("@version", schemaVersion);
-                upsertCommand.Parameters.AddWithValue("@status", status);
-
-                await connection.TryOpenAsync(cancellationToken);
-                await upsertCommand.ExecuteNonQueryAsync(cancellationToken);
-            }
+            await connection.TryOpenAsync(cancellationToken);
+            await upsertCommand.ExecuteNonQueryAsync(cancellationToken);
         }
     }
 }

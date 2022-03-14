@@ -16,87 +16,86 @@ using Microsoft.Health.Core.Features.Control;
 using Microsoft.Health.SqlServer.Configs;
 using Microsoft.Health.SqlServer.Features.Schema.Extensions;
 
-namespace Microsoft.Health.SqlServer.Features.Schema
+namespace Microsoft.Health.SqlServer.Features.Schema;
+
+/// <summary>
+/// The worker responsible for running the schema job.
+/// It inserts the instance schema information.
+/// It polls the specified time to update the instance schema information and deletes the expired instance schema information, if any.
+/// </summary>
+public class SchemaJobWorker
 {
-    /// <summary>
-    /// The worker responsible for running the schema job.
-    /// It inserts the instance schema information.
-    /// It polls the specified time to update the instance schema information and deletes the expired instance schema information, if any.
-    /// </summary>
-    public class SchemaJobWorker
+    private readonly IServiceProvider _serviceProvider;
+    private readonly SqlServerDataStoreConfiguration _sqlServerDataStoreConfiguration;
+    private readonly IMediator _mediator;
+    private readonly IProcessTerminator _processTerminator;
+    private readonly ILogger _logger;
+
+    public SchemaJobWorker(
+        IServiceProvider services,
+        IOptions<SqlServerDataStoreConfiguration> sqlServerDataStoreConfiguration,
+        IMediator mediator,
+        IProcessTerminator processTerminator,
+        ILogger<SchemaJobWorker> logger)
     {
-        private readonly IServiceProvider _serviceProvider;
-        private readonly SqlServerDataStoreConfiguration _sqlServerDataStoreConfiguration;
-        private readonly IMediator _mediator;
-        private readonly IProcessTerminator _processTerminator;
-        private readonly ILogger _logger;
+        EnsureArg.IsNotNull(services, nameof(services));
+        EnsureArg.IsNotNull(sqlServerDataStoreConfiguration?.Value, nameof(sqlServerDataStoreConfiguration));
+        EnsureArg.IsNotNull(mediator, nameof(mediator));
+        EnsureArg.IsNotNull(logger, nameof(logger));
+        EnsureArg.IsNotNull(processTerminator, nameof(processTerminator));
 
-        public SchemaJobWorker(
-            IServiceProvider services,
-            IOptions<SqlServerDataStoreConfiguration> sqlServerDataStoreConfiguration,
-            IMediator mediator,
-            IProcessTerminator processTerminator,
-            ILogger<SchemaJobWorker> logger)
+        _serviceProvider = services;
+        _sqlServerDataStoreConfiguration = sqlServerDataStoreConfiguration.Value;
+        _mediator = mediator;
+        _processTerminator = processTerminator;
+        _logger = logger;
+    }
+
+    public async Task ExecuteAsync(SchemaInformation schemaInformation, string instanceName, CancellationToken cancellationToken)
+    {
+        EnsureArg.IsNotNull(schemaInformation, nameof(schemaInformation));
+
+        _logger.LogInformation("Polling started at {UtcTime}", Clock.UtcNow);
+
+        while (!cancellationToken.IsCancellationRequested)
         {
-            EnsureArg.IsNotNull(services, nameof(services));
-            EnsureArg.IsNotNull(sqlServerDataStoreConfiguration?.Value, nameof(sqlServerDataStoreConfiguration));
-            EnsureArg.IsNotNull(mediator, nameof(mediator));
-            EnsureArg.IsNotNull(logger, nameof(logger));
-            EnsureArg.IsNotNull(processTerminator, nameof(processTerminator));
-
-            _serviceProvider = services;
-            _sqlServerDataStoreConfiguration = sqlServerDataStoreConfiguration.Value;
-            _mediator = mediator;
-            _processTerminator = processTerminator;
-            _logger = logger;
-        }
-
-        public async Task ExecuteAsync(SchemaInformation schemaInformation, string instanceName, CancellationToken cancellationToken)
-        {
-            EnsureArg.IsNotNull(schemaInformation, nameof(schemaInformation));
-
-            _logger.LogInformation("Polling started at {UtcTime}", Clock.UtcNow);
-
-            while (!cancellationToken.IsCancellationRequested)
+            try
             {
-                try
+                using IServiceScope scope = _serviceProvider.CreateScope();
+                ISchemaDataStore schemaDataStore = scope.ServiceProvider.GetRequiredService<ISchemaDataStore>();
+
+                int? previous = schemaInformation.Current;
+                schemaInformation.Current = await schemaDataStore.UpsertInstanceSchemaInformationAsync(instanceName, schemaInformation, cancellationToken).ConfigureAwait(false);
+
+                // If there was a change in the schema version and this isn't the base schema
+                if (schemaInformation.Current != previous && schemaInformation.Current > 0)
                 {
-                    using IServiceScope scope = _serviceProvider.CreateScope();
-                    ISchemaDataStore schemaDataStore = scope.ServiceProvider.GetRequiredService<ISchemaDataStore>();
+                    var isFullSchemaSnapshot = previous == 0;
 
-                    int? previous = schemaInformation.Current;
-                    schemaInformation.Current = await schemaDataStore.UpsertInstanceSchemaInformationAsync(instanceName, schemaInformation, cancellationToken).ConfigureAwait(false);
-
-                    // If there was a change in the schema version and this isn't the base schema
-                    if (schemaInformation.Current != previous && schemaInformation.Current > 0)
-                    {
-                        var isFullSchemaSnapshot = previous == 0;
-
-                        await _mediator.NotifySchemaUpgradedAsync((int)schemaInformation.Current, isFullSchemaSnapshot).ConfigureAwait(false);
-                    }
-
-                    await schemaDataStore.DeleteExpiredInstanceSchemaAsync(cancellationToken).ConfigureAwait(false);
-
-                    if (_sqlServerDataStoreConfiguration.TerminateWhenSchemaVersionUpdatedTo.HasValue && _sqlServerDataStoreConfiguration.TerminateWhenSchemaVersionUpdatedTo.Value == schemaInformation.Current)
-                    {
-                        _processTerminator.Terminate(cancellationToken);
-                    }
-                }
-                catch (Exception ex)
-                {
-                    // The job failed.
-                    _logger.LogError(ex, "Unhandled exception in the worker.");
+                    await _mediator.NotifySchemaUpgradedAsync((int)schemaInformation.Current, isFullSchemaSnapshot).ConfigureAwait(false);
                 }
 
-                try
+                await schemaDataStore.DeleteExpiredInstanceSchemaAsync(cancellationToken).ConfigureAwait(false);
+
+                if (_sqlServerDataStoreConfiguration.TerminateWhenSchemaVersionUpdatedTo.HasValue && _sqlServerDataStoreConfiguration.TerminateWhenSchemaVersionUpdatedTo.Value == schemaInformation.Current)
                 {
-                    await Task.Delay(TimeSpan.FromSeconds(_sqlServerDataStoreConfiguration.SchemaOptions.JobPollingFrequencyInSeconds), cancellationToken).ConfigureAwait(false);
+                    _processTerminator.Terminate(cancellationToken);
                 }
-                catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
-                {
-                    // Cancel requested.
-                    break;
-                }
+            }
+            catch (Exception ex)
+            {
+                // The job failed.
+                _logger.LogError(ex, "Unhandled exception in the worker.");
+            }
+
+            try
+            {
+                await Task.Delay(TimeSpan.FromSeconds(_sqlServerDataStoreConfiguration.SchemaOptions.JobPollingFrequencyInSeconds), cancellationToken).ConfigureAwait(false);
+            }
+            catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+            {
+                // Cancel requested.
+                break;
             }
         }
     }

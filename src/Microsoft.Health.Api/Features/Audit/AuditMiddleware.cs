@@ -8,41 +8,40 @@ using EnsureThat;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Health.Core.Features.Security;
 
-namespace Microsoft.Health.Api.Features.Audit
+namespace Microsoft.Health.Api.Features.Audit;
+
+/// <summary>
+/// A middleware that logs executed audit events.
+/// </summary>
+public class AuditMiddleware
 {
-    /// <summary>
-    /// A middleware that logs executed audit events.
-    /// </summary>
-    public class AuditMiddleware
+    private readonly RequestDelegate _next;
+    private readonly IClaimsExtractor _claimsExtractor;
+    private readonly IAuditHelper _auditHelper;
+
+    public AuditMiddleware(
+        RequestDelegate next,
+        IClaimsExtractor claimsExtractor,
+        IAuditHelper auditHelper)
     {
-        private readonly RequestDelegate _next;
-        private readonly IClaimsExtractor _claimsExtractor;
-        private readonly IAuditHelper _auditHelper;
+        EnsureArg.IsNotNull(next, nameof(next));
+        EnsureArg.IsNotNull(claimsExtractor, nameof(claimsExtractor));
+        EnsureArg.IsNotNull(auditHelper, nameof(auditHelper));
 
-        public AuditMiddleware(
-            RequestDelegate next,
-            IClaimsExtractor claimsExtractor,
-            IAuditHelper auditHelper)
+        _next = next;
+        _claimsExtractor = claimsExtractor;
+        _auditHelper = auditHelper;
+    }
+
+    public async Task Invoke(HttpContext context)
+    {
+        try
         {
-            EnsureArg.IsNotNull(next, nameof(next));
-            EnsureArg.IsNotNull(claimsExtractor, nameof(claimsExtractor));
-            EnsureArg.IsNotNull(auditHelper, nameof(auditHelper));
-
-            _next = next;
-            _claimsExtractor = claimsExtractor;
-            _auditHelper = auditHelper;
+            await _next(context);
         }
-
-        public async Task Invoke(HttpContext context)
+        finally
         {
-            try
-            {
-                await _next(context);
-            }
-            finally
-            {
-                _auditHelper.LogExecuted(context, _claimsExtractor, true);
-            }
+            _auditHelper.LogExecuted(context, _claimsExtractor, true);
         }
     }
 }

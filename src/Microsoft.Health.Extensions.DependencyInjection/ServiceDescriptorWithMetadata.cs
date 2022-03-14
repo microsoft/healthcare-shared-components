@@ -6,31 +6,30 @@
 using System;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace Microsoft.Health.Extensions.DependencyInjection
+namespace Microsoft.Health.Extensions.DependencyInjection;
+
+/// <summary>
+/// A <see cref="ServiceDescriptor"/> with an additional metadata property.
+/// </summary>
+public class ServiceDescriptorWithMetadata : ServiceDescriptor
 {
-    /// <summary>
-    /// A <see cref="ServiceDescriptor"/> with an additional metadata property.
-    /// </summary>
-    public class ServiceDescriptorWithMetadata : ServiceDescriptor
+    public ServiceDescriptorWithMetadata(Type serviceType, Type implementationType, ServiceLifetime lifetime, object metadata)
+        : base(serviceType, implementationType, lifetime)
     {
-        public ServiceDescriptorWithMetadata(Type serviceType, Type implementationType, ServiceLifetime lifetime, object metadata)
-            : base(serviceType, implementationType, lifetime)
-        {
-            Metadata = metadata;
-        }
-
-        public ServiceDescriptorWithMetadata(Type serviceType, object instance, object metadata)
-            : base(serviceType, instance)
-        {
-            Metadata = metadata;
-        }
-
-        public ServiceDescriptorWithMetadata(Type serviceType, Func<IServiceProvider, object> factory, ServiceLifetime lifetime, object metadata)
-            : base(serviceType, factory, lifetime)
-        {
-            Metadata = metadata;
-        }
-
-        public object Metadata { get; }
+        Metadata = metadata;
     }
+
+    public ServiceDescriptorWithMetadata(Type serviceType, object instance, object metadata)
+        : base(serviceType, instance)
+    {
+        Metadata = metadata;
+    }
+
+    public ServiceDescriptorWithMetadata(Type serviceType, Func<IServiceProvider, object> factory, ServiceLifetime lifetime, object metadata)
+        : base(serviceType, factory, lifetime)
+    {
+        Metadata = metadata;
+    }
+
+    public object Metadata { get; }
 }

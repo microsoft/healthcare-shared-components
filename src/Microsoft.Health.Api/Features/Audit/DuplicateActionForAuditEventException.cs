@@ -6,27 +6,26 @@
 using System;
 using System.Globalization;
 
-namespace Microsoft.Health.Api.Features.Audit
+namespace Microsoft.Health.Api.Features.Audit;
+
+public class DuplicateActionForAuditEventException : Exception
 {
-    public class DuplicateActionForAuditEventException : Exception
+    public DuplicateActionForAuditEventException()
     {
-        public DuplicateActionForAuditEventException()
-        {
-        }
+    }
 
-        public DuplicateActionForAuditEventException(string message)
-            : base(message)
-        {
-        }
+    public DuplicateActionForAuditEventException(string message)
+        : base(message)
+    {
+    }
 
-        public DuplicateActionForAuditEventException(string message, Exception inner)
-            : base(message, inner)
-        {
-        }
+    public DuplicateActionForAuditEventException(string message, Exception inner)
+        : base(message, inner)
+    {
+    }
 
-        public DuplicateActionForAuditEventException(string controllerName, string actionName)
-            : base(string.Format(CultureInfo.CurrentCulture, Resources.DuplicateActionForAuditEvent, controllerName, actionName))
-        {
-        }
+    public DuplicateActionForAuditEventException(string controllerName, string actionName)
+        : base(string.Format(CultureInfo.CurrentCulture, Resources.DuplicateActionForAuditEvent, controllerName, actionName))
+    {
     }
 }

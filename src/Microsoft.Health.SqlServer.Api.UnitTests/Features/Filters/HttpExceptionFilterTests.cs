@@ -23,83 +23,82 @@ using Microsoft.Health.SqlServer.Features.Schema;
 using NSubstitute;
 using Xunit;
 
-namespace Microsoft.Health.SqlServer.Api.UnitTests.Features.Filters
+namespace Microsoft.Health.SqlServer.Api.UnitTests.Features.Filters;
+
+public class HttpExceptionFilterTests
 {
-    public class HttpExceptionFilterTests
+    private readonly ActionExecutedContext _context;
+
+    public HttpExceptionFilterTests()
     {
-        private readonly ActionExecutedContext _context;
+        _context = new ActionExecutedContext(
+            new ActionContext(new DefaultHttpContext(), new RouteData(), new ActionDescriptor()),
+            new List<IFilterMetadata>(),
+            new SchemaController(
+                new SchemaInformation((int)TestSchemaVersion.Version1, (int)TestSchemaVersion.Version3),
+                Substitute.For<IScriptProvider>(),
+                Substitute.For<IUrlHelperFactory>(),
+                Substitute.For<IMediator>(),
+                NullLogger<SchemaController>.Instance));
+    }
 
-        public HttpExceptionFilterTests()
-        {
-            _context = new ActionExecutedContext(
-                new ActionContext(new DefaultHttpContext(), new RouteData(), new ActionDescriptor()),
-                new List<IFilterMetadata>(),
-                new SchemaController(
-                    new SchemaInformation((int)TestSchemaVersion.Version1, (int)TestSchemaVersion.Version3),
-                    Substitute.For<IScriptProvider>(),
-                    Substitute.For<IUrlHelperFactory>(),
-                    Substitute.For<IMediator>(),
-                    NullLogger<SchemaController>.Instance));
-        }
+    [Fact]
+    public void GivenANotImplementedException_WhenExecutingAnAction_ThenTheResponseShouldBeAJsonResultWithNotImplementedStatusCode()
+    {
+        var filter = new HttpExceptionFilterAttribute();
 
-        [Fact]
-        public void GivenANotImplementedException_WhenExecutingAnAction_ThenTheResponseShouldBeAJsonResultWithNotImplementedStatusCode()
-        {
-            var filter = new HttpExceptionFilterAttribute();
+        _context.Exception = Substitute.For<NotImplementedException>();
 
-            _context.Exception = Substitute.For<NotImplementedException>();
+        filter.OnActionExecuted(_context);
 
-            filter.OnActionExecuted(_context);
+        var result = _context.Result as JsonResult;
 
-            var result = _context.Result as JsonResult;
+        Assert.NotNull(result);
+        Assert.Equal((int)HttpStatusCode.NotImplemented, result.StatusCode);
+    }
 
-            Assert.NotNull(result);
-            Assert.Equal((int)HttpStatusCode.NotImplemented, result.StatusCode);
-        }
+    [Fact]
+    public void GivenANotFoundException_WhenExecutingAnAction_ThenTheResponseShouldBeAJsonResultWithNotFoundStatusCode()
+    {
+        var filter = new HttpExceptionFilterAttribute();
 
-        [Fact]
-        public void GivenANotFoundException_WhenExecutingAnAction_ThenTheResponseShouldBeAJsonResultWithNotFoundStatusCode()
-        {
-            var filter = new HttpExceptionFilterAttribute();
+        _context.Exception = Substitute.For<FileNotFoundException>();
 
-            _context.Exception = Substitute.For<FileNotFoundException>();
+        filter.OnActionExecuted(_context);
 
-            filter.OnActionExecuted(_context);
+        var result = _context.Result as JsonResult;
 
-            var result = _context.Result as JsonResult;
+        Assert.NotNull(result);
+        Assert.Equal((int)HttpStatusCode.NotFound, result.StatusCode);
+    }
 
-            Assert.NotNull(result);
-            Assert.Equal((int)HttpStatusCode.NotFound, result.StatusCode);
-        }
+    [Fact]
+    public void GivenASqlRecordNotFoundException_WhenExecutingAnAction_ThenTheResponseShouldBeAJsonResultWithNotFoundStatusCode()
+    {
+        var filter = new HttpExceptionFilterAttribute();
 
-        [Fact]
-        public void GivenASqlRecordNotFoundException_WhenExecutingAnAction_ThenTheResponseShouldBeAJsonResultWithNotFoundStatusCode()
-        {
-            var filter = new HttpExceptionFilterAttribute();
+        _context.Exception = Substitute.For<SqlRecordNotFoundException>("SQL record not found");
 
-            _context.Exception = Substitute.For<SqlRecordNotFoundException>("SQL record not found");
+        filter.OnActionExecuted(_context);
 
-            filter.OnActionExecuted(_context);
+        var result = _context.Result as JsonResult;
 
-            var result = _context.Result as JsonResult;
+        Assert.NotNull(result);
+        Assert.Equal((int)HttpStatusCode.NotFound, result.StatusCode);
+    }
 
-            Assert.NotNull(result);
-            Assert.Equal((int)HttpStatusCode.NotFound, result.StatusCode);
-        }
+    [Fact]
+    public void GivenASqlOperationFailedException_WhenExecutingAnAction_ThenTheResponseShouldBeAJsonResultWithInternalServerErrorAsStatusCode()
+    {
+        var filter = new HttpExceptionFilterAttribute();
 
-        [Fact]
-        public void GivenASqlOperationFailedException_WhenExecutingAnAction_ThenTheResponseShouldBeAJsonResultWithInternalServerErrorAsStatusCode()
-        {
-            var filter = new HttpExceptionFilterAttribute();
+        _context.Exception = Substitute.For<SqlOperationFailedException>("SQL operation failed");
 
-            _context.Exception = Substitute.For<SqlOperationFailedException>("SQL operation failed");
+        filter.OnActionExecuted(_context);
 
-            filter.OnActionExecuted(_context);
+        var result = _context.Result as JsonResult;
 
-            var result = _context.Result as JsonResult;
-
-            Assert.NotNull(result);
-            Assert.Equal((int)HttpStatusCode.InternalServerError, result.StatusCode);
-        }
+        Assert.NotNull(result);
+        Assert.Equal((int)HttpStatusCode.InternalServerError, result.StatusCode);
     }
 }

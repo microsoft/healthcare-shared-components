@@ -9,30 +9,29 @@ using System.Threading.Tasks;
 using NSubstitute;
 using Xunit;
 
-namespace Microsoft.Health.Client.UnitTests
+namespace Microsoft.Health.Client.UnitTests;
+
+public class AuthenticationHttpMessageHandlerTests
 {
-    public class AuthenticationHttpMessageHandlerTests
+    private readonly AuthenticationHttpMessageHandler _authenticationHttpMessageHandler;
+
+    public AuthenticationHttpMessageHandlerTests()
     {
-        private readonly AuthenticationHttpMessageHandler _authenticationHttpMessageHandler;
-
-        public AuthenticationHttpMessageHandlerTests()
+        var credentialProvider = Substitute.For<ICredentialProvider>();
+        credentialProvider.GetBearerToken(Arg.Any<CancellationToken>()).Returns("token");
+        _authenticationHttpMessageHandler = new AuthenticationHttpMessageHandler(credentialProvider)
         {
-            var credentialProvider = Substitute.For<ICredentialProvider>();
-            credentialProvider.GetBearerToken(Arg.Any<CancellationToken>()).Returns("token");
-            _authenticationHttpMessageHandler = new AuthenticationHttpMessageHandler(credentialProvider)
-            {
-                InnerHandler = new TestInnerHandler(),
-            };
-        }
+            InnerHandler = new TestInnerHandler(),
+        };
+    }
 
-        [Fact]
-        public async Task GivenARequest_WhenSendAsyncCalled_AuthorizationHeaderIsSet()
-        {
-            var invoker = new HttpMessageInvoker(_authenticationHttpMessageHandler);
-            var result = await invoker.SendAsync(new HttpRequestMessage(), CancellationToken.None);
+    [Fact]
+    public async Task GivenARequest_WhenSendAsyncCalled_AuthorizationHeaderIsSet()
+    {
+        var invoker = new HttpMessageInvoker(_authenticationHttpMessageHandler);
+        var result = await invoker.SendAsync(new HttpRequestMessage(), CancellationToken.None);
 
-            Assert.Equal("Bearer", result.RequestMessage.Headers.Authorization.Scheme);
-            Assert.Equal("token", result.RequestMessage.Headers.Authorization.Parameter);
-        }
+        Assert.Equal("Bearer", result.RequestMessage.Headers.Authorization.Scheme);
+        Assert.Equal("token", result.RequestMessage.Headers.Authorization.Parameter);
     }
 }

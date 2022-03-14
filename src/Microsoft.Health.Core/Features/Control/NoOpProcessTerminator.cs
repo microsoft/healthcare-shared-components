@@ -7,20 +7,19 @@ using System.Threading;
 using EnsureThat;
 using Microsoft.Extensions.Logging;
 
-namespace Microsoft.Health.Core.Features.Control
+namespace Microsoft.Health.Core.Features.Control;
+
+public class NoOpProcessTerminator : IProcessTerminator
 {
-    public class NoOpProcessTerminator : IProcessTerminator
+    private readonly ILogger<NoOpProcessTerminator> _logger;
+
+    public NoOpProcessTerminator(ILogger<NoOpProcessTerminator> logger)
     {
-        private readonly ILogger<NoOpProcessTerminator> _logger;
+        _logger = EnsureArg.IsNotNull(logger, nameof(logger));
+    }
 
-        public NoOpProcessTerminator(ILogger<NoOpProcessTerminator> logger)
-        {
-            _logger = EnsureArg.IsNotNull(logger, nameof(logger));
-        }
-
-        public void Terminate(CancellationToken cancellationToken)
-        {
-            _logger.LogWarning("Process termination was requested from the NoOpProcessTerminator.");
-        }
+    public void Terminate(CancellationToken cancellationToken)
+    {
+        _logger.LogWarning("Process termination was requested from the NoOpProcessTerminator.");
     }
 }

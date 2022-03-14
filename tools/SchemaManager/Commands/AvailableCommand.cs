@@ -16,66 +16,65 @@ using Microsoft.Health.SqlServer.Features.Schema.Manager.Model;
 using SchemaManager.Core;
 using SchemaManager.Validators;
 
-namespace SchemaManager.Commands
+namespace SchemaManager.Commands;
+
+public class AvailableCommand : Command
 {
-    public class AvailableCommand : Command
+    private readonly ISchemaManager _schemaManager;
+
+    public AvailableCommand(ISchemaManager schemaManager)
+        : base(CommandNames.Available, Resources.AvailableCommandDescription)
     {
-        private readonly ISchemaManager _schemaManager;
+        AddOption(CommandOptions.ServerOption());
 
-        public AvailableCommand(ISchemaManager schemaManager)
-            : base(CommandNames.Available, Resources.AvailableCommandDescription)
+        Handler = CommandHandler.Create(
+            (InvocationContext context, Uri server, CancellationToken token)
+            => HandlerAsync(context, server, token));
+
+        Argument.AddValidator(symbol => RequiredOptionValidator.Validate(symbol, CommandOptions.ServerOption(), Resources.ServerRequiredValidation));
+
+        EnsureArg.IsNotNull(schemaManager);
+
+        _schemaManager = schemaManager;
+    }
+
+    private async Task HandlerAsync(InvocationContext invocationContext, Uri server, CancellationToken cancellationToken)
+    {
+        var availableVersions = await _schemaManager.GetAvailableSchema(server, cancellationToken);
+
+        var region = new Region(
+            0,
+            0,
+            Console.WindowWidth,
+            Console.WindowHeight,
+            true);
+
+        var tableView = new TableView<AvailableVersion>
         {
-            AddOption(CommandOptions.ServerOption());
+            Items = new ReadOnlyCollection<AvailableVersion>(availableVersions),
+        };
 
-            Handler = CommandHandler.Create(
-                (InvocationContext context, Uri server, CancellationToken token)
-                => HandlerAsync(context, server, token));
+        tableView.AddColumn(
+          cellValue: availableVersion => availableVersion.Id,
+          header: new ContentView("Version"));
 
-            Argument.AddValidator(symbol => RequiredOptionValidator.Validate(symbol, CommandOptions.ServerOption(), Resources.ServerRequiredValidation));
+        tableView.AddColumn(
+            cellValue: availableVersion => availableVersion.ScriptUri,
+            header: new ContentView("Script"));
 
-            EnsureArg.IsNotNull(schemaManager);
+        tableView.AddColumn(
+            cellValue: availableVersion => string.IsNullOrEmpty(availableVersion.DiffUri) ? "N/A" : availableVersion.DiffUri,
+            header: new ContentView("Diff"));
 
-            _schemaManager = schemaManager;
-        }
+        var consoleRenderer = new ConsoleRenderer(
+            invocationContext.Console,
+            mode: invocationContext.BindingContext.OutputMode(),
+            resetAfterRender: true);
 
-        private async Task HandlerAsync(InvocationContext invocationContext, Uri server, CancellationToken cancellationToken)
+        using (var screen = new ScreenView(renderer: consoleRenderer))
         {
-            var availableVersions = await _schemaManager.GetAvailableSchema(server, cancellationToken);
-
-            var region = new Region(
-                0,
-                0,
-                Console.WindowWidth,
-                Console.WindowHeight,
-                true);
-
-            var tableView = new TableView<AvailableVersion>
-            {
-                Items = new ReadOnlyCollection<AvailableVersion>(availableVersions),
-            };
-
-            tableView.AddColumn(
-              cellValue: availableVersion => availableVersion.Id,
-              header: new ContentView("Version"));
-
-            tableView.AddColumn(
-                cellValue: availableVersion => availableVersion.ScriptUri,
-                header: new ContentView("Script"));
-
-            tableView.AddColumn(
-                cellValue: availableVersion => string.IsNullOrEmpty(availableVersion.DiffUri) ? "N/A" : availableVersion.DiffUri,
-                header: new ContentView("Diff"));
-
-            var consoleRenderer = new ConsoleRenderer(
-                invocationContext.Console,
-                mode: invocationContext.BindingContext.OutputMode(),
-                resetAfterRender: true);
-
-            using (var screen = new ScreenView(renderer: consoleRenderer))
-            {
-                screen.Child = tableView;
-                screen.Render(region);
-            }
+            screen.Child = tableView;
+            screen.Render(region);
         }
     }
 }

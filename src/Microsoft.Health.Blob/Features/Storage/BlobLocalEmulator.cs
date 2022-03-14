@@ -3,10 +3,9 @@
 // Licensed under the MIT License (MIT). See LICENSE in the repo root for license information.
 // -------------------------------------------------------------------------------------------------
 
-namespace Microsoft.Health.Blob.Features.Storage
+namespace Microsoft.Health.Blob.Features.Storage;
+
+internal static class BlobLocalEmulator
 {
-    internal static class BlobLocalEmulator
-    {
-        public const string ConnectionString = "UseDevelopmentStorage=true";
-    }
+    public const string ConnectionString = "UseDevelopmentStorage=true";
 }

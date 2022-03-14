@@ -6,15 +6,14 @@
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Microsoft.Health.SqlServer
+namespace Microsoft.Health.SqlServer;
+
+public interface ISqlConnectionStringProvider
 {
-    public interface ISqlConnectionStringProvider
-    {
-        /// <summary>
-        /// Get the SQL connection string.
-        /// </summary>
-        /// <param name="cancellationToken">The cancellation token.</param>
-        /// <returns>A SQL connection string.</returns>
-        Task<string> GetSqlConnectionString(CancellationToken cancellationToken);
-    }
+    /// <summary>
+    /// Get the SQL connection string.
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A SQL connection string.</returns>
+    Task<string> GetSqlConnectionString(CancellationToken cancellationToken);
 }

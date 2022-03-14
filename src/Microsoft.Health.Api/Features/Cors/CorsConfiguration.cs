@@ -5,18 +5,17 @@
 
 using System.Collections.Generic;
 
-namespace Microsoft.Health.Api.Features.Cors
+namespace Microsoft.Health.Api.Features.Cors;
+
+public class CorsConfiguration
 {
-    public class CorsConfiguration
-    {
-        public IList<string> Origins { get; } = new List<string>();
+    public IList<string> Origins { get; } = new List<string>();
 
-        public IList<string> Headers { get; } = new List<string>();
+    public IList<string> Headers { get; } = new List<string>();
 
-        public IList<string> Methods { get; } = new List<string>();
+    public IList<string> Methods { get; } = new List<string>();
 
-        public int? MaxAge { get; set; }
+    public int? MaxAge { get; set; }
 
-        public bool AllowCredentials { get; set; }
-    }
+    public bool AllowCredentials { get; set; }
 }

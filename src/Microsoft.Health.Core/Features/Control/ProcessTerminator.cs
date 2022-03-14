@@ -9,34 +9,33 @@ using System.Threading.Tasks;
 using EnsureThat;
 using Microsoft.Extensions.Hosting;
 
-namespace Microsoft.Health.Core.Features.Control
+namespace Microsoft.Health.Core.Features.Control;
+
+public class ProcessTerminator : IProcessTerminator
 {
-    public class ProcessTerminator : IProcessTerminator
+    private readonly IHostApplicationLifetime _lifetime;
+
+    public ProcessTerminator(IHostApplicationLifetime applicationLifetime)
     {
-        private readonly IHostApplicationLifetime _lifetime;
+        _lifetime = EnsureArg.IsNotNull(applicationLifetime, nameof(applicationLifetime));
+    }
 
-        public ProcessTerminator(IHostApplicationLifetime applicationLifetime)
+    public void Terminate(CancellationToken cancellationToken)
+    {
+        try
         {
-            _lifetime = EnsureArg.IsNotNull(applicationLifetime, nameof(applicationLifetime));
+            OnBeforeTerminate(cancellationToken);
+        }
+        catch (TaskCanceledException)
+        {
         }
 
-        public void Terminate(CancellationToken cancellationToken)
-        {
-            try
-            {
-                OnBeforeTerminate(cancellationToken);
-            }
-            catch (TaskCanceledException)
-            {
-            }
+        Environment.ExitCode = 0;
+        _lifetime.StopApplication();
+    }
 
-            Environment.ExitCode = 0;
-            _lifetime.StopApplication();
-        }
-
-        protected virtual Task OnBeforeTerminate(CancellationToken cancellationToken)
-        {
-            return Task.CompletedTask;
-        }
+    protected virtual Task OnBeforeTerminate(CancellationToken cancellationToken)
+    {
+        return Task.CompletedTask;
     }
 }

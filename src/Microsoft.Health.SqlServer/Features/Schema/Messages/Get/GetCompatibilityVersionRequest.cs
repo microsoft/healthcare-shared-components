@@ -7,11 +7,10 @@ using MediatR;
 
 #pragma warning disable CA1716 // Identifiers should not match keywords
 
-namespace Microsoft.Health.SqlServer.Features.Schema.Messages.Get
+namespace Microsoft.Health.SqlServer.Features.Schema.Messages.Get;
+
+public class GetCompatibilityVersionRequest : IRequest<GetCompatibilityVersionResponse>
 {
-    public class GetCompatibilityVersionRequest : IRequest<GetCompatibilityVersionResponse>
-    {
-    }
 }
 
 #pragma warning restore CA1716 // Identifiers should not match keywords

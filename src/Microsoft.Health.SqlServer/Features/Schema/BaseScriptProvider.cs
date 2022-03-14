@@ -6,25 +6,24 @@
 using System.IO;
 using System.Reflection;
 
-namespace Microsoft.Health.SqlServer.Features.Schema
+namespace Microsoft.Health.SqlServer.Features.Schema;
+
+public class BaseScriptProvider : IBaseScriptProvider
 {
-    public class BaseScriptProvider : IBaseScriptProvider
+    public string GetScript()
     {
-        public string GetScript()
+        string resourceName = $"{typeof(SchemaInitializer).Namespace}.Migrations.BaseSchema.sql";
+
+        using (Stream stream = Assembly.GetAssembly(typeof(SchemaInitializer)).GetManifestResourceStream(resourceName))
         {
-            string resourceName = $"{typeof(SchemaInitializer).Namespace}.Migrations.BaseSchema.sql";
-
-            using (Stream stream = Assembly.GetAssembly(typeof(SchemaInitializer)).GetManifestResourceStream(resourceName))
+            if (stream == null)
             {
-                if (stream == null)
-                {
-                    throw new FileNotFoundException(Resources.BaseScriptNotFound);
-                }
+                throw new FileNotFoundException(Resources.BaseScriptNotFound);
+            }
 
-                using (var reader = new StreamReader(stream))
-                {
-                    return reader.ReadToEnd();
-                }
+            using (var reader = new StreamReader(stream))
+            {
+                return reader.ReadToEnd();
             }
         }
     }

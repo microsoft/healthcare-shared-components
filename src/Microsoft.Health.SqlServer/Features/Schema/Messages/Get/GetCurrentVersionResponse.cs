@@ -9,19 +9,18 @@ using Microsoft.Health.SqlServer.Features.Schema.Model;
 
 #pragma warning disable CA1716 // Identifiers should not match keywords
 
-namespace Microsoft.Health.SqlServer.Features.Schema.Messages.Get
+namespace Microsoft.Health.SqlServer.Features.Schema.Messages.Get;
+
+public class GetCurrentVersionResponse
 {
-    public class GetCurrentVersionResponse
+    public GetCurrentVersionResponse(IList<CurrentVersionInformation> currentVersions)
     {
-        public GetCurrentVersionResponse(IList<CurrentVersionInformation> currentVersions)
-        {
-            EnsureArg.IsNotNull(currentVersions, nameof(currentVersions));
+        EnsureArg.IsNotNull(currentVersions, nameof(currentVersions));
 
-            CurrentVersions = currentVersions;
-        }
-
-        public IList<CurrentVersionInformation> CurrentVersions { get; }
+        CurrentVersions = currentVersions;
     }
+
+    public IList<CurrentVersionInformation> CurrentVersions { get; }
 }
 
 #pragma warning restore CA1716 // Identifiers should not match keywords

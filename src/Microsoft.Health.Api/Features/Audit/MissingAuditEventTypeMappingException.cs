@@ -6,13 +6,12 @@
 using System;
 using System.Globalization;
 
-namespace Microsoft.Health.Api.Features.Audit
+namespace Microsoft.Health.Api.Features.Audit;
+
+public class MissingAuditEventTypeMappingException : Exception
 {
-    public class MissingAuditEventTypeMappingException : Exception
+    public MissingAuditEventTypeMappingException(string controllerName, string actionName)
+        : base(string.Format(CultureInfo.CurrentCulture, Resources.MissingAuditInformation, controllerName, actionName))
     {
-        public MissingAuditEventTypeMappingException(string controllerName, string actionName)
-            : base(string.Format(CultureInfo.CurrentCulture, Resources.MissingAuditInformation, controllerName, actionName))
-        {
-        }
     }
 }

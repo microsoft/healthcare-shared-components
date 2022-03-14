@@ -7,31 +7,30 @@ using System;
 using System.Text;
 using Xunit;
 
-namespace Microsoft.Health.SqlServer.UnitTests
-{
-    public class IndentedStringBuilderTests
-    {
-        [Fact]
-        public void GivenAnIndentedStringBuilder_WhenUsingIndentedScopes_KeepsTrackOfIndentation()
-        {
-            IndentedStringBuilder sb = new IndentedStringBuilder(new StringBuilder())
-                .AppendLine("class Foo")
-                .AppendLine("{");
+namespace Microsoft.Health.SqlServer.UnitTests;
 
+public class IndentedStringBuilderTests
+{
+    [Fact]
+    public void GivenAnIndentedStringBuilder_WhenUsingIndentedScopes_KeepsTrackOfIndentation()
+    {
+        IndentedStringBuilder sb = new IndentedStringBuilder(new StringBuilder())
+            .AppendLine("class Foo")
+            .AppendLine("{");
+
+        using (sb.Indent())
+        {
+            sb.AppendLine("Foo()").AppendLine("{");
             using (sb.Indent())
             {
-                sb.AppendLine("Foo()").AppendLine("{");
-                using (sb.Indent())
-                {
-                    sb.Append("// ").AppendLine("hello");
-                }
-
-                sb.AppendLine("}");
+                sb.Append("// ").AppendLine("hello");
             }
 
-            sb.Append("}");
-
-            Assert.Equal($"class Foo{Environment.NewLine}{{{Environment.NewLine}    Foo(){Environment.NewLine}    {{{Environment.NewLine}        // hello{Environment.NewLine}    }}{Environment.NewLine}}}", sb.ToString());
+            sb.AppendLine("}");
         }
+
+        sb.Append("}");
+
+        Assert.Equal($"class Foo{Environment.NewLine}{{{Environment.NewLine}    Foo(){Environment.NewLine}    {{{Environment.NewLine}        // hello{Environment.NewLine}    }}{Environment.NewLine}}}", sb.ToString());
     }
 }

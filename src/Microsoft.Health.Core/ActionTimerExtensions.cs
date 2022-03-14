@@ -6,13 +6,12 @@
 using System;
 using Microsoft.Extensions.Logging;
 
-namespace Microsoft.Health.Core
+namespace Microsoft.Health.Core;
+
+public static class ActionTimerExtensions
 {
-    public static class ActionTimerExtensions
+    public static IDisposable BeginTimedScope(this ILogger logger, string scopeName)
     {
-        public static IDisposable BeginTimedScope(this ILogger logger, string scopeName)
-        {
-            return new ActionTimer(logger, scopeName);
-        }
+        return new ActionTimer(logger, scopeName);
     }
 }

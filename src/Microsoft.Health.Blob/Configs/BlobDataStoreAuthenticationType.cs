@@ -3,11 +3,10 @@
 // Licensed under the MIT License (MIT). See LICENSE in the repo root for license information.
 // -------------------------------------------------------------------------------------------------
 
-namespace Microsoft.Health.Blob.Configs
+namespace Microsoft.Health.Blob.Configs;
+
+public enum BlobDataStoreAuthenticationType
 {
-    public enum BlobDataStoreAuthenticationType
-    {
-        ManagedIdentity,
-        ConnectionString,
-    }
+    ManagedIdentity,
+    ConnectionString,
 }

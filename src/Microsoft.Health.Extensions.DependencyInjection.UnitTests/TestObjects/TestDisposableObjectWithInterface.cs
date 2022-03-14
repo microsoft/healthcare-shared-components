@@ -5,18 +5,17 @@
 
 using System;
 
-namespace Microsoft.Health.Extensions.DependencyInjection.UnitTests.TestObjects
-{
-    public class TestDisposableObjectWithInterface : IEquatable<string>, IDisposable
-    {
-        public bool Equals(string other)
-        {
-            throw new NotImplementedException();
-        }
+namespace Microsoft.Health.Extensions.DependencyInjection.UnitTests.TestObjects;
 
-        public void Dispose()
-        {
-            throw new NotImplementedException();
-        }
+public class TestDisposableObjectWithInterface : IEquatable<string>, IDisposable
+{
+    public bool Equals(string other)
+    {
+        throw new NotImplementedException();
+    }
+
+    public void Dispose()
+    {
+        throw new NotImplementedException();
     }
 }

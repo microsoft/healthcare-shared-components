@@ -5,13 +5,12 @@
 
 using System;
 
-namespace Microsoft.Health.Client.Exceptions
+namespace Microsoft.Health.Client.Exceptions;
+
+public class FailToRetrieveTokenException : Exception
 {
-    public class FailToRetrieveTokenException : Exception
+    public FailToRetrieveTokenException(string message)
+        : base(message)
     {
-        public FailToRetrieveTokenException(string message)
-            : base(message)
-        {
-        }
     }
 }

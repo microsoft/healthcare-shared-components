@@ -13,48 +13,47 @@ using Microsoft.Health.Api.Features.Cors;
 using Microsoft.Health.Extensions.DependencyInjection;
 using CorsConstants = Microsoft.Health.Api.Features.Cors.CorsConstants;
 
-namespace Microsoft.Health.Api.Modules
+namespace Microsoft.Health.Api.Modules;
+
+public class CorsModule : IStartupModule
 {
-    public class CorsModule : IStartupModule
+    private readonly CorsConfiguration _corsConfiguration;
+
+    public CorsModule(IApiConfiguration apiConfiguration)
     {
-        private readonly CorsConfiguration _corsConfiguration;
+        EnsureArg.IsNotNull(apiConfiguration?.Cors, nameof(apiConfiguration));
 
-        public CorsModule(IApiConfiguration apiConfiguration)
+        _corsConfiguration = apiConfiguration.Cors;
+    }
+
+    internal CorsPolicy DefaultCorsPolicy { get; private set; }
+
+    public void Load(IServiceCollection services)
+    {
+        EnsureArg.IsNotNull(services, nameof(services));
+
+        CorsPolicyBuilder corsPolicyBuilder = new CorsPolicyBuilder()
+            .WithOrigins(_corsConfiguration.Origins.ToArray())
+            .WithHeaders(_corsConfiguration.Headers.ToArray())
+            .WithMethods(_corsConfiguration.Methods.ToArray());
+
+        if (_corsConfiguration.MaxAge != null)
         {
-            EnsureArg.IsNotNull(apiConfiguration?.Cors, nameof(apiConfiguration));
-
-            _corsConfiguration = apiConfiguration.Cors;
+            corsPolicyBuilder.SetPreflightMaxAge(TimeSpan.FromSeconds(_corsConfiguration.MaxAge.Value));
         }
 
-        internal CorsPolicy DefaultCorsPolicy { get; private set; }
-
-        public void Load(IServiceCollection services)
+        if (_corsConfiguration.AllowCredentials)
         {
-            EnsureArg.IsNotNull(services, nameof(services));
-
-            CorsPolicyBuilder corsPolicyBuilder = new CorsPolicyBuilder()
-                .WithOrigins(_corsConfiguration.Origins.ToArray())
-                .WithHeaders(_corsConfiguration.Headers.ToArray())
-                .WithMethods(_corsConfiguration.Methods.ToArray());
-
-            if (_corsConfiguration.MaxAge != null)
-            {
-                corsPolicyBuilder.SetPreflightMaxAge(TimeSpan.FromSeconds(_corsConfiguration.MaxAge.Value));
-            }
-
-            if (_corsConfiguration.AllowCredentials)
-            {
-                corsPolicyBuilder.AllowCredentials();
-            }
-
-            DefaultCorsPolicy = corsPolicyBuilder.Build();
-
-            services.AddCors(options =>
-            {
-                options.AddPolicy(
-                    CorsConstants.DefaultCorsPolicy,
-                    DefaultCorsPolicy);
-            });
+            corsPolicyBuilder.AllowCredentials();
         }
+
+        DefaultCorsPolicy = corsPolicyBuilder.Build();
+
+        services.AddCors(options =>
+        {
+            options.AddPolicy(
+                CorsConstants.DefaultCorsPolicy,
+                DefaultCorsPolicy);
+        });
     }
 }

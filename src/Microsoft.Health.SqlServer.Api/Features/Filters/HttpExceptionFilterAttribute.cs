@@ -12,41 +12,40 @@ using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.Health.SqlServer.Features.Exceptions;
 using Newtonsoft.Json.Linq;
 
-namespace Microsoft.Health.SqlServer.Api.Features.Filters
+namespace Microsoft.Health.SqlServer.Api.Features.Filters;
+
+internal sealed class HttpExceptionFilterAttribute : ActionFilterAttribute
 {
-    internal sealed class HttpExceptionFilterAttribute : ActionFilterAttribute
+    public override void OnActionExecuted(ActionExecutedContext context)
     {
-        public override void OnActionExecuted(ActionExecutedContext context)
+        EnsureArg.IsNotNull(context, nameof(context));
+
+        if (context.Exception == null)
         {
-            EnsureArg.IsNotNull(context, nameof(context));
+            return;
+        }
 
-            if (context.Exception == null)
+        if (!context.ExceptionHandled)
+        {
+            var resultJson = new JObject { ["error"] = context.Exception.Message };
+
+            switch (context.Exception)
             {
-                return;
-            }
+                case NotImplementedException _:
+                    context.Result = new JsonResult(resultJson) { StatusCode = (int)HttpStatusCode.NotImplemented };
+                    context.ExceptionHandled = true;
+                    break;
 
-            if (!context.ExceptionHandled)
-            {
-                var resultJson = new JObject { ["error"] = context.Exception.Message };
+                case SqlRecordNotFoundException _:
+                case FileNotFoundException _:
+                    context.Result = new JsonResult(resultJson) { StatusCode = (int)HttpStatusCode.NotFound };
+                    context.ExceptionHandled = true;
+                    break;
 
-                switch (context.Exception)
-                {
-                    case NotImplementedException _:
-                        context.Result = new JsonResult(resultJson) { StatusCode = (int)HttpStatusCode.NotImplemented };
-                        context.ExceptionHandled = true;
-                        break;
-
-                    case SqlRecordNotFoundException _:
-                    case FileNotFoundException _:
-                        context.Result = new JsonResult(resultJson) { StatusCode = (int)HttpStatusCode.NotFound };
-                        context.ExceptionHandled = true;
-                        break;
-
-                    case SqlOperationFailedException _:
-                        context.Result = new JsonResult(resultJson) { StatusCode = (int)HttpStatusCode.InternalServerError };
-                        context.ExceptionHandled = true;
-                        break;
-                }
+                case SqlOperationFailedException _:
+                    context.Result = new JsonResult(resultJson) { StatusCode = (int)HttpStatusCode.InternalServerError };
+                    context.ExceptionHandled = true;
+                    break;
             }
         }
     }

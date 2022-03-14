@@ -11,43 +11,42 @@ using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Logging;
 using Microsoft.Health.SqlServer.Features.Client;
 
-namespace Microsoft.Health.SqlServer.Features.Health
+namespace Microsoft.Health.SqlServer.Features.Health;
+
+/// <summary>
+/// An <see cref="IHealthCheck"/> implementation that verifies connectivity to the SQL database
+/// </summary>
+public class SqlServerHealthCheck : IHealthCheck
 {
-    /// <summary>
-    /// An <see cref="IHealthCheck"/> implementation that verifies connectivity to the SQL database
-    /// </summary>
-    public class SqlServerHealthCheck : IHealthCheck
+    private readonly ILogger<SqlServerHealthCheck> _logger;
+    private readonly SqlConnectionWrapperFactory _sqlConnectionWrapperFactory;
+
+    public SqlServerHealthCheck(SqlConnectionWrapperFactory sqlConnectionWrapperFactory, ILogger<SqlServerHealthCheck> logger)
     {
-        private readonly ILogger<SqlServerHealthCheck> _logger;
-        private readonly SqlConnectionWrapperFactory _sqlConnectionWrapperFactory;
+        _sqlConnectionWrapperFactory = EnsureArg.IsNotNull(sqlConnectionWrapperFactory, nameof(sqlConnectionWrapperFactory));
+        _logger = EnsureArg.IsNotNull(logger, nameof(logger));
+    }
 
-        public SqlServerHealthCheck(SqlConnectionWrapperFactory sqlConnectionWrapperFactory, ILogger<SqlServerHealthCheck> logger)
+    public async Task<HealthCheckResult> CheckHealthAsync(HealthCheckContext context, CancellationToken cancellationToken)
+    {
+        _logger.LogInformation($"Starting {nameof(SqlServerHealthCheck)}.");
+
+        try
         {
-            _sqlConnectionWrapperFactory = EnsureArg.IsNotNull(sqlConnectionWrapperFactory, nameof(sqlConnectionWrapperFactory));
-            _logger = EnsureArg.IsNotNull(logger, nameof(logger));
+            using SqlConnectionWrapper sqlConnectionWrapper = await _sqlConnectionWrapperFactory.ObtainSqlConnectionWrapperAsync(cancellationToken);
+            using SqlCommandWrapper sqlCommandWrapper = sqlConnectionWrapper.CreateRetrySqlCommand();
+
+            sqlCommandWrapper.CommandText = "select @@DBTS";
+
+            await sqlCommandWrapper.ExecuteScalarAsync(cancellationToken).ConfigureAwait(false);
+
+            _logger.LogInformation("Successfully connected to SQL database.");
+            return HealthCheckResult.Healthy("Successfully connected.");
         }
-
-        public async Task<HealthCheckResult> CheckHealthAsync(HealthCheckContext context, CancellationToken cancellationToken)
+        catch (Exception ex)
         {
-            _logger.LogInformation($"Starting {nameof(SqlServerHealthCheck)}.");
-
-            try
-            {
-                using SqlConnectionWrapper sqlConnectionWrapper = await _sqlConnectionWrapperFactory.ObtainSqlConnectionWrapperAsync(cancellationToken);
-                using SqlCommandWrapper sqlCommandWrapper = sqlConnectionWrapper.CreateRetrySqlCommand();
-
-                sqlCommandWrapper.CommandText = "select @@DBTS";
-
-                await sqlCommandWrapper.ExecuteScalarAsync(cancellationToken).ConfigureAwait(false);
-
-                _logger.LogInformation("Successfully connected to SQL database.");
-                return HealthCheckResult.Healthy("Successfully connected.");
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Failed to connect to the data store.");
-                return HealthCheckResult.Unhealthy("Failed to connect.");
-            }
+            _logger.LogError(ex, "Failed to connect to the data store.");
+            return HealthCheckResult.Unhealthy("Failed to connect.");
         }
     }
 }

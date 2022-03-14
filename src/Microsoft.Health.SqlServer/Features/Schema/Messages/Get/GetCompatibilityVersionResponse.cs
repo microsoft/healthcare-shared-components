@@ -8,19 +8,18 @@ using Microsoft.Health.SqlServer.Features.Schema.Model;
 
 #pragma warning disable CA1716 // Identifiers should not match keywords
 
-namespace Microsoft.Health.SqlServer.Features.Schema.Messages.Get
+namespace Microsoft.Health.SqlServer.Features.Schema.Messages.Get;
+
+public class GetCompatibilityVersionResponse
 {
-    public class GetCompatibilityVersionResponse
+    public GetCompatibilityVersionResponse(CompatibleVersions versions)
     {
-        public GetCompatibilityVersionResponse(CompatibleVersions versions)
-        {
-            EnsureArg.IsNotNull(versions, nameof(versions));
+        EnsureArg.IsNotNull(versions, nameof(versions));
 
-            CompatibleVersions = versions;
-        }
-
-        public CompatibleVersions CompatibleVersions { get; }
+        CompatibleVersions = versions;
     }
+
+    public CompatibleVersions CompatibleVersions { get; }
 }
 
 #pragma warning restore CA1716 // Identifiers should not match keywords

@@ -3,15 +3,14 @@
 // Licensed under the MIT License (MIT). See LICENSE in the repo root for license information.
 // -------------------------------------------------------------------------------------------------
 
-namespace Microsoft.Health.SqlServer.Features.Schema.Model
+namespace Microsoft.Health.SqlServer.Features.Schema.Model;
+
+/// <summary>
+/// Generates the full set of table-valued parameters for a stored procedure.
+/// </summary>
+/// <typeparam name="TInput">The type of the input</typeparam>
+/// <typeparam name="TOutput">The type of the output. Intended to be a struct with properties for each TVP</typeparam>
+public interface IStoredProcedureTableValuedParametersGenerator<in TInput, out TOutput>
 {
-    /// <summary>
-    /// Generates the full set of table-valued parameters for a stored procedure.
-    /// </summary>
-    /// <typeparam name="TInput">The type of the input</typeparam>
-    /// <typeparam name="TOutput">The type of the output. Intended to be a struct with properties for each TVP</typeparam>
-    public interface IStoredProcedureTableValuedParametersGenerator<in TInput, out TOutput>
-    {
-        TOutput Generate(TInput input);
-    }
+    TOutput Generate(TInput input);
 }

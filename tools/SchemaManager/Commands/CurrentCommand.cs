@@ -17,65 +17,64 @@ using Microsoft.Health.SqlServer.Features.Schema.Manager.Model;
 using SchemaManager.Core;
 using SchemaManager.Validators;
 
-namespace SchemaManager.Commands
+namespace SchemaManager.Commands;
+
+public class CurrentCommand : Command
 {
-    public class CurrentCommand : Command
+    private readonly ISchemaManager _schemaManager;
+
+    public CurrentCommand(ISchemaManager schemaManager)
+        : base(CommandNames.Current, Resources.CurrentCommandDescription)
     {
-        private readonly ISchemaManager _schemaManager;
+        AddOption(CommandOptions.ServerOption());
+        AddOption(CommandOptions.ConnectionStringOption());
 
-        public CurrentCommand(ISchemaManager schemaManager)
-            : base(CommandNames.Current, Resources.CurrentCommandDescription)
+        Handler = CommandHandler.Create(
+            (InvocationContext context, Uri server, string connectionString, CancellationToken token)
+            => HandlerAsync(context, connectionString, server, token));
+
+        Argument.AddValidator(symbol => RequiredOptionValidator.Validate(symbol, CommandOptions.ConnectionStringOption(), Resources.ConnectionStringRequiredValidation));
+        Argument.AddValidator(symbol => RequiredOptionValidator.Validate(symbol, CommandOptions.ServerOption(), Resources.ServerRequiredValidation));
+
+        EnsureArg.IsNotNull(schemaManager, nameof(schemaManager));
+
+        _schemaManager = schemaManager;
+    }
+
+    private async Task HandlerAsync(InvocationContext invocationContext, string connectionString, Uri server, CancellationToken cancellationToken = default)
+    {
+        var region = new Region(
+                      0,
+                      0,
+                      Console.WindowWidth,
+                      Console.WindowHeight,
+                      true);
+
+        IList<CurrentVersion> currentVersions = await _schemaManager.GetCurrentSchema(connectionString, server, cancellationToken).ConfigureAwait(false);
+
+        var tableView = new TableView<CurrentVersion>
         {
-            AddOption(CommandOptions.ServerOption());
-            AddOption(CommandOptions.ConnectionStringOption());
+            Items = new ReadOnlyCollection<CurrentVersion>(currentVersions),
+        };
 
-            Handler = CommandHandler.Create(
-                (InvocationContext context, Uri server, string connectionString, CancellationToken token)
-                => HandlerAsync(context, connectionString, server, token));
+        tableView.AddColumn(
+           cellValue: currentVersion => currentVersion.Id,
+           header: new ContentView("Version"));
 
-            Argument.AddValidator(symbol => RequiredOptionValidator.Validate(symbol, CommandOptions.ConnectionStringOption(), Resources.ConnectionStringRequiredValidation));
-            Argument.AddValidator(symbol => RequiredOptionValidator.Validate(symbol, CommandOptions.ServerOption(), Resources.ServerRequiredValidation));
+        tableView.AddColumn(
+            cellValue: currentVersion => currentVersion.Status,
+            header: new ContentView("Status"));
 
-            EnsureArg.IsNotNull(schemaManager, nameof(schemaManager));
+        tableView.AddColumn(
+            cellValue: currentVersion => string.Join(", ", currentVersion.Servers),
+            header: new ContentView("Servers"));
 
-            _schemaManager = schemaManager;
-        }
+        var consoleRenderer = new ConsoleRenderer(
+            invocationContext.Console,
+            mode: invocationContext.BindingContext.OutputMode(),
+            resetAfterRender: true);
 
-        private async Task HandlerAsync(InvocationContext invocationContext, string connectionString, Uri server, CancellationToken cancellationToken = default)
-        {
-            var region = new Region(
-                          0,
-                          0,
-                          Console.WindowWidth,
-                          Console.WindowHeight,
-                          true);
-
-            IList<CurrentVersion> currentVersions = await _schemaManager.GetCurrentSchema(connectionString, server, cancellationToken).ConfigureAwait(false);
-
-            var tableView = new TableView<CurrentVersion>
-            {
-                Items = new ReadOnlyCollection<CurrentVersion>(currentVersions),
-            };
-
-            tableView.AddColumn(
-               cellValue: currentVersion => currentVersion.Id,
-               header: new ContentView("Version"));
-
-            tableView.AddColumn(
-                cellValue: currentVersion => currentVersion.Status,
-                header: new ContentView("Status"));
-
-            tableView.AddColumn(
-                cellValue: currentVersion => string.Join(", ", currentVersion.Servers),
-                header: new ContentView("Servers"));
-
-            var consoleRenderer = new ConsoleRenderer(
-                invocationContext.Console,
-                mode: invocationContext.BindingContext.OutputMode(),
-                resetAfterRender: true);
-
-            using var screen = new ScreenView(renderer: consoleRenderer) { Child = tableView };
-            screen.Render(region);
-        }
+        using var screen = new ScreenView(renderer: consoleRenderer) { Child = tableView };
+        screen.Render(region);
     }
 }

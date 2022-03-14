@@ -6,10 +6,9 @@
 using System.Collections.Generic;
 using Microsoft.AspNetCore.Http;
 
-namespace Microsoft.Health.Api.Features.Audit
+namespace Microsoft.Health.Api.Features.Audit;
+
+public interface IAuditHeaderReader
 {
-    public interface IAuditHeaderReader
-    {
-        IReadOnlyDictionary<string, string> Read(HttpContext httpContext);
-    }
+    IReadOnlyDictionary<string, string> Read(HttpContext httpContext);
 }

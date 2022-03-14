@@ -6,14 +6,13 @@
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Microsoft.Health.SqlServer.Features.Schema
+namespace Microsoft.Health.SqlServer.Features.Schema;
+
+public interface IScriptProvider
 {
-    public interface IScriptProvider
-    {
-        string GetMigrationScript(int version, bool applyFullSchemaSnapshot);
+    string GetMigrationScript(int version, bool applyFullSchemaSnapshot);
 
-        Task<byte[]> GetScriptAsBytesAsync(int version, CancellationToken cancellationToken);
+    Task<byte[]> GetScriptAsBytesAsync(int version, CancellationToken cancellationToken);
 
-        Task<byte[]> GetDiffScriptAsBytesAsync(int version, CancellationToken cancellationToken);
-    }
+    Task<byte[]> GetDiffScriptAsBytesAsync(int version, CancellationToken cancellationToken);
 }

@@ -12,65 +12,64 @@ using EnsureThat;
 using Microsoft.Extensions.Logging;
 using Microsoft.Health.Blob.Configs;
 
-namespace Microsoft.Health.Blob.Features.Storage
+namespace Microsoft.Health.Blob.Features.Storage;
+
+internal class BlobInitializer : IBlobInitializer
 {
-    internal class BlobInitializer : IBlobInitializer
+    private readonly BlobServiceClient _client;
+    private readonly IBlobClientTestProvider _testProvider;
+    private readonly ILogger<BlobInitializer> _logger;
+
+    public BlobInitializer(BlobServiceClient client, IBlobClientTestProvider testProvider, ILogger<BlobInitializer> logger)
     {
-        private readonly BlobServiceClient _client;
-        private readonly IBlobClientTestProvider _testProvider;
-        private readonly ILogger<BlobInitializer> _logger;
+        EnsureArg.IsNotNull(client, nameof(client));
+        EnsureArg.IsNotNull(logger, nameof(logger));
+        EnsureArg.IsNotNull(testProvider, nameof(testProvider));
+        _client = client;
+        _testProvider = testProvider;
+        _logger = logger;
+    }
 
-        public BlobInitializer(BlobServiceClient client, IBlobClientTestProvider testProvider, ILogger<BlobInitializer> logger)
+    /// <inheritdoc />
+    public async Task InitializeDataStoreAsync(IEnumerable<IBlobContainerInitializer> containerInitializers, CancellationToken cancellationToken = default)
+    {
+        EnsureArg.IsNotNull(containerInitializers, nameof(containerInitializers));
+
+        try
         {
-            EnsureArg.IsNotNull(client, nameof(client));
-            EnsureArg.IsNotNull(logger, nameof(logger));
-            EnsureArg.IsNotNull(testProvider, nameof(testProvider));
-            _client = client;
-            _testProvider = testProvider;
-            _logger = logger;
+            _logger.LogInformation("Initializing Blob Storage and containers");
+
+            foreach (IBlobContainerInitializer collectionInitializer in containerInitializers)
+            {
+                await collectionInitializer.InitializeContainerAsync(_client, cancellationToken);
+            }
+
+            _logger.LogInformation("Blob Storage and containers successfully initialized");
         }
-
-        /// <inheritdoc />
-        public async Task InitializeDataStoreAsync(IEnumerable<IBlobContainerInitializer> containerInitializers, CancellationToken cancellationToken = default)
+        catch (Exception ex)
         {
-            EnsureArg.IsNotNull(containerInitializers, nameof(containerInitializers));
-
-            try
-            {
-                _logger.LogInformation("Initializing Blob Storage and containers");
-
-                foreach (IBlobContainerInitializer collectionInitializer in containerInitializers)
-                {
-                    await collectionInitializer.InitializeContainerAsync(_client, cancellationToken);
-                }
-
-                _logger.LogInformation("Blob Storage and containers successfully initialized");
-            }
-            catch (Exception ex)
-            {
-                _logger.LogCritical(ex, "Blob Storage and containers initialization failed");
-                throw;
-            }
+            _logger.LogCritical(ex, "Blob Storage and containers initialization failed");
+            throw;
         }
+    }
 
-        /// <inheritdoc />
-        public async Task OpenBlobClientAsync(BlobContainerConfiguration blobContainerConfiguration, CancellationToken cancellationToken = default)
+    /// <inheritdoc />
+    public async Task OpenBlobClientAsync(BlobContainerConfiguration blobContainerConfiguration, CancellationToken cancellationToken = default)
+    {
+        EnsureArg.IsNotNull(blobContainerConfiguration, nameof(blobContainerConfiguration));
+
+        _logger.LogInformation("Opening blob client connection to container {ContainerName}", blobContainerConfiguration.ContainerName);
+
+        try
         {
-            EnsureArg.IsNotNull(blobContainerConfiguration, nameof(blobContainerConfiguration));
+            await _testProvider.PerformTestAsync(_client, blobContainerConfiguration, cancellationToken);
 
-            _logger.LogInformation("Opening blob client connection to container {ContainerName}", blobContainerConfiguration.ContainerName);
-
-            try
-            {
-                await _testProvider.PerformTestAsync(_client, blobContainerConfiguration, cancellationToken);
-
-                _logger.LogInformation("Established blob client connection to container {ContainerName}", blobContainerConfiguration.ContainerName);
-            }
-            catch (Exception e)
-            {
-                _logger.LogCritical(e, "Failed to connect to blob client container {ContainerName}", blobContainerConfiguration.ContainerName);
-                throw;
-            }
+            _logger.LogInformation("Established blob client connection to container {ContainerName}", blobContainerConfiguration.ContainerName);
+        }
+        catch (Exception e)
+        {
+            _logger.LogCritical(e, "Failed to connect to blob client container {ContainerName}", blobContainerConfiguration.ContainerName);
+            throw;
         }
     }
 }
