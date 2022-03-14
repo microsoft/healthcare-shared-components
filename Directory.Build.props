@@ -21,11 +21,6 @@
     <WarningsAsErrors />
   </PropertyGroup>
 
-  <PropertyGroup>
-    <!-- CA1031 - Allow Exception to be caught -->
-    <NoWarn>$(NoWarn);CA1031</NoWarn>
-  </PropertyGroup>
-
   <Choose>
     <When Condition="'$(TargetFramework)' == 'net6.0'">
       <PropertyGroup>

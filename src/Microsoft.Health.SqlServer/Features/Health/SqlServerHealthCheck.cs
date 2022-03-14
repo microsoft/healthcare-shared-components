@@ -31,22 +31,14 @@ public class SqlServerHealthCheck : IHealthCheck
     {
         _logger.LogInformation($"Starting {nameof(SqlServerHealthCheck)}.");
 
-        try
-        {
-            using SqlConnectionWrapper sqlConnectionWrapper = await _sqlConnectionWrapperFactory.ObtainSqlConnectionWrapperAsync(cancellationToken);
-            using SqlCommandWrapper sqlCommandWrapper = sqlConnectionWrapper.CreateRetrySqlCommand();
+        using SqlConnectionWrapper sqlConnectionWrapper = await _sqlConnectionWrapperFactory.ObtainSqlConnectionWrapperAsync(cancellationToken);
+        using SqlCommandWrapper sqlCommandWrapper = sqlConnectionWrapper.CreateRetrySqlCommand();
 
-            sqlCommandWrapper.CommandText = "select @@DBTS";
+        sqlCommandWrapper.CommandText = "select @@DBTS";
 
-            await sqlCommandWrapper.ExecuteScalarAsync(cancellationToken).ConfigureAwait(false);
+        await sqlCommandWrapper.ExecuteScalarAsync(cancellationToken).ConfigureAwait(false);
 
-            _logger.LogInformation("Successfully connected to SQL database.");
-            return HealthCheckResult.Healthy("Successfully connected.");
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Failed to connect to the data store.");
-            return HealthCheckResult.Unhealthy("Failed to connect.");
-        }
+        _logger.LogInformation("Successfully connected to SQL database.");
+        return HealthCheckResult.Healthy("Successfully connected.");
     }
 }

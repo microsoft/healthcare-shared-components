@@ -2,7 +2,6 @@ parameters:
   includeSymbols: false
 
 steps:
-# Publish Artifacts
 - publish: '$(build.artifactStagingDirectory)/nupkgs'
   artifact: 'nuget'
 
@@ -13,4 +12,4 @@ steps:
       symbolsFolder: '$(build.sourcesDirectory)'
       searchPattern: '**/bin/**/*.pdb'
       symbolServerType: 'TeamServices'
-      indexSources: false # done in build step
+      indexSources: false # done in build step via SourceLink
