@@ -1,23 +1,20 @@
-parameters:
-  packageArtifacts: true
-
 steps:
+- task: UseDotNet@2
+  displayName: 'Use .NET (global.json)'
+  inputs:
+    useGlobalJson: true
+
 - task: UseDotNet@2
   displayName: 'Use .NET 5.x SDK'
   inputs:
     packageType: sdk
     version: 5.x
 
-- task: UseDotNet@2
-  displayName: 'Use .NET (global.json)'
-  inputs:
-    useGlobalJson: true
-
 - task: DotNetCoreCLI@2
   displayName: 'dotnet build $(buildConfiguration)'
   inputs:
     command: build
-    arguments: '--configuration $(buildConfiguration) -p:AssemblyVersion="$(assemblySemVer)" -p:FileVersion="$(assemblySemFileVer)" -p:InformationalVersion="$(informationalVersion)" -p:ContinuousIntegrationBuild=true -p:SourceLinkCreate=true'
+    arguments: '--configuration $(buildConfiguration) -p:AssemblyVersion="$(assemblySemVer)" -p:FileVersion="$(assemblySemFileVer)" -p:InformationalVersion="$(informationalVersion)" -p:ContinuousIntegrationBuild=true'
 
 - task: DotNetCoreCLI@2
   displayName: 'dotnet test UnitTests'
@@ -25,6 +22,3 @@ steps:
     command: test
     projects: '**/*UnitTests/*.csproj'
     arguments: '--configuration $(buildConfiguration) --no-build'
-
-- ${{ if eq(parameters.packageArtifacts, 'true') }}:
-  - template: package.yml

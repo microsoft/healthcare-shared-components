@@ -1,51 +1,58 @@
-# DESCRIPTION: 
+# DESCRIPTION:
 # Builds, tests and packages the solution for the CI build configuration.
+name: $(SourceBranchName)-$(Date:yyyyMMdd)$(Rev:-r)
+
+variables:
+  buildConfiguration: 'Release'
+  skipNugetSecurityAnalysis: 'true'
+
 trigger:
-- master
+  branches:
+    include:
+    - master
 
 pr: none
 
-name: $(SourceBranchName)-$(Date:yyyyMMdd)$(Rev:-r)
-variables:
-  buildConfiguration: 'Release'
 jobs:
-- job: Semver
-  pool:
-    vmImage: 'windows-latest'
-  steps:
-  - template: ./update-semver.yml
-  - script: echo %Action%%BuildVersion%
-    displayName: 'Set build version'
-    env:
-      Action: '##vso[build.updatebuildnumber]'
-      BuildVersion: $(GitVersion.semVer)
+  - job: Semver
+    pool:
+      vmImage: 'windows-latest'
+    steps:
+    - template: ./update-semver.yml
+    - powershell: |
+        $buildNumber = "$(GitVersion.SemVer)" -replace "\.", ""
+        Write-Host "##vso[build.updatebuildnumber]$buildNumber"
+        Write-Host "Updated build number to '$buildNumber'"
+      name: SetBuildVersion
 
-- job: Windows
-  pool:
-    vmImage: 'windows-latest'
-  dependsOn:
-  - Semver
-  variables:
-    assemblySemVer: $[dependencies.Semver.outputs['SetVariablesFromGitVersion.assemblySemVer']]
-    assemblySemFileVer: $[dependencies.Semver.outputs['SetVariablesFromGitVersion.assemblySemFileVer']]
-    informationalVersion: $[dependencies.Semver.outputs['SetVariablesFromGitVersion.informationalVersion']]
-    majorMinorPatch: $[dependencies.Semver.outputs['SetVariablesFromGitVersion.majorMinorPatch']]
-    nuGetVersion: $[dependencies.Semver.outputs['SetVariablesFromGitVersion.nuGetVersion']]
-  steps:
-  - template: build.yml
+  - job: LinuxBuild
+    pool:
+      vmImage: 'ubuntu-latest'
+    dependsOn:
+    - Semver
+    variables:
+      assemblySemVer: $[dependencies.Semver.outputs['SetVariablesFromGitVersion.assemblySemVer']]
+      assemblySemFileVer: $[dependencies.Semver.outputs['SetVariablesFromGitVersion.assemblySemFileVer']]
+      informationalVersion: $[dependencies.Semver.outputs['SetVariablesFromGitVersion.informationalVersion']]
+      majorMinorPatch: $[dependencies.Semver.outputs['SetVariablesFromGitVersion.majorMinorPatch']]
+      nuGetVersion: $[dependencies.Semver.outputs['SetVariablesFromGitVersion.nuGetVersion']]
+    steps:
+    - template: build.yml
 
-- job: Linux
-  pool:
-    vmImage: 'ubuntu-latest'
-  dependsOn:
-  - Semver
-  variables:
-    assemblySemVer: $[dependencies.Semver.outputs['SetVariablesFromGitVersion.assemblySemVer']]
-    assemblySemFileVer: $[dependencies.Semver.outputs['SetVariablesFromGitVersion.assemblySemFileVer']]
-    informationalVersion: $[dependencies.Semver.outputs['SetVariablesFromGitVersion.informationalVersion']]
-    majorMinorPatch: $[dependencies.Semver.outputs['SetVariablesFromGitVersion.majorMinorPatch']]
-    nuGetVersion: $[dependencies.Semver.outputs['SetVariablesFromGitVersion.nuGetVersion']]
-  steps:
-  - template: build.yml
-    parameters:
-      packageArtifacts: false
+  - job: WindowsBuild
+    pool:
+      vmImage: 'windows-latest'
+    dependsOn:
+    - Semver
+    variables:
+      assemblySemVer: $[dependencies.Semver.outputs['SetVariablesFromGitVersion.assemblySemVer']]
+      assemblySemFileVer: $[dependencies.Semver.outputs['SetVariablesFromGitVersion.assemblySemFileVer']]
+      informationalVersion: $[dependencies.Semver.outputs['SetVariablesFromGitVersion.informationalVersion']]
+      majorMinorPatch: $[dependencies.Semver.outputs['SetVariablesFromGitVersion.majorMinorPatch']]
+      nuGetVersion: $[dependencies.Semver.outputs['SetVariablesFromGitVersion.nuGetVersion']]
+    steps:
+    - template: build.yml
+    - template: analyze.yml
+    - template: package.yml
+      parameters:
+        publishSymbols: 'true'

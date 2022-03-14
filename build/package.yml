@@ -1,8 +1,10 @@
-steps:
-  # Package nugets
+parameters:
+  publishSymbols: false
 
+steps:
+  # Package NuGet Packages
   - task: DotNetCoreCLI@2
-    displayName: 'dotnet pack nugets'
+    displayName: 'dotnet pack'
     inputs:
       command: pack
       configuration: '$(buildConfiguration)'
@@ -14,19 +16,15 @@ steps:
     env:
       nuget_version: $(nuGetVersion)
 
-  # Publish artifacts
-
-  - task: PublishBuildArtifacts@1
-    displayName: 'publish nuget artifacts'
-    inputs:
-      pathtoPublish: '$(build.artifactStagingDirectory)/nupkgs'
-      artifactName: 'nuget'
-      publishLocation: 'container'
+  # Publish Artifacts
+  - publish: '$(build.artifactStagingDirectory)/nupkgs'
+    artifact: 'nuget'
 
   - task: PublishSymbols@2
     displayName: 'Publish Symbols'
+    condition: eq(parameters.publishSymbols, 'true')
     inputs:
       symbolsFolder: '$(build.sourcesDirectory)'
-      searchPattern: '**/bin/**/*.pdb' 
+      searchPattern: '**/bin/**/*.pdb'
       symbolServerType: 'TeamServices'
       indexSources: false # done in build step
