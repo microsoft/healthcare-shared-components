@@ -236,7 +236,7 @@ public class SchemaInitializer : IHostedService
     {
         if (!Identifier.IsValidDatabase(databaseName))
         {
-            throw new ArgumentException(string.Format(CultureInfo.InvariantCulture, Resources.InvalidDatabaseIdentifier, databaseName), nameof(databaseName));
+            throw new ArgumentException(string.Format(CultureInfo.CurrentCulture, Resources.InvalidDatabaseIdentifier, databaseName), nameof(databaseName));
         }
 
         using var canCreateDatabaseCommand = new SqlCommand("SELECT count(*) FROM fn_my_permissions (NULL, 'DATABASE') WHERE permission_name = 'CREATE DATABASE'", connection);
