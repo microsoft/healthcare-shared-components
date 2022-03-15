@@ -22,6 +22,14 @@
     <PackageReference Include="Microsoft.Extensions.Options" Version="$(SdkPackageVersion)" />
   </ItemGroup>
 
+  <Choose>
+    <When Condition="'$(TargetFramework)' == 'net5.0'">
+      <ItemGroup>
+        <PackageReference Include="System.Text.Encodings.Web" Version="5.0.1" PrivateAssets="All" />
+      </ItemGroup>
+    </When>
+  </Choose>
+
   <ItemGroup>
     <ProjectReference Include="..\Microsoft.Health.Core\Microsoft.Health.Core.csproj" />
   </ItemGroup>
