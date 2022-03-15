@@ -4,6 +4,7 @@
 // -------------------------------------------------------------------------------------------------
 
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using Microsoft.Build.Framework;
 using Microsoft.Build.Utilities;
@@ -68,6 +69,7 @@ public class GenerateFullScript : Task
         set;
     }
 
+    [SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "All exceptions are caught to be logged.")]
     public override bool Execute()
     {
         try

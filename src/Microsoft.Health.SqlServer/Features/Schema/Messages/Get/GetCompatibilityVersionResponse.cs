@@ -21,5 +21,3 @@ public class GetCompatibilityVersionResponse
 
     public CompatibleVersions CompatibleVersions { get; }
 }
-
-#pragma warning restore CA1716 // Identifiers should not match keywords

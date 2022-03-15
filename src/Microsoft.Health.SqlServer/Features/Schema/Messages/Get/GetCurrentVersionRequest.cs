@@ -12,5 +12,3 @@ namespace Microsoft.Health.SqlServer.Features.Schema.Messages.Get;
 public class GetCurrentVersionRequest : IRequest<GetCurrentVersionResponse>
 {
 }
-
-#pragma warning restore CA1716 // Identifiers should not match keywords

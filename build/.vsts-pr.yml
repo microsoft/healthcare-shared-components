@@ -6,8 +6,6 @@ variables:
   buildConfiguration: 'Release'
   skipNugetSecurityAnalysis: 'true'
 
-trigger: none
-
 pr:
   branches:
     include:
@@ -16,49 +14,9 @@ pr:
     exclude:
     - docs
 
+trigger: none
+
 jobs:
-- job: Semver
-  displayName: 'Update Semantic Version'
-  pool:
-    vmImage: 'windows-latest'
-  steps:
-  - template: ./update-semver.yml
-  - powershell: |
-      $buildNumber = "$(GitVersion.SemVer)" -replace "\.", ""
-      Write-Host "##vso[build.updatebuildnumber]$buildNumber"
-      Write-Host "Updated build number to '$buildNumber'"
-    name: SetBuildVersion
-
-- job: LinuxBuild
-  displayName: 'Build (Linux)'
-  pool:
-    vmImage: 'ubuntu-latest'
-  dependsOn:
-  - Semver
-  variables:
-    assemblySemVer: $[dependencies.Semver.outputs['SharedComponentsVersioning.GitVersion.AssemblySemVer']]
-    assemblySemFileVer: $[dependencies.Semver.outputs['SharedComponentsVersioning.GitVersion.AssemblySemFileVer']]
-    informationalVersion: $[dependencies.Semver.outputs['SharedComponentsVersioning.GitVersion.InformationalVersion']]
-    majorMinorPatch: $[dependencies.Semver.outputs['SharedComponentsVersioning.GitVersion.MajorMinorPatch']]
-    nuGetVersion: $[dependencies.Semver.outputs['SharedComponentsVersioning.GitVersion.SemVer']]
-  steps:
-  - template: build.yml
-    parameters:
-      pack: 'false'
-
-- job: WindowsBuild
-  displayName: 'Build (Windows)'
-  pool:
-    vmImage: 'windows-latest'
-  dependsOn:
-  - Semver
-  variables:
-    assemblySemVer: $[dependencies.Semver.outputs['SharedComponentsVersioning.GitVersion.AssemblySemVer']]
-    assemblySemFileVer: $[dependencies.Semver.outputs['SharedComponentsVersioning.GitVersion.AssemblySemFileVer']]
-    informationalVersion: $[dependencies.Semver.outputs['SharedComponentsVersioning.GitVersion.InformationalVersion']]
-    majorMinorPatch: $[dependencies.Semver.outputs['SharedComponentsVersioning.GitVersion.MajorMinorPatch']]
-    nuGetVersion: $[dependencies.Semver.outputs['SharedComponentsVersioning.GitVersion.SemVer']]
-  steps:
-  - template: build.yml
-  - template: analyze.yml
-  - template: publish.yml
+- template: .vsts-template.yml
+  parameters:
+    publishSymbols: false

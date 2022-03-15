@@ -1,5 +1,7 @@
 parameters:
-  includeSymbols: false
+- name: includeSymbols
+  type: boolean
+  default: false
 
 steps:
 - publish: '$(build.artifactStagingDirectory)/nupkgs'

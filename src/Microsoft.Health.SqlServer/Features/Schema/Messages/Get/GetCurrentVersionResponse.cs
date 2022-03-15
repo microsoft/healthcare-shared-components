@@ -22,5 +22,3 @@ public class GetCurrentVersionResponse
 
     public IList<CurrentVersionInformation> CurrentVersions { get; }
 }
-
-#pragma warning restore CA1716 // Identifiers should not match keywords
