@@ -142,12 +142,11 @@ public class HealthCheckCachingTests
 
         _healthCheck
             .When(c => c.CheckHealthAsync(_context, tokenSource.Token))
-            .Throw<Exception>();
+            .Throw<InvalidOperationException>();
 
-        HealthCheckResult result = await CreateHealthCheck().CheckHealthAsync(_context, tokenSource.Token);
+        await Assert.ThrowsAsync< InvalidOperationException>(() => CreateHealthCheck().CheckHealthAsync(_context, tokenSource.Token));
 
         await _healthCheck.Received(1).CheckHealthAsync(_context, tokenSource.Token);
-        Assert.Equal(HealthStatus.Unhealthy, result.Status);
     }
 
     [Fact]
