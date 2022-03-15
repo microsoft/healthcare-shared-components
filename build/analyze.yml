@@ -8,6 +8,7 @@ steps:
     failOnAlert: true
 
 - task: AntiMalware@4
+  displayName: 'Anti-Malware Scan'
   inputs:
     InputType: 'Basic'
     ScanType: 'CustomScan'
@@ -18,17 +19,20 @@ steps:
     TreatStaleSignatureAs: 'Error'
 
 - task: CredScan@3
+  displayName: 'Credential Scan'
   inputs:
     scanFolder: '$(Build.Repository.LocalPath)'
     outputFormat: 'sarif'
     verboseOutput: true
 
 - task: SdtReport@2
+  displayName: 'Generate Security Report'
   inputs:
     GdnExportAllTools: false
     GdnExportGdnToolCredScan: true
 
 - task: PublishSecurityAnalysisLogs@3
+  displayName: 'Publish Findings'
   inputs:
     ArtifactName: 'CodeAnalysisLogs'
     ArtifactType: 'Container'
@@ -57,6 +61,7 @@ steps:
     ToolLogsNotFoundAction: 'Standard'
 
 - task: PostAnalysis@2
+  displayName: 'Verify Security Analysis'
   inputs:
     GdnBreakAllTools: false
     GdnBreakGdnToolCredScan: true

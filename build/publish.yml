@@ -5,6 +5,7 @@ parameters:
 
 steps:
 - publish: '$(build.artifactStagingDirectory)/nupkgs'
+  displayName: 'Publish NuGet Packages'
   artifact: 'nuget'
 
 - ${{ if eq(parameters.includeSymbols, 'true') }}:
