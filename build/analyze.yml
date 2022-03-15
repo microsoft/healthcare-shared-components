@@ -1,4 +1,12 @@
 steps:
+- task: ComponentGovernanceComponentDetection@0
+  displayName: 'Component Governance'
+  inputs:
+    scanType: 'Register'
+    verbosity: 'Verbose'
+    alertWarningLevel: 'High'
+    failOnAlert: true
+
 - task: AntiMalware@4
   inputs:
     InputType: 'Basic'
