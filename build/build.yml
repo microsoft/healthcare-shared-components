@@ -1,5 +1,5 @@
 parameters:
-  runIntegrationTests: 'true'
+  runIntegrationTests: 'false'
   pack: 'true'
 
 steps:

@@ -31,6 +31,7 @@ jobs:
   steps:
   - template: build.yml
     parameters:
+      runIntegrationTests: 'true'
       pack: 'false'
 
 - job: WindowsBuild
