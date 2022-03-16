@@ -1,12 +1,6 @@
 parameters:
   pack: 'true'
 
-variables:
-  ${{ if eq(Agent.OS, 'Linux') }}:
-    testProjects: '**/*[t|T]est*/*.csproj'
-  ${{ else }}:
-    testProjects: '**/*UnitTests/*.csproj'
-
 steps:
 - task: UseDotNet@2
   displayName: 'Use .NET (global.json)'
@@ -37,7 +31,10 @@ steps:
   displayName: 'dotnet test'
   inputs:
     command: test
-    projects: '$(testProjects)'
+    ${{ if eq(Agent.OS, 'Linux') }}:
+      projects: '**/*[t|T]est*/*.csproj'
+    ${{ else }}:
+      projects: '**/*UnitTests/*.csproj'
     arguments: '--configuration $(buildConfiguration) --no-build'
   ${{ if eq(Agent.OS, 'Linux') }}:
     env:
