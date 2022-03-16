@@ -21,9 +21,14 @@ public abstract class SqlIntegrationTestBase : IAsyncLifetime
     {
         Output = outputHelper;
         DatabaseName = $"IntegrationTests_BaseSchemaRunner_{Guid.NewGuid().ToString().Replace("-", string.Empty)}";
+        var builder = new SqlConnectionStringBuilder(Environment.GetEnvironmentVariable("TestSqlConnectionString") ?? $"server=(local);Integrated Security=true")
+        {
+            InitialCatalog = DatabaseName
+        };
+
         Config = new SqlServerDataStoreConfiguration
         {
-            ConnectionString = Environment.GetEnvironmentVariable("TestSqlConnectionString") ?? $"server=(local);Initial Catalog={DatabaseName};Integrated Security=true",
+            ConnectionString = builder.ToString(),
             AllowDatabaseCreation = true,
         };
 
