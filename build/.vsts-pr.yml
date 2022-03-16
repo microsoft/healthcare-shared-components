@@ -11,6 +11,8 @@ pr:
     include:
     - main
   paths:
+    include:
+    - '*'
     exclude:
     - docs
 

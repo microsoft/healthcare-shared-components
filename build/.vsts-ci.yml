@@ -13,6 +13,8 @@ trigger:
     include:
     - main
   paths:
+    include:
+      - '*'
     exclude:
     - docs
 
