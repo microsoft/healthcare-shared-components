@@ -62,7 +62,7 @@ public abstract class RoleLoader<TDataActions> : IHostedService
         };
 
         validatingReader.ValidationEventHandler += (sender, args) =>
-            throw new InvalidDefinitionException(string.Format(CultureInfo.InvariantCulture, Resources.ErrorValidatingRoles, args.Message));
+            throw new InvalidDefinitionException(string.Format(CultureInfo.CurrentCulture, Resources.ErrorValidatingRoles, args.Message));
 
         RolesContract rolesContract = jsonSerializer.Deserialize<RolesContract>(validatingReader);
 
@@ -75,7 +75,7 @@ public abstract class RoleLoader<TDataActions> : IHostedService
             if (groupingCount > 1)
             {
                 throw new InvalidDefinitionException(
-                    string.Format(CultureInfo.InvariantCulture, Resources.DuplicateRoleNames, groupingCount, grouping.Key));
+                    string.Format(CultureInfo.CurrentCulture, Resources.DuplicateRoleNames, groupingCount, grouping.Key));
             }
         }
 

@@ -102,11 +102,6 @@ internal sealed class CachedHealthCheck : IHealthCheck, IDisposable
 
                 return _cachedResult.Value;
             }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Health check failed to complete.");
-                result = HealthCheckResult.Unhealthy(Resources.FailedHealthCheckMessage); // Do not pass error to caller
-            }
 
             return UpdateCache(result).Value;
         }

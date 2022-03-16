@@ -1,14 +1,12 @@
 # DESCRIPTION:
 # Builds, tests and packages the solution for the CI build configuration.
-name: $(SourceBranchName)-$(Date:yyyyMMdd)$(Rev:-r)
+name: pr$(System.PullRequest.PullRequestNumber)-$(Date:yyyyMMdd)$(Rev:-r)
 
 variables:
   buildConfiguration: 'Release'
   skipNugetSecurityAnalysis: 'true'
 
-pr: none
-
-trigger:
+pr:
   branches:
     include:
     - master
@@ -16,7 +14,9 @@ trigger:
     exclude:
     - docs
 
+trigger: none
+
 jobs:
 - template: .vsts-template.yml
   parameters:
-    publishSymbols: true
+    publishSymbols: false

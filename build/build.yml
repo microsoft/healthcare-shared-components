@@ -1,30 +1,38 @@
 parameters:
-  packageArtifacts: true
+  pack: 'true'
 
 steps:
+- task: UseDotNet@2
+  displayName: 'Use .NET (global.json)'
+  inputs:
+    useGlobalJson: true
+
 - task: UseDotNet@2
   displayName: 'Use .NET 5.x SDK'
   inputs:
     packageType: sdk
     version: 5.x
 
-- task: UseDotNet@2
-  displayName: 'Use .NET (global.json)'
-  inputs:
-    useGlobalJson: true
-
 - task: DotNetCoreCLI@2
-  displayName: 'dotnet build $(buildConfiguration)'
+  displayName: 'dotnet build -c $(buildConfiguration)'
   inputs:
     command: build
-    arguments: '--configuration $(buildConfiguration) -p:AssemblyVersion="$(assemblySemVer)" -p:FileVersion="$(assemblySemFileVer)" -p:InformationalVersion="$(informationalVersion)" -p:ContinuousIntegrationBuild=true -p:SourceLinkCreate=true'
+    arguments: '--configuration $(buildConfiguration) -p:AssemblyVersion="$(assemblySemVer)" -p:FileVersion="$(assemblySemFileVer)" -p:InformationalVersion="$(informationalVersion)" -p:ContinuousIntegrationBuild=true'
 
 - task: DotNetCoreCLI@2
-  displayName: 'dotnet test UnitTests'
+  displayName: 'dotnet test'
   inputs:
     command: test
     projects: '**/*UnitTests/*.csproj'
     arguments: '--configuration $(buildConfiguration) --no-build'
 
-- ${{ if eq(parameters.packageArtifacts, 'true') }}:
-  - template: package.yml
+- ${{ if eq(parameters.pack, 'true') }}:
+  - task: DotNetCoreCLI@2
+    displayName: 'dotnet pack'
+    inputs:
+      command: pack
+      configuration: '$(buildConfiguration)'
+      packDirectory: '$(build.artifactStagingDirectory)/nupkgs'
+      versioningScheme: 'byEnvVar'
+      versionEnvVar: 'nuGetVersion'
+      nobuild: true

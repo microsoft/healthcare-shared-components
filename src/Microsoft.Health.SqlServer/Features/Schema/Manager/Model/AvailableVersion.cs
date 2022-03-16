@@ -3,12 +3,14 @@
 // Licensed under the MIT License (MIT). See LICENSE in the repo root for license information.
 // -------------------------------------------------------------------------------------------------
 
+using System.Diagnostics.CodeAnalysis;
 using EnsureThat;
 using Newtonsoft.Json;
 
 namespace Microsoft.Health.SqlServer.Features.Schema.Manager.Model;
 
-[System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1056:Uri properties should not be strings", Justification = "The Uri are written to console in string format")]
+[SuppressMessage("Design", "CA1054:URI-like parameters should not be strings", Justification = "The Uri are written to console in string format")]
+[SuppressMessage("Design", "CA1056:Uri properties should not be strings", Justification = "The Uri are written to console in string format")]
 public class AvailableVersion
 {
     public AvailableVersion(int id, [JsonProperty("script")] string scriptUri, [JsonProperty("diff")] string diffUri)

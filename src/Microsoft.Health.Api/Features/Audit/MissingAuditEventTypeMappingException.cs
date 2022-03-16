@@ -4,13 +4,14 @@
 // -------------------------------------------------------------------------------------------------
 
 using System;
+using System.Globalization;
 
 namespace Microsoft.Health.Api.Features.Audit;
 
 public class MissingAuditEventTypeMappingException : Exception
 {
     public MissingAuditEventTypeMappingException(string controllerName, string actionName)
-        : base(string.Format(Resources.MissingAuditInformation, controllerName, actionName))
+        : base(string.Format(CultureInfo.CurrentCulture, Resources.MissingAuditInformation, controllerName, actionName))
     {
     }
 }

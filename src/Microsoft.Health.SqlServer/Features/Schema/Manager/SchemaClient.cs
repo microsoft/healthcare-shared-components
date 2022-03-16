@@ -43,7 +43,7 @@ public class SchemaClient : ISchemaClient
         }
         else
         {
-            throw new SchemaManagerException(string.Format(CultureInfo.InvariantCulture, Resources.CurrentDefaultErrorDescription, response.StatusCode));
+            throw new SchemaManagerException(string.Format(CultureInfo.CurrentCulture, Resources.CurrentDefaultErrorDescription, response.StatusCode));
         }
     }
 
@@ -56,7 +56,7 @@ public class SchemaClient : ISchemaClient
         }
         else
         {
-            throw new SchemaManagerException(string.Format(CultureInfo.InvariantCulture, Resources.ScriptNotFound, response.StatusCode));
+            throw new SchemaManagerException(string.Format(CultureInfo.CurrentCulture, Resources.ScriptNotFound, response.StatusCode));
         }
     }
 
@@ -70,7 +70,7 @@ public class SchemaClient : ISchemaClient
         }
         else
         {
-            throw new SchemaManagerException(string.Format(CultureInfo.InvariantCulture, Resources.CompatibilityDefaultErrorMessage, response.StatusCode));
+            throw new SchemaManagerException(string.Format(CultureInfo.CurrentCulture, Resources.CompatibilityDefaultErrorMessage, response.StatusCode));
         }
     }
 
@@ -84,7 +84,7 @@ public class SchemaClient : ISchemaClient
         }
         else
         {
-            throw new SchemaManagerException(string.Format(CultureInfo.InvariantCulture, Resources.AvailableVersionsDefaultErrorMessage, response.StatusCode));
+            throw new SchemaManagerException(string.Format(CultureInfo.CurrentCulture, Resources.AvailableVersionsDefaultErrorMessage, response.StatusCode));
         }
     }
 
@@ -97,7 +97,7 @@ public class SchemaClient : ISchemaClient
         }
         else
         {
-            throw new SchemaManagerException(string.Format(CultureInfo.InvariantCulture, Resources.ScriptNotFound, response.StatusCode));
+            throw new SchemaManagerException(string.Format(CultureInfo.CurrentCulture, Resources.ScriptNotFound, response.StatusCode));
         }
     }
 }

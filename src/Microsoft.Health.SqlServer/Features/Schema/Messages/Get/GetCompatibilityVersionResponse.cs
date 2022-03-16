@@ -6,6 +6,8 @@
 using EnsureThat;
 using Microsoft.Health.SqlServer.Features.Schema.Model;
 
+#pragma warning disable CA1716 // Identifiers should not match keywords
+
 namespace Microsoft.Health.SqlServer.Features.Schema.Messages.Get;
 
 public class GetCompatibilityVersionResponse
