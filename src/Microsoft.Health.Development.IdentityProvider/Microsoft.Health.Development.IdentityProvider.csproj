@@ -25,7 +25,7 @@
   <Choose>
     <When Condition="'$(TargetFramework)' == 'net5.0'">
       <ItemGroup>
-        <PackageReference Include="System.Text.Encodings.Web" Version="5.0.1" PrivateAssets="All" />
+        <PackageReference Include="System.Text.Encodings.Web" Version="6.0.0" PrivateAssets="All" />
       </ItemGroup>
     </When>
   </Choose>
