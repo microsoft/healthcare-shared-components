@@ -33,7 +33,6 @@ steps:
   - bash: for i in {1..6}; do docker exec sql-server sh -c "/opt/mssql-tools/bin/sqlcmd -S localhost -U SA -P T3stP@ssw0rd -Q 'SELECT * FROM INFORMATION_SCHEMA.TABLES'" && exit 0 || sleep 5; done; exit 1
     displayName: 'Wait for SQL Server'
 
-- ${{ if eq(Agent.OS, 'Linux') }}:
 - task: DotNetCoreCLI@2
   displayName: 'dotnet test'
   inputs:
