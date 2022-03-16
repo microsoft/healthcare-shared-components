@@ -11,7 +11,7 @@ pr: none
 trigger:
   branches:
     include:
-    - master
+    - main
   paths:
     exclude:
     - docs
