@@ -1,5 +1,4 @@
 parameters:
-  runIntegrationTests: 'false'
   pack: 'true'
 
 steps:
@@ -28,9 +27,6 @@ steps:
       **/*[t|T]est*/*.csproj
       !**/Microsoft.Health.SqlServer.Tests.Integration.csproj
     arguments: '--configuration $(buildConfiguration) --no-build'
-
-- ${{ if eq(parameters.runIntegrationTests, 'true') }}:
-  - template: integration-tests.yml
 
 - ${{ if eq(parameters.pack, 'true') }}:
   - task: DotNetCoreCLI@2

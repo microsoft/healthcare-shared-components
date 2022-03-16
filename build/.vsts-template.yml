@@ -30,9 +30,8 @@ jobs:
     nuGetVersion: $[dependencies.Semver.outputs['SharedComponentsVersioning.GitVersion.SemVer']]
   steps:
   - template: build.yml
-    parameters:
-      runIntegrationTests: 'true'
       pack: 'false'
+  - template: integration-tests.yml
 
 - job: WindowsBuild
   displayName: 'Build (Windows)'
