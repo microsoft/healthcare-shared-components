@@ -9,8 +9,10 @@ variables:
 pr:
   branches:
     include:
-    - master
+    - main
   paths:
+    include:
+    - '*'
     exclude:
     - docs
 

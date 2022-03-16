@@ -5,11 +5,11 @@ parameters:
 
 jobs:
 - job: Semver
-  displayName: 'Update Semantic Version'
+  displayName: 'Determine Semantic Version'
   pool:
     vmImage: 'windows-latest'
   steps:
-  - template: ./update-semver.yml
+  - template: ./gitversion.yml
   - powershell: |
       $buildNumber = "$(GitVersion.SemVer)" -replace "\.", ""
       Write-Host "##vso[build.updatebuildnumber]$buildNumber"
