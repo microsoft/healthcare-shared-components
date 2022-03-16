@@ -22,19 +22,20 @@ steps:
 - script: docker run -e "ACCEPT_EULA=Y" -e "SA_PASSWORD=T3stP@ssw0rd" -p 1433:1433 -d --rm --name sql-server mcr.microsoft.com/mssql/server:2019-latest
   displayName: 'Start SQL Server'
 
-- bash: for i in {1..6}; do docker exec -it sql-server sh -c "/opt/mssql-tools/bin/sqlcmd -S localhost -U SA -P T3stP@ssw0rd -Q 'SELECT * FROM INFORMATION_SCHEMA.TABLES'" && break || sleep 5; done
+- bash: for i in {1..6}; do docker exec sql-server sh -c "/opt/mssql-tools/bin/sqlcmd -S localhost -U SA -P T3stP@ssw0rd -Q 'SELECT * FROM INFORMATION_SCHEMA.TABLES'" && exit 0 || sleep 5; done; exit 1
   displayName: 'Wait for SQL Server'
 
 - task: DotNetCoreCLI@2
   displayName: 'dotnet test'
   inputs:
     command: test
-    projects: '**/*test*/*.csproj'
+    projects: '**/*[t|T]est*/*.csproj'
     arguments: '--configuration $(buildConfiguration) --no-build'
   env:
     TestSqlConnectionString: 'Server=(local);Persist Security Info=False;User ID=sa;Password=T3stP@ssw0rd;MultipleActiveResultSets=False;Connection Timeout=30;TrustServerCertificate=true'
 
 - script: docker stop sql-server
+  condition: always()
   displayName: 'Stop SQL Server'
 
 - ${{ if eq(parameters.pack, 'true') }}:
