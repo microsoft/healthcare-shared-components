@@ -10,11 +10,6 @@ jobs:
     vmImage: 'windows-latest'
   steps:
   - template: ./gitversion.yml
-  - powershell: |
-      $buildNumber = "$(GitVersion.SemVer)" -replace "\.", ""
-      Write-Host "##vso[build.updatebuildnumber]$buildNumber"
-      Write-Host "Updated build number to '$buildNumber'"
-    name: SetBuildVersion
 
 - job: LinuxBuild
   displayName: 'Build (Linux)'
