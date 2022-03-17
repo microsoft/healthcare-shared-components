@@ -1,7 +1,5 @@
 # DESCRIPTION:
 # Builds, tests and packages the solution for the CI build configuration.
-name: $(SourceBranchName)-$(Date:yyyyMMdd)$(Rev:-r)
-
 variables:
   buildConfiguration: 'Release'
   skipNugetSecurityAnalysis: 'true'
