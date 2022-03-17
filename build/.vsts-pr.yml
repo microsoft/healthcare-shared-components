@@ -1,7 +1,5 @@
 # DESCRIPTION:
 # Builds, tests and packages the solution for the CI build configuration.
-name: pr$(System.PullRequest.PullRequestNumber)-$(Date:yyyyMMdd)$(Rev:-r)
-
 variables:
   buildConfiguration: 'Release'
   skipNugetSecurityAnalysis: 'true'

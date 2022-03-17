@@ -23,6 +23,7 @@ steps:
   inputs:
     scanFolder: '$(Build.Repository.LocalPath)'
     outputFormat: 'sarif'
+    suppressionsFile: 'CredScanSuppressions.json'
     verboseOutput: true
 
 - task: SdtReport@2

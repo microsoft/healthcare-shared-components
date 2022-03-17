@@ -23,7 +23,9 @@ steps:
   displayName: 'dotnet test'
   inputs:
     command: test
-    projects: '**/*UnitTests/*.csproj'
+    projects: |
+      **/*[t|T]est*/*.csproj
+      !**/Microsoft.Health.SqlServer.Tests.Integration.csproj
     arguments: '--configuration $(buildConfiguration) --no-build'
 
 - ${{ if eq(parameters.pack, 'true') }}:
