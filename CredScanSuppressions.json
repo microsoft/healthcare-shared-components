@@ -1,0 +1,9 @@
+{
+    "tool": "Credential Scanner",
+    "suppressions": [
+        {
+            "placeholder": "T3stP@ssw0rd",
+            "_justification": "This password is used for accessing a local dockerized SQL Server while testing in build pipelines."
+        }
+    ]
+}

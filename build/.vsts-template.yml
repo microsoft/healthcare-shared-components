@@ -32,6 +32,7 @@ jobs:
   - template: build.yml
     parameters:
       pack: 'false'
+  - template: integration-tests.yml
 
 - job: WindowsBuild
   displayName: 'Build (Windows)'
