@@ -5,7 +5,7 @@
 
 namespace Microsoft.Health.Test.Utilities;
 
-public class Priority
+public static class Priority
 {
     public const string One = "1";
 }

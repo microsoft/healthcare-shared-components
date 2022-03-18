@@ -5,7 +5,7 @@
 
 namespace Microsoft.Health.Test.Utilities;
 
-public class Traits
+public static class Traits
 {
     public const string Priority = "Priority";
     public const string Category = "Category";
