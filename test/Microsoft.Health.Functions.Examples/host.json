@@ -1,0 +1,22 @@
+{
+    "version": "2.0",
+    "logging": {
+        "applicationInsights": {
+            "samplingSettings": {
+                "isEnabled": true,
+                "excludedTypes": "Request"
+            }
+        }
+    },
+    "purgeHistory": {
+        "frequency": "0 0 * * *",
+        "minimumAgeDays": 7,
+        "statuses": [ "Completed" ]
+    },
+    "sorting": {
+        "ascending": false,
+        "retry": {
+            "MaxNumberOfAttempts": 3
+        }
+    }
+}

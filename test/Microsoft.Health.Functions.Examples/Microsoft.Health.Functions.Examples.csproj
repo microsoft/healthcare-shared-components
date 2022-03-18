@@ -1,0 +1,29 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <AzureFunctionsVersion>v4</AzureFunctionsVersion>
+    <Nullable>enable</Nullable>
+    <TargetFramework>net6.0</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Extensions.Options.DataAnnotations" Version="$(SdkPackageVersion)" />
+    <PackageReference Include="Microsoft.NET.Sdk.Functions" Version="4.0.1" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\Microsoft.Health.Operations.Functions\Microsoft.Health.Operations.Functions.csproj" />
+    <ProjectReference Include="..\..\src\Microsoft.Health.Operations\Microsoft.Health.Operations.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="host.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="local.settings.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <CopyToPublishDirectory>Never</CopyToPublishDirectory>
+    </None>
+  </ItemGroup>
+
+</Project>

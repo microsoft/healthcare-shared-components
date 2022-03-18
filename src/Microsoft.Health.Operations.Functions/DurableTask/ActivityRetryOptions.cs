@@ -16,7 +16,7 @@ public class ActivityRetryOptions
     /// <inheritdoc cref="RetryOptions.FirstRetryInterval" />
     [Required]
     [Range(typeof(TimeSpan), "00:00:00.0010000", "10675199.02:48:05.4775807", ConvertValueInInvariantCulture = true, ParseLimitsInInvariantCulture = true)]
-    public TimeSpan FirstRetryInterval { get; set; }
+    public TimeSpan FirstRetryInterval { get; set; } = TimeSpan.FromSeconds(1);
 
     /// <inheritdoc cref="RetryOptions.MaxRetryInterval" />
     public TimeSpan MaxRetryInterval { get; set; } = TimeSpan.FromDays(6); // Default from Durable Functions
@@ -31,7 +31,7 @@ public class ActivityRetryOptions
 
     /// <inheritdoc cref="RetryOptions.MaxNumberOfAttempts" />
     [Range(1, int.MaxValue)]
-    public int MaxNumberOfAttempts { get; set; }
+    public int MaxNumberOfAttempts { get; set; } = 1;
 
     /// <inheritdoc cref="RetryOptions.Handle" />
     public Func<Exception, bool> Handle { get; set; } = e => true;
