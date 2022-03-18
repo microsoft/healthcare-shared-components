@@ -15,4 +15,10 @@
     <ProjectReference Include="..\Microsoft.Health.Test.Common\Microsoft.Health.Test.Utilities.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <None Include="xunit.runner.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None >
+  </ItemGroup>
+
 </Project>
