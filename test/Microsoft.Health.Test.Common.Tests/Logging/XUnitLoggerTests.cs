@@ -3,41 +3,49 @@
 // Licensed under the MIT License (MIT). See LICENSE in the repo root for license information.
 // -------------------------------------------------------------------------------------------------
 
+using System;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using NSubstitute;
 using Xunit;
 using Xunit.Abstractions;
+using Xunit.Sdk;
 
 namespace Microsoft.Health.Test.Utilities.UnitTests.Logging;
 
-public class XUnitLoggerTests : IClassFixture<LoggingFixture>
+public class XUnitLoggerTests
 {
-    private readonly ILogger<LoggingFixture> _logger;
-
-    public XUnitLoggerTests(ITestOutputHelper outputHelper)
+    [Fact]
+    public void GivenXUnitOutputHelper_WhenLogging_ThenWriteLine()
     {
-        _logger = new ServiceCollection()
+        ITestOutputHelper outputHelper = Substitute.For<ITestOutputHelper>();
+
+        ILogger<XUnitLoggerTests> logger = new ServiceCollection()
             .AddLogging(x => x.AddXUnit(outputHelper))
             .BuildServiceProvider()
-            .GetRequiredService<ILogger<LoggingFixture>>();
+            .GetRequiredService<ILogger<XUnitLoggerTests>>();
+
+        logger.LogInformation("Hello World");
+
+        outputHelper
+            .Received(1)
+            .WriteLine(Arg.Is<string>(x => x.Contains("Hello World", StringComparison.Ordinal)));
     }
 
     [Fact]
-    public void GivenXUnitTest_WhenLogging_ThenWriteWithoutIssue()
+    public void GivenXUnitMessageSink_WhenLogging_ThenWriteLine()
     {
-        _logger.LogInformation("Running test");
-    }
-}
+        IMessageSink sink = Substitute.For<IMessageSink>();
 
-public class LoggingFixture
-{
-    public LoggingFixture(IMessageSink sink)
-    {
-        ILogger<LoggingFixture> logger = new ServiceCollection()
+        ILogger<XUnitLoggerTests> logger = new ServiceCollection()
             .AddLogging(x => x.AddXUnit(sink))
             .BuildServiceProvider()
-            .GetRequiredService<ILogger<LoggingFixture>>();
+            .GetRequiredService<ILogger<XUnitLoggerTests>>();
 
-        logger.LogInformation("Starting class fixture");
+        logger.LogInformation("Hello World");
+
+        sink
+            .Received(1)
+            .OnMessage(Arg.Is<DiagnosticMessage>(x => x.Message.Contains("Hello World", StringComparison.Ordinal)));
     }
 }
