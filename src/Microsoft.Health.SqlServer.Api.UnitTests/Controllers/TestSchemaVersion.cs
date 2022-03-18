@@ -7,6 +7,7 @@ namespace Microsoft.Health.SqlServer.Api.UnitTests.Controllers;
 
 public enum TestSchemaVersion
 {
+    Unknown = 0,
     Version1 = 1,
     Version2 = 2,
     Version3 = 3,

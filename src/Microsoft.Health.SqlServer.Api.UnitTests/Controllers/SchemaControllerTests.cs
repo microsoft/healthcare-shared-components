@@ -16,7 +16,7 @@ using Xunit;
 
 namespace Microsoft.Health.SqlServer.Api.UnitTests.Controllers;
 
-public class SchemaControllerTests
+public sealed class SchemaControllerTests : IDisposable
 {
     private readonly SchemaController _schemaController;
     private readonly SchemaInformation _schemaInformation;
@@ -79,5 +79,11 @@ public class SchemaControllerTests
         Assert.Equal(2, firstResult["id"]);
         Assert.Equal("https://localhost/script", firstResult["script"]);
         Assert.Equal("https://localhost/script", firstResult["diff"]);
+    }
+
+    public void Dispose()
+    {
+        _schemaController.Dispose();
+        GC.SuppressFinalize(this);
     }
 }

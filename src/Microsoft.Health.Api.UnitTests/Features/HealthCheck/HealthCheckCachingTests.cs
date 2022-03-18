@@ -36,7 +36,7 @@ public class HealthCheckCachingTests
 
         _options.Expiry = TimeSpan.FromDays(1);
 
-        CachedHealthCheck cache = CreateHealthCheck();
+        using CachedHealthCheck cache = CreateHealthCheck();
 
         HealthCheckResult[] actual = await Task.WhenAll(
             cache.CheckHealthAsync(_context, tokenSource.Token),
@@ -70,7 +70,7 @@ public class HealthCheckCachingTests
         _options.Expiry = TimeSpan.FromSeconds(30);
         _options.RefreshOffset = TimeSpan.FromSeconds(28);
 
-        CachedHealthCheck cache = CreateHealthCheck();
+        using CachedHealthCheck cache = CreateHealthCheck();
 
         // Populate cache
         result = await cache.CheckHealthAsync(_context, tokenSource.Token);
@@ -114,7 +114,7 @@ public class HealthCheckCachingTests
 
         _options.Expiry = TimeSpan.FromSeconds(1);
 
-        CachedHealthCheck cache = CreateHealthCheck();
+        using CachedHealthCheck cache = CreateHealthCheck();
 
         // Mocks the time a second ago so we can call the middleware in the past
         DateTimeOffset futureTime = DateTimeOffset.UtcNow.AddSeconds(-1);
@@ -181,7 +181,7 @@ public class HealthCheckCachingTests
         _options.Expiry = TimeSpan.FromSeconds(expirySeconds);
         _options.RefreshOffset = TimeSpan.FromSeconds(refreshOffsetSeconds);
 
-        CachedHealthCheck cache = CreateHealthCheck();
+        using CachedHealthCheck cache = CreateHealthCheck();
 
         // Populate cache
         result = await cache.CheckHealthAsync(_context, tokenSource.Token);
@@ -236,7 +236,7 @@ public class HealthCheckCachingTests
         _options.Expiry = TimeSpan.FromSeconds(expirySeconds);
         _options.RefreshOffset = TimeSpan.FromSeconds(refreshOffsetSeconds);
 
-        CachedHealthCheck cache = CreateHealthCheck();
+        using CachedHealthCheck cache = CreateHealthCheck();
 
         // Populate cache
         result = await cache.CheckHealthAsync(_context, tokenSource.Token);
@@ -295,7 +295,7 @@ public class HealthCheckCachingTests
         _options.Expiry = TimeSpan.FromSeconds(expirySeconds);
         _options.RefreshOffset = TimeSpan.FromSeconds(refreshOffsetSeconds);
 
-        CachedHealthCheck cache = CreateHealthCheck();
+        using CachedHealthCheck cache = CreateHealthCheck();
 
         // Populate cache
         result = await cache.CheckHealthAsync(_context, tokenSource.Token);
@@ -349,7 +349,7 @@ public class HealthCheckCachingTests
         _options.CacheFailure = cacheFailure;
         _options.Expiry = TimeSpan.FromDays(1);
 
-        CachedHealthCheck cache = CreateHealthCheck();
+        using CachedHealthCheck cache = CreateHealthCheck();
 
         // Populate cache (if caching)
         result = await cache.CheckHealthAsync(_context, tokenSource.Token);
@@ -381,7 +381,7 @@ public class HealthCheckCachingTests
         _options.Expiry = TimeSpan.FromSeconds(60);
         _options.RefreshOffset = TimeSpan.FromSeconds(50);
 
-        CachedHealthCheck cache = CreateHealthCheck();
+        using CachedHealthCheck cache = CreateHealthCheck();
 
         // Populate cache
         result = await cache.CheckHealthAsync(_context, tokenSource.Token);

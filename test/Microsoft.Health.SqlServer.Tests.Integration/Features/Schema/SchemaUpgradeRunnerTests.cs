@@ -3,6 +3,7 @@
 // Licensed under the MIT License (MIT). See LICENSE in the repo root for license information.
 // -------------------------------------------------------------------------------------------------
 
+using System;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Data.SqlClient;
@@ -52,7 +53,7 @@ public class SchemaUpgradeRunnerTests : SqlIntegrationTestBase
     {
         Assert.False(await _schemaDataStore.BaseSchemaExistsAsync(CancellationToken.None));
         var outerException = await Assert.ThrowsAsync<SqlException>(() => _runner.ApplySchemaAsync(1, true, CancellationToken.None));
-        Assert.Contains("Could not find stored procedure 'dbo.UpsertSchemaVersion'.", outerException.Message);
+        Assert.Contains("Could not find stored procedure 'dbo.UpsertSchemaVersion'.", outerException.Message, StringComparison.Ordinal);
     }
 
     [Fact]

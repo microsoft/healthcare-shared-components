@@ -4,6 +4,7 @@
 // -------------------------------------------------------------------------------------------------
 
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
@@ -21,12 +22,14 @@ public class HttpIntegrationTestFixture<TStartup> : IDisposable
 {
     private readonly string _environmentUrl;
     private readonly HttpMessageHandler _messageHandler;
+    private bool _isDisposed;
 
     public HttpIntegrationTestFixture()
         : this(Path.Combine("test"))
     {
     }
 
+    [SuppressMessage("Reliability", "CA2000:Dispose objects before losing scope", Justification = "DelegatingHandler disposes inner handler.")]
     protected HttpIntegrationTestFixture(string targetProjectParentDirectory)
     {
         string environmentUrl = Environment.GetEnvironmentVariable("TestEnvironmentUrl");
@@ -37,7 +40,7 @@ public class HttpIntegrationTestFixture<TStartup> : IDisposable
 
             StartInMemoryServer(targetProjectParentDirectory);
 
-            _messageHandler = Server.CreateHandler();
+            _messageHandler = new SessionMessageHandler(Server.CreateHandler());
             IsUsingInProcTestServer = true;
         }
         else
@@ -47,7 +50,7 @@ public class HttpIntegrationTestFixture<TStartup> : IDisposable
                 environmentUrl = $"{environmentUrl}/";
             }
 
-            _messageHandler = new HttpClientHandler();
+            _messageHandler = new SessionMessageHandler(new HttpClientHandler());
         }
 
         _environmentUrl = environmentUrl;
@@ -70,12 +73,28 @@ public class HttpIntegrationTestFixture<TStartup> : IDisposable
     public HttpClient Client { get; }
 
     public HttpClient CreateHttpClient()
-        => new HttpClient(new SessionMessageHandler(_messageHandler)) { BaseAddress = new Uri(_environmentUrl) };
+        => new HttpClient(_messageHandler) { BaseAddress = new Uri(_environmentUrl) };
 
     public void Dispose()
     {
-        HttpClient.Dispose();
-        Server?.Dispose();
+        // Do not change this code. Put cleanup code in 'Dispose(bool disposing)' method
+        Dispose(disposing: true);
+        GC.SuppressFinalize(this);
+    }
+
+    protected virtual void Dispose(bool disposing)
+    {
+        if (!_isDisposed)
+        {
+            if (disposing)
+            {
+                _messageHandler.Dispose();
+                HttpClient.Dispose();
+                Server?.Dispose();
+            }
+
+            _isDisposed = true;
+        }
     }
 
     /// <summary>
@@ -116,7 +135,7 @@ public class HttpIntegrationTestFixture<TStartup> : IDisposable
             while (directoryInfo.Parent != null);
         }
 
-        throw new Exception($"Project root could not be located for startup type {startupType.FullName}");
+        throw new ArgumentException($"Project root could not be located for startup type {startupType.FullName}", nameof(startupType));
     }
 
     private void StartInMemoryServer(string targetProjectParentDirectory)
