@@ -7,19 +7,15 @@ using System;
 using EnsureThat;
 using Microsoft.Azure.Functions.Extensions.DependencyInjection;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Health.Functions.Extensions;
 
 namespace Microsoft.Health.Operations.Functions;
 
 /// <summary>
-/// A <see langword="static"/> class for utilities for interacting with the Azure Functions host.
+/// A <see langword="static"/> class with functions host utilities that can be used on start up.
 /// </summary>
-public static class AzureFunctionsJobHost
+public static class IFunctionsHostBuilderExtensions
 {
-    /// <summary>
-    /// The name of the configuration section in which all user-specified configurations reside.
-    /// </summary>
-    public const string SectionName = "AzureFunctionsJobHost";
-
     /// <summary>
     /// Gets the user configuration from the <see cref="IFunctionsHostBuilder"/> when configuring services.
     /// </summary>
@@ -31,5 +27,5 @@ public static class AzureFunctionsJobHost
             .IsNotNull(functionsHostBuilder)
             .GetContext()
             .Configuration
-            .GetSection(SectionName);
+            .GetSection(AzureFunctionsJobHost.SectionName);
 }

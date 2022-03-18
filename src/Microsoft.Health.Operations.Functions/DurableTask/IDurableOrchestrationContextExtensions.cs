@@ -1,0 +1,61 @@
+﻿// -------------------------------------------------------------------------------------------------
+// Copyright (c) Microsoft Corporation. All rights reserved.
+// Licensed under the MIT License (MIT). See LICENSE in the repo root for license information.
+// -------------------------------------------------------------------------------------------------
+
+using System;
+using System.Globalization;
+using System.Threading.Tasks;
+using EnsureThat;
+using Microsoft.Azure.WebJobs.Extensions.DurableTask;
+using Microsoft.Health.Dicom.Operations.Management;
+
+namespace Microsoft.Health.Operations.Functions.DurableTask;
+
+/// <summary>
+/// Provides a set of <see langword="static"/> utility methods for <see cref="IDurableOrchestrationContext"/> objects.
+/// </summary>
+public static class IDurableOrchestrationContextExtensions
+{
+    /// <summary>
+    /// Throws a <see cref="FormatException"/> if the <see cref="IDurableOrchestrationContext.InstanceId"/>
+    /// cannot be parsed as an operation ID based on <see cref="OperationId.FormatSpecifier"/>.
+    /// </summary>
+    /// <param name="context">An orchestration context.</param>
+    /// <exception cref="ArgumentNullException"><paramref name="context"/> is <see langword="null"/>.</exception>
+    /// <exception cref="FormatException">
+    /// The <see cref="IDurableOrchestrationContext.InstanceId"/> cannot be parsed as an operation ID.
+    /// </exception>
+    public static void ThrowIfInvalidInstanceId(this IDurableOrchestrationContext context)
+    {
+        EnsureArg.IsNotNull(context, nameof(context));
+        if (!Guid.TryParseExact(context.InstanceId, OperationId.FormatSpecifier, out Guid _))
+        {
+            throw new FormatException(
+                string.Format(CultureInfo.CurrentCulture, Resources.InvalidInstanceId, context.InstanceId));
+        }
+    }
+
+    /// <summary>
+    /// Asynchronously gets the date and time that the orchestration instance was created in UTC.
+    /// </summary>
+    /// <param name="context">An orchestration context.</param>
+    /// <param name="retryOptions">Optional settings for allowing multiple attempts.</param>
+    /// <returns>
+    /// A task that represents the asynchronous retrieval operation. The value of the <see cref="Task{TResult}.Result"/>
+    /// property represents the date and time that the orchestration was created in UTC.
+    /// </returns>
+    public static async Task<DateTime> GetCreatedTimeAsync(this IDurableOrchestrationContext context, RetryOptions? retryOptions = null)
+    {
+        // CreatedTime is not preserved between restarts from ContinueAsNew,
+        // so this value can be preserved in the input or custom status
+        EnsureArg.IsNotNull(context, nameof(context));
+
+        var input = new GetInstanceStatusInput(context.InstanceId, showHistory: false, showHistoryOutput: false, showInput: false);
+        DurableOrchestrationStatus status = retryOptions is not null
+            ? await context.CallActivityWithRetryAsync<DurableOrchestrationStatus>(nameof(DurableOrchestrationClientActivity.GetInstanceStatusAsync), retryOptions, input)
+            : await context.CallActivityAsync<DurableOrchestrationStatus>(nameof(DurableOrchestrationClientActivity.GetInstanceStatusAsync), input);
+
+        return status.CreatedTime;
+    }
+}
