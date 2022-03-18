@@ -3,6 +3,7 @@
 // Licensed under the MIT License (MIT). See LICENSE in the repo root for license information.
 // -------------------------------------------------------------------------------------------------
 
+using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using EnsureThat;
@@ -31,26 +32,24 @@ public class DistributedSorter
         logger = context.CreateReplaySafeLogger(logger);
 
         SortingCheckpoint checkpoint = context.GetInput<SortingCheckpoint>();
-        if (checkpoint.Index == 1)
+        if (checkpoint.SortedLength == 1)
         {
             logger.LogInformation("Sorting [{Values}]", string.Join(", ", checkpoint.Values));
         }
 
-        if (checkpoint.Index < checkpoint.Values.Length)
+        if (checkpoint.SortedLength < checkpoint.Values.Length)
         {
-            int j = await context.CallActivityWithRetryAsync<int>(
-                nameof(FindInsertionIndexAsync),
+            int[] sorted = await context.CallActivityWithRetryAsync<int[]>(
+                nameof(SortRange),
                 _options.Retry,
-                new SortingInput { Index = checkpoint.Index, Values = checkpoint.Values });
-
-            Swap(checkpoint.Values, checkpoint.Index, j);
+                checkpoint.Values[0..(checkpoint.SortedLength + 1)]);
 
             context.ContinueAsNew(
                 new SortingCheckpoint
                 {
                     CreatedTime = checkpoint.CreatedTime ?? await context.GetCreatedTimeAsync(_options.Retry),
-                    Index = checkpoint.Index + 1,
-                    Values = checkpoint.Values
+                    SortedLength = checkpoint.SortedLength + 1,
+                    Values = Concat(sorted, checkpoint.Values[(checkpoint.SortedLength + 1)..])
                 });
         }
         else
@@ -61,31 +60,28 @@ public class DistributedSorter
         return checkpoint.Values;
     }
 
-    [FunctionName(nameof(FindInsertionIndexAsync))]
-    public Task<int> FindInsertionIndexAsync([ActivityTrigger] SortingInput input, ILogger logger)
+    [FunctionName(nameof(SortRange))]
+    public Task<int[]> SortRange([ActivityTrigger] int[] values, ILogger logger)
     {
-        EnsureArg.IsNotNull(input, nameof(input));
+        EnsureArg.IsNotNull(values, nameof(values));
         EnsureArg.IsNotNull(logger, nameof(logger));
 
         IComparer<int> comparer = _options.GetComparer();
-        int first = input.Values[input.Index];
 
-        int j = input.Index - 1;
-        while (j >= 0)
+        for (int j = values.Length - 1; j > 0 && comparer.Compare(values[j - 1], values[j]) > 0; j--)
         {
-            int second = input.Values[j--];
-            if (comparer.Compare(first, second) >= 0)
-                break;
+            (values[j - 1], values[j]) = (values[j], values[j - 1]);
         }
 
-        logger.LogInformation("Swapping index {i} with index {j}", input.Index, j);
-        return Task.FromResult(j);
+        return Task.FromResult(values);
     }
 
-    private static void Swap<T>(T[] values, int i, int j)
+    private static T[] Concat<T>(T[] left, T[] right)
     {
-        T tmp = values[i];
-        values[i] = values[j];
-        values[j] = tmp;
+        var result = new T[left.Length + right.Length];
+        Array.Copy(left, result, left.Length);
+        Array.Copy(right, 0, result, left.Length, right.Length);
+
+        return result;
     }
 }

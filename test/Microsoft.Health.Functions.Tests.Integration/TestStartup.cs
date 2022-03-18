@@ -13,9 +13,17 @@ using Microsoft.Health.Operations.Functions.DurableTask;
 
 namespace Microsoft.Health.Functions.Tests.Integration;
 
+[SuppressMessage("Performance", "CA1822:Mark members as static", Justification = "Used by test framework.")]
 public class TestStartup
 {
-    [SuppressMessage("Performance", "CA1822:Mark members as static", Justification = "Used by test framework.")]
+    public void ConfigureHost(IHostBuilder hostBuilder)
+    {
+        hostBuilder.ConfigureAppConfiguration(b => b
+            .AddJsonFile("appsettings.json")
+            .AddJsonFile("appsettings.Development.json", optional: true)
+            .AddEnvironmentVariables());
+    }
+
     public void ConfigureServices(IServiceCollection services, HostBuilderContext context)
     {
         services.AddDurableClientFactory(x => context.Configuration.GetSection("DurableTask").Bind(x));

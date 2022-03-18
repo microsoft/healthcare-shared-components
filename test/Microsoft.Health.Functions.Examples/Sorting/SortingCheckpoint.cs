@@ -13,7 +13,7 @@ internal class SortingCheckpoint : SortingInput, IOperationCheckpoint
 {
     public DateTime? CreatedTime { get; set; }
 
-    public int PercentComplete => Values.Length == 0 ? 100 : (int)((double)Index / Values.Length * 100);
+    public int PercentComplete => Values.Length == 0 ? 100 : (int)((double)SortedLength / Values.Length * 100);
 
     public IReadOnlyCollection<string>? ResourceIds => null;
 }

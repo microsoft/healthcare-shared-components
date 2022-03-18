@@ -5,6 +5,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Reflection;
 using EnsureThat;
 using Microsoft.Azure.Functions.Extensions.DependencyInjection;
@@ -37,7 +38,7 @@ public static class AzureFunctionsJobHost
     public static IHost Create<T>(Action<HostBuilderContext, IWebJobsBuilder>? configure = null)
         where T : FunctionsStartup, new()
         => CreateBuilder(
-                typeof(T).Assembly.Location,
+                Path.GetDirectoryName(typeof(T).Assembly.Location)!,
                 (c, b) =>
                 {
                     b.UseWebJobsStartup(
@@ -55,7 +56,7 @@ public static class AzureFunctionsJobHost
     /// <param name="configure">An optional delegate for configuring the host further, like adding extensions.</param>
     /// <returns>An <see cref="IHost"/> that contains the <see cref="IJobHost"/>.</returns>
     public static IHost Create(Action<HostBuilderContext, IWebJobsBuilder>? configure = null)
-        => Create(Assembly.GetExecutingAssembly().Location, configure);
+        => Create(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)!, configure);
 
     /// <summary>
     /// Creates an <see cref="IHost"/> instance that encapsulates the Azure Functions job host with no custom start-up class.

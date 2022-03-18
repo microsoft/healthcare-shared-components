@@ -13,5 +13,5 @@ public class SortingInput
     [SuppressMessage("Performance", "CA1819:Properties should not return arrays", Justification = "Used as input to orchestrastion.")]
     public int[] Values { get; set; } = Array.Empty<int>();
 
-    public int Index { get; set; } = 1;
+    public int SortedLength { get; set; } = 1;
 }

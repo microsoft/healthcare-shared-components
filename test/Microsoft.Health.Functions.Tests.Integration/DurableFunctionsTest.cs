@@ -3,6 +3,7 @@
 // Licensed under the MIT License (MIT). See LICENSE in the repo root for license information.
 // -------------------------------------------------------------------------------------------------
 
+using System.Linq;
 using System.Threading.Tasks;
 using EnsureThat;
 using Microsoft.Azure.WebJobs.Extensions.DurableTask;
@@ -13,19 +14,19 @@ using Xunit;
 
 namespace Microsoft.Health.Functions.Tests.Integration;
 
-public class DistributedSorterTests : IClassFixture<WebJobsTestFixture<Startup>>
+public class DurableFunctionsTest : IClassFixture<WebJobsTestFixture<Startup>>
 {
     private readonly IDurableClient _durableClient;
 
-    public DistributedSorterTests(IDurableClientFactory factory)
+    public DurableFunctionsTest(IDurableClientFactory factory)
         => _durableClient = EnsureArg.IsNotNull(factory, nameof(factory)).CreateClient();
 
     [Fact]
-    public async Task GivenUnsortedList_WhenSortingViaOrchestration_ThenSuccessfullySort()
+    public async Task GivenOrchestration_WhenStarting_ThenCompleteSuccessfully()
     {
         string instanceId = await _durableClient.StartNewAsync(
             nameof(DistributedSorter.InsertionSortAsync),
-            new SortingInput { Values = new int[] { 3, 4, 1, 5, 2 } });
+            new SortingInput { Values = new int[] { 3, 4, 1, 5, 4, 2 } });
 
         DurableOrchestrationStatus status = await _durableClient.GetStatusAsync(instanceId);
         while (IsRunning(status.RuntimeStatus))
@@ -35,6 +36,12 @@ public class DistributedSorterTests : IClassFixture<WebJobsTestFixture<Startup>>
         }
 
         Assert.Equal(OrchestrationRuntimeStatus.Completed, status.RuntimeStatus);
+
+        int[] expected = new int[] { 5, 4, 4, 3, 2, 1 };
+        int[]? actual = status.Output.ToObject<int[]>();
+
+        Assert.NotNull(actual);
+        Assert.True(expected.SequenceEqual(actual!));
     }
 
     private static bool IsRunning(OrchestrationRuntimeStatus runtimeStatus)
