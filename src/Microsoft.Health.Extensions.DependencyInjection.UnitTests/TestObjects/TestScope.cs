@@ -7,7 +7,7 @@ using System.Collections.Generic;
 
 namespace Microsoft.Health.Extensions.DependencyInjection.UnitTests.TestObjects;
 
-public class TestScope : IScoped<IList<string>>
+public sealed class TestScope : IScoped<IList<string>>
 {
     public TestScope(IList<string> value)
     {
@@ -17,6 +17,5 @@ public class TestScope : IScoped<IList<string>>
     public IList<string> Value { get; }
 
     public void Dispose()
-    {
-    }
+    { }
 }

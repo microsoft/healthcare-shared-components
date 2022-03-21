@@ -9,6 +9,7 @@ using System.Net;
 using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
+using EnsureThat;
 using Microsoft.Health.SqlServer.Features.Schema;
 using Microsoft.Health.SqlServer.Features.Schema.Model;
 using Microsoft.Health.SqlServer.Tests.E2E.Rest;
@@ -25,7 +26,7 @@ public class SchemaTests : IClassFixture<HttpIntegrationTestFixture<Startup>>
 
     public SchemaTests(HttpIntegrationTestFixture<Startup> fixture)
     {
-        _client = fixture.HttpClient;
+        _client = EnsureArg.IsNotNull(fixture, nameof(fixture)).HttpClient;
     }
 
     public static IEnumerable<object[]> Data =>
@@ -45,7 +46,7 @@ public class SchemaTests : IClassFixture<HttpIntegrationTestFixture<Startup>>
     [Fact]
     public async Task GivenAServerThatHasSchemas_WhenRequestingAvailable_JsonShouldBeReturned()
     {
-        var request = new HttpRequestMessage
+        using var request = new HttpRequestMessage
         {
             Method = HttpMethod.Get,
             RequestUri = new Uri(_client.BaseAddress, "_schema/versions"),
@@ -78,7 +79,7 @@ public class SchemaTests : IClassFixture<HttpIntegrationTestFixture<Startup>>
     [Fact(Skip = "Deployment steps to refactor to include environmentUrl")]
     public async Task WhenRequestingSchema_GivenGetMethodAndCompatibilityPathAndInstanceSchemaTableIsEmpty_TheServerShouldReturnsNotFound()
     {
-        var request = new HttpRequestMessage
+        using var request = new HttpRequestMessage
         {
             Method = HttpMethod.Get,
             RequestUri = new Uri(_client.BaseAddress, "_schema/compatibility"),
@@ -161,7 +162,7 @@ public class SchemaTests : IClassFixture<HttpIntegrationTestFixture<Startup>>
     [Theory]
     public async Task GivenSchemaIdFound_WhenRequestingScript_TheServerShouldReturnScript(string path)
     {
-        var request = new HttpRequestMessage
+        using var request = new HttpRequestMessage
         {
             Method = HttpMethod.Get,
             RequestUri = new Uri(_client.BaseAddress, path),
@@ -185,7 +186,7 @@ public class SchemaTests : IClassFixture<HttpIntegrationTestFixture<Startup>>
 
     private async Task<HttpResponseMessage> SendAndVerifyStatusCode(HttpMethod httpMethod, string path, HttpStatusCode expectedStatusCode)
     {
-        var request = new HttpRequestMessage
+        using var request = new HttpRequestMessage
         {
             Method = httpMethod,
             RequestUri = new Uri(_client.BaseAddress, path),

@@ -4,6 +4,7 @@
 // -------------------------------------------------------------------------------------------------
 
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Text;
 using System.Threading;
@@ -50,6 +51,7 @@ public class MonitoredStreamTests
     }
 
     [Fact]
+    [SuppressMessage("Performance", "CA1835:Prefer the 'Memory'-based overloads for 'ReadAsync' and 'WriteAsync'", Justification = "Test different overloads")]
     public async Task BillingResponseLogMiddleware_MonitoredStream_WriteAsync()
     {
         byte[] bytes = Encoding.UTF8.GetBytes("This is a string");
@@ -129,10 +131,5 @@ public class MonitoredStreamTests
         monitoredStream.Dispose();
         Assert.Throws<ObjectDisposedException>(() => { monitoredStream.WriteByte(1); });
         Assert.Throws<ObjectDisposedException>(() => { memoryStream.WriteByte(1); });
-    }
-
-    private async Task WriteToStream(Stream stream, byte[] bytes)
-    {
-        await stream.WriteAsync(bytes);
     }
 }

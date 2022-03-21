@@ -1,5 +1,5 @@
 
-# Healthcare Shared Components
+# Health Care Shared Components
 [![Build Status](https://microsofthealthoss.visualstudio.com/SharedComponents/_apis/build/status/CI-Build-OSS?branchName=main)](https://microsofthealthoss.visualstudio.com/SharedComponents/_build/latest?definitionId=83&branchName=main)
 
 This repository is a collection of components used by the Microsoft Health Care team which develops services such as

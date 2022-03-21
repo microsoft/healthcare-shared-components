@@ -16,7 +16,7 @@ using NSubstitute.Core;
 
 namespace Microsoft.Health.Test.Utilities;
 
-public class Mock
+public static class Mock
 {
     private static readonly ConcurrentDictionary<string, SemaphoreSlim> StaticPropertyConcurrency = new ConcurrentDictionary<string, SemaphoreSlim>();
     private const int MaxWaitTimeInSeconds = 5;

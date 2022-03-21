@@ -25,21 +25,23 @@ using Xunit;
 
 namespace Microsoft.Health.SqlServer.Api.UnitTests.Features.Filters;
 
-public class HttpExceptionFilterTests
+public sealed class HttpExceptionFilterTests : IDisposable
 {
+    private readonly SchemaController _controller;
     private readonly ActionExecutedContext _context;
 
     public HttpExceptionFilterTests()
     {
+        _controller = new SchemaController(
+            new SchemaInformation((int)TestSchemaVersion.Version1, (int)TestSchemaVersion.Version3),
+            Substitute.For<IScriptProvider>(),
+            Substitute.For<IUrlHelperFactory>(),
+            Substitute.For<IMediator>(),
+            NullLogger<SchemaController>.Instance);
         _context = new ActionExecutedContext(
             new ActionContext(new DefaultHttpContext(), new RouteData(), new ActionDescriptor()),
             new List<IFilterMetadata>(),
-            new SchemaController(
-                new SchemaInformation((int)TestSchemaVersion.Version1, (int)TestSchemaVersion.Version3),
-                Substitute.For<IScriptProvider>(),
-                Substitute.For<IUrlHelperFactory>(),
-                Substitute.For<IMediator>(),
-                NullLogger<SchemaController>.Instance));
+            _controller);
     }
 
     [Fact]
@@ -100,5 +102,11 @@ public class HttpExceptionFilterTests
 
         Assert.NotNull(result);
         Assert.Equal((int)HttpStatusCode.InternalServerError, result.StatusCode);
+    }
+
+    public void Dispose()
+    {
+        _controller.Dispose();
+        GC.SuppressFinalize(this);
     }
 }

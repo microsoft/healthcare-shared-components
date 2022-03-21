@@ -7,15 +7,11 @@ using System;
 
 namespace Microsoft.Health.Extensions.DependencyInjection.UnitTests.TestObjects;
 
-public class TestDisposableObjectWithInterface : IEquatable<string>, IDisposable
+public sealed class TestDisposableObjectWithInterface : IEquatable<string>, IDisposable
 {
     public bool Equals(string other)
-    {
-        throw new NotImplementedException();
-    }
+        => false;
 
     public void Dispose()
-    {
-        throw new NotImplementedException();
-    }
+    { }
 }

@@ -16,7 +16,7 @@ using Xunit;
 
 namespace Microsoft.Health.SqlServer.Api.UnitTests.Controllers;
 
-public class SchemaControllerTests
+public sealed class SchemaControllerTests : IDisposable
 {
     private readonly SchemaController _schemaController;
     private readonly SchemaInformation _schemaInformation;
@@ -46,7 +46,7 @@ public class SchemaControllerTests
         Assert.NotNull(jsonResult);
 
         var jArrayResult = JArray.FromObject(jsonResult.Value);
-        Assert.Equal(Enum.GetNames(typeof(TestSchemaVersion)).Length, jArrayResult.Count);
+        Assert.Equal(Enum.GetNames(typeof(TestSchemaVersion)).Length - 1, jArrayResult.Count);
 
         JToken firstResult = jArrayResult.First;
         Assert.Equal(1, firstResult["id"]);
@@ -73,11 +73,17 @@ public class SchemaControllerTests
         Assert.NotNull(jsonResult);
 
         var jArrayResult = JArray.FromObject(jsonResult.Value);
-        Assert.Equal(Enum.GetNames(typeof(TestSchemaVersion)).Length - 1, jArrayResult.Count);
+        Assert.Equal(Enum.GetNames(typeof(TestSchemaVersion)).Length - 2, jArrayResult.Count);
 
         JToken firstResult = jArrayResult.First;
         Assert.Equal(2, firstResult["id"]);
         Assert.Equal("https://localhost/script", firstResult["script"]);
         Assert.Equal("https://localhost/script", firstResult["diff"]);
+    }
+
+    public void Dispose()
+    {
+        _schemaController.Dispose();
+        GC.SuppressFinalize(this);
     }
 }

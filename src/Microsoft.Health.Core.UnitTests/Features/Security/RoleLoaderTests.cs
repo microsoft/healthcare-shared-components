@@ -36,7 +36,7 @@ public class RoleLoaderTests
                     {
                         name = string.Empty,
                         dataActions = new[] { "*" },
-                        notDataActions = new string[] { },
+                        notDataActions = Array.Empty<string>(),
                         scopes = new[] { "/" },
                     },
                 },
@@ -53,7 +53,7 @@ public class RoleLoaderTests
                     new
                     {
                         name = "abc",
-                        notDataActions = new string[] { },
+                        notDataActions = Array.Empty<string>(),
                         scopes = new[] { "/" },
                     },
                 },
@@ -89,7 +89,7 @@ public class RoleLoaderTests
                     {
                         name = "abc",
                         dataActions = new[] { "*" },
-                        notDataActions = new string[] { },
+                        notDataActions = Array.Empty<string>(),
                     },
                 },
             },
@@ -106,7 +106,7 @@ public class RoleLoaderTests
                     {
                         name = "abc",
                         dataActions = new[] { "*" },
-                        notDataActions = new string[] { },
+                        notDataActions = Array.Empty<string>(),
                         scopes = new[] { "/a" },
                     },
                 },
@@ -124,7 +124,7 @@ public class RoleLoaderTests
                     {
                         name = "abc",
                         dataActions = new[] { "*" },
-                        notDataActions = new string[] { },
+                        notDataActions = Array.Empty<string>(),
                         scopes = new[] { "/", "/" },
                     },
                 },
@@ -142,14 +142,14 @@ public class RoleLoaderTests
                     {
                         name = "abc",
                         dataActions = new[] { "*" },
-                        notDataActions = new string[] { },
+                        notDataActions = Array.Empty<string>(),
                         scopes = new[] { "/" },
                     },
                     new
                     {
                         name = "abc",
                         dataActions = new[] { "*" },
-                        notDataActions = new string[] { },
+                        notDataActions = Array.Empty<string>(),
                         scopes = new[] { "/" },
                     },
                 },
@@ -168,7 +168,7 @@ public class RoleLoaderTests
                 {
                     name = "x",
                     dataActions = new[] { "*" },
-                    notDataActions = new string[] { },
+                    notDataActions = Array.Empty<string>(),
                     scopes = new[] { "/" },
                 },
             },
@@ -194,8 +194,8 @@ public class RoleLoaderTests
                 new
                 {
                     name = $"role{a}",
-                    dataActions = new[] { char.ToLower(a.ToString()[0]) + a.ToString()[1..] },
-                    notDataActions = new string[] { },
+                    dataActions = new[] { char.ToLowerInvariant(a.ToString()[0]) + a.ToString()[1..] },
+                    notDataActions = Array.Empty<string>(),
                     scopes = new[] { "/" },
                 }).ToArray(),
         };
@@ -217,11 +217,13 @@ public class RoleLoaderTests
 
     private static async Task<AuthorizationConfiguration<DataActions>> LoadAsync(object roles)
     {
+        using var result = new MemoryStream(Encoding.UTF8.GetBytes(JObject.FromObject(roles).ToString()));
+
         IHostEnvironment hostEnvironment = Substitute.For<IHostEnvironment>();
         hostEnvironment.ContentRootFileProvider
             .GetFileInfo("roles.json")
             .CreateReadStream()
-            .Returns(new MemoryStream(Encoding.UTF8.GetBytes(JObject.FromObject(roles).ToString())));
+            .Returns(result);
 
         var authConfig = new AuthorizationConfiguration<DataActions>();
         var roleLoader = new SamplesRoleLoader(authConfig, hostEnvironment);

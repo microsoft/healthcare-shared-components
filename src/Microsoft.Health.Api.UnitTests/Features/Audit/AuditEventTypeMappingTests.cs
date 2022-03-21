@@ -5,6 +5,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
@@ -154,6 +155,8 @@ public class AuditEventTypeMappingTests : IAsyncLifetime
         Assert.ThrowsAsync<DuplicateActionForAuditEventException>(() => ((IHostedService)eventTypeMapping).StartAsync(CancellationToken.None));
     }
 
+    [SuppressMessage("Performance", "CA1812:Avoid uninstantiated internal classes", Justification = "Class metadata is used.")]
+    [SuppressMessage("Performance", "CA1822:Mark members as static", Justification = "Controller actions should be instance members.")]
     private class MockController : Controller
     {
         [AllowAnonymous]

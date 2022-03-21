@@ -10,19 +10,31 @@
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <HighEntropyVA>true</HighEntropyVA>
     <IsPackable>true</IsPackable>
-    <IsPackable Condition="$(MSBuildProjectName.Contains('Test'))">false</IsPackable>
     <LangVersion>latest</LangVersion>
+    <LtsVersion>net6.0</LtsVersion>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <Product>Microsoft Health</Product>
     <PublishRepositoryUrl>true</PublishRepositoryUrl>
-    <SupportedFrameworks>net5.0;net6.0</SupportedFrameworks>
+    <RootDirectory>$(MSBuildThisFileDirectory)</RootDirectory>
+    <SupportedFrameworks>net5.0;$(LtsVersion)</SupportedFrameworks>
     <TargetLatestRuntimePatch>true</TargetLatestRuntimePatch>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <WarningsAsErrors />
   </PropertyGroup>
 
   <Choose>
-    <When Condition="'$(TargetFramework)' == 'net6.0'">
+    <When Condition="$(MSBuildProjectName.Contains('Test'))">
+      <PropertyGroup>
+        <IsPackable>false</IsPackable>
+      </PropertyGroup>
+      <ItemGroup>
+        <Compile Include="$(RootDirectory)GlobalSuppressions.Test.cs" Visible="false" />
+      </ItemGroup>
+    </When>
+  </Choose>
+
+  <Choose>
+    <When Condition="'$(TargetFramework)' == '$(LtsVersion)'">
       <PropertyGroup>
         <SdkPackageVersion>6.0.0</SdkPackageVersion>
       </PropertyGroup>
@@ -39,7 +51,7 @@
   </ItemGroup>
 
   <Choose>
-    <When Condition="'$(MSBuildProjectName)' != 'Microsoft.Health.Extensions.BuildTimeCodeGenerator' AND !$(MSBuildProjectName.Contains('Test'))">
+    <When Condition="'$(MSBuildProjectName)' != 'Microsoft.Health.Extensions.BuildTimeCodeGenerator'">
       <PropertyGroup>
         <AnalysisLevel>latest-All</AnalysisLevel>
         <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
