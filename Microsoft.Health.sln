@@ -18,6 +18,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		.editorconfig = .editorconfig
 		Directory.Build.props = Directory.Build.props
 		global.json = global.json
+		GlobalSuppressions.Test.cs = GlobalSuppressions.Test.cs
 	EndProjectSection
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Health.Abstractions", "src\Microsoft.Health.Abstractions\Microsoft.Health.Abstractions.csproj", "{E0CD7A0A-116D-4612-83BE-0DE036DADDF1}"
@@ -416,7 +417,7 @@ Global
 		{100FA4FC-C429-46EC-9B43-4D3644011D80} = {CCD9FF99-E177-446E-B9E5-9F570FD96A34}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
-		SolutionGuid = {562bbd07-1817-4af5-ab66-8837cf849248}
 		RESX_SortFileContentOnSave = True
+		SolutionGuid = {562bbd07-1817-4af5-ab66-8837cf849248}
 	EndGlobalSection
 EndGlobal

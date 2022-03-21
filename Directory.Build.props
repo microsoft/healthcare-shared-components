@@ -11,10 +11,12 @@
     <HighEntropyVA>true</HighEntropyVA>
     <IsPackable>true</IsPackable>
     <LangVersion>latest</LangVersion>
+    <LtsVersion>net6.0</LtsVersion>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <Product>Microsoft Health</Product>
     <PublishRepositoryUrl>true</PublishRepositoryUrl>
-    <SupportedFrameworks>net5.0;net6.0</SupportedFrameworks>
+    <RootDirectory>$(MSBuildThisFileDirectory)</RootDirectory>
+    <SupportedFrameworks>net5.0;$(LtsVersion)</SupportedFrameworks>
     <TargetLatestRuntimePatch>true</TargetLatestRuntimePatch>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <WarningsAsErrors />
@@ -26,7 +28,18 @@
   </PropertyGroup>
 
   <Choose>
-    <When Condition="'$(TargetFramework)' == 'net6.0'">
+    <When Condition="$(MSBuildProjectName.Contains('Test'))">
+      <PropertyGroup>
+        <IsPackable>false</IsPackable>
+      </PropertyGroup>
+      <ItemGroup>
+        <Compile Include="$(RootDirectory)GlobalSuppressions.Test.cs" Visible="false" />
+      </ItemGroup>
+    </When>
+  </Choose>
+
+  <Choose>
+    <When Condition="'$(TargetFramework)' == '$(LtsVersion)'">
       <PropertyGroup>
         <SdkPackageVersion>6.0.0</SdkPackageVersion>
       </PropertyGroup>

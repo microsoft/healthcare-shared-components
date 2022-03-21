@@ -5,6 +5,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Text;
 using Microsoft.AspNetCore.Http;
@@ -18,11 +19,12 @@ using Xunit;
 
 namespace Microsoft.Health.Api.UnitTests.Features.Audit;
 
+[SuppressMessage("Security", "CA5394:Do not use insecure randomness", Justification = "Values do not need to be cryptographically secure.")]
 public class AuditHeaderReaderTests
 {
     private readonly HttpContext _httpContext;
     private readonly IOptions<AuditConfiguration> _optionsAuditConfiguration;
-    private static readonly string _customAuditHeaderPrefix = "X-MS-AZUREHEALTH-AUDIT-";
+    private const string CustomAuditHeaderPrefix = "X-MS-AZUREHEALTH-AUDIT-";
 
     public AuditHeaderReaderTests()
     {
@@ -30,7 +32,7 @@ public class AuditHeaderReaderTests
 
         var auditConfiguration = new AuditConfiguration()
         {
-            CustomAuditHeaderPrefix = _customAuditHeaderPrefix,
+            CustomAuditHeaderPrefix = CustomAuditHeaderPrefix,
         };
 
         _optionsAuditConfiguration = Substitute.For<IOptions<AuditConfiguration>>();
@@ -59,6 +61,7 @@ public class AuditHeaderReaderTests
 
     [Theory]
     [MemberData(nameof(GenerateRandomHeaders), 10, -1)]
+    [SuppressMessage("Design", "CA1062:Validate arguments of public methods", Justification = "Headers are not null.")]
     public void GivenMixedHeaders_WhenHeadersRead_ThenOnlyCorrectCustomHeadersReturn(IReadOnlyDictionary<string, string> headers, int expectedCustomHeaderCount)
     {
         var headerReader = new AuditHeaderReader(_optionsAuditConfiguration);
@@ -179,7 +182,7 @@ public class AuditHeaderReaderTests
             var headers = new Dictionary<string, string>();
             for (var headerIndex = 0; headerIndex < numberOfAuditHeaders; headerIndex++)
             {
-                var headerName = new StringBuilder(_customAuditHeaderPrefix);
+                var headerName = new StringBuilder(CustomAuditHeaderPrefix);
                 headerName.Append(GenerateRandomString(20));
                 headers[headerName.ToString()] = GenerateRandomString(random.Next(1, 2048));
             }

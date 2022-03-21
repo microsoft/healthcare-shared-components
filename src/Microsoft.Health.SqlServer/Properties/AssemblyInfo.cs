@@ -9,5 +9,6 @@ using System.Runtime.CompilerServices;
 
 [assembly: CLSCompliant(false)]
 [assembly: InternalsVisibleTo("Microsoft.Health.SqlServer.UnitTests")]
+[assembly: InternalsVisibleTo("Microsoft.Health.SqlServer.Tests.Integration")]
 [assembly: InternalsVisibleTo("DynamicProxyGenAssembly2")]
 [assembly: NeutralResourcesLanguage("en-us")]

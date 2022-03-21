@@ -12,11 +12,11 @@ namespace Microsoft.Health.SqlServer.UnitTests.Features.Schema;
 
 public class ScriptProviderTests
 {
-    private readonly ScriptProvider<TestSchemaVersionEnum> _scriptProvider;
+    private readonly ScriptProvider<TestSchemaVersion> _scriptProvider;
 
     public ScriptProviderTests()
     {
-        _scriptProvider = new ScriptProvider<TestSchemaVersionEnum>();
+        _scriptProvider = new ScriptProvider<TestSchemaVersion>();
     }
 
     [Fact]
