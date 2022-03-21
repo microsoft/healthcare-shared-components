@@ -11,4 +11,4 @@
 using System.Diagnostics.CodeAnalysis;
 
 [assembly: SuppressMessage("Design", "CA1014: Mark assemblies with CLSCompliantAttribute", Justification = "Test assemblies are not meant for consumption.")]
-[assembly: SuppressMessage("Naming", "CA1707:Identifiers should not contain underscores", Justification = "Test name pattern uses underscore-separated words Given, When, Then")]
+[assembly: SuppressMessage("Naming", "CA1707:Identifiers should not contain underscores", Justification = "Test name pattern uses underscore-separated words 'Given', 'When', and 'Then.'")]
