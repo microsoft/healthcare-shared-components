@@ -4,7 +4,9 @@
 // -------------------------------------------------------------------------------------------------
 
 using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
+using DurableTask.Core;
 using EnsureThat;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Extensions.DurableTask;
@@ -20,7 +22,8 @@ namespace Microsoft.Health.Operations.Functions.Management;
 /// </summary>
 public sealed class PurgeOrchestrationInstanceHistory
 {
-    private readonly PurgeHistoryOptions _options;
+    private readonly IReadOnlyCollection<OrchestrationStatus> _statuses;
+    private readonly TimeSpan _minimumAge;
 
     private const string PurgeFrequencyVariable = $"%{AzureFunctionsJobHost.RootSectionName}:{PurgeHistoryOptions.SectionName}:{nameof(PurgeHistoryOptions.Frequency)}%";
 
@@ -29,9 +32,17 @@ public sealed class PurgeOrchestrationInstanceHistory
     /// on the provided options.
     /// </summary>
     /// <param name="options">A collection of options for configuring the purge process.</param>
+    /// <exception cref="ArgumentException"><see cref="PurgeHistoryOptions.Statuses"/> is empty.</exception>
     /// <exception cref="ArgumentNullException"><paramref name="options"/> or its value is <see langword="null"/>.</exception>
+    /// <exception cref="ArgumentOutOfRangeException">
+    /// <see cref="PurgeHistoryOptions.MinimumAgeDays"/> less than or equal to zero.
+    /// </exception>
     public PurgeOrchestrationInstanceHistory(IOptions<PurgeHistoryOptions> options)
-        => _options = EnsureArg.IsNotNull(options?.Value, nameof(options));
+    {
+        PurgeHistoryOptions value = EnsureArg.IsNotNull(options?.Value, nameof(options));
+        _statuses = EnsureArg.HasItems(value.Statuses, nameof(options));
+        _minimumAge = TimeSpan.FromDays(EnsureArg.IsGt(value.MinimumAgeDays, 0, nameof(options)));
+    }
 
     /// <summary>
     /// Asynchronously purges the task hub based on the current time.
@@ -54,13 +65,13 @@ public sealed class PurgeOrchestrationInstanceHistory
         }
 
         DateTimeOffset end = Clock.UtcNow;
-        DateTimeOffset start = end.AddDays(-_options.MinimumAgeDays);
+        DateTimeOffset start = end - _minimumAge;
         log.LogInformation("Purging all orchestration instances with status in {{{Statuses}}} that started between '{Start}' and '{End}'",
-            string.Join(", ", _options.Statuses!),
+            string.Join(", ", _statuses),
             start,
             end);
 
-        PurgeHistoryResult result = await client.PurgeInstanceHistoryAsync(start.UtcDateTime, end.UtcDateTime, _options.Statuses);
+        PurgeHistoryResult result = await client.PurgeInstanceHistoryAsync(start.UtcDateTime, end.UtcDateTime, _statuses);
 
         if (result.InstancesDeleted > 0)
         {

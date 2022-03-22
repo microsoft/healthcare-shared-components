@@ -26,7 +26,7 @@ public class PurgeHistoryOptions
     /// <value>A set of at least one <see cref="OrchestrationStatus"/>.</value>
     [Required]
     [MinLength(1)]
-    public IEnumerable<OrchestrationStatus> Statuses { get; set; } = new OrchestrationStatus[] { OrchestrationStatus.Completed };
+    public IReadOnlyCollection<OrchestrationStatus>? Statuses { get; set; } = new OrchestrationStatus[] { OrchestrationStatus.Completed };
 
     /// <summary>
     /// Gets or sets the minimum amount of time from when the orchestration was created

@@ -11,8 +11,7 @@
             "default": "Information",
             "DurableTask": "Warning",
             "Function": "Warning",
-            "Function.InsertionSortAsync.User": "Information",
-            "Function.SortRange.User": "Information",
+            "Function.*.User": "Information",
             "Host": "Warning"
         }
     },

@@ -11,32 +11,32 @@ namespace Microsoft.Health.Operations;
 public enum OperationStatus
 {
     /// <summary>
-    /// Specifies a state that is missing or unrecognized.
+    /// Specifies a status that is missing or unrecognized.
     /// </summary>
     Unknown,
 
     /// <summary>
-    /// Specifies a state where execution is pending.
+    /// Specifies a status where execution is pending.
     /// </summary>
     NotStarted,
 
     /// <summary>
-    /// Specifies a state where the operation is executing and has not yet finished.
+    /// Specifies a status where the operation is executing and has not yet finished.
     /// </summary>
     Running,
 
     /// <summary>
-    /// Specifies a state where the operation has finished successfully.
+    /// Specifies a status where the operation has finished successfully.
     /// </summary>
     Completed,
 
     /// <summary>
-    /// Specifies a state where the operation has stopped prematurely after encountering one or more errors.
+    /// Specifies a status where the operation has stopped prematurely after encountering one or more errors.
     /// </summary>
     Failed,
 
     /// <summary>
-    /// Specifies a state where the operation that has stopped prematurely after being told to do so by the user.
+    /// Specifies a status where the operation has stopped prematurely after being told to do so by the user.
     /// </summary>
     Canceled,
 }

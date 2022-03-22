@@ -34,7 +34,7 @@ public class OperationState<T>
     /// <summary>
     /// Gets or sets the last date and time the state was updated.
     /// </summary>
-    /// <value>The last <see cref="DateTime"/> when the operation status was updated.</value>
+    /// <value>The last <see cref="DateTime"/> when the operation state was updated.</value>
     public DateTime LastUpdatedTime { get; init; }
 
     /// <summary>
