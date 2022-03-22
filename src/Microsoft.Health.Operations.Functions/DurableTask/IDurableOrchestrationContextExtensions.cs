@@ -18,23 +18,35 @@ namespace Microsoft.Health.Operations.Functions.DurableTask;
 public static class IDurableOrchestrationContextExtensions
 {
     /// <summary>
-    /// Throws a <see cref="FormatException"/> if the <see cref="IDurableOrchestrationContext.InstanceId"/>
-    /// cannot be parsed as an operation ID based on <see cref="OperationId.FormatSpecifier"/>.
+    /// Gets the operation ID encoded as the value of the <see cref="IDurableOrchestrationContext.InstanceId"/> property.
+    /// </summary>
+    /// <param name="context">An orchestration context.</param>
+    /// <returns>The parsed operation ID.</returns>
+    /// <exception cref="FormatException">
+    /// The <see cref="IDurableOrchestrationContext.InstanceId"/> cannot be parsed as an operation ID.
+    /// </exception>
+    public static Guid GetOperationId(this IDurableOrchestrationContext context)
+    {
+        EnsureArg.IsNotNull(context, nameof(context));
+        if (!Guid.TryParseExact(context.InstanceId, OperationId.FormatSpecifier, out Guid operationId))
+        {
+            throw new FormatException(string.Format(CultureInfo.CurrentCulture, Resources.InvalidInstanceId, context.InstanceId));
+        }
+
+        return operationId;
+    }
+
+    /// <summary>
+    /// Throws a <see cref="FormatException"/> if the value of the <see cref="IDurableOrchestrationContext.InstanceId"/>
+    /// property cannot be parsed as an operation ID based on <see cref="OperationId.FormatSpecifier"/>.
     /// </summary>
     /// <param name="context">An orchestration context.</param>
     /// <exception cref="ArgumentNullException"><paramref name="context"/> is <see langword="null"/>.</exception>
     /// <exception cref="FormatException">
     /// The <see cref="IDurableOrchestrationContext.InstanceId"/> cannot be parsed as an operation ID.
     /// </exception>
-    public static void ThrowIfInvalidInstanceId(this IDurableOrchestrationContext context)
-    {
-        EnsureArg.IsNotNull(context, nameof(context));
-        if (!Guid.TryParseExact(context.InstanceId, OperationId.FormatSpecifier, out Guid _))
-        {
-            throw new FormatException(
-                string.Format(CultureInfo.CurrentCulture, Resources.InvalidInstanceId, context.InstanceId));
-        }
-    }
+    public static void ThrowIfInvalidOperationId(this IDurableOrchestrationContext context)
+        => context.GetOperationId();
 
     /// <summary>
     /// Asynchronously gets the date and time that the orchestration instance was created in UTC.

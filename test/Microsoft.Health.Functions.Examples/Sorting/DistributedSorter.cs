@@ -28,7 +28,7 @@ public class DistributedSorter
         EnsureArg.IsNotNull(context, nameof(context));
         EnsureArg.IsNotNull(logger, nameof(logger));
 
-        context.ThrowIfInvalidInstanceId();
+        context.ThrowIfInvalidOperationId();
         logger = context.CreateReplaySafeLogger(logger);
 
         SortingCheckpoint checkpoint = context.GetInput<SortingCheckpoint>();

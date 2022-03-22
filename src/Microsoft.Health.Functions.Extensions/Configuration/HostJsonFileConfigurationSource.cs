@@ -79,7 +79,7 @@ internal sealed class HostJsonFileConfigurationSource : IConfigurationSource
                 case JTokenType.Raw:
                 case JTokenType.Bytes:
                 case JTokenType.TimeSpan:
-                    string key = AzureFunctionsJobHost.SectionName + ConfigurationPath.KeyDelimiter + ConfigurationPath.Combine(_path.Reverse());
+                    string key = AzureFunctionsJobHost.RootSectionName + ConfigurationPath.KeyDelimiter + ConfigurationPath.Combine(_path.Reverse());
                     Data[key] = token.Value<JValue>().ToString(CultureInfo.InvariantCulture);
                     break;
                 default:

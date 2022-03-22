@@ -13,7 +13,7 @@ using Microsoft.Extensions.Options;
 using Microsoft.Health.Core;
 using Microsoft.Health.Functions.Extensions;
 
-namespace Microsoft.Health.Operations.Functions;
+namespace Microsoft.Health.Operations.Functions.Management;
 
 /// <summary>
 /// Represents a periodic process that purges stale orchestration instance metadata from storage.
@@ -22,7 +22,7 @@ public sealed class PurgeOrchestrationInstanceHistory
 {
     private readonly PurgeHistoryOptions _options;
 
-    private const string PurgeFrequencyVariable = $"%{AzureFunctionsJobHost.SectionName}:{PurgeHistoryOptions.SectionName}:{nameof(PurgeHistoryOptions.Frequency)}%";
+    private const string PurgeFrequencyVariable = $"%{AzureFunctionsJobHost.RootSectionName}:{PurgeHistoryOptions.SectionName}:{nameof(PurgeHistoryOptions.Frequency)}%";
 
     /// <summary>
     /// Initializes a new instance of the <see cref="PurgeOrchestrationInstanceHistory"/> class based
@@ -53,13 +53,14 @@ public sealed class PurgeOrchestrationInstanceHistory
             log.LogWarning("Current function invocation is running late.");
         }
 
-        (DateTime start, DateTime end) = (DateTime.MinValue, Clock.UtcNow.UtcDateTime.AddDays(-_options.MinimumAgeDays));
+        DateTimeOffset end = Clock.UtcNow;
+        DateTimeOffset start = end.AddDays(-_options.MinimumAgeDays);
         log.LogInformation("Purging all orchestration instances with status in {{{Statuses}}} that started between '{Start}' and '{End}'",
             string.Join(", ", _options.Statuses!),
             start,
             end);
 
-        PurgeHistoryResult result = await client.PurgeInstanceHistoryAsync(start, end, _options.Statuses);
+        PurgeHistoryResult result = await client.PurgeInstanceHistoryAsync(start.UtcDateTime, end.UtcDateTime, _options.Statuses);
 
         if (result.InstancesDeleted > 0)
         {

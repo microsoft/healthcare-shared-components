@@ -11,7 +11,7 @@ namespace Microsoft.Health.Operations;
 /// <summary>
 /// Represents the metadata for a long-running DICOM operation.
 /// </summary>
-/// <typeparam name="T">The type used to denote the operation <see cref="Type"/>.</typeparam>
+/// <typeparam name="T">The type used to denote the category of operation.</typeparam>
 public class OperationStatus<T>
 {
     /// <summary>

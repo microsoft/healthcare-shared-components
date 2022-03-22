@@ -25,7 +25,7 @@ steps:
     command: test
     projects: |
       **/*[t|T]est*/*.csproj
-      !**/Microsoft.Health.SqlServer.Tests.Integration.csproj
+      !**/*.Tests.Integration.csproj
     arguments: '--configuration $(buildConfiguration) --no-build'
 
 - ${{ if eq(parameters.pack, 'true') }}:

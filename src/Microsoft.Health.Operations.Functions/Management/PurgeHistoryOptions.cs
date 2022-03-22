@@ -8,7 +8,7 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using DurableTask.Core;
 
-namespace Microsoft.Health.Operations.Functions;
+namespace Microsoft.Health.Operations.Functions.Management;
 
 /// <summary>
 /// Represents the settings for configuring how to clean up orchestration instance metadata.
@@ -26,7 +26,7 @@ public class PurgeHistoryOptions
     /// <value>A set of at least one <see cref="OrchestrationStatus"/>.</value>
     [Required]
     [MinLength(1)]
-    public IReadOnlySet<OrchestrationStatus>? Statuses { get; set; } = new HashSet<OrchestrationStatus> { OrchestrationStatus.Completed };
+    public IEnumerable<OrchestrationStatus> Statuses { get; set; } = new OrchestrationStatus[] { OrchestrationStatus.Completed };
 
     /// <summary>
     /// Gets or sets the minimum amount of time from when the orchestration was created

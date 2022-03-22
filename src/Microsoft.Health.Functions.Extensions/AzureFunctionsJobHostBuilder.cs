@@ -118,7 +118,7 @@ public sealed class AzureFunctionsJobHostBuilder
     private static IConfigurationSource CreateRootConfigurationSource()
         => new MemoryConfigurationSource
         {
-            InitialData = new KeyValuePair<string, string>[] { KeyValuePair.Create("AzureWebJobsConfigurationSection", AzureFunctionsJobHost.SectionName) },
+            InitialData = new KeyValuePair<string, string>[] { KeyValuePair.Create("AzureWebJobsConfigurationSection", AzureFunctionsJobHost.RootSectionName) },
         };
 
 }

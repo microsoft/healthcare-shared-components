@@ -4,47 +4,23 @@
 // -------------------------------------------------------------------------------------------------
 
 using System;
-using System.ComponentModel.DataAnnotations;
-using EnsureThat;
 using Microsoft.Azure.WebJobs.Extensions.DurableTask;
 
 namespace Microsoft.Health.Operations.Functions.DurableTask;
 
+// The purpose of this class is to provide a class that can be bound to
+// a configuration through the options APIs. By default, RetryOptions
+// cannot be used, as it does not have a parameterless constructor
+
 /// <inheritdoc cref="RetryOptions" />
-public class ActivityRetryOptions
+public class ActivityRetryOptions : RetryOptions
 {
-    /// <inheritdoc cref="RetryOptions.FirstRetryInterval" />
-    [Required]
-    [Range(typeof(TimeSpan), "00:00:00.0010000", "10675199.02:48:05.4775807", ConvertValueInInvariantCulture = true, ParseLimitsInInvariantCulture = true)]
-    public TimeSpan FirstRetryInterval { get; set; } = TimeSpan.FromSeconds(1);
-
-    /// <inheritdoc cref="RetryOptions.MaxRetryInterval" />
-    public TimeSpan MaxRetryInterval { get; set; } = TimeSpan.FromDays(6); // Default from Durable Functions
-
-    /// <inheritdoc cref="RetryOptions.BackoffCoefficient" />
-    [Range(0d, double.MaxValue)]
-    public double BackoffCoefficient { get; set; } = 1;
-
-    /// <inheritdoc cref="RetryOptions.RetryTimeout" />
-    [Range(typeof(TimeSpan), "-00:00:00.0010000", "10675199.02:48:05.4775807", ConvertValueInInvariantCulture = true, ParseLimitsInInvariantCulture = true)]
-    public TimeSpan RetryTimeout { get; set; } = TimeSpan.MaxValue;
-
-    /// <inheritdoc cref="RetryOptions.MaxNumberOfAttempts" />
-    [Range(1, int.MaxValue)]
-    public int MaxNumberOfAttempts { get; set; } = 1;
-
-    /// <inheritdoc cref="RetryOptions.Handle" />
-    public Func<Exception, bool> Handle { get; set; } = e => true;
-
-    public RetryOptions ToRetryOptions()
-        => new RetryOptions(FirstRetryInterval, MaxNumberOfAttempts)
-        {
-            BackoffCoefficient = BackoffCoefficient,
-            Handle = Handle,
-            MaxRetryInterval = MaxRetryInterval,
-            RetryTimeout = RetryTimeout,
-        };
-
-    public static implicit operator RetryOptions(ActivityRetryOptions o)
-        => EnsureArg.IsNotNull(o, nameof(o)).ToRetryOptions();
+    /// <summary>
+    /// Initializes a new instance of the <see cref="ActivityRetryOptions"/> class
+    /// whose <see cref="RetryOptions.FirstRetryInterval"/> is defaulted to one second
+    /// and only attempts one time.
+    /// </summary>
+    public ActivityRetryOptions()
+        : base(TimeSpan.FromSeconds(1), 1)
+    { }
 }

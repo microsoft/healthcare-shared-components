@@ -9,6 +9,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Health.Functions.Examples.Sorting;
 using Microsoft.Health.Operations.Functions;
+using Microsoft.Health.Operations.Functions.Management;
 
 [assembly: FunctionsStartup(typeof(Microsoft.Health.Functions.Examples.Startup))]
 namespace Microsoft.Health.Functions.Examples;

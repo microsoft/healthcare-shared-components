@@ -15,6 +15,6 @@ public static class AzureFunctionsJobHost
     /// <summary>
     /// The name of the configuration section in which all user-specified configurations reside.
     /// </summary>
-    public const string SectionName = "AzureFunctionsJobHost";
+    public const string RootSectionName = "AzureFunctionsJobHost";
 
 }

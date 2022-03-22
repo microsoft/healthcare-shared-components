@@ -27,5 +27,5 @@ public static class IFunctionsHostBuilderExtensions
             .IsNotNull(functionsHostBuilder)
             .GetContext()
             .Configuration
-            .GetSection(AzureFunctionsJobHost.SectionName);
+            .GetSection(AzureFunctionsJobHost.RootSectionName);
 }
