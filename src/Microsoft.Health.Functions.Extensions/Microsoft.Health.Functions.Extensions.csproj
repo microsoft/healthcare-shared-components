@@ -1,6 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
+    <Description>Common extensions for running Azure Functions used by Microsoft Health.</Description>
     <TargetFrameworks>$(LtsVersion)</TargetFrameworks>
     <Nullable>enable</Nullable>
   </PropertyGroup>
