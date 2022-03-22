@@ -6,8 +6,8 @@
 using System;
 using System.Threading.Tasks;
 using Microsoft.Azure.WebJobs.Extensions.DurableTask;
-using Microsoft.Health.Dicom.Operations.Management;
 using Microsoft.Health.Operations.Functions.DurableTask;
+using Microsoft.Health.Operations.Functions.Management;
 using NSubstitute;
 using Xunit;
 

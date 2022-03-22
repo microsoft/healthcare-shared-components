@@ -6,7 +6,6 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
-using DurableTask.Core;
 
 namespace Microsoft.Health.Operations.Functions.Management;
 

@@ -9,7 +9,7 @@ using System.Collections.Generic;
 namespace Microsoft.Health.Operations;
 
 /// <summary>
-/// Represents the state of a long-running DICOM operation.
+/// Represents the state of a long-running operation.
 /// </summary>
 /// <typeparam name="T">The type used to denote the category of operation.</typeparam>
 public class OperationState<T>

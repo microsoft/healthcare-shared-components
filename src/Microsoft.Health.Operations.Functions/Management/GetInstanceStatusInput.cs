@@ -7,7 +7,7 @@ using System;
 using EnsureThat;
 using Microsoft.Azure.WebJobs.Extensions.DurableTask;
 
-namespace Microsoft.Health.Dicom.Operations.Management;
+namespace Microsoft.Health.Operations.Functions.Management;
 
 /// <summary>
 /// Represents the input to <see cref="IDurableOrchestrationClient.GetStatusAsync(string, bool, bool, bool)"/>.

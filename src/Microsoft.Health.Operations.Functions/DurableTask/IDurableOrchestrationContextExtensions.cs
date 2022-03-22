@@ -8,7 +8,7 @@ using System.Globalization;
 using System.Threading.Tasks;
 using EnsureThat;
 using Microsoft.Azure.WebJobs.Extensions.DurableTask;
-using Microsoft.Health.Dicom.Operations.Management;
+using Microsoft.Health.Operations.Functions.Management;
 
 namespace Microsoft.Health.Operations.Functions.DurableTask;
 

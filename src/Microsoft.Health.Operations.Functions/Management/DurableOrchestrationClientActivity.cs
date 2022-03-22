@@ -9,7 +9,7 @@ using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Extensions.DurableTask;
 using Microsoft.Extensions.Logging;
 
-namespace Microsoft.Health.Dicom.Operations.Management;
+namespace Microsoft.Health.Operations.Functions.Management;
 
 /// <summary>
 /// Contains a collection of activities that serve as a proxy for the <see cref="IDurableOrchestrationClient"/>.

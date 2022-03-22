@@ -6,7 +6,7 @@
 namespace Microsoft.Health.Operations;
 
 /// <summary>
-/// Specifies the status of a DICOM operation.
+/// Specifies the status of a long-running operation.
 /// </summary>
 public enum OperationStatus
 {
