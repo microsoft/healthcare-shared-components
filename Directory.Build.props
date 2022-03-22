@@ -22,11 +22,6 @@
     <WarningsAsErrors />
   </PropertyGroup>
 
-  <PropertyGroup Condition="$(MSBuildProjectName.Contains('Test'))">
-    <IsPackable>false</IsPackable>
-    <NoWarn>$(NoWarn);CA1014;CA1707</NoWarn>
-  </PropertyGroup>
-
   <Choose>
     <When Condition="$(MSBuildProjectName.Contains('Test'))">
       <PropertyGroup>

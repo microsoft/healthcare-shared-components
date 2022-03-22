@@ -3,7 +3,7 @@
   <PropertyGroup>
     <AzureFunctionsVersion>v4</AzureFunctionsVersion>
     <Nullable>enable</Nullable>
-    <TargetFramework>$(LtsVersion)</TargetFramework>
+    <TargetFrameworks>$(LtsVersion)</TargetFrameworks>
   </PropertyGroup>
 
   <ItemGroup>

@@ -64,10 +64,10 @@ internal sealed class HostJsonFileConfigurationSource : IConfigurationSource
             switch (token.Type)
             {
                 case JTokenType.Object:
-                    ProcessObject(token.Value<JObject>());
+                    ProcessObject(token.Value<JObject>()!);
                     break;
                 case JTokenType.Array:
-                    ProcessArray(token.Value<JArray>());
+                    ProcessArray(token.Value<JArray>()!);
                     break;
 
                 case JTokenType.Integer:
@@ -80,7 +80,7 @@ internal sealed class HostJsonFileConfigurationSource : IConfigurationSource
                 case JTokenType.Bytes:
                 case JTokenType.TimeSpan:
                     string key = AzureFunctionsJobHost.RootSectionName + ConfigurationPath.KeyDelimiter + ConfigurationPath.Combine(_path.Reverse());
-                    Data[key] = token.Value<JValue>().ToString(CultureInfo.InvariantCulture);
+                    Data[key] = token.Value<JValue>()!.ToString(CultureInfo.InvariantCulture);
                     break;
                 default:
                     break;

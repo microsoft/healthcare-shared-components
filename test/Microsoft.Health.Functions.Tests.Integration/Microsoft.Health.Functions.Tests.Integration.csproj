@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>$(LtsVersion)</TargetFramework>
+    <TargetFrameworks>$(LtsVersion)</TargetFrameworks>
     <Nullable>enable</Nullable>
     <XunitStartupFullName>Microsoft.Health.Functions.Tests.Integration.TestStartup</XunitStartupFullName>
   </PropertyGroup>
@@ -33,7 +33,7 @@
     </None>
     <Content Include="xunit.runner.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content >
+    </Content>
   </ItemGroup>
 
 </Project>
