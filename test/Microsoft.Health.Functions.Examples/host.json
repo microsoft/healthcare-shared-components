@@ -1,18 +1,29 @@
 {
     "version": "2.0",
-    "extensions": {
-        "durableTask": {
-            "hubName": "IntegrationTests"
+    "Extensions": {
+        "DurableTask": {
+            "HubName": "IntegrationTests"
         }
     },
-    "purgeHistory": {
-        "frequency": "0 0 * * *",
-        "minimumAgeDays": 7,
-        "statuses": [ "Completed" ]
+    "Logging": {
+        "FileLoggingMode": "never",
+        "LogLevel": {
+            "default": "Information",
+            "DurableTask": "Warning",
+            "Function": "Warning",
+            "Function.InsertionSortAsync.User": "Information",
+            "Function.SortRange.User": "Information",
+            "Host": "Warning"
+        }
     },
-    "sorting": {
-        "ascending": false,
-        "retry": {
+    "PurgeHistory": {
+        "Frequency": "0 0 * * *",
+        "MinimumAgeDays": 7,
+        "Statuses": [ "Completed" ]
+    },
+    "Sorting": {
+        "Ascending": false,
+        "Retry": {
             "MaxNumberOfAttempts": 3
         }
     }

@@ -26,10 +26,10 @@ public sealed class AzureFunctionsJobHostBuilder
     private readonly string _root;
     private readonly IHostBuilder _hostBuilder = new HostBuilder();
 
-    private Action<HostBuilderContext, IWebJobsBuilder, Action<ILoggingBuilder>> _configureWebJobs;
-    private Action<ILoggingBuilder> _configureLogger = b => b.ClearProviders();
+    private Action<HostBuilderContext, IWebJobsBuilder, Action<HostBuilderContext, ILoggingBuilder>> _configureWebJobs;
+    private Action<HostBuilderContext, ILoggingBuilder> _configureLogger = BeginConfigureLogging;
 
-    private AzureFunctionsJobHostBuilder(string root, Action<HostBuilderContext, IWebJobsBuilder, Action<ILoggingBuilder>> configure)
+    private AzureFunctionsJobHostBuilder(string root, Action<HostBuilderContext, IWebJobsBuilder, Action<HostBuilderContext, ILoggingBuilder>> configure)
     {
         _root = EnsureArg.IsNotNull(root, nameof(root));
         _configureWebJobs = EnsureArg.IsNotNull(configure, nameof(configure));
@@ -42,7 +42,7 @@ public sealed class AzureFunctionsJobHostBuilder
     /// <returns>The <see cref="AzureFunctionsJobHostBuilder"/> instance.</returns>
     public AzureFunctionsJobHostBuilder ConfigureLogging(Action<ILoggingBuilder> configure)
     {
-        _configureLogger += configure;
+        _configureLogger += (c, b) => configure(b);
         return this;
     }
 
@@ -64,7 +64,6 @@ public sealed class AzureFunctionsJobHostBuilder
     public IHost Build()
         => _hostBuilder
             .UseContentRoot(_root)
-            .ConfigureLogging(b => _configureLogger(b))
             .ConfigureWebJobs(
                 (c, b) => _configureWebJobs(c, b, _configureLogger),
                 o => { },
@@ -78,6 +77,7 @@ public sealed class AzureFunctionsJobHostBuilder
                         .Add(new LocalSettingsJsonFileConfigurationSource(_root))
                         .AddEnvironmentVariables();
                 })
+            .ConfigureLogging((c, b) => _configureLogger(c, b))
             .Build();
 
     /// <summary>
@@ -88,10 +88,10 @@ public sealed class AzureFunctionsJobHostBuilder
     public static AzureFunctionsJobHostBuilder Create<T>() where T : FunctionsStartup, new()
         => Create(
             Path.GetDirectoryName(typeof(T).Assembly.Location)!,
-            (h, w, c) => w.UseWebJobsStartup(
+            (context, webJobsBuilder, configureLogging) => webJobsBuilder.UseWebJobsStartup(
                 typeof(T),
-                new WebJobsBuilderContext { Configuration =h.Configuration },
-                LoggerFactory.Create(c)));
+                new WebJobsBuilderContext { Configuration = context.Configuration },
+                LoggerFactory.Create(b => configureLogging(context, b))));
 
     /// <summary>
     /// Creates a new builder that may be used to configure the <see cref="IHost"/>.
@@ -112,7 +112,7 @@ public sealed class AzureFunctionsJobHostBuilder
     public static AzureFunctionsJobHostBuilder Create(string root)
         => Create(root, (h, w, c) => { });
 
-    private static AzureFunctionsJobHostBuilder Create(string root, Action<HostBuilderContext, IWebJobsBuilder, Action<ILoggingBuilder>> configure)
+    private static AzureFunctionsJobHostBuilder Create(string root, Action<HostBuilderContext, IWebJobsBuilder, Action<HostBuilderContext, ILoggingBuilder>> configure)
         => new AzureFunctionsJobHostBuilder(root, configure);
 
     private static IConfigurationSource CreateRootConfigurationSource()
@@ -120,5 +120,14 @@ public sealed class AzureFunctionsJobHostBuilder
         {
             InitialData = new KeyValuePair<string, string>[] { KeyValuePair.Create("AzureWebJobsConfigurationSection", AzureFunctionsJobHost.RootSectionName) },
         };
+
+    private static void BeginConfigureLogging(HostBuilderContext context, ILoggingBuilder builder)
+    {
+        builder.ClearProviders();
+        builder.AddConfiguration(context
+            .Configuration
+            .GetSection(AzureFunctionsJobHost.RootSectionName)
+            .GetSection("Logging"));
+    }
 
 }

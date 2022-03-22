@@ -44,6 +44,12 @@ public class DistributedSorter
                 _options.Retry,
                 checkpoint.Values[0..(checkpoint.SortedLength + 1)]);
 
+            logger.LogInformation(
+                "Sorted {SortedLength}/{TotalLength} numbers: [{Values}]",
+                checkpoint.SortedLength + 1,
+                checkpoint.Values.Length,
+                string.Join(", ", checkpoint.Values));
+
             context.ContinueAsNew(
                 new SortingCheckpoint
                 {
@@ -54,7 +60,7 @@ public class DistributedSorter
         }
         else
         {
-            logger.LogInformation("Sorting complete");
+            logger.LogInformation("Sorting complete: [{Values}]", string.Join(", ", checkpoint.Values));
         }
 
         return checkpoint.Values;

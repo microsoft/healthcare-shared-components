@@ -21,15 +21,15 @@ internal sealed class LocalSettingsJsonFileConfigurationSource : IConfigurationS
         => _scriptPath = EnsureArg.IsNotNull(scriptPath, nameof(scriptPath));
 
     public IConfigurationProvider Build(IConfigurationBuilder builder)
-        => new HostJsonFileConfigurationProvider(_scriptPath);
+        => new LocalSettingsJsonFileConfigurationProvider(_scriptPath);
 
-    internal sealed class HostJsonFileConfigurationProvider : ConfigurationProvider
+    internal sealed class LocalSettingsJsonFileConfigurationProvider : ConfigurationProvider
     {
         private const string LocalSettingsFileName = "local.settings.json";
 
         public readonly string _scriptPath;
 
-        public HostJsonFileConfigurationProvider(string scriptPath)
+        public LocalSettingsJsonFileConfigurationProvider(string scriptPath)
             => _scriptPath = EnsureArg.IsNotNull(scriptPath, nameof(scriptPath));
 
         public override void Load()
