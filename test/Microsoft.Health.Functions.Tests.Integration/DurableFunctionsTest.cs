@@ -26,7 +26,7 @@ public class DurableFunctionsTest : IClassFixture<WebJobsTestFixture<Startup>>
     {
         string instanceId = await _durableClient.StartNewAsync(
             nameof(DistributedSorter.InsertionSortAsync),
-            new SortingInput { Values = new int[] { 3, 4, 1, 5, 4, 2 } });
+            new SortingInput(new int[] { 3, 4, 1, 5, 4, 2 }));
 
         DurableOrchestrationStatus status = await _durableClient.GetStatusAsync(instanceId);
         while (IsRunning(status.RuntimeStatus))

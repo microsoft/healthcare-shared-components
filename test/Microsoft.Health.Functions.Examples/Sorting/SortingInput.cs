@@ -3,15 +3,16 @@
 // Licensed under the MIT License (MIT). See LICENSE in the repo root for license information.
 // -------------------------------------------------------------------------------------------------
 
-using System;
 using System.Diagnostics.CodeAnalysis;
+using EnsureThat;
 
 namespace Microsoft.Health.Functions.Examples.Sorting;
 
 public class SortingInput
 {
     [SuppressMessage("Performance", "CA1819:Properties should not return arrays", Justification = "Used as input to orchestrastion.")]
-    public int[] Values { get; set; } = Array.Empty<int>();
+    public int[] Values { get; }
 
-    public int SortedLength { get; set; } = 1;
+    public SortingInput(int[] values)
+        => Values = EnsureArg.IsNotNull(values, nameof(values));
 }

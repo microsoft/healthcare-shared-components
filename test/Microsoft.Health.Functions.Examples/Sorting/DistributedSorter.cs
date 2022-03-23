@@ -32,6 +32,8 @@ public class DistributedSorter
         logger = context.CreateReplaySafeLogger(logger);
 
         SortingCheckpoint checkpoint = context.GetInput<SortingCheckpoint>();
+        EnsureArg.IsNotNull(checkpoint, nameof(context));
+
         if (checkpoint.SortedLength == 1)
         {
             logger.LogInformation("Sorting [{Values}]", string.Join(", ", checkpoint.Values));
@@ -39,24 +41,23 @@ public class DistributedSorter
 
         if (checkpoint.SortedLength < checkpoint.Values.Length)
         {
+            int sortedLength = checkpoint.SortedLength + 1;
             int[] sorted = await context.CallActivityWithRetryAsync<int[]>(
                 nameof(SortRange),
                 _options.Retry,
-                checkpoint.Values[0..(checkpoint.SortedLength + 1)]);
+                checkpoint.Values[0..sortedLength]);
 
             logger.LogInformation(
                 "Sorted {SortedLength}/{TotalLength} numbers: [{Values}]",
-                checkpoint.SortedLength + 1,
+                sortedLength,
                 checkpoint.Values.Length,
                 string.Join(", ", checkpoint.Values));
 
             context.ContinueAsNew(
-                new SortingCheckpoint
-                {
-                    CreatedTime = checkpoint.CreatedTime ?? await context.GetCreatedTimeAsync(_options.Retry),
-                    SortedLength = checkpoint.SortedLength + 1,
-                    Values = Concat(sorted, checkpoint.Values[(checkpoint.SortedLength + 1)..])
-                });
+                new SortingCheckpoint(
+                    Concat(sorted, checkpoint.Values[sortedLength..]),
+                    sortedLength,
+                    checkpoint.CreatedTime ?? await context.GetCreatedTimeAsync(_options.Retry)));
         }
         else
         {
