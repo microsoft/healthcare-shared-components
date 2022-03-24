@@ -13,10 +13,22 @@ using Microsoft.Health.Operations.Functions.Management;
 namespace Microsoft.Health.Operations.Functions.DurableTask;
 
 /// <summary>
-/// Provides a set of <see langword="static"/> utility methods for <see cref="IDurableOrchestrationContext"/> objects.
+/// Provides a set of <see langword="static"/> utility methods for <see cref="IDurableOrchestrationContext"/>
+/// and <see cref="IDurableActivityContext"/> objects.
 /// </summary>
-public static class IDurableOrchestrationContextExtensions
+public static class IDurableContextExtensions
 {
+    /// <summary>
+    /// Gets the operation ID encoded as the value of the <see cref="IDurableActivityContext.InstanceId"/> property.
+    /// </summary>
+    /// <param name="context">An orchestration context.</param>
+    /// <returns>The parsed operation ID.</returns>
+    /// <exception cref="FormatException">
+    /// The <see cref="IDurableActivityContext.InstanceId"/> cannot be parsed as an operation ID.
+    /// </exception>
+    public static Guid GetOperationId(this IDurableActivityContext context)
+        => GetOperationId(EnsureArg.IsNotNull(context, nameof(context)).InstanceId);
+
     /// <summary>
     /// Gets the operation ID encoded as the value of the <see cref="IDurableOrchestrationContext.InstanceId"/> property.
     /// </summary>
@@ -26,15 +38,7 @@ public static class IDurableOrchestrationContextExtensions
     /// The <see cref="IDurableOrchestrationContext.InstanceId"/> cannot be parsed as an operation ID.
     /// </exception>
     public static Guid GetOperationId(this IDurableOrchestrationContext context)
-    {
-        EnsureArg.IsNotNull(context, nameof(context));
-        if (!Guid.TryParseExact(context.InstanceId, OperationId.FormatSpecifier, out Guid operationId))
-        {
-            throw new FormatException(string.Format(CultureInfo.CurrentCulture, Resources.InvalidInstanceId, context.InstanceId));
-        }
-
-        return operationId;
-    }
+        => GetOperationId(EnsureArg.IsNotNull(context, nameof(context)).InstanceId);
 
     /// <summary>
     /// Throws a <see cref="FormatException"/> if the value of the <see cref="IDurableOrchestrationContext.InstanceId"/>
@@ -70,4 +74,9 @@ public static class IDurableOrchestrationContextExtensions
 
         return status.CreatedTime;
     }
+
+    private static Guid GetOperationId(string instanceId)
+        => Guid.TryParseExact(instanceId, OperationId.FormatSpecifier, out Guid operationId)
+            ? operationId
+            : throw new FormatException(string.Format(CultureInfo.CurrentCulture, Resources.InvalidInstanceId, instanceId));
 }

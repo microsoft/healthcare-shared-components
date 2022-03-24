@@ -13,7 +13,7 @@ using Xunit;
 
 namespace Microsoft.Health.Operations.Functions.UnitTests.DurableTask;
 
-public class IDurableOrchestrationContextExtensionsTests
+public class IDurableContextExtensionsTests
 {
     [Theory]
     [InlineData("foo")]
@@ -37,8 +37,29 @@ public class IDurableOrchestrationContextExtensionsTests
 
     [Theory]
     [InlineData("bar")]
+    [InlineData("5e81a27e-3bc0-435e-8ff5-a748203e5306")]
+    public void GivenInvalidIdInActivity_WhenGettingOperationId_ThenThrowFormatException(string instanceId)
+    {
+        IDurableActivityContext context = Substitute.For<IDurableActivityContext>();
+        context.InstanceId.Returns(instanceId);
+
+        Assert.Throws<FormatException>(() => context.GetOperationId());
+    }
+
+    [Fact]
+    public void GivenValidIdInActivity_WhenGettingOperationId_ThenReturnedParsedValue()
+    {
+        Guid expected = Guid.NewGuid();
+        IDurableActivityContext context = Substitute.For<IDurableActivityContext>();
+        context.InstanceId.Returns(expected.ToString(OperationId.FormatSpecifier));
+
+        Assert.Equal(expected, context.GetOperationId());
+    }
+
+    [Theory]
+    [InlineData("baz")]
     [InlineData("ba9a0977-cc48-4bfc-b4c9-f160f82b888a")]
-    public void GivenInvalidId_WhenGettingOperationId_ThenThrowFormatException(string instanceId)
+    public void GivenInvalidIdInOrchestration_WhenGettingOperationId_ThenThrowFormatException(string instanceId)
     {
         IDurableOrchestrationContext context = Substitute.For<IDurableOrchestrationContext>();
         context.InstanceId.Returns(instanceId);
@@ -47,7 +68,7 @@ public class IDurableOrchestrationContextExtensionsTests
     }
 
     [Fact]
-    public void GivenValidId_WhenGettingOperationId_ThenReturnedParsedValue()
+    public void GivenValidIdInOrchestration_WhenGettingOperationId_ThenReturnedParsedValue()
     {
         Guid expected = Guid.NewGuid();
         IDurableOrchestrationContext context = Substitute.For<IDurableOrchestrationContext>();
