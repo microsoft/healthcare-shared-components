@@ -10,6 +10,7 @@ using Microsoft.Azure.WebJobs.Extensions.DurableTask;
 using Microsoft.Azure.WebJobs.Extensions.DurableTask.ContextImplementations;
 using Microsoft.Health.Functions.Examples;
 using Microsoft.Health.Functions.Examples.Sorting;
+using Microsoft.Health.Operations.Functions.DurableTask;
 using Xunit;
 
 namespace Microsoft.Health.Functions.Tests.Integration;
@@ -29,7 +30,7 @@ public class DurableFunctionsTest : IClassFixture<WebJobsTestFixture<Startup>>
             new SortingInput(new int[] { 3, 4, 1, 5, 4, 2 }));
 
         DurableOrchestrationStatus status = await _durableClient.GetStatusAsync(instanceId);
-        while (IsRunning(status.RuntimeStatus))
+        while (status.RuntimeStatus.IsInProgress())
         {
             await Task.Delay(1000);
             status = await _durableClient.GetStatusAsync(instanceId);
@@ -43,10 +44,4 @@ public class DurableFunctionsTest : IClassFixture<WebJobsTestFixture<Startup>>
         Assert.NotNull(actual);
         Assert.True(expected.SequenceEqual(actual!));
     }
-
-    private static bool IsRunning(OrchestrationRuntimeStatus runtimeStatus)
-        => runtimeStatus == OrchestrationRuntimeStatus.Pending
-        || runtimeStatus == OrchestrationRuntimeStatus.Running
-        || runtimeStatus == OrchestrationRuntimeStatus.ContinuedAsNew;
-
 }
