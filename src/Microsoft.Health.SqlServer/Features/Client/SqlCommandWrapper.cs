@@ -26,6 +26,7 @@ public class SqlCommandWrapper : IDisposable
         EnsureArg.IsNotNull(sqlCommand, nameof(sqlCommand));
 
         _sqlCommand = sqlCommand;
+        CommandTimeout = 180;
     }
 
     /// <summary>
