@@ -24,10 +24,7 @@ internal sealed class CachedHealthCheck : IHealthCheck, IDisposable
     // By default, the times are DateTimeOffset.MinValue such that they are always considered invalid
     private CachedHealthCheckResult _cache = new CachedHealthCheckResult();
 
-    public CachedHealthCheck(
-        IHealthCheck healthCheck,
-        IOptions<HealthCheckCachingOptions> options,
-        ILoggerFactory loggerFactory)
+    public CachedHealthCheck(IHealthCheck healthCheck, IOptions<HealthCheckCachingOptions> options, ILoggerFactory loggerFactory)
     {
         _healthCheck = EnsureArg.IsNotNull(healthCheck, nameof(healthCheck));
         _options = EnsureArg.IsNotNull(options?.Value, nameof(options));
@@ -66,7 +63,7 @@ internal sealed class CachedHealthCheck : IHealthCheck, IDisposable
         }
         catch (OperationCanceledException oce) when (!HasExpired(Clock.UtcNow))
         {
-            _logger.LogWarning(oce, "Token canceled while waiting for semaphore. Falling back to cache.");
+            _logger.LogWarning(oce, "Health check was canceled. Falling back to cache.");
             return _cache.Result;
         }
 
@@ -83,15 +80,18 @@ internal sealed class CachedHealthCheck : IHealthCheck, IDisposable
             {
                 result = await _healthCheck.CheckHealthAsync(context, cancellationToken).ConfigureAwait(false);
             }
-            catch (OperationCanceledException oce) when (!HasExpired(Clock.UtcNow))
+            catch (Exception ex) when (!HasExpired(Clock.UtcNow))
             {
-                _logger.LogWarning(oce, "Token canceled while waiting for health check. Falling back to cache.");
+                if (ex is OperationCanceledException oce)
+                {
+                    _logger.LogWarning(oce, "Health check was canceled. Falling back to cache.");
+                }
+                else
+                {
+                    _logger.LogError(ex, "Health check failed to complete. Falling back to cache.");
+                }
+
                 return _cache.Result;
-            }
-            catch (Exception ex) when (ex is not OperationCanceledException)
-            {
-                _logger.LogError(ex, "Health check failed to complete.");
-                result = HealthCheckResult.Unhealthy(Resources.FailedHealthCheckMessage); // Do not pass error to caller
             }
 
             // Update cache based on the latest snapshot

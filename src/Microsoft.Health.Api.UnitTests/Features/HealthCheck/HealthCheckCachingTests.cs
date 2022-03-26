@@ -4,6 +4,7 @@
 // -------------------------------------------------------------------------------------------------
 
 using System;
+using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
@@ -39,7 +40,7 @@ public class HealthCheckCachingTests
         _options.Expiry = TimeSpan.FromDays(1);
         _options.MaxRefreshThreads = 1;
 
-        CachedHealthCheck cache = CreateHealthCheck();
+        using CachedHealthCheck cache = CreateHealthCheck();
 
         HealthCheckResult[] actual = await Task.WhenAll(
             cache.CheckHealthAsync(_context, tokenSource.Token),
@@ -74,7 +75,7 @@ public class HealthCheckCachingTests
         _options.RefreshOffset = TimeSpan.FromSeconds(28);
         _options.MaxRefreshThreads = 1;
 
-        CachedHealthCheck cache = CreateHealthCheck();
+        using CachedHealthCheck cache = CreateHealthCheck();
 
         // Populate cache
         result = await cache.CheckHealthAsync(_context, tokenSource.Token);
@@ -119,7 +120,7 @@ public class HealthCheckCachingTests
         _options.Expiry = TimeSpan.FromSeconds(1);
         _options.MaxRefreshThreads = 1;
 
-        CachedHealthCheck cache = CreateHealthCheck();
+        using CachedHealthCheck cache = CreateHealthCheck();
 
         // Mocks the time a second ago so we can call the middleware in the past
         DateTimeOffset futureTime = DateTimeOffset.UtcNow.AddSeconds(-1);
@@ -141,22 +142,19 @@ public class HealthCheckCachingTests
     }
 
     [Fact]
-    public async Task GivenTheHealthCheckCache_WhenHealthCheckThrows_ThenTheResultIsWrittenCorrectly()
+    public async Task GivenExpiredHealthCheckCache_WhenHealthCheckThrows_ThenExceptionIsThrown()
     {
         using CancellationTokenSource tokenSource = new CancellationTokenSource();
 
         _healthCheck
             .When(c => c.CheckHealthAsync(_context, tokenSource.Token))
-            .Throw<Exception>();
+            .Throw<IOException>();
 
-        HealthCheckResult result = await CreateHealthCheck().CheckHealthAsync(_context, tokenSource.Token);
-
-        await _healthCheck.Received(1).CheckHealthAsync(_context, tokenSource.Token);
-        Assert.Equal(HealthStatus.Unhealthy, result.Status);
+        await Assert.ThrowsAsync<IOException>(() => CreateHealthCheck().CheckHealthAsync(_context, tokenSource.Token));
     }
 
     [Fact]
-    public async Task GivenTheHealthCheckCache_WhenHealthCheckCanceled_ThenTheResultIsWrittenCorrectly()
+    public async Task GivenExpiredHealthCheckCache_WhenHealthCheckCanceled_ThenExceptionIsThrown()
     {
         using CancellationTokenSource tokenSource = new CancellationTokenSource();
 
@@ -187,7 +185,7 @@ public class HealthCheckCachingTests
         _options.Expiry = TimeSpan.FromSeconds(expirySeconds);
         _options.RefreshOffset = TimeSpan.FromSeconds(refreshOffsetSeconds);
 
-        CachedHealthCheck cache = CreateHealthCheck();
+        using CachedHealthCheck cache = CreateHealthCheck();
 
         // Populate cache
         result = await cache.CheckHealthAsync(_context, tokenSource.Token);
@@ -216,18 +214,22 @@ public class HealthCheckCachingTests
     }
 
     [Theory]
-    [InlineData(5, 3, 4, false)] // Stale
-    [InlineData(5, 3, 7, true)] // Expired
-    public async Task GivenTheHealthCheckCache_WhenCancellationIsRequestedOnHealthCheck_ThenReturnAppropriateResult(
+    [InlineData(5, 3, 4, false, false)] // Stale - Exception
+    [InlineData(5, 3, 4, true, false)] // Stale - Cancellation
+    [InlineData(5, 3, 7, false, true)] // Expired - Exception
+    [InlineData(5, 3, 7, true, true)] // Expired - Cancellation
+    public async Task GivenTheHealthCheckCache_WhenExceptionThrownOnHealthCheck_ThenReturnAppropriateResult(
         int expirySeconds,
         int refreshOffsetSeconds,
         int delaySeconds,
+        bool isCancellation,
         bool throwsException)
     {
         HealthCheckResult result;
         using ManualResetEventSlim startRefreshEvent = new ManualResetEventSlim(false);
         using CancellationTokenSource tokenSource = new CancellationTokenSource();
 
+        Exception exception = isCancellation ? new OperationCanceledException(tokenSource.Token) : new IOException();
         _healthCheck
             .CheckHealthAsync(_context, tokenSource.Token)
             .Returns(
@@ -236,14 +238,14 @@ public class HealthCheckCachingTests
                 {
                     startRefreshEvent.Set();
                     tokenSource.Token.WaitHandle.WaitOne();
-                    return Task.FromException<HealthCheckResult>(new OperationCanceledException(tokenSource.Token));
+                    return Task.FromException<HealthCheckResult>(exception);
                 }));
 
         _options.Expiry = TimeSpan.FromSeconds(expirySeconds);
         _options.RefreshOffset = TimeSpan.FromSeconds(refreshOffsetSeconds);
         _options.MaxRefreshThreads = 1;
 
-        CachedHealthCheck cache = CreateHealthCheck();
+        using CachedHealthCheck cache = CreateHealthCheck();
 
         // Populate cache
         result = await cache.CheckHealthAsync(_context, tokenSource.Token);
@@ -263,7 +265,14 @@ public class HealthCheckCachingTests
 
             if (throwsException)
             {
-                await Assert.ThrowsAsync<OperationCanceledException>(() => task);
+                if (isCancellation)
+                {
+                    await Assert.ThrowsAsync<OperationCanceledException>(() => task);
+                }
+                else
+                {
+                    await Assert.ThrowsAsync<IOException>(() => task);
+                }
             }
             else
             {
@@ -303,7 +312,7 @@ public class HealthCheckCachingTests
         _options.RefreshOffset = TimeSpan.FromSeconds(refreshOffsetSeconds);
         _options.MaxRefreshThreads = 1;
 
-        CachedHealthCheck cache = CreateHealthCheck();
+        using CachedHealthCheck cache = CreateHealthCheck();
 
         // Populate cache
         result = await cache.CheckHealthAsync(_context, tokenSource.Token);
@@ -376,7 +385,7 @@ public class HealthCheckCachingTests
         _options.Expiry = TimeSpan.FromSeconds(30);
         _options.MaxRefreshThreads = 2;
 
-        CachedHealthCheck cache = CreateHealthCheck();
+        using CachedHealthCheck cache = CreateHealthCheck();
 
         // Start two threads who will concurrently attempt to populate the cache
         DateTimeOffset now = DateTimeOffset.UtcNow;
@@ -403,8 +412,5 @@ public class HealthCheckCachingTests
     }
 
     private CachedHealthCheck CreateHealthCheck()
-        => new CachedHealthCheck(
-            _healthCheck,
-            Options.Create(_options),
-            LoggerFactory.Create(x => x.AddProvider(NullLoggerProvider.Instance)));
+        => new CachedHealthCheck(_healthCheck, Options.Create(_options), NullLoggerFactory.Instance);
 }
