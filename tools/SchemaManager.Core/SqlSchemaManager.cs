@@ -124,7 +124,7 @@ public class SqlSchemaManager : ISchemaManager
             // Checking the specified version is not out of range of available versions
             if (availableVersions.Count < 1 || targetVersion < availableVersions.First().Id || targetVersion > availableVersions.Last().Id)
             {
-                throw new SchemaManagerException(string.Format(CultureInfo.InvariantCulture, Resources.SpecifiedVersionNotAvailable, targetVersion));
+                throw new SchemaManagerException(string.Format(CultureInfo.CurrentCulture, Resources.SpecifiedVersionNotAvailable, targetVersion));
             }
 
             await ValidateVersionCompatibility(availableVersions.Last().Id, token).ConfigureAwait(false);
@@ -269,7 +269,7 @@ public class SqlSchemaManager : ISchemaManager
 
         if (maxAvailableVersion > compatibleVersion.Max)
         {
-            throw new SchemaManagerException(string.Format(CultureInfo.InvariantCulture, Resources.VersionIncompatibilityMessage, maxAvailableVersion));
+            throw new SchemaManagerException(string.Format(CultureInfo.CurrentCulture, Resources.VersionIncompatibilityMessage, maxAvailableVersion));
         }
     }
 
@@ -300,7 +300,7 @@ public class SqlSchemaManager : ISchemaManager
         // check if any instance is not running on the previous version
         if (currentVersions.Any(currentVersion => currentVersion.Id != (version - 1) && currentVersion.Servers.Count > 0))
         {
-            throw new SchemaManagerException(string.Format(CultureInfo.InvariantCulture, Resources.InvalidVersionMessage, version));
+            throw new SchemaManagerException(string.Format(CultureInfo.CurrentCulture, Resources.InvalidVersionMessage, version));
         }
     }
 

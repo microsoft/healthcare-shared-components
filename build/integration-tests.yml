@@ -1,0 +1,30 @@
+# We create a separate template for these tests because the hosted Windows agents do not support Linux docker containers,
+# and the MS SQL Server team does not provide a docker image whose base image is Windows. Therefore these steps can only run on Linux agents.
+steps:
+- script: docker run -p 10000:10000 -p 10001:10001 -p 10002:10002 -d --rm --name azure-storage mcr.microsoft.com/azure-storage/azurite:latest
+  displayName: 'Start Azurite'
+
+- script: docker run -e "ACCEPT_EULA=Y" -e "SA_PASSWORD=T3stP@ssw0rd" -p 1433:1433 -d --rm --name sql-server mcr.microsoft.com/mssql/server:2019-latest
+  displayName: 'Start SQL Server'
+
+- bash: for i in {1..6}; do docker exec sql-server sh -c "/opt/mssql-tools/bin/sqlcmd -S localhost -U SA -P T3stP@ssw0rd -Q 'SELECT * FROM INFORMATION_SCHEMA.TABLES'" && exit 0 || sleep 5; done; exit 1
+  displayName: 'Wait for SQL Server'
+
+- task: DotNetCoreCLI@2
+  displayName: 'dotnet test Microsoft.Health.SqlServer.Tests.Integration.csproj'
+  inputs:
+    command: test
+    projects: '**/*.Tests.Integration.csproj'
+    arguments: '--configuration $(buildConfiguration) --no-build'
+  env:
+    AzureWebJobsStorage: 'UseDevelopmentStorage=true'
+    DurableTask__ConnectionName: 'AzureWebJobsStorage'
+    TestSqlConnectionString: 'Server=(local);Persist Security Info=False;User ID=sa;Password=T3stP@ssw0rd;MultipleActiveResultSets=False;Connection Timeout=30;TrustServerCertificate=true'
+
+- script: docker stop azure-storage
+  displayName: 'Stop Azurite'
+  condition: always()
+
+- script: docker stop sql-server
+  displayName: 'Stop SQL Server'
+  condition: always()

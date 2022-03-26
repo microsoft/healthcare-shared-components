@@ -27,7 +27,7 @@ public class EventPublisherTests
 
         Assert.Throws<ArgumentNullException>(() =>
         {
-            var eventGridPublisher = new EventGridPublisher(null, new HttpClient(new HttpClientHandler()), "some key");
+            var eventGridPublisher = new EventGridPublisher(null, new HttpClient(), "some key");
         });
     }
 
@@ -46,7 +46,7 @@ public class EventPublisherTests
         Assert.Throws<ArgumentNullException>(() =>
         {
             var testTopicEndPoint = new Uri("https://microsoft-healthcareapis-workspaces.westus2-1.eventgrid-int.azure.net/eventGrid/api/events");
-            var eventGridPublisher = new EventGridPublisher(testTopicEndPoint, new HttpClient(new HttpClientHandler()), null);
+            var eventGridPublisher = new EventGridPublisher(testTopicEndPoint, new HttpClient(), null);
         });
     }
 

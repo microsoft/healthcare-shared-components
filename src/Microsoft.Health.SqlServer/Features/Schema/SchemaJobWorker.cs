@@ -4,6 +4,7 @@
 // -------------------------------------------------------------------------------------------------
 
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Threading;
 using System.Threading.Tasks;
 using EnsureThat;
@@ -51,6 +52,7 @@ public class SchemaJobWorker
         _logger = logger;
     }
 
+    [SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "Continue trying despite errors.")]
     public async Task ExecuteAsync(SchemaInformation schemaInformation, string instanceName, CancellationToken cancellationToken)
     {
         EnsureArg.IsNotNull(schemaInformation, nameof(schemaInformation));

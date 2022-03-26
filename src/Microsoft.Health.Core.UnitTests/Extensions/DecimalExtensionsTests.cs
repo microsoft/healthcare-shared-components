@@ -3,6 +3,7 @@
 // Licensed under the MIT License (MIT). See LICENSE in the repo root for license information.
 // -------------------------------------------------------------------------------------------------
 
+using System.Globalization;
 using Xunit;
 
 namespace Microsoft.Health.Core.Extensions.UnitTests;
@@ -21,8 +22,8 @@ public class DecimalExtensionsTests
     [InlineData(".1234567890123456789012345678", "0")]
     public void GivenADecimal_WhenGetPrecisionModifierIsCalled_ThenCorrectDecimalIsReturned(string input, string expected)
     {
-        var inputDecimal = decimal.Parse(input);
-        var expectedDecimal = decimal.Parse(expected);
+        var inputDecimal = decimal.Parse(input, CultureInfo.InvariantCulture);
+        var expectedDecimal = decimal.Parse(expected, CultureInfo.InvariantCulture);
         Assert.Equal(expectedDecimal, inputDecimal.GetPrescisionModifier());
     }
 }

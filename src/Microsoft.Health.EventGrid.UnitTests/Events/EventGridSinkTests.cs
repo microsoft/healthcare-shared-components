@@ -57,13 +57,13 @@ public class EventGridSinkTests
             .SendEventsAsync(
                 eventGridEvents: Arg.Is<IEnumerable<EventGridEvent>>(predicate: e =>
                     e != null &&
-                    e.First().Id.Equals(_testEventData.Id) &&
+                    e.First().Id.Equals(_testEventData.Id, StringComparison.Ordinal) &&
                     e.First().EventTime.Equals(_testEventData.EventTime) &&
-                    e.First().DataVersion.Equals(_testEventData.DataVersion) &&
-                    e.First().EventType.Equals(_testEventData.EventType) &&
-                    e.First().Subject.Equals(_testEventData.Subject) &&
-                    e.First().Topic.Equals(_testEventData.Topic) &&
-                    e.First().Data.ToString().Equals(_testEventData.Data.ToString())));
+                    e.First().DataVersion.Equals(_testEventData.DataVersion, StringComparison.Ordinal) &&
+                    e.First().EventType.Equals(_testEventData.EventType, StringComparison.Ordinal) &&
+                    e.First().Subject.Equals(_testEventData.Subject, StringComparison.Ordinal) &&
+                    e.First().Topic.Equals(_testEventData.Topic, StringComparison.Ordinal) &&
+                    e.First().Data.ToString().Equals(_testEventData.Data.ToString(), StringComparison.Ordinal)));
     }
 
     /// <summary>
@@ -79,12 +79,12 @@ public class EventGridSinkTests
             .SendEventAsync(
                 eventGridEvent: Arg.Is<EventGridEvent>(e =>
                     e != null &&
-                    e.Id.Equals(_testEventData.Id) &&
+                    e.Id.Equals(_testEventData.Id, StringComparison.Ordinal) &&
                     e.EventTime.Equals(_testEventData.EventTime) &&
-                    e.DataVersion.Equals(_testEventData.DataVersion) &&
-                    e.EventType.Equals(_testEventData.EventType) &&
-                    e.Subject.Equals(_testEventData.Subject) &&
-                    e.Topic.Equals(_testEventData.Topic) &&
-                    e.Data.ToString().Equals(_testEventData.Data.ToString())));
+                    e.DataVersion.Equals(_testEventData.DataVersion, StringComparison.Ordinal) &&
+                    e.EventType.Equals(_testEventData.EventType, StringComparison.Ordinal) &&
+                    e.Subject.Equals(_testEventData.Subject, StringComparison.Ordinal) &&
+                    e.Topic.Equals(_testEventData.Topic, StringComparison.Ordinal) &&
+                    e.Data.ToString().Equals(_testEventData.Data.ToString(), StringComparison.Ordinal)));
     }
 }

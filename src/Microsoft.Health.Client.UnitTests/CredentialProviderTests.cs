@@ -38,7 +38,7 @@ public class CredentialProviderTests
     [Fact]
     public async Task InvalidOAuth2ClientCredential_RetrieveToken_ShouldThrowError()
     {
-        var response = new HttpResponseMessage
+        using var response = new HttpResponseMessage
         {
             StatusCode = HttpStatusCode.BadRequest,
             Content = new StringContent(@"{""error"": ""This is an error!""}"),
@@ -46,10 +46,10 @@ public class CredentialProviderTests
 
         HttpMessageHandler mockHandler = GetMockMessageHandler(
             Arg.Any<HttpRequestMessage>(),
-            Arg.Any<CancellationToken>(),
-            response);
+            response,
+            Arg.Any<CancellationToken>());
 
-        var httpClient = new HttpClient(mockHandler);
+        using var httpClient = new HttpClient(mockHandler);
 
         var credentialConfiguration = new OAuth2ClientCredentialConfiguration(
                     new Uri("https://fakehost/connect/token"),
@@ -65,7 +65,7 @@ public class CredentialProviderTests
     [Fact]
     public async Task InvalidOAuth2UserPasswordCredential_RetrieveToken_ShouldThrowError()
     {
-        var response = new HttpResponseMessage
+        using var response = new HttpResponseMessage
         {
             StatusCode = HttpStatusCode.BadRequest,
             Content = new StringContent(@"{""error"": ""This is an error!""}"),
@@ -73,10 +73,10 @@ public class CredentialProviderTests
 
         HttpMessageHandler mockHandler = GetMockMessageHandler(
             Arg.Any<HttpRequestMessage>(),
-            Arg.Any<CancellationToken>(),
-            response);
+            response,
+            Arg.Any<CancellationToken>());
 
-        var httpClient = new HttpClient(mockHandler);
+        using var httpClient = new HttpClient(mockHandler);
 
         var credentialConfiguration = new OAuth2UserPasswordCredentialConfiguration(
                     new Uri("https://fakehost/connect/token"),
@@ -136,7 +136,7 @@ public class CredentialProviderTests
         Assert.NotEqual(initialResult, secondResult);
     }
 
-    private static HttpMessageHandler GetMockMessageHandler(HttpRequestMessage requestMessage, CancellationToken cancellationToken, HttpResponseMessage responseMessage)
+    private static HttpMessageHandler GetMockMessageHandler(HttpRequestMessage requestMessage, HttpResponseMessage responseMessage, CancellationToken cancellationToken)
     {
         HttpMessageHandler mockHandler = Substitute.For<HttpMessageHandler>();
 

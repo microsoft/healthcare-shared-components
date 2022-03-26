@@ -5,7 +5,7 @@ assembly-file-versioning-scheme: MajorMinorPatch
 ignore:
   sha: []
 branches:
-  master:
+  main:
     regex: ^master$|^main$
     tag: ''
     increment: Patch

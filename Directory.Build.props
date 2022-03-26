@@ -9,23 +9,32 @@
     <EmbedUntrackedSources>true</EmbedUntrackedSources>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <HighEntropyVA>true</HighEntropyVA>
+    <IsPackable>true</IsPackable>
     <LangVersion>latest</LangVersion>
+    <LtsVersion>net6.0</LtsVersion>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <Product>Microsoft Health</Product>
     <PublishRepositoryUrl>true</PublishRepositoryUrl>
-    <SupportedFrameworks>net5.0;net6.0</SupportedFrameworks>
+    <RootDirectory>$(MSBuildThisFileDirectory)</RootDirectory>
+    <SupportedFrameworks>net5.0;$(LtsVersion)</SupportedFrameworks>
     <TargetLatestRuntimePatch>true</TargetLatestRuntimePatch>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <WarningsAsErrors />
   </PropertyGroup>
 
-  <PropertyGroup>
-    <!-- CA1031 - Allow Exception to be caught -->
-    <NoWarn>$(NoWarn);CA1031</NoWarn>
-  </PropertyGroup>
+  <Choose>
+    <When Condition="$(MSBuildProjectName.Contains('Test'))">
+      <PropertyGroup>
+        <IsPackable>false</IsPackable>
+      </PropertyGroup>
+      <ItemGroup>
+        <Compile Include="$(RootDirectory)GlobalSuppressions.Test.cs" Visible="false" />
+      </ItemGroup>
+    </When>
+  </Choose>
 
   <Choose>
-    <When Condition="'$(TargetFramework)' == 'net6.0'">
+    <When Condition="'$(TargetFramework)' == '$(LtsVersion)'">
       <PropertyGroup>
         <SdkPackageVersion>6.0.0</SdkPackageVersion>
       </PropertyGroup>
@@ -37,32 +46,12 @@
     </Otherwise>
   </Choose>
 
-  <Choose>
-    <When Condition="$(MSBuildProjectName.Contains('Test'))">
-      <PropertyGroup>
-        <IsPackable>false</IsPackable>
-        <CodeAnalysisRuleSet>$(MSBuildThisFileDirectory)\CustomAnalysisRules.Test.ruleset</CodeAnalysisRuleSet>
-      </PropertyGroup>
-    </When>
-    <Otherwise>
-      <PropertyGroup>
-        <IsPackable>true</IsPackable>
-        <CodeAnalysisRuleSet>$(MSBuildThisFileDirectory)\CustomAnalysisRules.ruleset</CodeAnalysisRuleSet>
-      </PropertyGroup>
-    </Otherwise>
-  </Choose>
-
-  <ItemGroup>
-    <AdditionalFiles Include="$(MSBuildThisFileDirectory)\stylecop.json" Link="stylecop.json" />
-  </ItemGroup>
-
   <ItemGroup>
     <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.1.1" PrivateAssets="All" />
-    <PackageReference Include="StyleCop.Analyzers" Version="1.1.118" PrivateAssets="All" />
   </ItemGroup>
 
   <Choose>
-    <When Condition="$(MSBuildProjectName)!='Microsoft.Health.Extensions.BuildTimeCodeGenerator' AND !$(MSBuildProjectName.Contains('Test'))">
+    <When Condition="'$(MSBuildProjectName)' != 'Microsoft.Health.Extensions.BuildTimeCodeGenerator'">
       <PropertyGroup>
         <AnalysisLevel>latest-All</AnalysisLevel>
         <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>

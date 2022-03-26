@@ -19,7 +19,7 @@ using Xunit;
 
 namespace Microsoft.Health.SqlServer.UnitTests.Features.Schema;
 
-public class SchemaJobWorkerTests
+public sealed class SchemaJobWorkerTests : IDisposable
 {
     private readonly IServiceProvider _serviceProvider;
     private readonly SqlServerDataStoreConfiguration _sqlServerDataStoreConfiguration;
@@ -28,7 +28,7 @@ public class SchemaJobWorkerTests
     private readonly ILogger<SchemaJobWorker> _logger;
     private readonly ISchemaDataStore _schemaDataStore;
     private readonly SchemaJobWorker _worker;
-    private int _callCount = 0;
+    private int _callCount;
     private readonly CancellationTokenSource _cts = new CancellationTokenSource(1000);
 
     public SchemaJobWorkerTests()
@@ -152,5 +152,11 @@ public class SchemaJobWorkerTests
         }
 
         _processTerminator.DidNotReceiveWithAnyArgs().Terminate(default);
+    }
+
+    public void Dispose()
+    {
+        _cts.Dispose();
+        GC.SuppressFinalize(this);
     }
 }

@@ -3,8 +3,11 @@
 // Licensed under the MIT License (MIT). See LICENSE in the repo root for license information.
 // -------------------------------------------------------------------------------------------------
 
+using System.Diagnostics.CodeAnalysis;
+
 namespace Microsoft.Health.Test.Utilities.UnitTests;
 
+[SuppressMessage("Performance", "CA1822:Mark members as static", Justification = "Type metadata is read via reflection.")]
 public class TestType
 {
     public string Property1 { get; set; }

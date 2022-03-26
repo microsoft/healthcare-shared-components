@@ -1,0 +1,29 @@
+{
+    "version": "2.0",
+    "Extensions": {
+        "DurableTask": {
+            "HubName": "IntegrationTests"
+        }
+    },
+    "Logging": {
+        "FileLoggingMode": "never",
+        "LogLevel": {
+            "default": "Information",
+            "DurableTask": "Warning",
+            "Function": "Warning",
+            "Function.*.User": "Information",
+            "Host": "Warning"
+        }
+    },
+    "PurgeHistory": {
+        "Frequency": "0 0 * * *",
+        "MinimumAgeDays": 7,
+        "Statuses": [ "Completed" ]
+    },
+    "Sorting": {
+        "Ascending": false,
+        "Retry": {
+            "MaxNumberOfAttempts": 3
+        }
+    }
+}

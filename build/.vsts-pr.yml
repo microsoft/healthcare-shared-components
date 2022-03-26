@@ -1,0 +1,22 @@
+# DESCRIPTION:
+# Builds, tests and packages the solution for the CI build configuration.
+variables:
+  buildConfiguration: 'Release'
+  skipNugetSecurityAnalysis: 'true'
+
+pr:
+  branches:
+    include:
+    - main
+  paths:
+    include:
+    - '*'
+    exclude:
+    - docs
+
+trigger: none
+
+jobs:
+- template: .vsts-template.yml
+  parameters:
+    publishSymbols: false

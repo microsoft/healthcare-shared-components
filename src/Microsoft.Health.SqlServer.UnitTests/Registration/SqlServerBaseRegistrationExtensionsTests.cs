@@ -27,7 +27,7 @@ public class SqlServerBaseRegistrationExtensionsTests
     }
 
     [Fact]
-    [Obsolete]
+    [Obsolete("To be removed when AddSqlServerBase is deleted.")]
     public void GivenEmptyServiceCollection_WhenAddingSqlServerBase_ThenAddNewServices()
     {
         var services = new ServiceCollection();

@@ -4,6 +4,7 @@
 // -------------------------------------------------------------------------------------------------
 
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Data.SqlClient;
@@ -17,13 +18,18 @@ namespace Microsoft.Health.SqlServer.Tests.Integration;
 
 public abstract class SqlIntegrationTestBase : IAsyncLifetime
 {
-    public SqlIntegrationTestBase(ITestOutputHelper outputHelper)
+    protected SqlIntegrationTestBase(ITestOutputHelper outputHelper)
     {
         Output = outputHelper;
-        DatabaseName = $"IntegrationTests_BaseSchemaRunner_{Guid.NewGuid().ToString().Replace("-", string.Empty)}";
+        DatabaseName = $"IntegrationTests_BaseSchemaRunner_{Guid.NewGuid().ToString().Replace("-", string.Empty, StringComparison.Ordinal)}";
+        var builder = new SqlConnectionStringBuilder(Environment.GetEnvironmentVariable("TestSqlConnectionString") ?? $"server=(local);Integrated Security=true")
+        {
+            InitialCatalog = DatabaseName
+        };
+
         Config = new SqlServerDataStoreConfiguration
         {
-            ConnectionString = Environment.GetEnvironmentVariable("TestSqlConnectionString") ?? $"server=(local);Initial Catalog={DatabaseName};Integrated Security=true",
+            ConnectionString = builder.ToString(),
             AllowDatabaseCreation = true,
         };
 
@@ -68,8 +74,14 @@ public abstract class SqlIntegrationTestBase : IAsyncLifetime
         await Connection.DisposeAsync();
     }
 
+    [SuppressMessage("Security", "CA2100:Review SQL queries for security vulnerabilities", Justification = "Database name is validated.")]
     protected async Task DeleteDatabaseAsync(string dbName)
     {
+        if (!Identifier.IsValidDatabase(dbName))
+        {
+            throw new ArgumentException($"Invalid DB identifier '{dbName}'", nameof(dbName));
+        }
+
         using var deleteDatabaseCommand = new SqlCommand($"ALTER DATABASE {dbName} SET SINGLE_USER WITH ROLLBACK IMMEDIATE; DROP DATABASE {dbName};", Connection);
         if (Connection.Database == dbName)
         {
