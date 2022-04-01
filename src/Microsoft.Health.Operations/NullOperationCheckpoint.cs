@@ -5,7 +5,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
 
 namespace Microsoft.Health.Operations;
 
@@ -30,7 +29,7 @@ public sealed class NullOperationCheckpoint : IOperationCheckpoint
     public IReadOnlyCollection<string>? ResourceIds => null;
 
     /// <inheritdoc cref="IOperationCheckpoint.AdditionalProperties" />
-    public IEnumerable<KeyValuePair<string, string>> AdditionalProperties => Enumerable.Empty<KeyValuePair<string, string>>();
+    public IReadOnlyDictionary<string, string>? AdditionalProperties => null;
 
     private NullOperationCheckpoint()
     { }

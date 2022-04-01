@@ -6,7 +6,6 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.Linq;
 using EnsureThat;
 using Microsoft.Health.Operations;
 using Newtonsoft.Json;
@@ -25,7 +24,7 @@ internal class SortingCheckpoint : SortingInput, IOperationCheckpoint
     [JsonProperty(nameof(SortedLength), DefaultValueHandling = DefaultValueHandling.Populate)]
     public int SortedLength { get; }
 
-    public IEnumerable<KeyValuePair<string, string>> AdditionalProperties => Enumerable.Empty<KeyValuePair<string, string>>();
+    public IReadOnlyDictionary<string, string>? AdditionalProperties => null;
 
     public SortingCheckpoint(int[] values, int sortedLength = 1, DateTime? createdTime = null)
         : base(values)

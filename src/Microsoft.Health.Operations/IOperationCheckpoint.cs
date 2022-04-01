@@ -38,8 +38,8 @@ public interface IOperationCheckpoint
     IReadOnlyCollection<string>? ResourceIds { get; }
 
     /// <summary>
-    /// Gets the collection of operation-specific properties.
+    /// Gets the optional collection of operation-specific properties.
     /// </summary>
     /// <value>Zero or more key-value pairs based on the <see cref="OperationState{T}.Type"/>.</value>
-    IEnumerable<KeyValuePair<string, string>> AdditionalProperties { get; }
+    IReadOnlyDictionary<string, string>? AdditionalProperties { get; }
 }

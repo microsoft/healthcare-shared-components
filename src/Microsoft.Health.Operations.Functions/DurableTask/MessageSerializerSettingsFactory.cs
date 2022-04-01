@@ -3,6 +3,8 @@
 // Licensed under the MIT License (MIT). See LICENSE in the repo root for license information.
 // -------------------------------------------------------------------------------------------------
 
+using System;
+using EnsureThat;
 using Microsoft.Azure.WebJobs.Extensions.DurableTask;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
@@ -17,8 +19,14 @@ public sealed class MessageSerializerSettingsFactory : IMessageSerializerSetting
 {
     private readonly IOptions<JsonSerializerSettings> _options;
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="MessageSerializerSettingsFactory"/> class
+    /// based on the given <paramref name="serializerSettings"/>.
+    /// </summary>
+    /// <param name="serializerSettings">The JSON.NET serialization settings.</param>
+    /// <exception cref="ArgumentNullException"><paramref name="serializerSettings"/> is <see langword="null"/>.</exception>
     public MessageSerializerSettingsFactory(IOptions<JsonSerializerSettings> serializerSettings)
-        => _options = serializerSettings;
+        => _options = EnsureArg.IsNotNull(serializerSettings, nameof(serializerSettings));
 
     /// <summary>
     /// Gets the <see cref="JsonSerializerSettings"/> as configured by the service container.
