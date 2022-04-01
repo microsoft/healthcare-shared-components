@@ -23,10 +23,13 @@ public sealed class NullOperationCheckpoint : IOperationCheckpoint
     public DateTime? CreatedTime => null;
 
     /// <inheritdoc cref="IOperationCheckpoint.PercentComplete" />
-    public int PercentComplete => 0;
+    public int? PercentComplete => 0;
 
     /// <inheritdoc cref="IOperationCheckpoint.ResourceIds" />
     public IReadOnlyCollection<string>? ResourceIds => null;
+
+    /// <inheritdoc cref="IOperationCheckpoint.AdditionalProperties" />
+    public IReadOnlyDictionary<string, string>? AdditionalProperties => null;
 
     private NullOperationCheckpoint()
     { }
