@@ -11,7 +11,7 @@ using Microsoft.Health.Operations.Serialization;
 namespace Microsoft.Health.Operations;
 
 /// <summary>
-/// Represents a reference to an existing long-running oepration.
+/// Represents a reference to an existing long-running operation.
 /// </summary>
 public class OperationReference
 {

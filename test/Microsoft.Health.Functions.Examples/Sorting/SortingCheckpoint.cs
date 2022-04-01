@@ -6,6 +6,7 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Linq;
 using EnsureThat;
 using Microsoft.Health.Operations;
 using Newtonsoft.Json;
@@ -16,13 +17,17 @@ internal class SortingCheckpoint : SortingInput, IOperationCheckpoint
 {
     public DateTime? CreatedTime { get; }
 
-    public int PercentComplete => Values.Length == 0 ? 100 : (int)((double)SortedLength / Values.Length * 100);
+    public int? PercentComplete => Values.Length == 0 ? 100 : (int)((double)SortedLength / Values.Length * 100);
 
     public IReadOnlyCollection<string>? ResourceIds => null;
 
     [DefaultValue(1)]
     [JsonProperty(nameof(SortedLength), DefaultValueHandling = DefaultValueHandling.Populate)]
     public int SortedLength { get; }
+
+    int? IOperationCheckpoint.PercentComplete => throw new NotImplementedException();
+
+    public IEnumerable<KeyValuePair<string, string>> AdditionalProperties => Enumerable.Empty<KeyValuePair<string, string>>();
 
     public SortingCheckpoint(int[] values, int sortedLength = 1, DateTime? createdTime = null)
         : base(values)

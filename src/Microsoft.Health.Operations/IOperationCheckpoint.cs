@@ -23,10 +23,10 @@ public interface IOperationCheckpoint
     DateTime? CreatedTime { get; }
 
     /// <summary>
-    /// Gets the percentage of work that has been completed by the operation.
+    /// Gets the optional percentage of work that has been completed by the operation.
     /// </summary>
     /// <value>An integer ranging from 0 to 100.</value>
-    int PercentComplete { get; }
+    int? PercentComplete { get; }
 
     /// <summary>
     /// Gets the optional collection of resources IDs that the operation is creating or manipulating.
@@ -36,4 +36,10 @@ public interface IOperationCheckpoint
     /// </remarks>
     /// <value>A collection of resource IDs, or <see langword="null"/> if there are no targeted resources.</value>
     IReadOnlyCollection<string>? ResourceIds { get; }
+
+    /// <summary>
+    /// Gets the collection of operation-specific properties.
+    /// </summary>
+    /// <value>Zero or more key-value pairs based on the <see cref="OperationState{T}.Type"/>.</value>
+    IEnumerable<KeyValuePair<string, string>> AdditionalProperties { get; }
 }

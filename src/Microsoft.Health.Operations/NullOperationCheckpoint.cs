@@ -5,6 +5,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace Microsoft.Health.Operations;
 
@@ -23,10 +24,13 @@ public sealed class NullOperationCheckpoint : IOperationCheckpoint
     public DateTime? CreatedTime => null;
 
     /// <inheritdoc cref="IOperationCheckpoint.PercentComplete" />
-    public int PercentComplete => 0;
+    public int? PercentComplete => 0;
 
     /// <inheritdoc cref="IOperationCheckpoint.ResourceIds" />
     public IReadOnlyCollection<string>? ResourceIds => null;
+
+    /// <inheritdoc cref="IOperationCheckpoint.AdditionalProperties" />
+    public IEnumerable<KeyValuePair<string, string>> AdditionalProperties => Enumerable.Empty<KeyValuePair<string, string>>();
 
     private NullOperationCheckpoint()
     { }

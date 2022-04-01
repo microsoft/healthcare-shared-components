@@ -9,7 +9,7 @@ using Newtonsoft.Json;
 namespace Microsoft.Health.Operations.Functions.DurableTask;
 
 /// <summary>
-/// Represents a <see cref="IMessageSerializerSettingsFactory"/> whose serialization settings match those
+/// Represents an <see cref="IMessageSerializerSettingsFactory"/> whose serialization settings match those
 /// found in the Durable Task Framework (DTFx).
 /// </summary>
 /// <remarks>
