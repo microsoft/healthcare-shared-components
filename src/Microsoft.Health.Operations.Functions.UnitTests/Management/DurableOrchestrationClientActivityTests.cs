@@ -22,7 +22,7 @@ public class DurableOrchestrationClientActivityTests
 
         IDurableActivityContext context = Substitute.For<IDurableActivityContext>();
         context.InstanceId.Returns(instanceId);
-        context.GetInput<GetInstanceStatusOptions>().Returns(new GetInstanceStatusOptions(false, false, false));
+        context.GetInput<GetInstanceStatusOptions>().Returns(new GetInstanceStatusOptions());
 
         // Note: this scenario should not happen, as an orchestration should be the one invoking this activity!
         IDurableOrchestrationClient client = Substitute.For<IDurableOrchestrationClient>();
@@ -46,7 +46,7 @@ public class DurableOrchestrationClientActivityTests
 
         IDurableActivityContext context = Substitute.For<IDurableActivityContext>();
         context.InstanceId.Returns(instanceId);
-        context.GetInput<GetInstanceStatusOptions>().Returns(new GetInstanceStatusOptions(true, true, false));
+        context.GetInput<GetInstanceStatusOptions>().Returns(new GetInstanceStatusOptions { ShowHistory = true, ShowHistoryOutput = true });
 
         IDurableOrchestrationClient client = Substitute.For<IDurableOrchestrationClient>();
         client.GetStatusAsync(instanceId, true, true, false).Returns(Task.FromResult(expected));
