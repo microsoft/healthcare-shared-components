@@ -21,7 +21,8 @@ public class DurableOrchestrationClientActivityTests
         string instanceId = OperationId.Generate();
 
         IDurableActivityContext context = Substitute.For<IDurableActivityContext>();
-        context.GetInput<GetInstanceStatusInput>().Returns(new GetInstanceStatusInput(instanceId, false, false, false));
+        context.InstanceId.Returns(instanceId);
+        context.GetInput<GetInstanceStatusOptions>().Returns(new GetInstanceStatusOptions(false, false, false));
 
         // Note: this scenario should not happen, as an orchestration should be the one invoking this activity!
         IDurableOrchestrationClient client = Substitute.For<IDurableOrchestrationClient>();
@@ -32,7 +33,7 @@ public class DurableOrchestrationClientActivityTests
 
         // Assert behavior
         Assert.Null(actual);
-        context.Received(1).GetInput<GetInstanceStatusInput>();
+        context.Received(1).GetInput<GetInstanceStatusOptions>();
         await client.Received(1).GetStatusAsync(instanceId, false, false, false);
     }
 
@@ -44,7 +45,8 @@ public class DurableOrchestrationClientActivityTests
         var expected = new DurableOrchestrationStatus { InstanceId = instanceId };
 
         IDurableActivityContext context = Substitute.For<IDurableActivityContext>();
-        context.GetInput<GetInstanceStatusInput>().Returns(new GetInstanceStatusInput(instanceId, true, true, false));
+        context.InstanceId.Returns(instanceId);
+        context.GetInput<GetInstanceStatusOptions>().Returns(new GetInstanceStatusOptions(true, true, false));
 
         IDurableOrchestrationClient client = Substitute.For<IDurableOrchestrationClient>();
         client.GetStatusAsync(instanceId, true, true, false).Returns(Task.FromResult(expected));
@@ -54,7 +56,7 @@ public class DurableOrchestrationClientActivityTests
 
         // Assert behavior
         Assert.Same(expected, actual);
-        context.Received(1).GetInput<GetInstanceStatusInput>();
+        context.Received(1).GetInput<GetInstanceStatusOptions>();
         await client.Received(1).GetStatusAsync(instanceId, true, true, false);
     }
 }

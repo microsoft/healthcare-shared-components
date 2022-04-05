@@ -64,14 +64,12 @@ public sealed class PurgeOrchestrationInstanceHistory
             log.LogWarning("Current function invocation is running late.");
         }
 
-        DateTimeOffset end = Clock.UtcNow;
-        DateTimeOffset start = end - _minimumAge;
-        log.LogInformation("Purging all orchestration instances with status in {{{Statuses}}} that started between '{Start}' and '{End}'",
+        DateTimeOffset end = Clock.UtcNow - _minimumAge;
+        log.LogInformation("Purging all orchestration instances with status in {{{Statuses}}} that started before '{End}'.",
             string.Join(", ", _statuses),
-            start,
             end);
 
-        PurgeHistoryResult result = await client.PurgeInstanceHistoryAsync(start.UtcDateTime, end.UtcDateTime, _statuses);
+        PurgeHistoryResult result = await client.PurgeInstanceHistoryAsync(DateTime.MinValue, end.UtcDateTime, _statuses);
 
         if (result.InstancesDeleted > 0)
         {

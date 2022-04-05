@@ -39,7 +39,7 @@ public static class DurableOrchestrationClientActivity
 
         logger.LogInformation("Fetching status for orchestration instance ID '{InstanceId}'.", context.InstanceId);
 
-        GetInstanceStatusInput input = context.GetInput<GetInstanceStatusInput>();
-        return client.GetStatusAsync(input.InstanceId, input.ShowHistory, input.ShowHistoryOutput, input.ShowInput);
+        GetInstanceStatusOptions options = context.GetInput<GetInstanceStatusOptions>();
+        return client.GetStatusAsync(context.InstanceId, options.ShowHistory, options.ShowHistoryOutput, options.ShowInput);
     }
 }
