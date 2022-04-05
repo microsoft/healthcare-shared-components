@@ -9,6 +9,8 @@ using System.Threading;
 using System.Threading.Tasks;
 using EnsureThat;
 using Microsoft.Data.SqlClient;
+using Microsoft.Extensions.Options;
+using Microsoft.Health.SqlServer.Configs;
 using Microsoft.Health.SqlServer.Features.Storage;
 
 namespace Microsoft.Health.SqlServer.Features.Client;
@@ -19,6 +21,7 @@ public class SqlConnectionWrapper : IDisposable
     private readonly SqlTransactionHandler _sqlTransactionHandler;
     private readonly ISqlConnectionBuilder _sqlConnectionBuilder;
     private readonly SqlRetryLogicBaseProvider _sqlRetryLogicBaseProvider;
+    private readonly SqlServerDataStoreConfiguration _sqlServerDataStoreConfiguration;
     private SqlConnection _sqlConnection;
     private SqlTransaction _sqlTransaction;
 
@@ -26,11 +29,15 @@ public class SqlConnectionWrapper : IDisposable
         SqlTransactionHandler sqlTransactionHandler,
         ISqlConnectionBuilder connectionBuilder,
         SqlRetryLogicBaseProvider sqlRetryLogicBaseProvider,
-        bool enlistInTransactionIfPresent)
+        bool enlistInTransactionIfPresent,
+        SqlServerDataStoreConfiguration sqlServerDataStoreConfiguration)
     {
         EnsureArg.IsNotNull(sqlTransactionHandler, nameof(sqlTransactionHandler));
         EnsureArg.IsNotNull(connectionBuilder, nameof(connectionBuilder));
         EnsureArg.IsNotNull(sqlRetryLogicBaseProvider, nameof(sqlRetryLogicBaseProvider));
+        EnsureArg.IsNotNull(sqlServerDataStoreConfiguration, nameof(sqlServerDataStoreConfiguration));
+
+        _sqlServerDataStoreConfiguration = EnsureArg.IsNotNull(sqlServerDataStoreConfiguration, nameof(sqlServerDataStoreConfiguration));
 
         _sqlTransactionHandler = sqlTransactionHandler;
         _enlistInTransactionIfPresent = enlistInTransactionIfPresent;
@@ -96,6 +103,7 @@ public class SqlConnectionWrapper : IDisposable
     public SqlCommandWrapper CreateRetrySqlCommand()
     {
         SqlCommand sqlCommand = SqlConnection.CreateCommand();
+        sqlCommand.CommandTimeout = (int)_sqlServerDataStoreConfiguration.CommandTimeout.TotalSeconds;
         sqlCommand.Transaction = SqlTransaction;
         sqlCommand.RetryLogicProvider = _sqlRetryLogicBaseProvider;
         return new SqlCommandWrapper(sqlCommand);
@@ -108,6 +116,7 @@ public class SqlConnectionWrapper : IDisposable
     public SqlCommandWrapper CreateNonRetrySqlCommand()
     {
         SqlCommand sqlCommand = SqlConnection.CreateCommand();
+        sqlCommand.CommandTimeout = (int)_sqlServerDataStoreConfiguration.CommandTimeout.TotalSeconds;
         sqlCommand.Transaction = SqlTransaction;
         return new SqlCommandWrapper(sqlCommand);
     }
