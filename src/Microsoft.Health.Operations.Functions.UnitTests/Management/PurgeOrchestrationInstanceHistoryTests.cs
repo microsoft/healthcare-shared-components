@@ -47,8 +47,8 @@ public class PurgeOrchestrationInstanceHistoryTests
     {
         _durableClient
             .PurgeInstanceHistoryAsync(
+                DateTime.MinValue,
                 _utcNow.AddDays(-_purgeConfig.MinimumAgeDays),
-                _utcNow,
                 _purgeConfig.Statuses)
             .Returns(new PurgeHistoryResult(deleted));
 
@@ -60,8 +60,8 @@ public class PurgeOrchestrationInstanceHistoryTests
         await _durableClient
             .Received(1)
             .PurgeInstanceHistoryAsync(
+                DateTime.MinValue,
                 _utcNow.AddDays(-_purgeConfig.MinimumAgeDays),
-                _utcNow,
                 _purgeConfig.Statuses);
     }
 }

@@ -67,7 +67,7 @@ public static class IDurableContextExtensions
         // so this value can be preserved in the input or custom status
         EnsureArg.IsNotNull(context, nameof(context));
 
-        var input = new GetInstanceStatusInput(context.InstanceId, showHistory: false, showHistoryOutput: false, showInput: false);
+        var input = new GetInstanceStatusOptions { ShowHistory = false, ShowHistoryOutput = false, ShowInput = false };
         DurableOrchestrationStatus status = retryOptions is not null
             ? await context.CallActivityWithRetryAsync<DurableOrchestrationStatus>(nameof(DurableOrchestrationClientActivity.GetInstanceStatusAsync), retryOptions, input)
             : await context.CallActivityAsync<DurableOrchestrationStatus>(nameof(DurableOrchestrationClientActivity.GetInstanceStatusAsync), input);
