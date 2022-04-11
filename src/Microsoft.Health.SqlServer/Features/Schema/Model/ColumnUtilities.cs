@@ -4,7 +4,9 @@
 // -------------------------------------------------------------------------------------------------
 
 using System;
+using System.Data.SqlTypes;
 using System.Globalization;
+using Microsoft.Data.SqlClient.Server;
 
 namespace Microsoft.Health.SqlServer.Features.Schema.Model;
 
@@ -23,6 +25,13 @@ internal static class ColumnUtilities
         else
         {
             throw new ArgumentOutOfRangeException(string.Format(CultureInfo.CurrentCulture, "Precision {0} must be between 1 & 53", precision));
+        }
+    }
+    internal static void ValidateLength(SqlMetaData sqlMetaData, decimal value)
+    {
+        if (((SqlDecimal)value).Precision > sqlMetaData.Precision || ((SqlDecimal)value).Scale > sqlMetaData.Scale)
+        {
+            throw new SqlTruncateException(string.Format(CultureInfo.CurrentCulture, Resources.DecimalValueOutOfRange, value, sqlMetaData.Precision, sqlMetaData.Scale));
         }
     }
 }

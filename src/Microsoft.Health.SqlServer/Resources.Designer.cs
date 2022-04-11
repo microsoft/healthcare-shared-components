@@ -115,6 +115,15 @@ namespace Microsoft.Health.SqlServer {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Value {0} is out of range of expected precision of {1} and scale of {2}.
+        /// </summary>
+        internal static string DecimalValueOutOfRange {
+            get {
+                return ResourceManager.GetString("DecimalValueOutOfRange", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to The current version information could not be fetched from the service. Please try again..
         /// </summary>
         internal static string InstanceSchemaRecordErrorMessage {
