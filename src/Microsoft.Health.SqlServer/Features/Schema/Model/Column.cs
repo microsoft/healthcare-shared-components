@@ -8,7 +8,6 @@ using System.Buffers;
 using System.Data;
 using System.Data.SqlTypes;
 using System.Diagnostics.CodeAnalysis;
-using System.Globalization;
 using System.IO;
 using EnsureThat;
 using Microsoft.Data.SqlClient;
