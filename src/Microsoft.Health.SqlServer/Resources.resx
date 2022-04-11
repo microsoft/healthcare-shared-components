@@ -136,6 +136,10 @@
   <data name="CurrentSchemaVersionStoredProcedureNotFound" xml:space="preserve">
     <value>Could not find stored procedure 'dbo.SelectCurrentSchemaVersion'.</value>
   </data>
+  <data name="DecimalValueOutOfRange" xml:space="preserve">
+    <value>Value {0} is out of range of expected precision of {1} and scale of {2}.</value>
+    <comment>{0} is the decimal value, {1} is the precision expected and {2} is the scale expected</comment>
+  </data>
   <data name="InstanceSchemaRecordErrorMessage" xml:space="preserve">
     <value>The current version information could not be fetched from the service. Please try again.</value>
   </data>

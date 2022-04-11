@@ -17,8 +17,6 @@ namespace Microsoft.Health.Extensions.BuildTimeCodeGenerator;
 
 internal class Program
 {
-    private static HashSet<Assembly> cache = new HashSet<Assembly>();
-
     public static void Main(string generatorName, FileInfo outputFile, string @namespace, string[] args = null)
     {
         string className = Path.GetFileName(outputFile.Name).Split('.')[0];

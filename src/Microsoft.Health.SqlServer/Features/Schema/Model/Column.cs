@@ -8,6 +8,7 @@ using System.Buffers;
 using System.Data;
 using System.Data.SqlTypes;
 using System.Diagnostics.CodeAnalysis;
+using System.Globalization;
 using System.IO;
 using EnsureThat;
 using Microsoft.Data.SqlClient;
@@ -240,6 +241,7 @@ public class DecimalColumn : Column<decimal>
     public override void Set(SqlDataRecord record, int ordinal, decimal value)
     {
         EnsureArg.IsNotNull(record, nameof(record));
+        ColumnUtilities.ValidateLength(Metadata, value);
         record.SetDecimal(ordinal, value);
     }
 }
@@ -479,6 +481,7 @@ public class NullableDecimalColumn : Column<decimal?>
 
         if (value.HasValue)
         {
+            ColumnUtilities.ValidateLength(Metadata, value.Value);
             record.SetDecimal(ordinal, value.Value);
         }
         else
