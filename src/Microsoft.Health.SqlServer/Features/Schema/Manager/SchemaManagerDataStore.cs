@@ -150,8 +150,7 @@ public class SchemaManagerDataStore : ISchemaManagerDataStore
             sqlCommandWrapper.Parameters.AddWithValue("@name", objectName);
             sqlCommandWrapper.Parameters.AddWithValue("@type", objectType);
 
-            var test = await sqlCommandWrapper.ExecuteScalarAsync(cancellationToken);
-            return (int)test != 0;
+            return (int)await sqlCommandWrapper.ExecuteScalarAsync(cancellationToken).ConfigureAwait(false) != 0;
         }
     }
 
