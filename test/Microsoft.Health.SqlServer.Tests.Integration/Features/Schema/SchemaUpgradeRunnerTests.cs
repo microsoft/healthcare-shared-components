@@ -10,8 +10,10 @@ using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 using Microsoft.Health.SqlServer.Configs;
+using Microsoft.Health.SqlServer.Features.Client;
 using Microsoft.Health.SqlServer.Features.Schema;
 using Microsoft.Health.SqlServer.Features.Schema.Manager;
+using Microsoft.Health.SqlServer.Features.Storage;
 using Microsoft.SqlServer.Management.Common;
 using NSubstitute;
 using Xunit;
@@ -19,10 +21,11 @@ using Xunit.Abstractions;
 
 namespace Microsoft.Health.SqlServer.Tests.Integration.Features.Schema;
 
-public class SchemaUpgradeRunnerTests : SqlIntegrationTestBase
+public sealed class SchemaUpgradeRunnerTests : SqlIntegrationTestBase, IDisposable
 {
     private SchemaUpgradeRunner _runner;
     private SchemaManagerDataStore _schemaDataStore;
+    private SqlTransactionHandler _sqlTransactionHandler = new SqlTransactionHandler();
 
     public SchemaUpgradeRunnerTests(ITestOutputHelper outputHelper)
         : base(outputHelper)
@@ -36,8 +39,12 @@ public class SchemaUpgradeRunnerTests : SqlIntegrationTestBase
         var sqlConnection = Substitute.For<ISqlConnectionBuilder>();
         sqlConnection.GetSqlConnectionAsync(Arg.Any<string>(), Arg.Any<CancellationToken>()).ReturnsForAnyArgs((x) => GetSqlConnection());
         var config = Options.Create(new SqlServerDataStoreConfiguration());
-        _schemaDataStore = new SchemaManagerDataStore(sqlConnection, config, NullLogger<SchemaManagerDataStore>.Instance);
-        _runner = new SchemaUpgradeRunner(new ScriptProvider<SchemaVersion>(), new BaseScriptProvider(), NullLogger<SchemaUpgradeRunner>.Instance, sqlConnection, _schemaDataStore);
+
+        SqlRetryLogicBaseProvider sqlRetryLogicBaseProvider = SqlConfigurableRetryFactory.CreateFixedRetryProvider(new SqlClientRetryOptions().Settings);
+        var sqlConnectionWrapperFactory = new SqlConnectionWrapperFactory(_sqlTransactionHandler, sqlConnection, sqlRetryLogicBaseProvider, config);
+
+        _schemaDataStore = new SchemaManagerDataStore(sqlConnectionWrapperFactory, config, NullLogger<SchemaManagerDataStore>.Instance);
+        _runner = new SchemaUpgradeRunner(new ScriptProvider<SchemaVersion>(), new BaseScriptProvider(), NullLogger<SchemaUpgradeRunner>.Instance, sqlConnectionWrapperFactory, _schemaDataStore);
     }
 
     [Fact]
@@ -98,5 +105,11 @@ public class SchemaUpgradeRunnerTests : SqlIntegrationTestBase
         await _runner.ApplySchemaAsync(3, applyFullSchemaSnapshot: false, CancellationToken.None);
         version = await _schemaDataStore.GetCurrentSchemaVersionAsync(CancellationToken.None);
         Assert.Equal(3, version);
+    }
+
+    public void Dispose()
+    {
+        _sqlTransactionHandler.Dispose();
+        GC.SuppressFinalize(this);
     }
 }
