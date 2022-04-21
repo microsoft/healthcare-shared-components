@@ -8,7 +8,7 @@
 
   <ItemGroup>
     <PackageReference Include="Ensure.That" Version="10.1.0" />
-    <PackageReference Include="Microsoft.Azure.DurableTask.Core" Version="2.8.0" />
+    <PackageReference Include="Microsoft.Azure.DurableTask.Core" Version="2.9.0" />
     <PackageReference Include="Microsoft.Azure.Functions.Extensions" Version="1.1.0" />
     <PackageReference Include="Microsoft.Azure.WebJobs.Core" Version="3.0.32" />
     <PackageReference Include="Microsoft.Azure.WebJobs.Extensions" Version="4.0.1" />
