@@ -11,7 +11,6 @@ using EnsureThat;
 using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.Logging;
 using Microsoft.Health.SqlServer.Extensions;
-using Microsoft.Health.SqlServer.Features.Client;
 using Microsoft.Health.SqlServer.Features.Schema.Manager;
 using Microsoft.SqlServer.Management.Common;
 
@@ -22,26 +21,26 @@ public class SchemaUpgradeRunner
     private readonly IScriptProvider _scriptProvider;
     private readonly IBaseScriptProvider _baseScriptProvider;
     private readonly ILogger<SchemaUpgradeRunner> _logger;
-    private readonly SqlConnectionWrapperFactory _sqlConnectionWrapperFactory;
+    private readonly ISqlConnectionBuilder _sqlConnectionBuilder;
     private ISchemaManagerDataStore _schemaManagerDataStore;
 
     public SchemaUpgradeRunner(
         IScriptProvider scriptProvider,
         IBaseScriptProvider baseScriptProvider,
         ILogger<SchemaUpgradeRunner> logger,
-        SqlConnectionWrapperFactory sqlConnectionWrapperFactory,
+        ISqlConnectionBuilder sqlConnectionBuilder,
         ISchemaManagerDataStore schemaManagerDataStore)
     {
         EnsureArg.IsNotNull(scriptProvider, nameof(scriptProvider));
         EnsureArg.IsNotNull(baseScriptProvider, nameof(baseScriptProvider));
         EnsureArg.IsNotNull(logger, nameof(logger));
-        EnsureArg.IsNotNull(sqlConnectionWrapperFactory, nameof(sqlConnectionWrapperFactory));
+        EnsureArg.IsNotNull(sqlConnectionBuilder, nameof(sqlConnectionBuilder));
         EnsureArg.IsNotNull(schemaManagerDataStore, nameof(schemaManagerDataStore));
 
         _scriptProvider = scriptProvider;
         _baseScriptProvider = baseScriptProvider;
         _logger = logger;
-        _sqlConnectionWrapperFactory = sqlConnectionWrapperFactory;
+        _sqlConnectionBuilder = sqlConnectionBuilder;
         _schemaManagerDataStore = schemaManagerDataStore;
     }
 
@@ -98,14 +97,15 @@ public class SchemaUpgradeRunner
 
     private async Task UpsertSchemaVersionAsync(int schemaVersion, string status, CancellationToken cancellationToken)
     {
-        using SqlConnectionWrapper sqlConnectionWrapper = await _sqlConnectionWrapperFactory.ObtainSqlConnectionWrapperAsync(cancellationToken: cancellationToken);
-        using SqlCommandWrapper sqlCommandWrapper = sqlConnectionWrapper.CreateRetrySqlCommand();
+        using (var connection = await _sqlConnectionBuilder.GetSqlConnectionAsync(cancellationToken: cancellationToken))
+        using (var upsertCommand = new SqlCommand("dbo.UpsertSchemaVersion", connection))
+        {
+            upsertCommand.CommandType = CommandType.StoredProcedure;
+            upsertCommand.Parameters.AddWithValue("@version", schemaVersion);
+            upsertCommand.Parameters.AddWithValue("@status", status);
 
-        sqlCommandWrapper.CommandText = "dbo.UpsertSchemaVersion";
-        sqlCommandWrapper.CommandType = CommandType.StoredProcedure;
-        sqlCommandWrapper.Parameters.AddWithValue("@version", schemaVersion);
-        sqlCommandWrapper.Parameters.AddWithValue("@status", status);
-
-        await sqlCommandWrapper.ExecuteNonQueryAsync(cancellationToken);
+            await connection.TryOpenAsync(cancellationToken);
+            await upsertCommand.ExecuteNonQueryAsync(cancellationToken);
+        }
     }
 }
