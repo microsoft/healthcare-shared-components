@@ -98,15 +98,14 @@ public class SchemaUpgradeRunner
 
     private async Task UpsertSchemaVersionAsync(int schemaVersion, string status, CancellationToken cancellationToken)
     {
-        using (SqlConnectionWrapper sqlConnectionWrapper = await _sqlConnectionWrapperFactory.ObtainSqlConnectionWrapperAsync(cancellationToken: cancellationToken))
-        using (SqlCommandWrapper sqlCommandWrapper = sqlConnectionWrapper.CreateRetrySqlCommand())
-        {
-            sqlCommandWrapper.CommandText = "dbo.UpsertSchemaVersion";
-            sqlCommandWrapper.CommandType = CommandType.StoredProcedure;
-            sqlCommandWrapper.Parameters.AddWithValue("@version", schemaVersion);
-            sqlCommandWrapper.Parameters.AddWithValue("@status", status);
+        using SqlConnectionWrapper sqlConnectionWrapper = await _sqlConnectionWrapperFactory.ObtainSqlConnectionWrapperAsync(cancellationToken: cancellationToken);
+        using SqlCommandWrapper sqlCommandWrapper = sqlConnectionWrapper.CreateRetrySqlCommand();
 
-            await sqlCommandWrapper.ExecuteNonQueryAsync(cancellationToken);
-        }
+        sqlCommandWrapper.CommandText = "dbo.UpsertSchemaVersion";
+        sqlCommandWrapper.CommandType = CommandType.StoredProcedure;
+        sqlCommandWrapper.Parameters.AddWithValue("@version", schemaVersion);
+        sqlCommandWrapper.Parameters.AddWithValue("@status", status);
+
+        await sqlCommandWrapper.ExecuteNonQueryAsync(cancellationToken);
     }
 }
