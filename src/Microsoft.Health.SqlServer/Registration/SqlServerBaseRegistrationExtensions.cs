@@ -48,7 +48,7 @@ public static class SqlServerBaseRegistrationExtensions
         services.TryAddSingleton(p => p.GetServices<IHostedService>().First(x => x is SchemaInitializer) as SchemaInitializer);
         services.TryAddSingleton(p => p.GetRequiredService<IScriptProvider>() as ScriptProvider<TSchemaVersionEnum>);
         services.TryAddSingleton(p => p.GetRequiredService<IBaseScriptProvider>() as BaseScriptProvider);
-        services.TryAddSingleton(p => p.GetRequiredService<ISchemaManagerDataStore>() as SchemaManagerDataStore);
+        services.TryAddScoped(p => p.GetRequiredService<ISchemaManagerDataStore>() as SchemaManagerDataStore);
         services.AddSqlRetryLogicProvider();
 
         return services;
@@ -104,7 +104,7 @@ public static class SqlServerBaseRegistrationExtensions
         services.TryAddScoped<SqlConnectionWrapperFactory>();
         services.TryAddScoped<SqlTransactionHandler>();
         services.TryAddScoped<ITransactionHandler>(handlerFactory);
-        services.TryAddSingleton<IReadOnlySchemaManagerDataStore, SchemaManagerDataStore>();
+        services.TryAddScoped<IReadOnlySchemaManagerDataStore, SchemaManagerDataStore>();
 
         return services;
     }
@@ -162,7 +162,7 @@ public static class SqlServerBaseRegistrationExtensions
             });
 
         // Re-use the existing SchemaManagerDataStore
-        services.TryAddSingleton<ISchemaManagerDataStore>(
+        services.TryAddScoped<ISchemaManagerDataStore>(
             p =>
             {
                 var schemaManagerDataStore = p.GetService<IReadOnlySchemaManagerDataStore>() as SchemaManagerDataStore;

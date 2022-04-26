@@ -51,7 +51,7 @@ internal class Program
         services.AddSingleton<ISqlConnectionBuilder, DefaultSqlConnectionBuilder>();
         services.AddSingleton<ISqlConnectionStringProvider, DefaultSqlConnectionStringProvider>();
         services.AddSingleton<IBaseSchemaRunner, BaseSchemaRunner>();
-        services.AddSingleton<ISchemaManagerDataStore, SchemaManagerDataStore>();
+        services.AddScoped<ISchemaManagerDataStore, SchemaManagerDataStore>();
         services.AddSingleton<ISchemaClient, SchemaClient>();
         services.AddSingleton<ISchemaManager, SqlSchemaManager>();
         services.AddLogging(configure => configure.AddConsole());
