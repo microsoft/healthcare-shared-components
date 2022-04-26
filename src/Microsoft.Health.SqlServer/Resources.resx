@@ -166,4 +166,8 @@
   <data name="ScriptNotFound" xml:space="preserve">
     <value>The provided version is unknown.</value>
   </data>
+  <data name="StringTooLong" xml:space="preserve">
+    <value>Value of length {0} is too long for column {1} with length {2}</value>
+    <comment>{0} is length of string data, {1} is the name of the column, {2} is the max allowable size of the column</comment>
+  </data>
 </root>

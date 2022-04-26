@@ -29,4 +29,13 @@ public class ColumnsTests
         varBinaryColumn.Set(record, 0, input2);
         Assert.Equal(data2, ((SqlBinary)record.GetSqlValue(0)).Value);
     }
+
+    [Fact]
+    public void GivenStringValueGreaterThanColumnMax_WhenSettingStringValue_ThenSqlTruncateExceptionThrown()
+    {
+        var varCharColumn = new VarCharColumn("text", 10);
+        var record = new SqlDataRecord(varCharColumn.Metadata);
+
+        Assert.Throws<SqlTruncateException>(() => varCharColumn.Set(record, 0, "Astringwhichislongerthan10characters"));
+    }
 }
