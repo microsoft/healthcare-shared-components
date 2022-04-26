@@ -115,7 +115,7 @@ namespace Microsoft.Health.SqlServer {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Value {0} is out of range of expected precision of {1} and scale of {2}.
+        ///   Looks up a localized string similar to Value {0} is out of range of expected precision of {1} and scale of {2}..
         /// </summary>
         internal static string DecimalValueOutOfRange {
             get {
@@ -192,6 +192,15 @@ namespace Microsoft.Health.SqlServer {
         internal static string ScriptNotFound {
             get {
                 return ResourceManager.GetString("ScriptNotFound", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Value of length {0} is too long for column {1} with length {2}.
+        /// </summary>
+        internal static string StringTooLong {
+            get {
+                return ResourceManager.GetString("StringTooLong", resourceCulture);
             }
         }
     }
