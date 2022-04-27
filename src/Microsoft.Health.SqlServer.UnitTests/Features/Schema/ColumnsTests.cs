@@ -38,4 +38,14 @@ public class ColumnsTests
 
         Assert.Throws<SqlTruncateException>(() => varCharColumn.Set(record, 0, "Astringwhichislongerthan10characters"));
     }
+
+    [Fact]
+    public void GivenDecimalValueGreaterThanDefinedColumnPrecisionAndScaleMax_WhenSettingDecimalValue_ThenSqlTruncateExceptionThrown()
+    {
+        var decimalColumn = new DecimalColumn("decimalColumn", 18, 6);
+        var record = new SqlDataRecord(decimalColumn.Metadata);
+        decimal decimalValue = 1234567890123.0123456M;
+
+        Assert.Throws<SqlTruncateException>(() => decimalColumn.Set(record, 0, decimalValue));
+    }
 }
