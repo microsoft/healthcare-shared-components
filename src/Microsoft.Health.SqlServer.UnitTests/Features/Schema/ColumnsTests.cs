@@ -41,7 +41,7 @@ public class ColumnsTests
     }
 
     [Fact]
-    public void GivenANullStringValu_WhenSettingStringValue_ThenSqlDBNullIsSet()
+    public void GivenANullStringValue_WhenSettingStringValue_ThenSqlDBNullIsSet()
     {
         var varCharColumn = new VarCharColumn("text", 10);
         var record = new SqlDataRecord(varCharColumn.Metadata);
