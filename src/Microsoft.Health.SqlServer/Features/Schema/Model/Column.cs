@@ -703,15 +703,14 @@ public abstract class StringColumn : Column<string>
     public override void Set(SqlDataRecord record, int ordinal, string value)
     {
         EnsureArg.IsNotNull(record, nameof(record));
-        EnsureArg.IsNotNull(value, nameof(value));
-
-        if (Metadata.MaxLength < value.Length)
-        {
-            throw new SqlTruncateException(string.Format(CultureInfo.CurrentCulture, Resources.StringTooLong, value.Length, Metadata.Name, Metadata.MaxLength));
-        }
 
         if (value != null)
         {
+            if (Metadata.MaxLength < value.Length)
+            {
+                throw new SqlTruncateException(string.Format(CultureInfo.CurrentCulture, Resources.StringTooLong, value.Length, Metadata.Name, Metadata.MaxLength));
+            }
+
             record.SetString(ordinal, value);
         }
         else
