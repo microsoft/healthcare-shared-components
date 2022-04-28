@@ -7,6 +7,7 @@ using System.Data.SqlTypes;
 using System.IO;
 using Microsoft.Data.SqlClient.Server;
 using Microsoft.Health.SqlServer.Features.Schema.Model;
+using Microsoft.SqlServer.Management.Smo;
 using Xunit;
 
 namespace Microsoft.Health.SqlServer.UnitTests.Features.Schema;
@@ -37,5 +38,16 @@ public class ColumnsTests
         var record = new SqlDataRecord(varCharColumn.Metadata);
 
         Assert.Throws<SqlTruncateException>(() => varCharColumn.Set(record, 0, "Astringwhichislongerthan10characters"));
+    }
+
+    [Fact]
+    public void GivenANullStringValue_WhenSettingStringValue_ThenSqlDBNullIsSet()
+    {
+        var varCharColumn = new VarCharColumn("text", 10);
+        var record = new SqlDataRecord(varCharColumn.Metadata);
+
+        varCharColumn.Set(record, 0, null);
+
+        Assert.True(record.GetSqlString(0).IsNull);
     }
 }
