@@ -155,6 +155,52 @@ public class BitColumn : Column<bool>
     }
 }
 
+public class DateTimeColumn : Column<DateTime>
+{
+    public DateTimeColumn(string name, byte scale)
+        : base(name, SqlDbType.DateTime, false, 0, scale)
+    {
+    }
+
+    public override DateTime Read(SqlDataReader reader, int ordinal)
+    {
+        return reader.GetDateTime(Metadata.Name, ordinal);
+    }
+
+    public override void Set(SqlDataRecord record, int ordinal, DateTime value)
+    {
+        EnsureArg.IsNotNull(record, nameof(record));
+        record.SetDateTime(ordinal, value);
+    }
+}
+
+public class NullableDateTimeColumn : Column<DateTime?>
+{
+    public NullableDateTimeColumn(string name)
+        : base(name, SqlDbType.DateTime, true, 0, 0)
+    {
+    }
+
+    public override DateTime? Read(SqlDataReader reader, int ordinal)
+    {
+        return reader.GetDateTime(Metadata.Name, ordinal);
+    }
+
+    public override void Set(SqlDataRecord record, int ordinal, DateTime? value)
+    {
+        EnsureArg.IsNotNull(record, nameof(record));
+
+        if (value == null)
+        {
+            record.SetDBNull(ordinal);
+        }
+        else
+        {
+            record.SetDateTime(ordinal, value.Value);
+        }
+    }
+}
+
 public class DateTime2Column : Column<DateTime>
 {
     public DateTime2Column(string name, byte scale)
