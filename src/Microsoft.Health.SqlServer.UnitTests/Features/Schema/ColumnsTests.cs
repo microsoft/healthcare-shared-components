@@ -52,6 +52,17 @@ public class ColumnsTests
     }
 
     [Fact]
+    public void GivenANVarCharColumnColumnWithMaxLength_WhenSettingAValue_ThenSqlDBNullIsSet()
+    {
+        var nVarCharColumn = new NVarCharColumn("textOverflowColumn", -1);
+        var record = new SqlDataRecord(nVarCharColumn.Metadata);
+
+        nVarCharColumn.Set(record, 0, "text");
+
+        Assert.True(record.GetSqlString(0).Value.Equals("text", System.StringComparison.Ordinal));
+    }
+
+    [Fact]
     public void GivenDecimalValueGreaterThanDefinedColumnPrecisionAndScaleMax_WhenSettingDecimalValue_ThenSqlTruncateExceptionThrown()
     {
         var decimalColumn = new DecimalColumn("decimalColumn", 18, 6);
