@@ -157,8 +157,8 @@ public class BitColumn : Column<bool>
 
 public class DateTimeColumn : Column<DateTime>
 {
-    public DateTimeColumn(string name, byte scale)
-        : base(name, SqlDbType.DateTime, false, 0, scale)
+    public DateTimeColumn(string name)
+        : base(name, SqlDbType.DateTime, false)
     {
     }
 
@@ -177,7 +177,7 @@ public class DateTimeColumn : Column<DateTime>
 public class NullableDateTimeColumn : Column<DateTime?>
 {
     public NullableDateTimeColumn(string name)
-        : base(name, SqlDbType.DateTime, true, 0, 0)
+        : base(name, SqlDbType.DateTime, true)
     {
     }
 
@@ -294,6 +294,11 @@ public class DecimalColumn : Column<decimal>
 
 public class FloatColumn : Column<double>
 {
+    public FloatColumn(string name)
+        : base(name, SqlDbType.Float, false)
+    {
+    }
+
     public FloatColumn(string name, byte precision)
         : base(name, SqlDbType.Float, false, ColumnUtilities.GetLengthForFloatColumn(precision), precision, 0, 0, SqlCompareOptions.None, null)
     {
@@ -539,6 +544,11 @@ public class NullableDecimalColumn : Column<decimal?>
 
 public class NullableFloatColumn : Column<double?>
 {
+    public NullableFloatColumn(string name)
+        : base(name, SqlDbType.Float, true)
+    {
+    }
+    
     public NullableFloatColumn(string name, byte precision)
         : base(name, SqlDbType.Float, true, ColumnUtilities.GetLengthForFloatColumn(precision), precision, 0, 0, SqlCompareOptions.None, null)
     {
