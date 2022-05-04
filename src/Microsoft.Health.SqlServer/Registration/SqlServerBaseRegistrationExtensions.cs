@@ -148,7 +148,7 @@ public static class SqlServerBaseRegistrationExtensions
         services.TryAddSingleton<SchemaJobWorker>();
         services.TryAddSingleton<IScriptProvider, ScriptProvider<TVersion>>();
         services.TryAddSingleton<IBaseScriptProvider, BaseScriptProvider>();
-        services.TryAddSingleton<SchemaUpgradeRunner>();
+        services.TryAddScoped<SchemaUpgradeRunner>();
         services.AddHostedService<SchemaInitializer>();
 
         // Resolve IProcessTerminator based on the configuration

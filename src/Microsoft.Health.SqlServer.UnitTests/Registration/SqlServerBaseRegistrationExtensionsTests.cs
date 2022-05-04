@@ -50,7 +50,7 @@ public class SqlServerBaseRegistrationExtensionsTests
         Assert.True(services.ContainsSingleton<ISqlConnectionStringProvider, DefaultSqlConnectionStringProvider>());
         Assert.True(services.ContainsSingleton<SchemaInitializer>());
         Assert.True(services.ContainsSingleton<SchemaJobWorker>());
-        Assert.True(services.ContainsSingleton<SchemaUpgradeRunner>());
+        Assert.True(services.ContainsScoped<SchemaUpgradeRunner>());
         Assert.True(services.ContainsScoped<SchemaManagerDataStore>());
         Assert.True(services.ContainsSingleton<ScriptProvider<ExampleVersion>>());
         Assert.True(services.ContainsSingleton<SqlServerDataStoreConfiguration>());
@@ -86,6 +86,6 @@ public class SqlServerBaseRegistrationExtensionsTests
         Assert.True(services.ContainsScoped<ISchemaManagerDataStore>());
         Assert.True(services.ContainsSingleton<IScriptProvider, ScriptProvider<ExampleVersion>>());
         Assert.True(services.ContainsSingleton<SchemaJobWorker>());
-        Assert.True(services.ContainsSingleton<SchemaUpgradeRunner>());
+        Assert.True(services.ContainsScoped<SchemaUpgradeRunner>());
     }
 }
