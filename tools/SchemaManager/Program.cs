@@ -15,7 +15,9 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.Health.SqlServer;
 using Microsoft.Health.SqlServer.Configs;
+using Microsoft.Health.SqlServer.Features.Client;
 using Microsoft.Health.SqlServer.Features.Schema.Manager;
+using Microsoft.Health.SqlServer.Features.Storage;
 using SchemaManager.Core;
 
 namespace SchemaManager;
@@ -69,7 +71,9 @@ internal class Program
         });
         services.AddSingleton<ISqlConnectionStringProvider, DefaultSqlConnectionStringProvider>();
         services.AddSingleton<IBaseSchemaRunner, BaseSchemaRunner>();
-        services.AddSingleton<ISchemaManagerDataStore, SchemaManagerDataStore>();
+        services.AddScoped<SqlConnectionWrapperFactory>();
+        services.AddScoped<SqlTransactionHandler>();
+        services.AddScoped<ISchemaManagerDataStore, SchemaManagerDataStore>();
         services.AddSingleton<ISchemaClient, SchemaClient>();
         services.AddSingleton<ISchemaManager, SqlSchemaManager>();
         services.AddLogging(configure => configure.AddConsole());

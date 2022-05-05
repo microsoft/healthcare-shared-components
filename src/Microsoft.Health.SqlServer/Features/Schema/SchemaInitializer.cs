@@ -14,6 +14,7 @@ using Medallion.Threading;
 using Medallion.Threading.SqlServer;
 using MediatR;
 using Microsoft.Data.SqlClient;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -31,9 +32,8 @@ namespace Microsoft.Health.SqlServer.Features.Schema;
 public class SchemaInitializer : IHostedService
 {
     private const string MasterDatabase = "master";
+    private readonly IServiceProvider _serviceProvider;
     private readonly SqlServerDataStoreConfiguration _sqlServerDataStoreConfiguration;
-    private readonly IReadOnlySchemaManagerDataStore _schemaManagerDataStore;
-    private readonly SchemaUpgradeRunner _schemaUpgradeRunner;
     private readonly SchemaInformation _schemaInformation;
     private readonly ILogger<SchemaInitializer> _logger;
     private readonly ISqlConnectionBuilder _sqlConnectionBuilder;
@@ -43,18 +43,16 @@ public class SchemaInitializer : IHostedService
     public const string SchemaUpgradeLockName = "SchemaUpgrade";
 
     public SchemaInitializer(
+        IServiceProvider services,
         IOptions<SqlServerDataStoreConfiguration> sqlServerDataStoreConfiguration,
-        IReadOnlySchemaManagerDataStore schemaManagerDataStore,
-        SchemaUpgradeRunner schemaUpgradeRunner,
         SchemaInformation schemaInformation,
         ISqlConnectionBuilder sqlConnectionBuilder,
         ISqlConnectionStringProvider sqlConnectionStringProvider,
         IMediator mediator,
         ILogger<SchemaInitializer> logger)
     {
+        _serviceProvider = EnsureArg.IsNotNull(services, nameof(services));
         _sqlServerDataStoreConfiguration = EnsureArg.IsNotNull(sqlServerDataStoreConfiguration?.Value, nameof(sqlServerDataStoreConfiguration));
-        _schemaManagerDataStore = EnsureArg.IsNotNull(schemaManagerDataStore, nameof(schemaManagerDataStore));
-        _schemaUpgradeRunner = EnsureArg.IsNotNull(schemaUpgradeRunner, nameof(schemaUpgradeRunner));
         _schemaInformation = EnsureArg.IsNotNull(schemaInformation, nameof(schemaInformation));
         _sqlConnectionBuilder = EnsureArg.IsNotNull(sqlConnectionBuilder, nameof(sqlConnectionBuilder));
         _sqlConnectionStringProvider = EnsureArg.IsNotNull(sqlConnectionStringProvider, nameof(sqlConnectionStringProvider));
@@ -77,6 +75,9 @@ public class SchemaInitializer : IHostedService
 
         if (_sqlServerDataStoreConfiguration.SchemaOptions.AutomaticUpdatesEnabled)
         {
+            using IServiceScope scope = _serviceProvider.CreateScope();
+            SchemaUpgradeRunner _schemaUpgradeRunner = scope.ServiceProvider.GetRequiredService<SchemaUpgradeRunner>();
+
             using SqlConnection sqlConnection = await _sqlConnectionBuilder.GetSqlConnectionAsync(cancellationToken: cancellationToken);
             await sqlConnection.OpenAsync(cancellationToken);
             IDistributedLock sqlLock = new SqlDistributedLock(SchemaUpgradeLockName, sqlConnection);
@@ -162,7 +163,10 @@ public class SchemaInitializer : IHostedService
     }
 
     private async Task GetCurrentSchemaVersionAsync(CancellationToken cancellationToken)
-    {
+    { 
+        using IServiceScope scope = _serviceProvider.CreateScope();
+        IReadOnlySchemaManagerDataStore _schemaManagerDataStore = scope.ServiceProvider.GetRequiredService<IReadOnlySchemaManagerDataStore>();
+
         if (!_canCallGetCurrentSchema)
         {
             _canCallGetCurrentSchema = await _schemaManagerDataStore.ObjectExistsAsync("SelectCurrentSchemaVersion", "P", cancellationToken);
