@@ -9,7 +9,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using EnsureThat;
 using Microsoft.Data.SqlClient;
-using Microsoft.Extensions.Options;
 using Microsoft.Health.SqlServer.Configs;
 using Microsoft.Health.SqlServer.Features.Storage;
 
@@ -58,7 +57,7 @@ public class SqlConnectionWrapper : IDisposable
         }
     }
 
-    internal async Task InitializeAsync(CancellationToken cancellationToken)
+    internal async Task InitializeAsync(string initialCatalog = null, CancellationToken cancellationToken = default)
     {
         if (_enlistInTransactionIfPresent && _sqlTransactionHandler.SqlTransactionScope?.SqlConnection != null)
         {
@@ -66,7 +65,7 @@ public class SqlConnectionWrapper : IDisposable
         }
         else
         {
-            _sqlConnection = await _sqlConnectionBuilder.GetSqlConnectionAsync(cancellationToken: cancellationToken);
+            _sqlConnection = await _sqlConnectionBuilder.GetSqlConnectionAsync(initialCatalog, cancellationToken: cancellationToken);
         }
 
         if (_enlistInTransactionIfPresent && _sqlTransactionHandler.SqlTransactionScope != null && _sqlTransactionHandler.SqlTransactionScope.SqlConnection == null)

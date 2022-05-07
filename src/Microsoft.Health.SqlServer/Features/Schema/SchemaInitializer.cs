@@ -5,7 +5,6 @@
 
 using System;
 using System.Data;
-using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Threading;
 using System.Threading.Tasks;
@@ -19,6 +18,7 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.Health.SqlServer.Configs;
+using Microsoft.Health.SqlServer.Features.Client;
 using Microsoft.Health.SqlServer.Features.Schema.Extensions;
 using Microsoft.Health.SqlServer.Features.Schema.Manager;
 using Microsoft.Health.SqlServer.Features.Storage;
@@ -36,8 +36,6 @@ public class SchemaInitializer : IHostedService
     private readonly SqlServerDataStoreConfiguration _sqlServerDataStoreConfiguration;
     private readonly SchemaInformation _schemaInformation;
     private readonly ILogger<SchemaInitializer> _logger;
-    private readonly ISqlConnectionBuilder _sqlConnectionBuilder;
-    private readonly ISqlConnectionStringProvider _sqlConnectionStringProvider;
     private readonly IMediator _mediator;
     private bool _canCallGetCurrentSchema;
     public const string SchemaUpgradeLockName = "SchemaUpgrade";
@@ -46,25 +44,42 @@ public class SchemaInitializer : IHostedService
         IServiceProvider services,
         IOptions<SqlServerDataStoreConfiguration> sqlServerDataStoreConfiguration,
         SchemaInformation schemaInformation,
-        ISqlConnectionBuilder sqlConnectionBuilder,
-        ISqlConnectionStringProvider sqlConnectionStringProvider,
         IMediator mediator,
         ILogger<SchemaInitializer> logger)
     {
         _serviceProvider = EnsureArg.IsNotNull(services, nameof(services));
         _sqlServerDataStoreConfiguration = EnsureArg.IsNotNull(sqlServerDataStoreConfiguration?.Value, nameof(sqlServerDataStoreConfiguration));
         _schemaInformation = EnsureArg.IsNotNull(schemaInformation, nameof(schemaInformation));
-        _sqlConnectionBuilder = EnsureArg.IsNotNull(sqlConnectionBuilder, nameof(sqlConnectionBuilder));
-        _sqlConnectionStringProvider = EnsureArg.IsNotNull(sqlConnectionStringProvider, nameof(sqlConnectionStringProvider));
         _mediator = EnsureArg.IsNotNull(mediator, nameof(mediator));
         _logger = EnsureArg.IsNotNull(logger, nameof(logger));
     }
 
-    public async Task InitializeAsync(bool forceIncrementalSchemaUpgrade = false, CancellationToken cancellationToken = default)
+    public async Task StartAsync(CancellationToken cancellationToken)
+    {
+        using IServiceScope scope = _serviceProvider.CreateScope();
+        ISqlConnectionStringProvider connectionStringProvider = scope.ServiceProvider.GetRequiredService<ISqlConnectionStringProvider>();
+
+        if (!string.IsNullOrWhiteSpace(await connectionStringProvider.GetSqlConnectionString(cancellationToken).ConfigureAwait(false)))
+        {
+            await InitializeAsync(scope, cancellationToken: cancellationToken).ConfigureAwait(false);
+        }
+        else
+        {
+            _logger.LogCritical(
+                "There was no connection string supplied. Schema initialization can not be completed.");
+        }
+    }
+
+    public Task StopAsync(CancellationToken cancellationToken)
+        => Task.CompletedTask;
+
+    private async Task InitializeAsync(IServiceScope scope, bool forceIncrementalSchemaUpgrade = false, CancellationToken cancellationToken = default)
     {
         bool schemaUpgradedNotificationSent = false;
+        SqlConnectionWrapperFactory connectionFactory = scope.ServiceProvider.GetRequiredService<SqlConnectionWrapperFactory>();
 
-        if (!await CanInitializeAsync(cancellationToken).ConfigureAwait(false))
+        string databaseName = await GetDatabaseNameAsync(scope.ServiceProvider.GetRequiredService<ISqlConnectionStringProvider>(), cancellationToken).ConfigureAwait(false);
+        if (!await CanInitializeAsync(connectionFactory, databaseName, cancellationToken).ConfigureAwait(false))
         {
             return;
         }
@@ -75,12 +90,10 @@ public class SchemaInitializer : IHostedService
 
         if (_sqlServerDataStoreConfiguration.SchemaOptions.AutomaticUpdatesEnabled)
         {
-            using IServiceScope scope = _serviceProvider.CreateScope();
             SchemaUpgradeRunner _schemaUpgradeRunner = scope.ServiceProvider.GetRequiredService<SchemaUpgradeRunner>();
 
-            using SqlConnection sqlConnection = await _sqlConnectionBuilder.GetSqlConnectionAsync(cancellationToken: cancellationToken);
-            await sqlConnection.OpenAsync(cancellationToken);
-            IDistributedLock sqlLock = new SqlDistributedLock(SchemaUpgradeLockName, sqlConnection);
+            using SqlConnectionWrapper sqlConnection = await scope.ServiceProvider.GetRequiredService<SqlConnectionWrapperFactory>().ObtainSqlConnectionWrapperAsync(cancellationToken);
+            IDistributedLock sqlLock = new SqlDistributedLock(SchemaUpgradeLockName, sqlConnection.SqlConnection);
 
             try
             {
@@ -190,100 +203,18 @@ public class SchemaInitializer : IHostedService
         }
     }
 
-    public static void ValidateDatabaseName(string databaseName)
-    {
-        if (string.IsNullOrEmpty(databaseName))
-        {
-            throw new InvalidOperationException("The initial catalog must be specified in the connection string");
-        }
-
-        if (databaseName.Equals("master", StringComparison.OrdinalIgnoreCase) ||
-            databaseName.Equals("model", StringComparison.OrdinalIgnoreCase) ||
-            databaseName.Equals("msdb", StringComparison.OrdinalIgnoreCase) ||
-            databaseName.Equals("tempdb", StringComparison.OrdinalIgnoreCase))
-        {
-            throw new InvalidOperationException("The initial catalog in the connection string cannot be a system database");
-        }
-    }
-
-    /// <summary>
-    /// Check if the database exists.
-    /// </summary>
-    /// <param name="sqlConnection">Sql Connection with permissions to query the system tables in order to check if the provided database exists.</param>
-    /// <param name="databaseName">Database name.</param>
-    /// <param name="cancellationToken">Cancellation token.</param>
-    /// <returns>True if database exists, else returns false.</returns>
-    public static async Task<bool> DoesDatabaseExistAsync(SqlConnection sqlConnection, string databaseName, CancellationToken cancellationToken)
-    {
-        EnsureArg.IsNotNull(sqlConnection, nameof(sqlConnection));
-
-        if (sqlConnection.State != ConnectionState.Open)
-        {
-            await sqlConnection.OpenAsync(cancellationToken).ConfigureAwait(false);
-        }
-
-        using (SqlCommand checkDatabaseExistsCommand = sqlConnection.CreateCommand())
-        {
-            checkDatabaseExistsCommand.CommandText = "SELECT 1 FROM sys.databases where name = @databaseName";
-            checkDatabaseExistsCommand.Parameters.AddWithValue("@databaseName", databaseName);
-            if ((int?)await checkDatabaseExistsCommand.ExecuteScalarAsync(cancellationToken).ConfigureAwait(false) == 1)
-            {
-                return true;
-            }
-        }
-
-        return false;
-    }
-
-    [SuppressMessage("Security", "CA2100:Review SQL queries for security vulnerabilities", Justification = "Database name is validated before use.")]
-    public static async Task<bool> CreateDatabaseAsync(SqlConnection connection, string databaseName, CancellationToken cancellationToken)
-    {
-        if (!Identifier.IsValidDatabase(databaseName))
-        {
-            throw new ArgumentException(string.Format(CultureInfo.CurrentCulture, Resources.InvalidDatabaseIdentifier, databaseName), nameof(databaseName));
-        }
-
-        using var canCreateDatabaseCommand = new SqlCommand("SELECT count(*) FROM fn_my_permissions (NULL, 'DATABASE') WHERE permission_name = 'CREATE DATABASE'", connection);
-        if ((int)await canCreateDatabaseCommand.ExecuteScalarAsync(cancellationToken).ConfigureAwait(false) > 0)
-        {
-            using var createDatabaseCommand = new SqlCommand($"CREATE DATABASE {databaseName}", connection);
-            await createDatabaseCommand.ExecuteNonQueryAsync(cancellationToken).ConfigureAwait(false);
-            return true;
-        }
-        else
-        {
-            return false;
-        }
-    }
-
-    public static async Task<bool> CheckDatabasePermissionsAsync(SqlConnection connection, CancellationToken cancellationToken)
-    {
-        EnsureArg.IsNotNull(connection, nameof(connection));
-
-        if (connection.State != ConnectionState.Open)
-        {
-            await connection.OpenAsync(cancellationToken).ConfigureAwait(false);
-        }
-
-        using var command = new SqlCommand("SELECT count(*) FROM fn_my_permissions (NULL, 'DATABASE') WHERE permission_name = 'CREATE TABLE'", connection);
-        return (int)await command.ExecuteScalarAsync(cancellationToken).ConfigureAwait(false) > 0;
-    }
-
-    private async Task<bool> CanInitializeAsync(CancellationToken cancellationToken)
+    private async Task<bool> CanInitializeAsync(SqlConnectionWrapperFactory factory, string databaseName, CancellationToken cancellationToken)
     {
         if (!_sqlServerDataStoreConfiguration.Initialize)
         {
             return false;
         }
 
-        var configuredConnectionBuilder = new SqlConnectionStringBuilder(await _sqlConnectionStringProvider.GetSqlConnectionString(cancellationToken).ConfigureAwait(false));
-        string databaseName = configuredConnectionBuilder.InitialCatalog;
-
         ValidateDatabaseName(databaseName);
 
         if (_sqlServerDataStoreConfiguration.AllowDatabaseCreation)
         {
-            using SqlConnection connection = await _sqlConnectionBuilder.GetSqlConnectionAsync(MasterDatabase, cancellationToken).ConfigureAwait(false);
+            using SqlConnectionWrapper connection = await factory.ObtainSqlConnectionWrapperAsync(MasterDatabase, cancellationToken).ConfigureAwait(false);
             bool doesDatabaseExist = await DoesDatabaseExistAsync(connection, databaseName, cancellationToken).ConfigureAwait(false);
 
             if (!doesDatabaseExist)
@@ -307,7 +238,7 @@ public class SchemaInitializer : IHostedService
         bool canInitialize = false;
 
         // now switch to the target database
-        using (SqlConnection connection = await _sqlConnectionBuilder.GetSqlConnectionAsync(cancellationToken: cancellationToken).ConfigureAwait(false))
+        using (SqlConnectionWrapper connection = await factory.ObtainSqlConnectionWrapperAsync(cancellationToken).ConfigureAwait(false))
         {
             canInitialize = await CheckDatabasePermissionsAsync(connection, cancellationToken).ConfigureAwait(false);
         }
@@ -320,18 +251,81 @@ public class SchemaInitializer : IHostedService
         return canInitialize;
     }
 
-    public async Task StartAsync(CancellationToken cancellationToken)
+    public static void ValidateDatabaseName(string databaseName)
     {
-        if (!string.IsNullOrWhiteSpace(await _sqlConnectionStringProvider.GetSqlConnectionString(cancellationToken).ConfigureAwait(false)))
+        if (string.IsNullOrEmpty(databaseName))
         {
-            await InitializeAsync(cancellationToken: cancellationToken).ConfigureAwait(false);
+            throw new InvalidOperationException("The initial catalog must be specified in the connection string");
         }
-        else
+
+        if (databaseName.Equals("master", StringComparison.OrdinalIgnoreCase) ||
+            databaseName.Equals("model", StringComparison.OrdinalIgnoreCase) ||
+            databaseName.Equals("msdb", StringComparison.OrdinalIgnoreCase) ||
+            databaseName.Equals("tempdb", StringComparison.OrdinalIgnoreCase))
         {
-            _logger.LogCritical(
-                "There was no connection string supplied. Schema initialization can not be completed.");
+            throw new InvalidOperationException("The initial catalog in the connection string cannot be a system database");
         }
     }
 
-    public Task StopAsync(CancellationToken cancellationToken) => Task.CompletedTask;
+    /// <summary>
+    /// Check if the database exists.
+    /// </summary>
+    /// <param name="sqlConnection">Sql Connection with permissions to query the system tables in order to check if the provided database exists.</param>
+    /// <param name="databaseName">Database name.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>True if database exists, else returns false.</returns>
+    public static async Task<bool> DoesDatabaseExistAsync(SqlConnectionWrapper sqlConnection, string databaseName, CancellationToken cancellationToken)
+    {
+        EnsureArg.IsNotNull(sqlConnection, nameof(sqlConnection));
+
+        using (SqlCommandWrapper checkDatabaseExistsCommand = sqlConnection.CreateRetrySqlCommand())
+        {
+            checkDatabaseExistsCommand.CommandText = "SELECT 1 FROM sys.databases where name = @databaseName";
+            checkDatabaseExistsCommand.Parameters.AddWithValue("@databaseName", databaseName);
+            if ((int?)await checkDatabaseExistsCommand.ExecuteScalarAsync(cancellationToken).ConfigureAwait(false) == 1)
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    public static async Task<bool> CreateDatabaseAsync(SqlConnectionWrapper connection, string databaseName, CancellationToken cancellationToken)
+    {
+        EnsureArg.IsNotNull(connection, nameof(connection));
+
+        if (!Identifier.IsValidDatabase(databaseName))
+        {
+            throw new ArgumentException(string.Format(CultureInfo.CurrentCulture, Resources.InvalidDatabaseIdentifier, databaseName), nameof(databaseName));
+        }
+
+        using SqlCommandWrapper canCreateDatabaseCommand = connection.CreateRetrySqlCommand();
+        canCreateDatabaseCommand.CommandText = "SELECT count(*) FROM fn_my_permissions (NULL, 'DATABASE') WHERE permission_name = 'CREATE DATABASE'";
+
+        if ((int)await canCreateDatabaseCommand.ExecuteScalarAsync(cancellationToken).ConfigureAwait(false) > 0)
+        {
+            using SqlCommandWrapper createDatabaseCommand = connection.CreateRetrySqlCommand();
+            createDatabaseCommand.CommandText = $"CREATE DATABASE {databaseName}";
+
+            await createDatabaseCommand.ExecuteNonQueryAsync(cancellationToken).ConfigureAwait(false);
+            return true;
+        }
+        else
+        {
+            return false;
+        }
+    }
+
+    public static async Task<bool> CheckDatabasePermissionsAsync(SqlConnectionWrapper connection, CancellationToken cancellationToken)
+    {
+        EnsureArg.IsNotNull(connection, nameof(connection));
+
+        using SqlCommandWrapper command = connection.CreateRetrySqlCommand();
+        command.CommandText = "SELECT count(*) FROM fn_my_permissions (NULL, 'DATABASE') WHERE permission_name = 'CREATE TABLE'";
+        return (int)await command.ExecuteScalarAsync(cancellationToken).ConfigureAwait(false) > 0;
+    }
+
+    private static async ValueTask<string> GetDatabaseNameAsync(ISqlConnectionStringProvider connectionStringProvider, CancellationToken cancellationToken)
+        => new SqlConnectionStringBuilder(await connectionStringProvider.GetSqlConnectionString(cancellationToken).ConfigureAwait(false)).InitialCatalog;
 }

@@ -35,14 +35,13 @@ public class ManagedIdentitySqlConnectionBuilder : ISqlConnectionBuilder
     public async Task<SqlConnection> GetSqlConnectionAsync(string initialCatalog = null, CancellationToken cancellationToken = default)
     {
         SqlConnection sqlConnection = await SqlConnectionHelper.GetBaseSqlConnectionAsync(
-                                                                    _sqlConnectionStringProvider,
-                                                                    _sqlRetryLogicBaseProvider,
-                                                                    initialCatalog,
-                                                                    cancellationToken);
+            _sqlConnectionStringProvider,
+            _sqlRetryLogicBaseProvider,
+            initialCatalog,
+            cancellationToken);
 
         // set managed identity access token
-        var result = await _accessTokenHandler.GetAccessTokenAsync(_azureResource, cancellationToken);
-        sqlConnection.AccessToken = result;
+        sqlConnection.AccessToken = await _accessTokenHandler.GetAccessTokenAsync(_azureResource, cancellationToken);
         return sqlConnection;
     }
 }

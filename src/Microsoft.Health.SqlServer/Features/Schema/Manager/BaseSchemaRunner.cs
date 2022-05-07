@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 using EnsureThat;
 using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.Logging;
-using Microsoft.Health.SqlServer.Extensions;
+using Microsoft.Health.SqlServer.Features.Client;
 using Microsoft.Health.SqlServer.Features.Schema.Manager.Exceptions;
 using Polly;
 
@@ -19,23 +19,23 @@ public class BaseSchemaRunner : IBaseSchemaRunner
 {
     private static readonly TimeSpan RetrySleepDuration = TimeSpan.FromSeconds(20);
     private const int RetryAttempts = 3;
-    private readonly ISqlConnectionBuilder _sqlConnectionBuilder;
+    private readonly SqlConnectionWrapperFactory _sqlConnectionFactory;
     private readonly ISchemaManagerDataStore _schemaManagerDataStore;
     private readonly ISqlConnectionStringProvider _sqlConnectionStringProvider;
     private readonly ILogger<BaseSchemaRunner> _logger;
 
     public BaseSchemaRunner(
-        ISqlConnectionBuilder sqlConnectionBuilder,
+        SqlConnectionWrapperFactory sqlConnectionFactory,
         ISchemaManagerDataStore schemaManagerDataStore,
         ISqlConnectionStringProvider sqlConnectionStringProvider,
         ILogger<BaseSchemaRunner> logger)
     {
-        EnsureArg.IsNotNull(sqlConnectionBuilder);
+        EnsureArg.IsNotNull(sqlConnectionFactory);
         EnsureArg.IsNotNull(schemaManagerDataStore);
         EnsureArg.IsNotNull(sqlConnectionStringProvider);
         EnsureArg.IsNotNull(logger, nameof(logger));
 
-        _sqlConnectionBuilder = sqlConnectionBuilder;
+        _sqlConnectionFactory = sqlConnectionFactory;
         _schemaManagerDataStore = schemaManagerDataStore;
         _sqlConnectionStringProvider = sqlConnectionStringProvider;
         _logger = logger;
@@ -112,7 +112,7 @@ public class BaseSchemaRunner : IBaseSchemaRunner
         bool canInitialize = false;
 
         // now switch to the target database
-        using (var connection = await _sqlConnectionBuilder.GetSqlConnectionAsync(cancellationToken: cancellationToken))
+        using (SqlConnectionWrapper connection = await _sqlConnectionFactory.ObtainSqlConnectionWrapperAsync(cancellationToken: cancellationToken))
         {
             canInitialize = await SchemaInitializer.CheckDatabasePermissionsAsync(connection, cancellationToken);
         }
@@ -125,25 +125,22 @@ public class BaseSchemaRunner : IBaseSchemaRunner
 
     private async Task CreateDatabaseIfNotExists(string databaseName, CancellationToken cancellationToken)
     {
-        using (var connection = await _sqlConnectionBuilder.GetSqlConnectionAsync(cancellationToken: cancellationToken))
+        using SqlConnectionWrapper connection = await _sqlConnectionFactory.ObtainSqlConnectionWrapperAsync(cancellationToken: cancellationToken);
+
+        bool doesDatabaseExist = await SchemaInitializer.DoesDatabaseExistAsync(connection, databaseName, cancellationToken);
+        if (!doesDatabaseExist)
         {
-            await connection.TryOpenAsync(cancellationToken);
+            _logger.LogInformation("The database does not exists.");
 
-            bool doesDatabaseExist = await SchemaInitializer.DoesDatabaseExistAsync(connection, databaseName, cancellationToken);
-            if (!doesDatabaseExist)
+            bool created = await SchemaInitializer.CreateDatabaseAsync(connection, databaseName, cancellationToken);
+
+            if (created)
             {
-                _logger.LogInformation("The database does not exists.");
-
-                bool created = await SchemaInitializer.CreateDatabaseAsync(connection, databaseName, cancellationToken);
-
-                if (created)
-                {
-                    _logger.LogInformation("The database is created.");
-                }
-                else
-                {
-                    throw new SchemaManagerException(Resources.InsufficientDatabasePermissionsMessage);
-                }
+                _logger.LogInformation("The database is created.");
+            }
+            else
+            {
+                throw new SchemaManagerException(Resources.InsufficientDatabasePermissionsMessage);
             }
         }
     }

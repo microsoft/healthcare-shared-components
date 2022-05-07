@@ -38,8 +38,16 @@ public class SqlConnectionWrapperFactory
 
     public async Task<SqlConnectionWrapper> ObtainSqlConnectionWrapperAsync(CancellationToken cancellationToken, bool enlistInTransaction = false)
     {
-        SqlConnectionWrapper sqlConnectionWrapper = new SqlConnectionWrapper(_sqlTransactionHandler, _sqlConnectionBuilder, _sqlRetryLogicBaseProvider, enlistInTransaction, _sqlServerDataStoreConfiguration);
-        await sqlConnectionWrapper.InitializeAsync(cancellationToken);
+        var sqlConnectionWrapper = new SqlConnectionWrapper(_sqlTransactionHandler, _sqlConnectionBuilder, _sqlRetryLogicBaseProvider, enlistInTransaction, _sqlServerDataStoreConfiguration);
+        await sqlConnectionWrapper.InitializeAsync(cancellationToken: cancellationToken);
+
+        return sqlConnectionWrapper;
+    }
+
+    public async Task<SqlConnectionWrapper> ObtainSqlConnectionWrapperAsync(string initialCatalog, CancellationToken cancellationToken, bool enlistInTransaction = false)
+    {
+        var sqlConnectionWrapper = new SqlConnectionWrapper(_sqlTransactionHandler, _sqlConnectionBuilder, _sqlRetryLogicBaseProvider, enlistInTransaction, _sqlServerDataStoreConfiguration);
+        await sqlConnectionWrapper.InitializeAsync(initialCatalog, cancellationToken: cancellationToken);
 
         return sqlConnectionWrapper;
     }
