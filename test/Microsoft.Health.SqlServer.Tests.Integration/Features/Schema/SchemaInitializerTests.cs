@@ -23,13 +23,13 @@ public class SchemaInitializerTests : SqlIntegrationTestBase
     public async Task InvalidDatabaseName_CreateDatabaseAsync_ThrowsException()
     {
         await Assert.ThrowsAsync<ArgumentException>(
-            () => SchemaInitializer.CreateDatabaseAsync(Connection, "[something] DROP DATABASE Production --", CancellationToken.None));
+            () => SchemaInitializer.CreateDatabaseAsync(ConnectionWrapper, "[something] DROP DATABASE Production --", CancellationToken.None));
     }
 
     [Fact]
     public async Task DatabaseDoesNotExist_DoesDatabaseExistAsync_ReturnsFalse()
     {
-        Assert.False(await SchemaInitializer.DoesDatabaseExistAsync(Connection, "doesnotexist", CancellationToken.None));
+        Assert.False(await SchemaInitializer.DoesDatabaseExistAsync(ConnectionWrapper, "doesnotexist", CancellationToken.None));
     }
 
     [Fact]
@@ -39,9 +39,9 @@ public class SchemaInitializerTests : SqlIntegrationTestBase
 
         try
         {
-            Assert.False(await SchemaInitializer.DoesDatabaseExistAsync(Connection, dbName, CancellationToken.None));
-            Assert.True(await SchemaInitializer.CreateDatabaseAsync(Connection, dbName, CancellationToken.None));
-            Assert.True(await SchemaInitializer.DoesDatabaseExistAsync(Connection, dbName, CancellationToken.None));
+            Assert.False(await SchemaInitializer.DoesDatabaseExistAsync(ConnectionWrapper, dbName, CancellationToken.None));
+            Assert.True(await SchemaInitializer.CreateDatabaseAsync(ConnectionWrapper, dbName, CancellationToken.None));
+            Assert.True(await SchemaInitializer.DoesDatabaseExistAsync(ConnectionWrapper, dbName, CancellationToken.None));
         }
         finally
         {
