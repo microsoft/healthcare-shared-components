@@ -97,62 +97,61 @@ public class SchemaInitializer : IHostedService
 
             try
             {
-                await using (IDistributedSynchronizationHandle lockHandle = await sqlLock.TryAcquireAsync(TimeSpan.FromSeconds(30), cancellationToken))
+                await using IDistributedSynchronizationHandle lockHandle = await sqlLock.TryAcquireAsync(TimeSpan.FromSeconds(30), cancellationToken);
+
+                if (lockHandle == null)
                 {
-                    if (lockHandle == null)
+                    _logger.LogInformation("Schema upgrade lock was not acquired, skipping");
+                    return;
+                }
+
+                _logger.LogInformation("Schema upgrade lock acquired");
+
+                // Recheck the version with lock
+                await GetCurrentSchemaVersionAsync(cancellationToken).ConfigureAwait(false);
+                _logger.LogInformation("Schema version is {Version}", _schemaInformation.Current?.ToString(CultureInfo.InvariantCulture) ?? "NULL");
+
+                // If the stored procedure to get the current schema version doesn't exist
+                if (_schemaInformation.Current == null)
+                {
+                    // Apply base schema
+                    await _schemaUpgradeRunner.ApplyBaseSchemaAsync(cancellationToken).ConfigureAwait(false);
+
+                    // This is for tests purpose only
+                    if (forceIncrementalSchemaUpgrade)
                     {
-                        _logger.LogInformation("Schema upgrade lock was not acquired, skipping");
-                        return;
+                        // Run version 1 and and apply .diff.sql files to upgrade the schema version.
+                        await _schemaUpgradeRunner.ApplySchemaAsync(_schemaInformation.MinimumSupportedVersion, applyFullSchemaSnapshot: true, cancellationToken).ConfigureAwait(false);
+                    }
+                    else
+                    {
+                        // Apply the maximum supported version. This won't consider the .diff.sql files.
+                        await _schemaUpgradeRunner.ApplySchemaAsync(_schemaInformation.MaximumSupportedVersion, applyFullSchemaSnapshot: true, cancellationToken).ConfigureAwait(false);
                     }
 
-                    _logger.LogInformation("Schema upgrade lock acquired");
-
-                    // Recheck the version with lock
                     await GetCurrentSchemaVersionAsync(cancellationToken).ConfigureAwait(false);
-                    _logger.LogInformation("Schema version is {Version}", _schemaInformation.Current?.ToString(CultureInfo.InvariantCulture) ?? "NULL");
 
-                    // If the stored procedure to get the current schema version doesn't exist
-                    if (_schemaInformation.Current == null)
+                    await _mediator.NotifySchemaUpgradedAsync((int)_schemaInformation.Current, true);
+
+                    schemaUpgradedNotificationSent = true;
+                }
+
+                // If the current schema version needs to be upgraded
+                if (_schemaInformation.Current < _schemaInformation.MaximumSupportedVersion)
+                {
+                    // Apply each .diff.sql file one by one.
+                    int current = _schemaInformation.Current ?? 0;
+                    for (int i = current + 1; i <= _schemaInformation.MaximumSupportedVersion; i++)
                     {
-                        // Apply base schema
-                        await _schemaUpgradeRunner.ApplyBaseSchemaAsync(cancellationToken).ConfigureAwait(false);
+                        await _schemaUpgradeRunner.ApplySchemaAsync(version: i, applyFullSchemaSnapshot: false, cancellationToken).ConfigureAwait(false);
 
-                        // This is for tests purpose only
-                        if (forceIncrementalSchemaUpgrade)
-                        {
-                            // Run version 1 and and apply .diff.sql files to upgrade the schema version.
-                            await _schemaUpgradeRunner.ApplySchemaAsync(_schemaInformation.MinimumSupportedVersion, applyFullSchemaSnapshot: true, cancellationToken).ConfigureAwait(false);
-                        }
-                        else
-                        {
-                            // Apply the maximum supported version. This won't consider the .diff.sql files.
-                            await _schemaUpgradeRunner.ApplySchemaAsync(_schemaInformation.MaximumSupportedVersion, applyFullSchemaSnapshot: true, cancellationToken).ConfigureAwait(false);
-                        }
-
+                        // we need to ensure that the schema upgrade notification is sent after updating the _schemaInformation.Current for each upgraded version
                         await GetCurrentSchemaVersionAsync(cancellationToken).ConfigureAwait(false);
 
-                        await _mediator.NotifySchemaUpgradedAsync((int)_schemaInformation.Current, true);
-
-                        schemaUpgradedNotificationSent = true;
+                        await _mediator.NotifySchemaUpgradedAsync((int)_schemaInformation.Current, false);
                     }
 
-                    // If the current schema version needs to be upgraded
-                    if (_schemaInformation.Current < _schemaInformation.MaximumSupportedVersion)
-                    {
-                        // Apply each .diff.sql file one by one.
-                        int current = _schemaInformation.Current ?? 0;
-                        for (int i = current + 1; i <= _schemaInformation.MaximumSupportedVersion; i++)
-                        {
-                            await _schemaUpgradeRunner.ApplySchemaAsync(version: i, applyFullSchemaSnapshot: false, cancellationToken).ConfigureAwait(false);
-
-                            // we need to ensure that the schema upgrade notification is sent after updating the _schemaInformation.Current for each upgraded version
-                            await GetCurrentSchemaVersionAsync(cancellationToken).ConfigureAwait(false);
-
-                            await _mediator.NotifySchemaUpgradedAsync((int)_schemaInformation.Current, false);
-                        }
-
-                        schemaUpgradedNotificationSent = true;
-                    }
+                    schemaUpgradedNotificationSent = true;
                 }
             }
             catch (SqlException e) when (e.Number == SqlErrorCodes.KilledSessionState)
@@ -278,14 +277,13 @@ public class SchemaInitializer : IHostedService
     {
         EnsureArg.IsNotNull(sqlConnection, nameof(sqlConnection));
 
-        using (SqlCommandWrapper checkDatabaseExistsCommand = sqlConnection.CreateRetrySqlCommand())
+        using SqlCommandWrapper checkDatabaseExistsCommand = sqlConnection.CreateRetrySqlCommand();
+
+        checkDatabaseExistsCommand.CommandText = "SELECT 1 FROM sys.databases where name = @databaseName";
+        checkDatabaseExistsCommand.Parameters.AddWithValue("@databaseName", databaseName);
+        if ((int?)await checkDatabaseExistsCommand.ExecuteScalarAsync(cancellationToken).ConfigureAwait(false) == 1)
         {
-            checkDatabaseExistsCommand.CommandText = "SELECT 1 FROM sys.databases where name = @databaseName";
-            checkDatabaseExistsCommand.Parameters.AddWithValue("@databaseName", databaseName);
-            if ((int?)await checkDatabaseExistsCommand.ExecuteScalarAsync(cancellationToken).ConfigureAwait(false) == 1)
-            {
-                return true;
-            }
+            return true;
         }
 
         return false;
