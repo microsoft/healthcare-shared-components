@@ -92,7 +92,7 @@ public class SchemaInitializer : IHostedService
         {
             SchemaUpgradeRunner _schemaUpgradeRunner = scope.ServiceProvider.GetRequiredService<SchemaUpgradeRunner>();
 
-            using SqlConnectionWrapper sqlConnection = await scope.ServiceProvider.GetRequiredService<SqlConnectionWrapperFactory>().ObtainSqlConnectionWrapperAsync(cancellationToken);
+            using SqlConnectionWrapper sqlConnection = await connectionFactory.ObtainSqlConnectionWrapperAsync(cancellationToken);
             IDistributedLock sqlLock = new SqlDistributedLock(SchemaUpgradeLockName, sqlConnection.SqlConnection);
 
             try
