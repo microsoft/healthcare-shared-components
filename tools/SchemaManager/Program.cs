@@ -70,7 +70,7 @@ internal class Program
             };
         });
         services.AddSingleton<ISqlConnectionStringProvider, DefaultSqlConnectionStringProvider>();
-        services.AddSingleton<IBaseSchemaRunner, BaseSchemaRunner>();
+        services.AddScoped<IBaseSchemaRunner, BaseSchemaRunner>();
         services.AddScoped<SqlConnectionWrapperFactory>();
         services.AddScoped<SqlTransactionHandler>();
         services.AddScoped<ISchemaManagerDataStore, SchemaManagerDataStore>();
