@@ -29,7 +29,7 @@ namespace Microsoft.Health.SqlServer.Features.Schema;
 /// EXPERIMENTAL - Initializes the sql schema and brings the schema up to the min supported version.
 /// The purpose of this it to enable easy scenarios during development and will likely be removed later.
 /// </summary>
-public class SchemaInitializer : IHostedService
+public sealed class SchemaInitializer : IHostedService
 {
     private const string MasterDatabase = "master";
     private readonly IServiceProvider _serviceProvider;
@@ -54,14 +54,14 @@ public class SchemaInitializer : IHostedService
         _logger = EnsureArg.IsNotNull(logger, nameof(logger));
     }
 
-    public async Task StartAsync(CancellationToken cancellationToken)
+    public async Task InitializeAsync(bool forceIncrementalSchemaUpgrade = false, CancellationToken cancellationToken = default)
     {
         using IServiceScope scope = _serviceProvider.CreateScope();
         ISqlConnectionStringProvider connectionStringProvider = scope.ServiceProvider.GetRequiredService<ISqlConnectionStringProvider>();
 
         if (!string.IsNullOrWhiteSpace(await connectionStringProvider.GetSqlConnectionString(cancellationToken).ConfigureAwait(false)))
         {
-            await InitializeAsync(scope, cancellationToken: cancellationToken).ConfigureAwait(false);
+            await InitializeAsync(scope, forceIncrementalSchemaUpgrade, cancellationToken).ConfigureAwait(false);
         }
         else
         {
@@ -70,7 +70,10 @@ public class SchemaInitializer : IHostedService
         }
     }
 
-    public Task StopAsync(CancellationToken cancellationToken)
+    Task IHostedService.StartAsync(CancellationToken cancellationToken)
+        => InitializeAsync(forceIncrementalSchemaUpgrade: false, cancellationToken: cancellationToken);
+
+    Task IHostedService.StopAsync(CancellationToken cancellationToken)
         => Task.CompletedTask;
 
     private async Task InitializeAsync(IServiceScope scope, bool forceIncrementalSchemaUpgrade = false, CancellationToken cancellationToken = default)
