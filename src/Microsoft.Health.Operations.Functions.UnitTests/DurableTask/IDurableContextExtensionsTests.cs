@@ -91,7 +91,7 @@ public class IDurableContextExtensionsTests
         context
             .CallActivityAsync<DurableOrchestrationStatus>(
                 nameof(DurableOrchestrationClientActivity.GetInstanceStatusAsync),
-                Arg.Is<GetInstanceStatusInput>(x => x.InstanceId == operationId))
+                Arg.Any<GetInstanceStatusOptions>())
             .Returns(new DurableOrchestrationStatus { CreatedTime = expected });
 
         // Invoke
@@ -104,7 +104,7 @@ public class IDurableContextExtensionsTests
             .Received(1)
             .CallActivityAsync<DurableOrchestrationStatus>(
                 nameof(DurableOrchestrationClientActivity.GetInstanceStatusAsync),
-                Arg.Is<GetInstanceStatusInput>(x => x.InstanceId == operationId));
+                Arg.Any<GetInstanceStatusOptions>());
     }
 
     [Fact]
@@ -124,7 +124,7 @@ public class IDurableContextExtensionsTests
             .CallActivityWithRetryAsync<DurableOrchestrationStatus>(
                 nameof(DurableOrchestrationClientActivity.GetInstanceStatusAsync),
                 options,
-                Arg.Is<GetInstanceStatusInput>(x => x.InstanceId == operationId))
+                Arg.Any<GetInstanceStatusOptions>())
             .Returns(new DurableOrchestrationStatus { CreatedTime = expected });
 
         // Invoke
@@ -138,6 +138,6 @@ public class IDurableContextExtensionsTests
             .CallActivityWithRetryAsync<DurableOrchestrationStatus>(
                 nameof(DurableOrchestrationClientActivity.GetInstanceStatusAsync),
                 options,
-                Arg.Is<GetInstanceStatusInput>(x => x.InstanceId == operationId));
+                Arg.Any<GetInstanceStatusOptions>());
     }
 }

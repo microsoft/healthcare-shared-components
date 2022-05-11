@@ -5,7 +5,6 @@
 
 using System;
 using System.Data;
-using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Threading;
 using System.Threading.Tasks;
@@ -14,10 +13,12 @@ using Medallion.Threading;
 using Medallion.Threading.SqlServer;
 using MediatR;
 using Microsoft.Data.SqlClient;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.Health.SqlServer.Configs;
+using Microsoft.Health.SqlServer.Features.Client;
 using Microsoft.Health.SqlServer.Features.Schema.Extensions;
 using Microsoft.Health.SqlServer.Features.Schema.Manager;
 using Microsoft.Health.SqlServer.Features.Storage;
@@ -28,45 +29,60 @@ namespace Microsoft.Health.SqlServer.Features.Schema;
 /// EXPERIMENTAL - Initializes the sql schema and brings the schema up to the min supported version.
 /// The purpose of this it to enable easy scenarios during development and will likely be removed later.
 /// </summary>
-public class SchemaInitializer : IHostedService
+public sealed class SchemaInitializer : IHostedService
 {
     private const string MasterDatabase = "master";
+    private readonly IServiceProvider _serviceProvider;
     private readonly SqlServerDataStoreConfiguration _sqlServerDataStoreConfiguration;
-    private readonly IReadOnlySchemaManagerDataStore _schemaManagerDataStore;
-    private readonly SchemaUpgradeRunner _schemaUpgradeRunner;
     private readonly SchemaInformation _schemaInformation;
     private readonly ILogger<SchemaInitializer> _logger;
-    private readonly ISqlConnectionBuilder _sqlConnectionBuilder;
-    private readonly ISqlConnectionStringProvider _sqlConnectionStringProvider;
     private readonly IMediator _mediator;
     private bool _canCallGetCurrentSchema;
     public const string SchemaUpgradeLockName = "SchemaUpgrade";
 
     public SchemaInitializer(
+        IServiceProvider services,
         IOptions<SqlServerDataStoreConfiguration> sqlServerDataStoreConfiguration,
-        IReadOnlySchemaManagerDataStore schemaManagerDataStore,
-        SchemaUpgradeRunner schemaUpgradeRunner,
         SchemaInformation schemaInformation,
-        ISqlConnectionBuilder sqlConnectionBuilder,
-        ISqlConnectionStringProvider sqlConnectionStringProvider,
         IMediator mediator,
         ILogger<SchemaInitializer> logger)
     {
+        _serviceProvider = EnsureArg.IsNotNull(services, nameof(services));
         _sqlServerDataStoreConfiguration = EnsureArg.IsNotNull(sqlServerDataStoreConfiguration?.Value, nameof(sqlServerDataStoreConfiguration));
-        _schemaManagerDataStore = EnsureArg.IsNotNull(schemaManagerDataStore, nameof(schemaManagerDataStore));
-        _schemaUpgradeRunner = EnsureArg.IsNotNull(schemaUpgradeRunner, nameof(schemaUpgradeRunner));
         _schemaInformation = EnsureArg.IsNotNull(schemaInformation, nameof(schemaInformation));
-        _sqlConnectionBuilder = EnsureArg.IsNotNull(sqlConnectionBuilder, nameof(sqlConnectionBuilder));
-        _sqlConnectionStringProvider = EnsureArg.IsNotNull(sqlConnectionStringProvider, nameof(sqlConnectionStringProvider));
         _mediator = EnsureArg.IsNotNull(mediator, nameof(mediator));
         _logger = EnsureArg.IsNotNull(logger, nameof(logger));
     }
 
     public async Task InitializeAsync(bool forceIncrementalSchemaUpgrade = false, CancellationToken cancellationToken = default)
     {
-        bool schemaUpgradedNotificationSent = false;
+        using IServiceScope scope = _serviceProvider.CreateScope();
+        ISqlConnectionStringProvider connectionStringProvider = scope.ServiceProvider.GetRequiredService<ISqlConnectionStringProvider>();
 
-        if (!await CanInitializeAsync(cancellationToken).ConfigureAwait(false))
+        if (!string.IsNullOrWhiteSpace(await connectionStringProvider.GetSqlConnectionString(cancellationToken).ConfigureAwait(false)))
+        {
+            await InitializeAsync(scope, forceIncrementalSchemaUpgrade, cancellationToken).ConfigureAwait(false);
+        }
+        else
+        {
+            _logger.LogCritical(
+                "There was no connection string supplied. Schema initialization can not be completed.");
+        }
+    }
+
+    Task IHostedService.StartAsync(CancellationToken cancellationToken)
+        => InitializeAsync(forceIncrementalSchemaUpgrade: false, cancellationToken: cancellationToken);
+
+    Task IHostedService.StopAsync(CancellationToken cancellationToken)
+        => Task.CompletedTask;
+
+    private async Task InitializeAsync(IServiceScope scope, bool forceIncrementalSchemaUpgrade = false, CancellationToken cancellationToken = default)
+    {
+        bool schemaUpgradedNotificationSent = false;
+        SqlConnectionWrapperFactory connectionFactory = scope.ServiceProvider.GetRequiredService<SqlConnectionWrapperFactory>();
+
+        string databaseName = await GetDatabaseNameAsync(scope.ServiceProvider.GetRequiredService<ISqlConnectionStringProvider>(), cancellationToken).ConfigureAwait(false);
+        if (!await CanInitializeAsync(connectionFactory, databaseName, cancellationToken).ConfigureAwait(false))
         {
             return;
         }
@@ -77,68 +93,68 @@ public class SchemaInitializer : IHostedService
 
         if (_sqlServerDataStoreConfiguration.SchemaOptions.AutomaticUpdatesEnabled)
         {
-            using SqlConnection sqlConnection = await _sqlConnectionBuilder.GetSqlConnectionAsync(cancellationToken: cancellationToken);
-            await sqlConnection.OpenAsync(cancellationToken);
-            IDistributedLock sqlLock = new SqlDistributedLock(SchemaUpgradeLockName, sqlConnection);
+            SchemaUpgradeRunner _schemaUpgradeRunner = scope.ServiceProvider.GetRequiredService<SchemaUpgradeRunner>();
+
+            using SqlConnectionWrapper sqlConnection = await connectionFactory.ObtainSqlConnectionWrapperAsync(cancellationToken);
+            IDistributedLock sqlLock = new SqlDistributedLock(SchemaUpgradeLockName, sqlConnection.SqlConnection);
 
             try
             {
-                await using (IDistributedSynchronizationHandle lockHandle = await sqlLock.TryAcquireAsync(TimeSpan.FromSeconds(30), cancellationToken))
+                await using IDistributedSynchronizationHandle lockHandle = await sqlLock.TryAcquireAsync(TimeSpan.FromSeconds(30), cancellationToken);
+
+                if (lockHandle == null)
                 {
-                    if (lockHandle == null)
+                    _logger.LogInformation("Schema upgrade lock was not acquired, skipping");
+                    return;
+                }
+
+                _logger.LogInformation("Schema upgrade lock acquired");
+
+                // Recheck the version with lock
+                await GetCurrentSchemaVersionAsync(cancellationToken).ConfigureAwait(false);
+                _logger.LogInformation("Schema version is {Version}", _schemaInformation.Current?.ToString(CultureInfo.InvariantCulture) ?? "NULL");
+
+                // If the stored procedure to get the current schema version doesn't exist
+                if (_schemaInformation.Current == null)
+                {
+                    // Apply base schema
+                    await _schemaUpgradeRunner.ApplyBaseSchemaAsync(cancellationToken).ConfigureAwait(false);
+
+                    // This is for tests purpose only
+                    if (forceIncrementalSchemaUpgrade)
                     {
-                        _logger.LogInformation("Schema upgrade lock was not acquired, skipping");
-                        return;
+                        // Run version 1 and and apply .diff.sql files to upgrade the schema version.
+                        await _schemaUpgradeRunner.ApplySchemaAsync(_schemaInformation.MinimumSupportedVersion, applyFullSchemaSnapshot: true, cancellationToken).ConfigureAwait(false);
+                    }
+                    else
+                    {
+                        // Apply the maximum supported version. This won't consider the .diff.sql files.
+                        await _schemaUpgradeRunner.ApplySchemaAsync(_schemaInformation.MaximumSupportedVersion, applyFullSchemaSnapshot: true, cancellationToken).ConfigureAwait(false);
                     }
 
-                    _logger.LogInformation("Schema upgrade lock acquired");
-
-                    // Recheck the version with lock
                     await GetCurrentSchemaVersionAsync(cancellationToken).ConfigureAwait(false);
-                    _logger.LogInformation("Schema version is {Version}", _schemaInformation.Current?.ToString(CultureInfo.InvariantCulture) ?? "NULL");
 
-                    // If the stored procedure to get the current schema version doesn't exist
-                    if (_schemaInformation.Current == null)
+                    await _mediator.NotifySchemaUpgradedAsync((int)_schemaInformation.Current, true);
+
+                    schemaUpgradedNotificationSent = true;
+                }
+
+                // If the current schema version needs to be upgraded
+                if (_schemaInformation.Current < _schemaInformation.MaximumSupportedVersion)
+                {
+                    // Apply each .diff.sql file one by one.
+                    int current = _schemaInformation.Current ?? 0;
+                    for (int i = current + 1; i <= _schemaInformation.MaximumSupportedVersion; i++)
                     {
-                        // Apply base schema
-                        await _schemaUpgradeRunner.ApplyBaseSchemaAsync(cancellationToken).ConfigureAwait(false);
+                        await _schemaUpgradeRunner.ApplySchemaAsync(version: i, applyFullSchemaSnapshot: false, cancellationToken).ConfigureAwait(false);
 
-                        // This is for tests purpose only
-                        if (forceIncrementalSchemaUpgrade)
-                        {
-                            // Run version 1 and and apply .diff.sql files to upgrade the schema version.
-                            await _schemaUpgradeRunner.ApplySchemaAsync(_schemaInformation.MinimumSupportedVersion, applyFullSchemaSnapshot: true, cancellationToken).ConfigureAwait(false);
-                        }
-                        else
-                        {
-                            // Apply the maximum supported version. This won't consider the .diff.sql files.
-                            await _schemaUpgradeRunner.ApplySchemaAsync(_schemaInformation.MaximumSupportedVersion, applyFullSchemaSnapshot: true, cancellationToken).ConfigureAwait(false);
-                        }
-
+                        // we need to ensure that the schema upgrade notification is sent after updating the _schemaInformation.Current for each upgraded version
                         await GetCurrentSchemaVersionAsync(cancellationToken).ConfigureAwait(false);
 
-                        await _mediator.NotifySchemaUpgradedAsync((int)_schemaInformation.Current, true);
-
-                        schemaUpgradedNotificationSent = true;
+                        await _mediator.NotifySchemaUpgradedAsync((int)_schemaInformation.Current, false);
                     }
 
-                    // If the current schema version needs to be upgraded
-                    if (_schemaInformation.Current < _schemaInformation.MaximumSupportedVersion)
-                    {
-                        // Apply each .diff.sql file one by one.
-                        int current = _schemaInformation.Current ?? 0;
-                        for (int i = current + 1; i <= _schemaInformation.MaximumSupportedVersion; i++)
-                        {
-                            await _schemaUpgradeRunner.ApplySchemaAsync(version: i, applyFullSchemaSnapshot: false, cancellationToken).ConfigureAwait(false);
-
-                            // we need to ensure that the schema upgrade notification is sent after updating the _schemaInformation.Current for each upgraded version
-                            await GetCurrentSchemaVersionAsync(cancellationToken).ConfigureAwait(false);
-
-                            await _mediator.NotifySchemaUpgradedAsync((int)_schemaInformation.Current, false);
-                        }
-
-                        schemaUpgradedNotificationSent = true;
-                    }
+                    schemaUpgradedNotificationSent = true;
                 }
             }
             catch (SqlException e) when (e.Number == SqlErrorCodes.KilledSessionState)
@@ -162,7 +178,10 @@ public class SchemaInitializer : IHostedService
     }
 
     private async Task GetCurrentSchemaVersionAsync(CancellationToken cancellationToken)
-    {
+    { 
+        using IServiceScope scope = _serviceProvider.CreateScope();
+        IReadOnlySchemaManagerDataStore _schemaManagerDataStore = scope.ServiceProvider.GetRequiredService<IReadOnlySchemaManagerDataStore>();
+
         if (!_canCallGetCurrentSchema)
         {
             _canCallGetCurrentSchema = await _schemaManagerDataStore.ObjectExistsAsync("SelectCurrentSchemaVersion", "P", cancellationToken);
@@ -184,6 +203,54 @@ public class SchemaInitializer : IHostedService
         {
             _logger.LogWarning("Could not find stored procedure - dbo.SelectCurrentSchemaVersion");
         }
+    }
+
+    private async Task<bool> CanInitializeAsync(SqlConnectionWrapperFactory factory, string databaseName, CancellationToken cancellationToken)
+    {
+        if (!_sqlServerDataStoreConfiguration.Initialize)
+        {
+            return false;
+        }
+
+        ValidateDatabaseName(databaseName);
+
+        if (_sqlServerDataStoreConfiguration.AllowDatabaseCreation)
+        {
+            using SqlConnectionWrapper connection = await factory.ObtainSqlConnectionWrapperAsync(MasterDatabase, cancellationToken).ConfigureAwait(false);
+            bool doesDatabaseExist = await DoesDatabaseExistAsync(connection, databaseName, cancellationToken).ConfigureAwait(false);
+
+            if (!doesDatabaseExist)
+            {
+                _logger.LogInformation("Database does not exist");
+
+                bool created = await CreateDatabaseAsync(connection, databaseName, cancellationToken).ConfigureAwait(false);
+
+                if (created)
+                {
+                    _logger.LogInformation("Created database");
+                }
+                else
+                {
+                    _logger.LogWarning("Insufficient permissions to create the database");
+                    return false;
+                }
+            }
+        }
+
+        bool canInitialize = false;
+
+        // now switch to the target database
+        using (SqlConnectionWrapper connection = await factory.ObtainSqlConnectionWrapperAsync(cancellationToken).ConfigureAwait(false))
+        {
+            canInitialize = await CheckDatabasePermissionsAsync(connection, cancellationToken).ConfigureAwait(false);
+        }
+
+        if (!canInitialize)
+        {
+            _logger.LogWarning("Insufficient permissions to create tables in the database");
+        }
+
+        return canInitialize;
     }
 
     public static void ValidateDatabaseName(string databaseName)
@@ -209,40 +276,39 @@ public class SchemaInitializer : IHostedService
     /// <param name="databaseName">Database name.</param>
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>True if database exists, else returns false.</returns>
-    public static async Task<bool> DoesDatabaseExistAsync(SqlConnection sqlConnection, string databaseName, CancellationToken cancellationToken)
+    public static async Task<bool> DoesDatabaseExistAsync(SqlConnectionWrapper sqlConnection, string databaseName, CancellationToken cancellationToken)
     {
         EnsureArg.IsNotNull(sqlConnection, nameof(sqlConnection));
 
-        if (sqlConnection.State != ConnectionState.Open)
-        {
-            await sqlConnection.OpenAsync(cancellationToken).ConfigureAwait(false);
-        }
+        using SqlCommandWrapper checkDatabaseExistsCommand = sqlConnection.CreateRetrySqlCommand();
 
-        using (SqlCommand checkDatabaseExistsCommand = sqlConnection.CreateCommand())
+        checkDatabaseExistsCommand.CommandText = "SELECT 1 FROM sys.databases where name = @databaseName";
+        checkDatabaseExistsCommand.Parameters.AddWithValue("@databaseName", databaseName);
+        if ((int?)await checkDatabaseExistsCommand.ExecuteScalarAsync(cancellationToken).ConfigureAwait(false) == 1)
         {
-            checkDatabaseExistsCommand.CommandText = "SELECT 1 FROM sys.databases where name = @databaseName";
-            checkDatabaseExistsCommand.Parameters.AddWithValue("@databaseName", databaseName);
-            if ((int?)await checkDatabaseExistsCommand.ExecuteScalarAsync(cancellationToken).ConfigureAwait(false) == 1)
-            {
-                return true;
-            }
+            return true;
         }
 
         return false;
     }
 
-    [SuppressMessage("Security", "CA2100:Review SQL queries for security vulnerabilities", Justification = "Database name is validated before use.")]
-    public static async Task<bool> CreateDatabaseAsync(SqlConnection connection, string databaseName, CancellationToken cancellationToken)
+    public static async Task<bool> CreateDatabaseAsync(SqlConnectionWrapper connection, string databaseName, CancellationToken cancellationToken)
     {
+        EnsureArg.IsNotNull(connection, nameof(connection));
+
         if (!Identifier.IsValidDatabase(databaseName))
         {
             throw new ArgumentException(string.Format(CultureInfo.CurrentCulture, Resources.InvalidDatabaseIdentifier, databaseName), nameof(databaseName));
         }
 
-        using var canCreateDatabaseCommand = new SqlCommand("SELECT count(*) FROM fn_my_permissions (NULL, 'DATABASE') WHERE permission_name = 'CREATE DATABASE'", connection);
+        using SqlCommandWrapper canCreateDatabaseCommand = connection.CreateRetrySqlCommand();
+        canCreateDatabaseCommand.CommandText = "SELECT count(*) FROM fn_my_permissions (NULL, 'DATABASE') WHERE permission_name = 'CREATE DATABASE'";
+
         if ((int)await canCreateDatabaseCommand.ExecuteScalarAsync(cancellationToken).ConfigureAwait(false) > 0)
         {
-            using var createDatabaseCommand = new SqlCommand($"CREATE DATABASE {databaseName}", connection);
+            using SqlCommandWrapper createDatabaseCommand = connection.CreateRetrySqlCommand();
+            createDatabaseCommand.CommandText = $"CREATE DATABASE {databaseName}";
+
             await createDatabaseCommand.ExecuteNonQueryAsync(cancellationToken).ConfigureAwait(false);
             return true;
         }
@@ -252,82 +318,15 @@ public class SchemaInitializer : IHostedService
         }
     }
 
-    public static async Task<bool> CheckDatabasePermissionsAsync(SqlConnection connection, CancellationToken cancellationToken)
+    public static async Task<bool> CheckDatabasePermissionsAsync(SqlConnectionWrapper connection, CancellationToken cancellationToken)
     {
         EnsureArg.IsNotNull(connection, nameof(connection));
 
-        if (connection.State != ConnectionState.Open)
-        {
-            await connection.OpenAsync(cancellationToken).ConfigureAwait(false);
-        }
-
-        using var command = new SqlCommand("SELECT count(*) FROM fn_my_permissions (NULL, 'DATABASE') WHERE permission_name = 'CREATE TABLE'", connection);
+        using SqlCommandWrapper command = connection.CreateRetrySqlCommand();
+        command.CommandText = "SELECT count(*) FROM fn_my_permissions (NULL, 'DATABASE') WHERE permission_name = 'CREATE TABLE'";
         return (int)await command.ExecuteScalarAsync(cancellationToken).ConfigureAwait(false) > 0;
     }
 
-    private async Task<bool> CanInitializeAsync(CancellationToken cancellationToken)
-    {
-        if (!_sqlServerDataStoreConfiguration.Initialize)
-        {
-            return false;
-        }
-
-        var configuredConnectionBuilder = new SqlConnectionStringBuilder(await _sqlConnectionStringProvider.GetSqlConnectionString(cancellationToken).ConfigureAwait(false));
-        string databaseName = configuredConnectionBuilder.InitialCatalog;
-
-        ValidateDatabaseName(databaseName);
-
-        if (_sqlServerDataStoreConfiguration.AllowDatabaseCreation)
-        {
-            using SqlConnection connection = await _sqlConnectionBuilder.GetSqlConnectionAsync(MasterDatabase, cancellationToken).ConfigureAwait(false);
-            bool doesDatabaseExist = await DoesDatabaseExistAsync(connection, databaseName, cancellationToken).ConfigureAwait(false);
-
-            if (!doesDatabaseExist)
-            {
-                _logger.LogInformation("Database does not exist");
-
-                bool created = await CreateDatabaseAsync(connection, databaseName, cancellationToken).ConfigureAwait(false);
-
-                if (created)
-                {
-                    _logger.LogInformation("Created database");
-                }
-                else
-                {
-                    _logger.LogWarning("Insufficient permissions to create the database");
-                    return false;
-                }
-            }
-        }
-
-        bool canInitialize = false;
-
-        // now switch to the target database
-        using (SqlConnection connection = await _sqlConnectionBuilder.GetSqlConnectionAsync(cancellationToken: cancellationToken).ConfigureAwait(false))
-        {
-            canInitialize = await CheckDatabasePermissionsAsync(connection, cancellationToken).ConfigureAwait(false);
-        }
-
-        if (!canInitialize)
-        {
-            _logger.LogWarning("Insufficient permissions to create tables in the database");
-        }
-
-        return canInitialize;
-    }
-
-    public async Task StartAsync(CancellationToken cancellationToken)
-    {
-        if (!string.IsNullOrWhiteSpace(await _sqlConnectionStringProvider.GetSqlConnectionString(cancellationToken).ConfigureAwait(false)))
-        {
-            await InitializeAsync(cancellationToken: cancellationToken).ConfigureAwait(false);
-        }
-        else
-        {
-            _logger.LogCritical(
-                "There was no connection string supplied. Schema initialization can not be completed.");
-        }
-    }
-
-    public Task StopAsync(CancellationToken cancellationToken) => Task.CompletedTask;
+    private static async ValueTask<string> GetDatabaseNameAsync(ISqlConnectionStringProvider connectionStringProvider, CancellationToken cancellationToken)
+        => new SqlConnectionStringBuilder(await connectionStringProvider.GetSqlConnectionString(cancellationToken).ConfigureAwait(false)).InitialCatalog;
 }

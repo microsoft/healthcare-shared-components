@@ -3,14 +3,21 @@
 // Licensed under the MIT License (MIT). See LICENSE in the repo root for license information.
 // -------------------------------------------------------------------------------------------------
 
+using System;
 using System.CommandLine;
 using System.CommandLine.Builder;
 using System.CommandLine.Invocation;
 using System.Threading.Tasks;
+using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using Microsoft.Health.SqlServer;
+using Microsoft.Health.SqlServer.Configs;
+using Microsoft.Health.SqlServer.Features.Client;
 using Microsoft.Health.SqlServer.Features.Schema.Manager;
+using Microsoft.Health.SqlServer.Features.Storage;
 using SchemaManager.Core;
 
 namespace SchemaManager;
@@ -49,9 +56,24 @@ internal class Program
 
         // TODO: this won't work in OSS if the AuthenticationType is set to ManagedIdentity
         services.AddSingleton<ISqlConnectionBuilder, DefaultSqlConnectionBuilder>();
+        services.TryAddSingleton<SqlRetryLogicBaseProvider>(p =>
+        {
+            SqlServerDataStoreConfiguration config = p.GetRequiredService<IOptions<SqlServerDataStoreConfiguration>>().Value;
+
+            return config.Retry.Mode switch
+            {
+                SqlRetryMode.None => SqlConfigurableRetryFactory.CreateNoneRetryProvider(),
+                SqlRetryMode.Fixed => SqlConfigurableRetryFactory.CreateFixedRetryProvider(config.Retry.Settings),
+                SqlRetryMode.Incremental => SqlConfigurableRetryFactory.CreateIncrementalRetryProvider(config.Retry.Settings),
+                SqlRetryMode.Exponential => SqlConfigurableRetryFactory.CreateExponentialRetryProvider(config.Retry.Settings),
+                _ => throw new NotImplementedException(),
+            };
+        });
         services.AddSingleton<ISqlConnectionStringProvider, DefaultSqlConnectionStringProvider>();
-        services.AddSingleton<IBaseSchemaRunner, BaseSchemaRunner>();
-        services.AddSingleton<ISchemaManagerDataStore, SchemaManagerDataStore>();
+        services.AddScoped<IBaseSchemaRunner, BaseSchemaRunner>();
+        services.AddScoped<SqlConnectionWrapperFactory>();
+        services.AddScoped<SqlTransactionHandler>();
+        services.AddScoped<ISchemaManagerDataStore, SchemaManagerDataStore>();
         services.AddSingleton<ISchemaClient, SchemaClient>();
         services.AddSingleton<ISchemaManager, SqlSchemaManager>();
         services.AddLogging(configure => configure.AddConsole());

@@ -13,14 +13,15 @@
   <ItemGroup>
     <PackageReference Include="Ensure.That" Version="10.1.0" />
     <PackageReference Include="MartinCostello.Logging.XUnit" Version="0.2.0" />
+    <PackageReference Include="Microsoft.Azure.DurableTask.AzureStorage" Version="1.11.1" PrivateAssets="All" />
     <PackageReference Include="Microsoft.Azure.Functions.Extensions" Version="1.1.0" />
-    <PackageReference Include="Microsoft.Azure.WebJobs" Version="3.0.31" />
+    <PackageReference Include="Microsoft.Azure.WebJobs" Version="3.0.33" />
     <PackageReference Include="Microsoft.Azure.WebJobs.Extensions.DurableTask" Version="2.6.1" />
-    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.1.0" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.2.0" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
     <PackageReference Include="xunit" Version="2.4.1" />
-    <PackageReference Include="Xunit.DependencyInjection" Version="8.4.1" />
-    <PackageReference Include="xunit.runner.visualstudio" Version="2.4.3" PrivateAssets="All" />
+    <PackageReference Include="Xunit.DependencyInjection" Version="8.5.0" />
+    <PackageReference Include="xunit.runner.visualstudio" Version="2.4.5" PrivateAssets="All" />
   </ItemGroup>
 
   <ItemGroup>

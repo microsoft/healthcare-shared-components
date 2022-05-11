@@ -46,7 +46,7 @@ public class OperationState<T>
     /// Gets the percentage of work that has been completed by the operation.
     /// </summary>
     /// <value>An integer ranging from 0 to 100.</value>
-    public int PercentComplete { get; init; }
+    public int? PercentComplete { get; init; }
 
     /// <summary>
     /// Gets the optional collection of resources locations that the operation is creating or manipulating.
@@ -56,4 +56,10 @@ public class OperationState<T>
     /// </remarks>
     /// <value>A collection of resource IDs, or <see langword="null"/> if there are no targeted resources.</value>
     public IReadOnlyCollection<Uri>? Resources { get; init; }
+
+    /// <summary>
+    /// Gets the optional collection of operation-specific properties.
+    /// </summary>
+    /// <value>Zero or more key-value pairs based on the <see cref="Type"/>.</value>
+    public IReadOnlyDictionary<string, string>? AdditionalProperties { get; init; }
 }

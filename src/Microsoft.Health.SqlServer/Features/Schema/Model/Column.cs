@@ -8,6 +8,7 @@ using System.Buffers;
 using System.Data;
 using System.Data.SqlTypes;
 using System.Diagnostics.CodeAnalysis;
+using System.Globalization;
 using System.IO;
 using EnsureThat;
 using Microsoft.Data.SqlClient;
@@ -154,6 +155,52 @@ public class BitColumn : Column<bool>
     }
 }
 
+public class DateTimeColumn : Column<DateTime>
+{
+    public DateTimeColumn(string name)
+        : base(name, SqlDbType.DateTime, false)
+    {
+    }
+
+    public override DateTime Read(SqlDataReader reader, int ordinal)
+    {
+        return reader.GetDateTime(Metadata.Name, ordinal);
+    }
+
+    public override void Set(SqlDataRecord record, int ordinal, DateTime value)
+    {
+        EnsureArg.IsNotNull(record, nameof(record));
+        record.SetDateTime(ordinal, value);
+    }
+}
+
+public class NullableDateTimeColumn : Column<DateTime?>
+{
+    public NullableDateTimeColumn(string name)
+        : base(name, SqlDbType.DateTime, true)
+    {
+    }
+
+    public override DateTime? Read(SqlDataReader reader, int ordinal)
+    {
+        return reader.GetDateTime(Metadata.Name, ordinal);
+    }
+
+    public override void Set(SqlDataRecord record, int ordinal, DateTime? value)
+    {
+        EnsureArg.IsNotNull(record, nameof(record));
+
+        if (value == null)
+        {
+            record.SetDBNull(ordinal);
+        }
+        else
+        {
+            record.SetDateTime(ordinal, value.Value);
+        }
+    }
+}
+
 public class DateTime2Column : Column<DateTime>
 {
     public DateTime2Column(string name, byte scale)
@@ -240,12 +287,18 @@ public class DecimalColumn : Column<decimal>
     public override void Set(SqlDataRecord record, int ordinal, decimal value)
     {
         EnsureArg.IsNotNull(record, nameof(record));
+        ColumnUtilities.ValidateLength(Metadata, value);
         record.SetDecimal(ordinal, value);
     }
 }
 
 public class FloatColumn : Column<double>
 {
+    public FloatColumn(string name)
+        : base(name, SqlDbType.Float, false)
+    {
+    }
+
     public FloatColumn(string name, byte precision)
         : base(name, SqlDbType.Float, false, ColumnUtilities.GetLengthForFloatColumn(precision), precision, 0, 0, SqlCompareOptions.None, null)
     {
@@ -479,6 +532,7 @@ public class NullableDecimalColumn : Column<decimal?>
 
         if (value.HasValue)
         {
+            ColumnUtilities.ValidateLength(Metadata, value.Value);
             record.SetDecimal(ordinal, value.Value);
         }
         else
@@ -490,6 +544,11 @@ public class NullableDecimalColumn : Column<decimal?>
 
 public class NullableFloatColumn : Column<double?>
 {
+    public NullableFloatColumn(string name)
+        : base(name, SqlDbType.Float, true)
+    {
+    }
+    
     public NullableFloatColumn(string name, byte precision)
         : base(name, SqlDbType.Float, true, ColumnUtilities.GetLengthForFloatColumn(precision), precision, 0, 0, SqlCompareOptions.None, null)
     {
@@ -703,6 +762,12 @@ public abstract class StringColumn : Column<string>
 
         if (value != null)
         {
+            // NVarChar(max) column has -1 length
+            if (Metadata.MaxLength > 0 && Metadata.MaxLength < value.Length)
+            {
+                throw new SqlTruncateException(string.Format(CultureInfo.CurrentCulture, Resources.StringTooLong, value.Length, Metadata.Name, Metadata.MaxLength));
+            }
+
             record.SetString(ordinal, value);
         }
         else

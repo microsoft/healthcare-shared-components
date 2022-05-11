@@ -4,12 +4,14 @@
 // -------------------------------------------------------------------------------------------------
 
 using System;
-using System.Diagnostics.CodeAnalysis;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Data.SqlClient;
+using Microsoft.Extensions.Options;
 using Microsoft.Health.SqlServer.Configs;
+using Microsoft.Health.SqlServer.Features.Client;
 using Microsoft.Health.SqlServer.Features.Schema;
+using Microsoft.Health.SqlServer.Features.Storage;
 using NSubstitute;
 using Xunit;
 using Xunit.Abstractions;
@@ -22,7 +24,7 @@ public abstract class SqlIntegrationTestBase : IAsyncLifetime
     {
         Output = outputHelper;
         DatabaseName = $"IntegrationTests_BaseSchemaRunner_{Guid.NewGuid().ToString().Replace("-", string.Empty, StringComparison.Ordinal)}";
-        var builder = new SqlConnectionStringBuilder(Environment.GetEnvironmentVariable("TestSqlConnectionString") ?? $"server=(local);Integrated Security=true")
+        var builder = new SqlConnectionStringBuilder(Environment.GetEnvironmentVariable("TestSqlConnectionString") ?? $"server=(local);Integrated Security=true;TrustServerCertificate=true;")
         {
             InitialCatalog = DatabaseName
         };
@@ -43,23 +45,35 @@ public abstract class SqlIntegrationTestBase : IAsyncLifetime
 
     protected ITestOutputHelper Output { get; set; }
 
-    protected SqlConnection Connection { get; set; }
+    protected SqlTransactionHandler TransactionHandler { get; set; }
+
+    protected SqlConnectionWrapperFactory ConnectionFactory { get; set; }
+
+    protected SqlConnectionWrapper ConnectionWrapper { get; set; }
 
     protected SqlServerDataStoreConfiguration Config { get; set; }
 
     public virtual async Task InitializeAsync()
     {
-        var connectionBuilder = new SqlConnectionStringBuilder(Config.ConnectionString) { InitialCatalog = "master" };
-        Connection = new SqlConnection(connectionBuilder.ToString());
-        await Connection.OpenAsync();
-        await SchemaInitializer.CreateDatabaseAsync(Connection, DatabaseName, CancellationToken.None);
-        await Connection.ChangeDatabaseAsync(DatabaseName);
+        TransactionHandler = new SqlTransactionHandler();
+
+        IOptions<SqlServerDataStoreConfiguration> options = Options.Create(Config);
+        ConnectionFactory = new SqlConnectionWrapperFactory(
+            TransactionHandler,
+            new DefaultSqlConnectionBuilder(ConnectionStringProvider, SqlConfigurableRetryFactory.CreateNoneRetryProvider()),
+            SqlConfigurableRetryFactory.CreateFixedRetryProvider(new SqlClientRetryOptions().Settings),
+            options);
+
+        ConnectionWrapper = await ConnectionFactory.ObtainSqlConnectionWrapperAsync("master", CancellationToken.None);
+
+        await SchemaInitializer.CreateDatabaseAsync(ConnectionWrapper, DatabaseName, CancellationToken.None);
+        await ConnectionWrapper.SqlConnection.ChangeDatabaseAsync(DatabaseName);
         Output.WriteLine($"Using database '{DatabaseName}'.");
     }
 
     public virtual async Task DisposeAsync()
     {
-        await Connection.ChangeDatabaseAsync("master");
+        await ConnectionWrapper.SqlConnection.ChangeDatabaseAsync("master");
         try
         {
             await DeleteDatabaseAsync(DatabaseName);
@@ -70,11 +84,11 @@ public abstract class SqlIntegrationTestBase : IAsyncLifetime
             throw;
         }
 
-        await Connection.CloseAsync();
-        await Connection.DisposeAsync();
+        await ConnectionWrapper.SqlConnection.CloseAsync();
+        ConnectionWrapper.Dispose();
+        TransactionHandler.Dispose();
     }
 
-    [SuppressMessage("Security", "CA2100:Review SQL queries for security vulnerabilities", Justification = "Database name is validated.")]
     protected async Task DeleteDatabaseAsync(string dbName)
     {
         if (!Identifier.IsValidDatabase(dbName))
@@ -82,11 +96,13 @@ public abstract class SqlIntegrationTestBase : IAsyncLifetime
             throw new ArgumentException($"Invalid DB identifier '{dbName}'", nameof(dbName));
         }
 
-        using var deleteDatabaseCommand = new SqlCommand($"ALTER DATABASE {dbName} SET SINGLE_USER WITH ROLLBACK IMMEDIATE; DROP DATABASE {dbName};", Connection);
-        if (Connection.Database == dbName)
+        using SqlCommandWrapper deleteDatabaseCommand = ConnectionWrapper.CreateRetrySqlCommand();
+        deleteDatabaseCommand.CommandText = $"ALTER DATABASE {dbName} SET SINGLE_USER WITH ROLLBACK IMMEDIATE; DROP DATABASE {dbName};";
+
+        if (ConnectionWrapper.SqlConnection.Database == dbName)
         {
             Output.WriteLine($"Switching from '{dbName}' to master prior to delete.");
-            await Connection.ChangeDatabaseAsync("master", CancellationToken.None);
+            await ConnectionWrapper.SqlConnection.ChangeDatabaseAsync("master", CancellationToken.None);
         }
 
         int result = await deleteDatabaseCommand.ExecuteNonQueryAsync(CancellationToken.None);
