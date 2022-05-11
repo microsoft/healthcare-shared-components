@@ -32,12 +32,15 @@ internal sealed class CachedHealthCheck : IHealthCheck, IDisposable
         _semaphore = new SemaphoreSlim(_options.MaxRefreshThreads, _options.MaxRefreshThreads);
     }
 
-    public Task<HealthCheckResult> CheckHealthAsync(HealthCheckContext context, CancellationToken cancellationToken = default)
+    public async Task<HealthCheckResult> CheckHealthAsync(HealthCheckContext context, CancellationToken cancellationToken = default)
     {
         DateTimeOffset currentTime = Clock.UtcNow;
-        return IsUpToDate(currentTime)
-            ? Task.FromResult(_cache.Result)
-            : RefreshCache(context, !HasExpired(currentTime), cancellationToken);
+        if (!IsUpToDate(currentTime))
+        {
+            await RefreshCacheAsync(context, !HasExpired(currentTime), cancellationToken);
+        }
+
+        return _cache.Result;
     }
 
     public void Dispose()
@@ -46,56 +49,34 @@ internal sealed class CachedHealthCheck : IHealthCheck, IDisposable
         GC.SuppressFinalize(this);
     }
 
-    private async Task<HealthCheckResult> RefreshCache(HealthCheckContext context, bool canSkip, CancellationToken cancellationToken)
+    private async Task RefreshCacheAsync(HealthCheckContext context, bool canSkip, CancellationToken cancellationToken)
     {
         // If the cache is stale but not expired, then we make a best effort to refresh if the semaphore isn't
         // currently occupied by another thread. Otherwise, we'll use the cached value.
-        TimeSpan maxWait = canSkip ? TimeSpan.Zero : Timeout.InfiniteTimeSpan;
-
-        try
+        if (!await TryGetSemaphoreAsync(canSkip ? TimeSpan.Zero : Timeout.InfiniteTimeSpan, cancellationToken).ConfigureAwait(false))
         {
-            // Note: Only the timespan controls whether or not the method returns true/false.
-            //       If the token is canceled, the method throws instead an OperationCanceledException.
-            if (!await _semaphore.WaitAsync(maxWait, cancellationToken).ConfigureAwait(false))
-            {
-                return _cache.Result;
-            }
-        }
-        catch (OperationCanceledException oce) when (!HasExpired(Clock.UtcNow))
-        {
-            _logger.LogWarning(oce, "Health check was canceled. Falling back to cache.");
-            return _cache.Result;
+            return;
         }
 
         try
         {
             // Once we've entered the semaphore, check the cache again for its freshness
-            if (IsUpToDate(Clock.UtcNow))
+            if (!IsUpToDate(Clock.UtcNow))
             {
-                return _cache.Result;
+                HealthCheckResult result = await _healthCheck.CheckHealthAsync(context, cancellationToken).ConfigureAwait(false);
+                RefreshCache(result);
             }
-
-            HealthCheckResult result;
-            try
+        }
+        catch (Exception ex) when (!HasExpired(Clock.UtcNow))
+        {
+            if (ex is OperationCanceledException oce)
             {
-                result = await _healthCheck.CheckHealthAsync(context, cancellationToken).ConfigureAwait(false);
+                _logger.LogWarning(oce, "Health check was canceled. Falling back to cache.");
             }
-            catch (Exception ex) when (!HasExpired(Clock.UtcNow))
+            else
             {
-                if (ex is OperationCanceledException oce)
-                {
-                    _logger.LogWarning(oce, "Health check was canceled. Falling back to cache.");
-                }
-                else
-                {
-                    _logger.LogError(ex, "Health check failed to complete. Falling back to cache.");
-                }
-
-                return _cache.Result;
+                _logger.LogError(ex, "Health check failed to complete. Falling back to cache.");
             }
-
-            // Update cache based on the latest snapshot
-            return RefreshCache(result);
         }
         finally
         {
@@ -103,7 +84,7 @@ internal sealed class CachedHealthCheck : IHealthCheck, IDisposable
         }
     }
 
-    private HealthCheckResult RefreshCache(HealthCheckResult newResult)
+    private void RefreshCache(HealthCheckResult newResult)
     {
         // The cache if it's not up-to-date or we found a better status
         DateTimeOffset currentTime = Clock.UtcNow;
@@ -120,12 +101,8 @@ internal sealed class CachedHealthCheck : IHealthCheck, IDisposable
 
             // Other threads may have updated it while we were checking the cache's validity,
             // so we need to check what Interlock.CompareExchange found to be the previous cached value.
-            CachedHealthCheckResult actualCurrentCache = Interlocked.CompareExchange(ref _cache, newCache, currentCache);
-            return ReferenceEquals(actualCurrentCache, currentCache) ? newResult : actualCurrentCache.Result;
+            Interlocked.CompareExchange(ref _cache, newCache, currentCache);
         }
-
-        // Otherwise, return whatever is the current cache
-        return _cache.Result;
     }
 
     private bool HasExpired(DateTimeOffset timestamp)
@@ -133,6 +110,21 @@ internal sealed class CachedHealthCheck : IHealthCheck, IDisposable
 
     private bool IsUpToDate(DateTimeOffset timestamp)
         => timestamp < _cache.StaleTime;
+
+    private async Task<bool> TryGetSemaphoreAsync(TimeSpan timeout, CancellationToken cancellationToken)
+    {
+        try
+        {
+            // Note: Only the timespan controls whether or not the method returns true/false.
+            //       If the token is canceled, the method throws instead an OperationCanceledException.
+            return await _semaphore.WaitAsync(timeout, cancellationToken).ConfigureAwait(false);
+        }
+        catch (OperationCanceledException oce) when (!HasExpired(Clock.UtcNow))
+        {
+            _logger.LogWarning(oce, "Health check was canceled. Falling back to cache.");
+            return false;
+        }
+    }
 
     private sealed class CachedHealthCheckResult
     {
