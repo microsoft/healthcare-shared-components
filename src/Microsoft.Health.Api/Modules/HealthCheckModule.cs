@@ -18,6 +18,12 @@ public class HealthCheckModule : IStartupModule
     {
         EnsureArg.IsNotNull(services, nameof(services));
 
+        services.AddOptions();
+
+        services.Add<HealthCheckCachingOptionsValidation>()
+            .Singleton()
+            .AsService<IValidateOptions<HealthCheckCachingOptions>>();
+
         services.Add<HealthCheckCachingPostConfigure>()
             .Transient()
             .AsService<IPostConfigureOptions<HealthCheckServiceOptions>>();
