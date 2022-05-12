@@ -48,12 +48,18 @@ public class PurgeOrchestrationInstanceHistoryTests
     [InlineData(12)]
     public async Task GivenOrchestrationInstances_WhenPurgeCompletedDurableFunctionsHistory_ThenOrchestrationsPurgedAsync(int count)
     {
+        OrchestrationStatusQueryCondition condition = new OrchestrationStatusQueryCondition
+        {
+            CreatedTimeFrom = DateTime.MinValue,
+            CreatedTimeTo = _utcNow.AddDays(-_purgeConfig.MinimumAgeDays),
+            RuntimeStatus = _purgeConfig.Statuses,
+        };
         var instanceId = Guid.NewGuid().ToString();
 
         var durableOrchestrationState = Enumerable.Repeat(new DurableOrchestrationStatus { InstanceId = instanceId }, count);
 
         _durableClient
-            .ListInstancesAsync(Arg.Any<OrchestrationStatusQueryCondition>(), Arg.Any<CancellationToken>())
+            .ListInstancesAsync(condition, Arg.Any<CancellationToken>())
             .Returns(new OrchestrationStatusQueryResult
             {
                 DurableOrchestrationState = durableOrchestrationState
