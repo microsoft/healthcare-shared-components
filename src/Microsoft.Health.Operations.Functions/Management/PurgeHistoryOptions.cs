@@ -46,8 +46,8 @@ public class PurgeHistoryOptions
     public string? Frequency { get; set; }
 
     /// <summary>
-    ///  Gets or sets the collection of orchestration ids which should be skipped for cleanup
+    ///  Gets or sets the collection of orchestration names which should be skipped for cleanup
     /// </summary>
     /// <value>A set of one or more <see cref="string"/></value>
-    public IReadOnlyCollection<string>? InstancesToSkipPurging { get; set; } = Array.Empty<string>();
+    public IReadOnlyCollection<string>? InstancesToSkipPurging { get; set; }
 }

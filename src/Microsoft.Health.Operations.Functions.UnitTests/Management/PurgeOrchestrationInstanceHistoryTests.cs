@@ -76,6 +76,13 @@ public class PurgeOrchestrationInstanceHistoryTests
     [Fact]
     public async Task GivenOrchestrationInstancesAndInstancesToSkipPurging_WhenPurgeCompletedDurableFunctionsHistory_ThenNoOrchestrationsPurgedAsync()
     {
+        OrchestrationStatusQueryCondition condition = new OrchestrationStatusQueryCondition
+        {
+            CreatedTimeFrom = DateTime.MinValue,
+            CreatedTimeTo = _utcNow.AddDays(-_purgeConfig.MinimumAgeDays),
+            RuntimeStatus = _purgeConfig.Statuses,
+        };
+
         var instanceId1 = Guid.NewGuid().ToString();
         var instanceId2 = Guid.NewGuid().ToString();
 
@@ -83,19 +90,19 @@ public class PurgeOrchestrationInstanceHistoryTests
         _purgeTask = new PurgeOrchestrationInstanceHistory(Options.Create(_purgeConfig));
 
         var durableOrchestrationState = new List<DurableOrchestrationStatus> {
-            new DurableOrchestrationStatus { InstanceId = instanceId1 },
-            new DurableOrchestrationStatus { InstanceId = instanceId2 }
+            new DurableOrchestrationStatus { InstanceId = instanceId1, Name = instanceId1 },
+            new DurableOrchestrationStatus { InstanceId = instanceId2, Name = instanceId2 }
         };
 
         _durableClient
-            .ListInstancesAsync(Arg.Any<OrchestrationStatusQueryCondition>(), Arg.Any<CancellationToken>())
+            .ListInstancesAsync(condition, Arg.Any<CancellationToken>())
             .Returns(new OrchestrationStatusQueryResult
             {
                 DurableOrchestrationState = durableOrchestrationState
             });
 
         _durableClient
-            .PurgeInstanceHistoryAsync(Arg.Any<string>())
+            .PurgeInstanceHistoryAsync(instanceId2)
             .Returns(new PurgeHistoryResult(1));
 
         using (Mock.Property(() => ClockResolver.UtcNowFunc, () => _utcNow))
@@ -105,6 +112,6 @@ public class PurgeOrchestrationInstanceHistoryTests
 
         await _durableClient
             .Received(1)
-            .PurgeInstanceHistoryAsync(Arg.Any<string>());
+            .PurgeInstanceHistoryAsync(instanceId2);
     }
 }

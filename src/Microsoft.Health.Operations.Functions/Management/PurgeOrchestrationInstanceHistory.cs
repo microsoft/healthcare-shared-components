@@ -26,7 +26,7 @@ public sealed class PurgeOrchestrationInstanceHistory
 {
     private readonly IReadOnlyCollection<OrchestrationRuntimeStatus> _statuses;
     private readonly TimeSpan _minimumAge;
-    private readonly HashSet<string> _instancesToSkipPurging;
+    private readonly IReadOnlyCollection<string> _instancesToSkipPurging;
 
     private const string PurgeFrequencyVariable = $"%{AzureFunctionsJobHost.RootSectionName}:{PurgeHistoryOptions.SectionName}:{nameof(PurgeHistoryOptions.Frequency)}%";
 
@@ -45,7 +45,7 @@ public sealed class PurgeOrchestrationInstanceHistory
         PurgeHistoryOptions value = EnsureArg.IsNotNull(options?.Value, nameof(options));
         _statuses = EnsureArg.HasItems(value.Statuses, nameof(options));
         _minimumAge = TimeSpan.FromDays(EnsureArg.IsGt(value.MinimumAgeDays, 0, nameof(options)));
-        _instancesToSkipPurging = value.InstancesToSkipPurging == null ? new HashSet<string>() : value.InstancesToSkipPurging.ToHashSet<string>();
+        _instancesToSkipPurging = value.InstancesToSkipPurging == null ? Array.Empty<string>() : value.InstancesToSkipPurging;
     }
 
     /// <summary>
@@ -83,17 +83,14 @@ public sealed class PurgeOrchestrationInstanceHistory
 
         var instances = await client.ListInstancesAsync(condition, CancellationToken.None);
 
-        var instancesToPurge = instances.DurableOrchestrationState.Where(x => !_instancesToSkipPurging.Contains(x.InstanceId, StringComparer.OrdinalIgnoreCase));
+        var instancesToPurge = instances.DurableOrchestrationState.Where(x => !_instancesToSkipPurging.Contains(x.Name, StringComparer.OrdinalIgnoreCase));
 
         foreach(var instance in instancesToPurge)
         {
             var result = await client.PurgeInstanceHistoryAsync(instance.InstanceId);
-            log.LogInformation("Instance with {InstanceId} deleted from storage", result.InstancesDeleted);
+            log.LogInformation("Instance '{InstanceName}' deleted from storage", instance.Name);
         }
 
-        if (!instancesToPurge.Any())
-        { 
-            log.LogInformation("No Orchestration instances found within given parameters.");
-        }
+        log.LogInformation("Deleted {Count} orchestration instances from storage.", instancesToPurge.Count());
     }
 }
