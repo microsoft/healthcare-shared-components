@@ -48,18 +48,12 @@ public class PurgeOrchestrationInstanceHistoryTests
     [InlineData(12)]
     public async Task GivenOrchestrationInstances_WhenPurgeCompletedDurableFunctionsHistory_ThenOrchestrationsPurgedAsync(int count)
     {
-        OrchestrationStatusQueryCondition condition = new OrchestrationStatusQueryCondition
-        {
-            CreatedTimeFrom = DateTime.MinValue,
-            CreatedTimeTo = _utcNow.AddDays(-_purgeConfig.MinimumAgeDays),
-            RuntimeStatus = _purgeConfig.Statuses,
-        };
         var instanceId = Guid.NewGuid().ToString();
 
         var durableOrchestrationState = Enumerable.Repeat(new DurableOrchestrationStatus { InstanceId = instanceId }, count);
 
         _durableClient
-            .ListInstancesAsync(condition, Arg.Any<CancellationToken>())
+            .ListInstancesAsync(Arg.Is<OrchestrationStatusQueryCondition>(condition => AreConditionEqual(condition)), Arg.Any<CancellationToken>())
             .Returns(new OrchestrationStatusQueryResult
             {
                 DurableOrchestrationState = durableOrchestrationState
@@ -82,13 +76,6 @@ public class PurgeOrchestrationInstanceHistoryTests
     [Fact]
     public async Task GivenOrchestrationInstancesAndInstancesToSkipPurging_WhenPurgeCompletedDurableFunctionsHistory_ThenNoOrchestrationsPurgedAsync()
     {
-        OrchestrationStatusQueryCondition condition = new OrchestrationStatusQueryCondition
-        {
-            CreatedTimeFrom = DateTime.MinValue,
-            CreatedTimeTo = _utcNow.AddDays(-_purgeConfig.MinimumAgeDays),
-            RuntimeStatus = _purgeConfig.Statuses,
-        };
-
         var instanceId1 = Guid.NewGuid().ToString();
         var instanceId2 = Guid.NewGuid().ToString();
 
@@ -101,7 +88,7 @@ public class PurgeOrchestrationInstanceHistoryTests
         };
 
         _durableClient
-            .ListInstancesAsync(condition, Arg.Any<CancellationToken>())
+            .ListInstancesAsync(Arg.Is<OrchestrationStatusQueryCondition>(condition => AreConditionEqual(condition)), Arg.Any<CancellationToken>())
             .Returns(new OrchestrationStatusQueryResult
             {
                 DurableOrchestrationState = durableOrchestrationState
@@ -119,5 +106,14 @@ public class PurgeOrchestrationInstanceHistoryTests
         await _durableClient
             .Received(1)
             .PurgeInstanceHistoryAsync(instanceId2);
+    }
+
+    private bool AreConditionEqual(OrchestrationStatusQueryCondition condition)
+    {
+        EnsureArg.IsNotNull(_purgeConfig.Statuses, nameof(_purgeConfig.Statuses));
+
+        return condition.RuntimeStatus.SequenceEqual(_purgeConfig.Statuses)
+            && condition.CreatedTimeFrom == DateTime.MinValue
+            && condition.CreatedTimeTo == _utcNow.AddDays(-_purgeConfig.MinimumAgeDays);
     }
 }
