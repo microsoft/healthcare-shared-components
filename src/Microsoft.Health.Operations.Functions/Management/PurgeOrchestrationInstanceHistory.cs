@@ -5,6 +5,8 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using DurableTask.Core;
 using EnsureThat;
@@ -22,8 +24,9 @@ namespace Microsoft.Health.Operations.Functions.Management;
 /// </summary>
 public sealed class PurgeOrchestrationInstanceHistory
 {
-    private readonly IReadOnlyCollection<OrchestrationStatus> _statuses;
+    private readonly IReadOnlyCollection<OrchestrationRuntimeStatus> _statuses;
     private readonly TimeSpan _minimumAge;
+    private readonly HashSet<string> _instancesToSkipPurging;
 
     private const string PurgeFrequencyVariable = $"%{AzureFunctionsJobHost.RootSectionName}:{PurgeHistoryOptions.SectionName}:{nameof(PurgeHistoryOptions.Frequency)}%";
 
@@ -42,6 +45,7 @@ public sealed class PurgeOrchestrationInstanceHistory
         PurgeHistoryOptions value = EnsureArg.IsNotNull(options?.Value, nameof(options));
         _statuses = EnsureArg.HasItems(value.Statuses, nameof(options));
         _minimumAge = TimeSpan.FromDays(EnsureArg.IsGt(value.MinimumAgeDays, 0, nameof(options)));
+        _instancesToSkipPurging = value.InstancesToSkipPurging == null ? new HashSet<string>() : value.InstancesToSkipPurging.ToHashSet<string>();
     }
 
     /// <summary>
@@ -65,18 +69,30 @@ public sealed class PurgeOrchestrationInstanceHistory
         }
 
         DateTimeOffset end = Clock.UtcNow - _minimumAge;
-        log.LogInformation("Purging all orchestration instances with status in {{{Statuses}}} that started before '{End}'.",
+        log.LogInformation("Purging all orchestration instances with status in {{{Statuses}}} that started before '{End}' and not in {{{ListofInstanceToSkipPurging}}}.",
             string.Join(", ", _statuses),
-            end);
+            end,
+            string.Join(", ", _instancesToSkipPurging));
 
-        PurgeHistoryResult result = await client.PurgeInstanceHistoryAsync(DateTime.MinValue, end.UtcDateTime, _statuses);
-
-        if (result.InstancesDeleted > 0)
+        OrchestrationStatusQueryCondition condition = new OrchestrationStatusQueryCondition
         {
-            log.LogInformation("Deleted {Count} orchestration instances from storage.", result.InstancesDeleted);
+            CreatedTimeFrom = DateTime.MinValue,
+            CreatedTimeTo = end.UtcDateTime,
+            RuntimeStatus = _statuses
+        };
+
+        var instances = await client.ListInstancesAsync(condition, CancellationToken.None);
+
+        var instancesToPurge = instances.DurableOrchestrationState.Where(x => !_instancesToSkipPurging.Contains(x.InstanceId, StringComparer.OrdinalIgnoreCase));
+
+        foreach(var instance in instancesToPurge)
+        {
+            var result = await client.PurgeInstanceHistoryAsync(instance.InstanceId);
+            log.LogInformation("Instance with {InstanceId} deleted from storage", result.InstancesDeleted);
         }
-        else
-        {
+
+        if (!instancesToPurge.Any())
+        { 
             log.LogInformation("No Orchestration instances found within given parameters.");
         }
     }

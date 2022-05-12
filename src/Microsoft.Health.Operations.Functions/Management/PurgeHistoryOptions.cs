@@ -7,6 +7,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using DurableTask.Core;
+using Microsoft.Azure.WebJobs.Extensions.DurableTask;
 
 namespace Microsoft.Health.Operations.Functions.Management;
 
@@ -23,10 +24,10 @@ public class PurgeHistoryOptions
     /// <summary>
     /// Gets or sets the collection of statuses which should be considered for deletion.
     /// </summary>
-    /// <value>A set of at least one <see cref="OrchestrationStatus"/>.</value>
+    /// <value>A set of at least one <see cref="OrchestrationRuntimeStatus"/>.</value>
     [Required]
     [MinLength(1)]
-    public IReadOnlyCollection<OrchestrationStatus>? Statuses { get; set; } = new OrchestrationStatus[] { OrchestrationStatus.Completed };
+    public IReadOnlyCollection<OrchestrationRuntimeStatus>? Statuses { get; set; } = new OrchestrationRuntimeStatus[] { OrchestrationRuntimeStatus.Completed };
 
     /// <summary>
     /// Gets or sets the minimum amount of time from when the orchestration was created
@@ -43,4 +44,10 @@ public class PurgeHistoryOptions
     /// <value>A value cron expression</value>
     [Required]
     public string? Frequency { get; set; }
+
+    /// <summary>
+    ///  Gets or sets the collection of orchestration ids which should be skipped for cleanup
+    /// </summary>
+    /// <value>A set of one or more <see cref="string"/></value>
+    public IReadOnlyCollection<string>? InstancesToSkipPurging { get; set; } = Array.Empty<string>();
 }
