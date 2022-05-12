@@ -51,13 +51,10 @@ public class SqlSchemaManager : ISchemaManager
     }
 
     /// <inheritdoc />
-    public virtual async Task ApplySchema(string connectionString, Uri server, MutuallyExclusiveType type, CancellationToken token = default)
+    public virtual async Task ApplySchema(string connectionString, MutuallyExclusiveType type, CancellationToken token = default)
     {
         EnsureArg.IsNotNullOrEmpty(connectionString, nameof(connectionString));
-        EnsureArg.IsNotNull(server, nameof(server));
         EnsureArg.IsNotNull(type, nameof(type));
-
-        _schemaClient.SetUri(server);
 
         try
         {
@@ -82,7 +79,7 @@ public class SqlSchemaManager : ISchemaManager
                 {
                     _logger.LogError(exception, "Attempt {Attempt} of {MaxAttempts} to wait for the server to get started.", attemptCount++, retryCountForHttpRequestException);
                 })
-            .ExecuteAsync(token => GetAvailableSchema(server, token), token)
+            .ExecuteAsync(token => GetAvailableSchema(token), token)
             .ConfigureAwait(false);
 
             // If the user hits apply command multiple times in a row, then the service schema job might not poll the updated available versions
@@ -131,13 +128,15 @@ public class SqlSchemaManager : ISchemaManager
 
             if (availableVersions.First().Id == 1)
             {
-                // Upgrade schema directly to the latest schema version
-                _logger.LogInformation("Schema migration is started for the version : {Version}.", availableVersions.Last().Id);
+                int lastAvailableVersion = availableVersions.Last().Id;
 
-                string script = await GetScriptAsync(1, availableVersions.Last().ScriptUri, token).ConfigureAwait(false);
+                // Upgrade schema directly to the latest schema version
+                _logger.LogInformation("Schema migration is started for the version : {Version}.", lastAvailableVersion);
+
+                string script = await GetScriptAsync(true, lastAvailableVersion, token).ConfigureAwait(false);
 
                 // full schema is not ran hence above script contains full schema -> applyFullSchemaSnapshot = true
-                await ApplySchemaInternalAsync(availableVersions.Last().Id, script, applyFullSchemaSnapshot: true, token).ConfigureAwait(false);
+                await ApplySchemaInternalAsync(lastAvailableVersion, script, applyFullSchemaSnapshot: true, token).ConfigureAwait(false);
                 return;
             }
 
@@ -158,7 +157,7 @@ public class SqlSchemaManager : ISchemaManager
                     .ExecuteAsync(token => ValidateInstancesVersionAsync(executingVersion, token), token)
                     .ConfigureAwait(false);
 
-                string script = await GetScriptAsync(executingVersion, availableVersion.ScriptUri, token, availableVersion.DiffUri).ConfigureAwait(false);
+                string script = await GetScriptAsync(false, executingVersion, token).ConfigureAwait(false);
 
                 // here we do have a full schema ran already so just applying migrations -> applyFullSchemaSnapshot = false
                 await ApplySchemaInternalAsync(executingVersion, script, applyFullSchemaSnapshot: false, token).ConfigureAwait(false);
@@ -171,7 +170,7 @@ public class SqlSchemaManager : ISchemaManager
         }
         catch (HttpRequestException ex)
         {
-            _logger.LogError(ex, "Unable to connect to host '{Server}'.", server);
+            _logger.LogError(ex, "Unable to connect to host.");
             throw;
         }
         catch (Exception ex)
@@ -186,12 +185,8 @@ public class SqlSchemaManager : ISchemaManager
     }
 
     /// <inheritdoc />
-    public async Task<IList<AvailableVersion>> GetAvailableSchema(Uri server, CancellationToken cancellationToken = default)
+    public async Task<IList<AvailableVersion>> GetAvailableSchema(CancellationToken cancellationToken = default)
     {
-        EnsureArg.IsNotNull(server, nameof(server));
-
-        _schemaClient.SetUri(server);
-
         try
         {
             List<AvailableVersion> availableVersions = await _schemaClient.GetAvailabilityAsync(cancellationToken).ConfigureAwait(false);
@@ -211,20 +206,18 @@ public class SqlSchemaManager : ISchemaManager
         }
         catch (HttpRequestException ex)
         {
-            _logger.LogError(ex, "Unable to connect to host '{Server}'.", server);
+            _logger.LogError(ex, "Unable to connect to host.");
             throw;
         }
     }
 
     /// <inheritdoc />
-    public async Task<IList<CurrentVersion>> GetCurrentSchema(string connectionString, Uri server, CancellationToken cancellationToken = default)
+    public async Task<IList<CurrentVersion>> GetCurrentSchema(string connectionString, CancellationToken cancellationToken = default)
     {
-        EnsureArg.IsNotNull(server, nameof(server));
         EnsureArg.IsNotNullOrEmpty(connectionString, nameof(connectionString));
 
         try
         {
-            _schemaClient.SetUri(server);
             _sqlServerDataStoreConfiguration.ConnectionString = connectionString;
 
             // Base schema is required to run the schema migration tool.
@@ -244,7 +237,7 @@ public class SqlSchemaManager : ISchemaManager
         }
         catch (HttpRequestException ex)
         {
-            _logger.LogError(ex, "Unable to connect to host '{Server}'.", server);
+            _logger.LogError(ex, "Unable to connect to host.");
             throw;
         }
     }
@@ -273,14 +266,14 @@ public class SqlSchemaManager : ISchemaManager
         }
     }
 
-    private async Task<string> GetScriptAsync(int version, string scriptUri, CancellationToken cancellationToken, string diffUri = null)
+    private async Task<string> GetScriptAsync(bool applyFullVersion, int version, CancellationToken cancellationToken)
     {
-        if (version == 1)
+        if (applyFullVersion)
         {
-            return await _schemaClient.GetScriptAsync(new Uri(scriptUri, UriKind.Relative), cancellationToken).ConfigureAwait(false);
+            return await _schemaClient.GetScriptAsync(version, cancellationToken).ConfigureAwait(false);
         }
 
-        return await _schemaClient.GetDiffScriptAsync(new Uri(diffUri, UriKind.Relative), cancellationToken).ConfigureAwait(false);
+        return await _schemaClient.GetDiffScriptAsync(version, cancellationToken).ConfigureAwait(false);
     }
 
     private async Task ApplySchemaInternalAsync(int version, string script, bool applyFullSchemaSnapshot, CancellationToken cancellationToken)

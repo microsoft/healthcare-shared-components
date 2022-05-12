@@ -13,6 +13,7 @@ using System.CommandLine.Rendering.Views;
 using System.Threading;
 using System.Threading.Tasks;
 using EnsureThat;
+using Microsoft.Health.SqlServer.Features.Schema.Manager;
 using Microsoft.Health.SqlServer.Features.Schema.Manager.Model;
 using SchemaManager.Core;
 using SchemaManager.Validators;
@@ -22,8 +23,9 @@ namespace SchemaManager.Commands;
 public class CurrentCommand : Command
 {
     private readonly ISchemaManager _schemaManager;
+    private readonly SchemaClient _schemaClient;
 
-    public CurrentCommand(ISchemaManager schemaManager)
+    public CurrentCommand(ISchemaManager schemaManager, SchemaClient schemaClient)
         : base(CommandNames.Current, Resources.CurrentCommandDescription)
     {
         AddOption(CommandOptions.ServerOption());
@@ -39,6 +41,7 @@ public class CurrentCommand : Command
         EnsureArg.IsNotNull(schemaManager, nameof(schemaManager));
 
         _schemaManager = schemaManager;
+        _schemaClient = schemaClient;
     }
 
     private async Task HandlerAsync(InvocationContext invocationContext, string connectionString, Uri server, CancellationToken cancellationToken = default)
@@ -50,7 +53,9 @@ public class CurrentCommand : Command
                       Console.WindowHeight,
                       true);
 
-        IList<CurrentVersion> currentVersions = await _schemaManager.GetCurrentSchema(connectionString, server, cancellationToken).ConfigureAwait(false);
+        _schemaClient.SetUri(server);
+
+        IList<CurrentVersion> currentVersions = await _schemaManager.GetCurrentSchema(connectionString, cancellationToken).ConfigureAwait(false);
 
         var tableView = new TableView<CurrentVersion>
         {

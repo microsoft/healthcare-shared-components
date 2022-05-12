@@ -12,6 +12,7 @@ using System.CommandLine.Rendering.Views;
 using System.Threading;
 using System.Threading.Tasks;
 using EnsureThat;
+using Microsoft.Health.SqlServer.Features.Schema.Manager;
 using Microsoft.Health.SqlServer.Features.Schema.Manager.Model;
 using SchemaManager.Core;
 using SchemaManager.Validators;
@@ -21,8 +22,9 @@ namespace SchemaManager.Commands;
 public class AvailableCommand : Command
 {
     private readonly ISchemaManager _schemaManager;
+    private readonly SchemaClient _schemaClient;
 
-    public AvailableCommand(ISchemaManager schemaManager)
+    public AvailableCommand(ISchemaManager schemaManager, SchemaClient schemaClient)
         : base(CommandNames.Available, Resources.AvailableCommandDescription)
     {
         AddOption(CommandOptions.ServerOption());
@@ -36,11 +38,14 @@ public class AvailableCommand : Command
         EnsureArg.IsNotNull(schemaManager);
 
         _schemaManager = schemaManager;
+        _schemaClient = schemaClient;
     }
 
     private async Task HandlerAsync(InvocationContext invocationContext, Uri server, CancellationToken cancellationToken)
     {
-        var availableVersions = await _schemaManager.GetAvailableSchema(server, cancellationToken);
+        _schemaClient.SetUri(server);
+
+        var availableVersions = await _schemaManager.GetAvailableSchema(cancellationToken);
 
         var region = new Region(
             0,

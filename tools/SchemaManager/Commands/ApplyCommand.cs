@@ -11,6 +11,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using EnsureThat;
 using Microsoft.Extensions.Logging;
+using Microsoft.Health.SqlServer.Features.Schema.Manager;
 using SchemaManager.Core;
 using SchemaManager.Core.Model;
 using SchemaManager.Validators;
@@ -20,10 +21,12 @@ namespace SchemaManager.Commands;
 public class ApplyCommand : Command
 {
     private readonly ISchemaManager _schemaManager;
+    private readonly SchemaClient _schemaClient;
     private readonly ILogger<ApplyCommand> _logger;
 
     public ApplyCommand(
         ISchemaManager schemaManager,
+        SchemaClient schemaClient,
         ILogger<ApplyCommand> logger)
         : base(CommandNames.Apply, Resources.ApplyCommandDescription)
     {
@@ -47,6 +50,7 @@ public class ApplyCommand : Command
 
         _logger = logger;
         _schemaManager = schemaManager;
+        _schemaClient = schemaClient;
     }
 
     private async Task HandlerAsync(string connectionString, Uri server, MutuallyExclusiveType exclusiveType, bool force, CancellationToken cancellationToken = default)
@@ -56,7 +60,9 @@ public class ApplyCommand : Command
             return;
         }
 
-        await _schemaManager.ApplySchema(connectionString, server, exclusiveType, cancellationToken).ConfigureAwait(false);
+        _schemaClient.SetUri(server);
+
+        await _schemaManager.ApplySchema(connectionString, exclusiveType, cancellationToken).ConfigureAwait(false);
     }
 
     private bool EnsureForce()
