@@ -59,7 +59,7 @@ public sealed class PurgeOrchestrationInstanceHistory
 
         IReadOnlyCollection<OrchestrationRuntimeStatus> statuses = _options.Statuses!;
         TimeSpan minimumAge = TimeSpan.FromDays(_options.MinimumAgeDays);
-        IReadOnlyCollection<string> instancesToSkipPurging = _options.InstancesToSkipPurging == null ? Array.Empty<string>() : _options.InstancesToSkipPurging;
+        IReadOnlyCollection<string> excludeFunctions = _options.ExcludeFunctions == null ? Array.Empty<string>() : _options.ExcludeFunctions;
 
         log.LogInformation("Purging orchestration instance history at: {Timestamp}", Clock.UtcNow);
         if (myTimer.IsPastDue)
@@ -71,7 +71,7 @@ public sealed class PurgeOrchestrationInstanceHistory
         log.LogInformation("Purging all orchestration instances with status in {{{Statuses}}} that started before '{End}' and not in {{{ListofInstanceToSkipPurging}}}.",
             string.Join(", ", statuses),
             end,
-            string.Join(", ", instancesToSkipPurging));
+            string.Join(", ", excludeFunctions));
 
         OrchestrationStatusQueryCondition condition = new OrchestrationStatusQueryCondition
         {
@@ -82,7 +82,7 @@ public sealed class PurgeOrchestrationInstanceHistory
 
         OrchestrationStatusQueryResult instances = await client.ListInstancesAsync(condition, CancellationToken.None);
 
-        IEnumerable<DurableOrchestrationStatus> instancesToPurge = instances.DurableOrchestrationState.Where(x => !instancesToSkipPurging.Contains(x.Name, StringComparer.OrdinalIgnoreCase));
+        IEnumerable<DurableOrchestrationStatus> instancesToPurge = instances.DurableOrchestrationState.Where(x => !excludeFunctions.Contains(x.Name, StringComparer.OrdinalIgnoreCase));
 
         int purgedInstances = 0;
         foreach (DurableOrchestrationStatus instance in instancesToPurge)

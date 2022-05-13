@@ -49,5 +49,5 @@ public class PurgeHistoryOptions
     ///  Gets or sets the collection of orchestration names which should be skipped for cleanup
     /// </summary>
     /// <value>A set of one or more <see cref="string"/></value>
-    public IReadOnlyCollection<string>? InstancesToSkipPurging { get; set; }
+    public IReadOnlyCollection<string>? ExcludeFunctions { get; set; }
 }

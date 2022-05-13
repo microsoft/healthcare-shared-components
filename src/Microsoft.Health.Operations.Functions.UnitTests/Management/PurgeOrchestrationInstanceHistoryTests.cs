@@ -77,13 +77,15 @@ public class PurgeOrchestrationInstanceHistoryTests
     {
         var instanceId1 = Guid.NewGuid().ToString();
         var instanceId2 = Guid.NewGuid().ToString();
+        var instanceName1 = "Re-Index";
+        var instanceName2 = "CopyInstance";
 
-        _purgeConfig.InstancesToSkipPurging = new string[] { instanceId1 };
+        _purgeConfig.ExcludeFunctions = new string[] { instanceName2 };
 
         var durableOrchestrationState = new List<DurableOrchestrationStatus> 
         {
-            new DurableOrchestrationStatus { InstanceId = instanceId1, Name = instanceId1 },
-            new DurableOrchestrationStatus { InstanceId = instanceId2, Name = instanceId2 }
+            new DurableOrchestrationStatus { InstanceId = instanceId1, Name = instanceName1 },
+            new DurableOrchestrationStatus { InstanceId = instanceId2, Name = instanceName2 }
         };
 
         _durableClient
@@ -94,7 +96,7 @@ public class PurgeOrchestrationInstanceHistoryTests
             });
 
         _durableClient
-            .PurgeInstanceHistoryAsync(instanceId2)
+            .PurgeInstanceHistoryAsync(instanceId1)
             .Returns(new PurgeHistoryResult(1));
 
         using (Mock.Property(() => ClockResolver.UtcNowFunc, () => _utcNow))
@@ -104,7 +106,7 @@ public class PurgeOrchestrationInstanceHistoryTests
 
         await _durableClient
             .Received(1)
-            .PurgeInstanceHistoryAsync(instanceId2);
+            .PurgeInstanceHistoryAsync(instanceId1);
     }
 
     private bool AreConditionEqual(OrchestrationStatusQueryCondition condition)
