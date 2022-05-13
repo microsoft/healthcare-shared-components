@@ -27,7 +27,7 @@ public class SchemaClient : ISchemaClient
 
     public void SetUri(Uri uri)
     {
-        if(_httpClient.BaseAddress == null)
+        if (_httpClient.BaseAddress == null)
         {
             _httpClient.BaseAddress = uri;
         }
