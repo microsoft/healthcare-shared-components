@@ -49,7 +49,8 @@ public class SchemaClient : ISchemaClient
 
     public async Task<string> GetScriptAsync(int version, CancellationToken cancellationToken)
     {
-        HttpResponseMessage response = await _httpClient.GetAsync(KnownRoutes.RootedScriptUri(version), cancellationToken).ConfigureAwait(false);
+        Uri rootedScriptUri = KnownRoutes.GetRootedScriptUri(version);
+        HttpResponseMessage response = await _httpClient.GetAsync(rootedScriptUri, cancellationToken).ConfigureAwait(false);
         if (response.IsSuccessStatusCode)
         {
             return await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
@@ -90,7 +91,8 @@ public class SchemaClient : ISchemaClient
 
     public async Task<string> GetDiffScriptAsync(int version, CancellationToken cancellationToken)
     {
-        HttpResponseMessage response = await _httpClient.GetAsync(KnownRoutes.RootedDiffUri(version), cancellationToken).ConfigureAwait(false);
+        Uri rootedDiffUri = KnownRoutes.GetRootedDiffUri(version);
+        HttpResponseMessage response = await _httpClient.GetAsync(rootedDiffUri, cancellationToken).ConfigureAwait(false);
         if (response.IsSuccessStatusCode)
         {
             return await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);

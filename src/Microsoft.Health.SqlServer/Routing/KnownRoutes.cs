@@ -24,9 +24,9 @@ public static class KnownRoutes
     internal static readonly Uri RootedCompatibilityUri = new Uri("/" + SchemaRoot + "/" + Compatibility, UriKind.Relative);
     internal static readonly Uri RootedVersionsUri = new Uri("/" + SchemaRoot + "/" + Versions, UriKind.Relative);
 
-    internal static Uri RootedScriptUri(int version) => 
-        new Uri("/" + SchemaRoot + "/" + Script.Replace(IdSegment, version.ToString(CultureInfo.InvariantCulture), StringComparison.InvariantCultureIgnoreCase), UriKind.Relative);
+    internal static Uri GetRootedScriptUri(int version)
+        => new Uri("/" + SchemaRoot + "/" + Script.Replace(IdSegment, version.ToString(CultureInfo.InvariantCulture), StringComparison.InvariantCultureIgnoreCase), UriKind.Relative);
 
-    internal static Uri RootedDiffUri(int version) => 
-        new Uri("/" + SchemaRoot + "/" + Diff.Replace(IdSegment, version.ToString(CultureInfo.InvariantCulture), StringComparison.InvariantCultureIgnoreCase), UriKind.Relative);
+    internal static Uri GetRootedDiffUri(int version)
+        => new Uri("/" + SchemaRoot + "/" + Diff.Replace(IdSegment, version.ToString(CultureInfo.InvariantCulture), StringComparison.InvariantCultureIgnoreCase), UriKind.Relative);
 }
