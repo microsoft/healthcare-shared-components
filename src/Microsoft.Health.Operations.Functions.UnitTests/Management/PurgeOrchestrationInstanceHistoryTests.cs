@@ -27,7 +27,7 @@ public class PurgeOrchestrationInstanceHistoryTests
     private readonly TimerInfo _timer;
     private readonly PurgeHistoryOptions _purgeConfig;
     private readonly IDurableOrchestrationClient _durableClient;
-    private PurgeOrchestrationInstanceHistory _purgeTask;
+    private readonly PurgeOrchestrationInstanceHistory _purgeTask;
 
     public PurgeOrchestrationInstanceHistoryTests()
     {
@@ -79,7 +79,6 @@ public class PurgeOrchestrationInstanceHistoryTests
         var instanceId2 = Guid.NewGuid().ToString();
 
         _purgeConfig.InstancesToSkipPurging = new string[] { instanceId1 };
-        _purgeTask = new PurgeOrchestrationInstanceHistory(Options.Create(_purgeConfig));
 
         var durableOrchestrationState = new List<DurableOrchestrationStatus> 
         {
