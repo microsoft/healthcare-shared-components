@@ -8,7 +8,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using DurableTask.Core;
 using EnsureThat;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Extensions.DurableTask;
@@ -82,7 +81,8 @@ public class PurgeOrchestrationInstanceHistoryTests
         _purgeConfig.InstancesToSkipPurging = new string[] { instanceId1 };
         _purgeTask = new PurgeOrchestrationInstanceHistory(Options.Create(_purgeConfig));
 
-        var durableOrchestrationState = new List<DurableOrchestrationStatus> {
+        var durableOrchestrationState = new List<DurableOrchestrationStatus> 
+        {
             new DurableOrchestrationStatus { InstanceId = instanceId1, Name = instanceId1 },
             new DurableOrchestrationStatus { InstanceId = instanceId2, Name = instanceId2 }
         };

@@ -24,7 +24,9 @@ namespace Microsoft.Health.Operations.Functions.Management;
 /// </summary>
 public sealed class PurgeOrchestrationInstanceHistory
 {
-    private readonly PurgeHistoryOptions _options;
+    private readonly IReadOnlyCollection<OrchestrationRuntimeStatus> _statuses;
+    private readonly TimeSpan _minimumAge;
+    private readonly IReadOnlyCollection<string> _instancesToSkipPurging;
     private const string PurgeFrequencyVariable = $"%{AzureFunctionsJobHost.RootSectionName}:{PurgeHistoryOptions.SectionName}:{nameof(PurgeHistoryOptions.Frequency)}%";
 
     /// <summary>
@@ -39,7 +41,10 @@ public sealed class PurgeOrchestrationInstanceHistory
     /// </exception>
     public PurgeOrchestrationInstanceHistory(IOptions<PurgeHistoryOptions> options)
     {
-        _options = EnsureArg.IsNotNull(options?.Value, nameof(options));
+        PurgeHistoryOptions value = EnsureArg.IsNotNull(options?.Value, nameof(options));
+        _statuses = EnsureArg.HasItems(value.Statuses, nameof(options));
+        _minimumAge = TimeSpan.FromDays(EnsureArg.IsGt(value.MinimumAgeDays, 0, nameof(options)));
+        _instancesToSkipPurging = value.InstancesToSkipPurging == null ? Array.Empty<string>() : value.InstancesToSkipPurging;
     }
 
     /// <summary>
@@ -55,9 +60,6 @@ public sealed class PurgeOrchestrationInstanceHistory
         EnsureArg.IsNotNull(client, nameof(client));
         EnsureArg.IsNotNull(myTimer, nameof(myTimer));
         EnsureArg.IsNotNull(log, nameof(log));
-        IReadOnlyCollection<OrchestrationRuntimeStatus>? statuses = EnsureArg.HasItems(_options.Statuses, nameof(_options.Statuses));
-        TimeSpan minimumAge = TimeSpan.FromDays(EnsureArg.IsGt(_options.MinimumAgeDays, 0, nameof(_options.MinimumAgeDays)));
-        IReadOnlyCollection<string>? instancesToSkipPurging = _options.InstancesToSkipPurging == null ? Array.Empty<string>() : _options.InstancesToSkipPurging;
 
         log.LogInformation("Purging orchestration instance history at: {Timestamp}", Clock.UtcNow);
         if (myTimer.IsPastDue)
@@ -65,29 +67,31 @@ public sealed class PurgeOrchestrationInstanceHistory
             log.LogWarning("Current function invocation is running late.");
         }
 
-        DateTimeOffset end = Clock.UtcNow - minimumAge;
+        DateTimeOffset end = Clock.UtcNow - _minimumAge;
         log.LogInformation("Purging all orchestration instances with status in {{{Statuses}}} that started before '{End}' and not in {{{ListofInstanceToSkipPurging}}}.",
-            string.Join(", ", statuses),
+            string.Join(", ", _statuses),
             end,
-            string.Join(", ", instancesToSkipPurging));
+            string.Join(", ", _instancesToSkipPurging));
 
         OrchestrationStatusQueryCondition condition = new OrchestrationStatusQueryCondition
         {
             CreatedTimeFrom = DateTime.MinValue,
             CreatedTimeTo = end.UtcDateTime,
-            RuntimeStatus = statuses
+            RuntimeStatus = _statuses
         };
 
-        var instances = await client.ListInstancesAsync(condition, CancellationToken.None);
+        OrchestrationStatusQueryResult instances = await client.ListInstancesAsync(condition, CancellationToken.None);
 
-        var instancesToPurge = instances.DurableOrchestrationState.Where(x => !instancesToSkipPurging.Contains(x.Name, StringComparer.OrdinalIgnoreCase));
+        IEnumerable<DurableOrchestrationStatus> instancesToPurge = instances.DurableOrchestrationState.Where(x => !_instancesToSkipPurging.Contains(x.Name, StringComparer.OrdinalIgnoreCase));
 
-        foreach(var instance in instancesToPurge)
+        int purgedInstances = 0;
+        foreach (DurableOrchestrationStatus instance in instancesToPurge)
         {
-            var result = await client.PurgeInstanceHistoryAsync(instance.InstanceId);
-            log.LogInformation("Instance '{InstanceName}' deleted from storage", instance.Name);
+            PurgeHistoryResult result = await client.PurgeInstanceHistoryAsync(instance.InstanceId);
+            log.LogInformation("Instance '{InstanceName}' with {InstanceId} deleted from the task hub.", instance.Name, instance.InstanceId);
+            purgedInstances++;
         }
 
-        log.LogInformation("Deleted {Count} orchestration instances from storage.", instancesToPurge.Count());
+        log.LogInformation("Deleted '{Count}' orchestration instances from the task hub.", purgedInstances);
     }
 }
