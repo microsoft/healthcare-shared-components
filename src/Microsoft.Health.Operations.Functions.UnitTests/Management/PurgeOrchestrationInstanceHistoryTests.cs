@@ -110,9 +110,7 @@ public class PurgeOrchestrationInstanceHistoryTests
 
     private bool AreConditionEqual(OrchestrationStatusQueryCondition condition)
     {
-        EnsureArg.IsNotNull(_purgeConfig.Statuses, nameof(_purgeConfig.Statuses));
-
-        return condition.RuntimeStatus.SequenceEqual(_purgeConfig.Statuses)
+        return condition.RuntimeStatus.SequenceEqual(_purgeConfig.Statuses!)
             && condition.CreatedTimeFrom == DateTime.MinValue
             && condition.CreatedTimeTo == _utcNow.AddDays(-_purgeConfig.MinimumAgeDays);
     }
