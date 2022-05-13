@@ -133,7 +133,7 @@ public class SqlSchemaManager : ISchemaManager
                 // Upgrade schema directly to the latest schema version
                 _logger.LogInformation("Schema migration is started for the version : {Version}.", lastAvailableVersion);
 
-                string script = await GetScriptAsync(true, lastAvailableVersion, token).ConfigureAwait(false);
+                string script = await _schemaClient.GetScriptAsync(lastAvailableVersion, token).ConfigureAwait(false);
 
                 // full schema is not ran hence above script contains full schema -> applyFullSchemaSnapshot = true
                 await ApplySchemaInternalAsync(lastAvailableVersion, script, applyFullSchemaSnapshot: true, token).ConfigureAwait(false);
@@ -157,7 +157,7 @@ public class SqlSchemaManager : ISchemaManager
                     .ExecuteAsync(token => ValidateInstancesVersionAsync(executingVersion, token), token)
                     .ConfigureAwait(false);
 
-                string script = await GetScriptAsync(false, executingVersion, token).ConfigureAwait(false);
+                string script = await _schemaClient.GetDiffScriptAsync(executingVersion, token).ConfigureAwait(false);
 
                 // here we do have a full schema ran already so just applying migrations -> applyFullSchemaSnapshot = false
                 await ApplySchemaInternalAsync(executingVersion, script, applyFullSchemaSnapshot: false, token).ConfigureAwait(false);
@@ -264,16 +264,6 @@ public class SqlSchemaManager : ISchemaManager
         {
             throw new SchemaManagerException(string.Format(CultureInfo.CurrentCulture, Resources.VersionIncompatibilityMessage, maxAvailableVersion));
         }
-    }
-
-    private async Task<string> GetScriptAsync(bool applyFullVersion, int version, CancellationToken cancellationToken)
-    {
-        if (applyFullVersion)
-        {
-            return await _schemaClient.GetScriptAsync(version, cancellationToken).ConfigureAwait(false);
-        }
-
-        return await _schemaClient.GetDiffScriptAsync(version, cancellationToken).ConfigureAwait(false);
     }
 
     private async Task ApplySchemaInternalAsync(int version, string script, bool applyFullSchemaSnapshot, CancellationToken cancellationToken)

@@ -39,7 +39,7 @@ public class ApplyCommand : Command
 
         Handler = CommandHandler.Create(
             (string connectionString, Uri server, MutuallyExclusiveType type, bool force, CancellationToken token)
-            => HandlerAsync(connectionString, server, type, force, token));
+            => ApplyHandler(connectionString, server, type, force, token));
 
         Argument.AddValidator(symbol => RequiredOptionValidator.Validate(symbol, CommandOptions.ConnectionStringOption(), Resources.ConnectionStringRequiredValidation));
         Argument.AddValidator(symbol => RequiredOptionValidator.Validate(symbol, CommandOptions.ServerOption(), Resources.ServerRequiredValidation));
@@ -54,16 +54,16 @@ public class ApplyCommand : Command
         _schemaClient = schemaClient;
     }
 
-    private async Task HandlerAsync(string connectionString, Uri server, MutuallyExclusiveType exclusiveType, bool force, CancellationToken cancellationToken = default)
+    private Task ApplyHandler(string connectionString, Uri server, MutuallyExclusiveType exclusiveType, bool force, CancellationToken cancellationToken = default)
     {
         if (force && !EnsureForce())
         {
-            return;
+            return Task.CompletedTask;
         }
 
         _schemaClient.SetUri(server);
 
-        await _schemaManager.ApplySchema(connectionString, exclusiveType, cancellationToken).ConfigureAwait(false);
+        return _schemaManager.ApplySchema(connectionString, exclusiveType, cancellationToken);
     }
 
     private bool EnsureForce()
