@@ -39,6 +39,7 @@ public class CurrentCommand : Command
         Argument.AddValidator(symbol => RequiredOptionValidator.Validate(symbol, CommandOptions.ServerOption(), Resources.ServerRequiredValidation));
 
         EnsureArg.IsNotNull(schemaManager, nameof(schemaManager));
+        EnsureArg.IsNotNull(schemaClient, nameof(schemaClient));
 
         _schemaManager = schemaManager;
         _schemaClient = schemaClient;

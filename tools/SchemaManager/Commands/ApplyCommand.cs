@@ -47,6 +47,7 @@ public class ApplyCommand : Command
 
         EnsureArg.IsNotNull(logger, nameof(logger));
         EnsureArg.IsNotNull(schemaManager, nameof(schemaManager));
+        EnsureArg.IsNotNull(schemaClient, nameof(schemaClient));
 
         _logger = logger;
         _schemaManager = schemaManager;
