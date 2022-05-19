@@ -18,7 +18,6 @@ using Microsoft.Health.SqlServer.Configs;
 using Microsoft.Health.SqlServer.Features.Client;
 using Microsoft.Health.SqlServer.Features.Schema.Manager;
 using Microsoft.Health.SqlServer.Features.Storage;
-using SchemaManager.Core;
 
 namespace SchemaManager;
 

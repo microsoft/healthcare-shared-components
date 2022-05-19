@@ -11,8 +11,8 @@ using System.Threading;
 using System.Threading.Tasks;
 using EnsureThat;
 using Microsoft.Extensions.Logging;
-using SchemaManager.Core;
-using SchemaManager.Core.Model;
+using Microsoft.Health.SqlServer.Features.Schema.Manager;
+using Microsoft.Health.SqlServer.Features.Schema.Manager.Model;
 using SchemaManager.Validators;
 
 namespace SchemaManager.Commands;
