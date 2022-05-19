@@ -27,7 +27,6 @@ namespace SchemaManager.Core;
 
 public class SqlSchemaManager : ISchemaManager
 {
-    private readonly SqlServerDataStoreConfiguration _sqlServerDataStoreConfiguration;
     private readonly IBaseSchemaRunner _baseSchemaRunner;
     private readonly ISchemaManagerDataStore _schemaManagerDataStore;
     private readonly ISchemaClient _schemaClient;
@@ -37,13 +36,11 @@ public class SqlSchemaManager : ISchemaManager
     private const int RetryAttempts = 3;
 
     public SqlSchemaManager(
-        IOptions<SqlServerDataStoreConfiguration> sqlServerDataStoreConfiguration,
         IBaseSchemaRunner baseSchemaRunner,
         ISchemaManagerDataStore schemaManagerDataStore,
         ISchemaClient schemaClient,
         ILogger<SqlSchemaManager> logger)
     {
-        _sqlServerDataStoreConfiguration = EnsureArg.IsNotNull(sqlServerDataStoreConfiguration?.Value, nameof(sqlServerDataStoreConfiguration));
         _baseSchemaRunner = EnsureArg.IsNotNull(baseSchemaRunner, nameof(baseSchemaRunner));
         _schemaManagerDataStore = EnsureArg.IsNotNull(schemaManagerDataStore, nameof(schemaManagerDataStore));
         _schemaClient = EnsureArg.IsNotNull(schemaClient, nameof(schemaClient));
@@ -51,15 +48,12 @@ public class SqlSchemaManager : ISchemaManager
     }
 
     /// <inheritdoc />
-    public virtual async Task ApplySchema(string connectionString, MutuallyExclusiveType type, CancellationToken token = default)
+    public virtual async Task ApplySchema(MutuallyExclusiveType type, CancellationToken token = default)
     {
-        EnsureArg.IsNotNullOrEmpty(connectionString, nameof(connectionString));
         EnsureArg.IsNotNull(type, nameof(type));
 
         try
         {
-            _sqlServerDataStoreConfiguration.ConnectionString = connectionString;
-
             // Base schema is required to run the schema migration tool.
             // This method also initializes the database if not initialized yet.
             await _baseSchemaRunner.EnsureBaseSchemaExistsAsync(token).ConfigureAwait(false);
@@ -107,9 +101,9 @@ public class SqlSchemaManager : ISchemaManager
             availableVersions.RemoveAt(0);
 
             var targetVersion = type.Next ?
-                availableVersions.First().Id :
-                (type.Latest ? availableVersions.Last().Id : type.Version);
-            if (availableVersions.First().Id > targetVersion)
+                availableVersions[0].Id :
+                (type.Latest ? availableVersions[^1].Id : type.Version);
+            if (availableVersions[0].Id > targetVersion)
             {
                 _logger.LogError("The current schema version is already greater than or equals to the target schema version.");
                 return;
@@ -119,24 +113,22 @@ public class SqlSchemaManager : ISchemaManager
                 .ToList();
 
             // Checking the specified version is not out of range of available versions
-            if (availableVersions.Count < 1 || targetVersion < availableVersions.First().Id || targetVersion > availableVersions.Last().Id)
+            if (availableVersions.Count < 1 || targetVersion < availableVersions[0].Id || targetVersion > availableVersions[^1].Id)
             {
                 throw new SchemaManagerException(string.Format(CultureInfo.CurrentCulture, Resources.SpecifiedVersionNotAvailable, targetVersion));
             }
 
-            await ValidateVersionCompatibility(availableVersions.Last().Id, token).ConfigureAwait(false);
+            await ValidateVersionCompatibility(availableVersions[^1].Id, token).ConfigureAwait(false);
 
-            if (availableVersions.First().Id == 1)
+            if (availableVersions[0].Id == 1)
             {
-                int lastAvailableVersion = availableVersions.Last().Id;
-
                 // Upgrade schema directly to the latest schema version
-                _logger.LogInformation("Schema migration is started for the version : {Version}.", lastAvailableVersion);
+                _logger.LogInformation("Schema migration is started for the version : {Version}.", availableVersions[^1].Id);
 
-                string script = await _schemaClient.GetScriptAsync(lastAvailableVersion, token).ConfigureAwait(false);
+                string script = await _schemaClient.GetScriptAsync(availableVersions[^1].Id, token).ConfigureAwait(false);
 
                 // full schema is not ran hence above script contains full schema -> applyFullSchemaSnapshot = true
-                await ApplySchemaInternalAsync(lastAvailableVersion, script, applyFullSchemaSnapshot: true, token).ConfigureAwait(false);
+                await ApplySchemaInternalAsync(availableVersions[^1].Id, script, applyFullSchemaSnapshot: true, token).ConfigureAwait(false);
                 return;
             }
 
@@ -192,7 +184,7 @@ public class SqlSchemaManager : ISchemaManager
             List<AvailableVersion> availableVersions = await _schemaClient.GetAvailabilityAsync(cancellationToken).ConfigureAwait(false);
 
             // To ensure that schema version null/0 is not printed
-            if (availableVersions.First().Id == 0)
+            if (availableVersions[0].Id == 0)
             {
                 availableVersions.RemoveAt(0);
             }
@@ -212,14 +204,10 @@ public class SqlSchemaManager : ISchemaManager
     }
 
     /// <inheritdoc />
-    public async Task<IList<CurrentVersion>> GetCurrentSchema(string connectionString, CancellationToken cancellationToken = default)
+    public async Task<IList<CurrentVersion>> GetCurrentSchema(CancellationToken cancellationToken = default)
     {
-        EnsureArg.IsNotNullOrEmpty(connectionString, nameof(connectionString));
-
         try
         {
-            _sqlServerDataStoreConfiguration.ConnectionString = connectionString;
-
             // Base schema is required to run the schema migration tool.
             // This method also initializes the database if not initialized yet.
             await _baseSchemaRunner.EnsureBaseSchemaExistsAsync(cancellationToken).ConfigureAwait(false);
@@ -248,7 +236,7 @@ public class SqlSchemaManager : ISchemaManager
 
         availableVersions.Sort((x, y) => x.Id.CompareTo(y.Id));
 
-        if (availableVersions.First().Id != await _schemaManagerDataStore.GetCurrentSchemaVersionAsync(cancellationToken).ConfigureAwait(false))
+        if (availableVersions[0].Id != await _schemaManagerDataStore.GetCurrentSchemaVersionAsync(cancellationToken).ConfigureAwait(false))
         {
             throw new SchemaManagerException(Resources.AvailableVersionsErrorMessage);
         }

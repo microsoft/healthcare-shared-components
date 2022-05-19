@@ -22,30 +22,25 @@ namespace SchemaManager.Commands;
 public class AvailableCommand : Command
 {
     private readonly ISchemaManager _schemaManager;
-    private readonly SchemaClient _schemaClient;
 
-    public AvailableCommand(ISchemaManager schemaManager, SchemaClient schemaClient)
+    public AvailableCommand(ISchemaManager schemaManager)
         : base(CommandNames.Available, Resources.AvailableCommandDescription)
     {
         AddOption(CommandOptions.ServerOption());
 
         Handler = CommandHandler.Create(
-            (InvocationContext context, Uri server, CancellationToken token)
-            => HandlerAsync(context, server, token));
+            (InvocationContext context, CancellationToken token)
+            => HandlerAsync(context, token));
 
         Argument.AddValidator(symbol => RequiredOptionValidator.Validate(symbol, CommandOptions.ServerOption(), Resources.ServerRequiredValidation));
 
         EnsureArg.IsNotNull(schemaManager, nameof(schemaManager));
-        EnsureArg.IsNotNull(schemaClient, nameof(schemaClient));
 
         _schemaManager = schemaManager;
-        _schemaClient = schemaClient;
     }
 
-    private async Task HandlerAsync(InvocationContext invocationContext, Uri server, CancellationToken cancellationToken)
+    private async Task HandlerAsync(InvocationContext invocationContext, CancellationToken cancellationToken)
     {
-        _schemaClient.SetUri(server);
-
         var availableVersions = await _schemaManager.GetAvailableSchema(cancellationToken);
 
         var region = new Region(

@@ -7,10 +7,14 @@ using System;
 using System.CommandLine;
 using System.CommandLine.Builder;
 using System.CommandLine.Invocation;
+using System.Net.Http;
 using System.Threading.Tasks;
 using Microsoft.Data.SqlClient;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Configuration.CommandLine;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.Health.SqlServer;
@@ -26,7 +30,7 @@ internal class Program
 {
     public static async Task<int> Main(string[] args)
     {
-        ServiceProvider serviceProvider = BuildServiceProvider();
+        ServiceProvider serviceProvider = BuildServiceProvider(args);
         Parser parser = BuildParser(serviceProvider);
 
         return await parser.InvokeAsync(args).ConfigureAwait(false);
@@ -44,18 +48,35 @@ internal class Program
         return commandLineBuilder.UseDefaults().Build();
     }
 
-    private static ServiceProvider BuildServiceProvider()
+    private static ServiceProvider BuildServiceProvider(string[] args)
     {
         var services = new ServiceCollection();
 
         services.AddCliCommands();
 
-        // Add SqlServer services
         services.AddOptions();
-        services.AddHttpClient();
+
+        var builder = new ConfigurationBuilder();
+
+        builder.AddCommandLine(args);
+
+        IConfigurationRoot config = builder.Build();
+
+        services.AddOptions<CommandLineOptions>().Configure(x =>
+        {
+            x.ConnectionString = config["connection-string"];
+            x.Server = new Uri(config["server"]);
+        });
+
+        services.AddHttpClient<ISchemaClient, SchemaClient>((sp, client) =>
+        {
+            CommandLineOptions args = sp.GetRequiredService<IOptions<CommandLineOptions>>().Value;
+            client.BaseAddress = args.Server;
+        });
 
         // TODO: this won't work in OSS if the AuthenticationType is set to ManagedIdentity
         services.AddSingleton<ISqlConnectionBuilder, DefaultSqlConnectionBuilder>();
+
         services.TryAddSingleton<SqlRetryLogicBaseProvider>(p =>
         {
             SqlServerDataStoreConfiguration config = p.GetRequiredService<IOptions<SqlServerDataStoreConfiguration>>().Value;
@@ -69,12 +90,17 @@ internal class Program
                 _ => throw new NotImplementedException(),
             };
         });
+        
+        services.AddOptions<SqlServerDataStoreConfiguration>().Configure<IOptions<CommandLineOptions>>((s, c) =>
+        {
+            s.ConnectionString = c.Value.ConnectionString;
+        });
+
         services.AddSingleton<ISqlConnectionStringProvider, DefaultSqlConnectionStringProvider>();
         services.AddScoped<IBaseSchemaRunner, BaseSchemaRunner>();
         services.AddScoped<SqlConnectionWrapperFactory>();
         services.AddScoped<SqlTransactionHandler>();
         services.AddScoped<ISchemaManagerDataStore, SchemaManagerDataStore>();
-        services.AddSingleton<ISchemaClient, SchemaClient>();
         services.AddSingleton<ISchemaManager, SqlSchemaManager>();
         services.AddLogging(configure => configure.AddConsole());
         return services.BuildServiceProvider();

@@ -21,12 +21,10 @@ namespace SchemaManager.Commands;
 public class ApplyCommand : Command
 {
     private readonly ISchemaManager _schemaManager;
-    private readonly SchemaClient _schemaClient;
     private readonly ILogger<ApplyCommand> _logger;
 
     public ApplyCommand(
         ISchemaManager schemaManager,
-        SchemaClient schemaClient,
         ILogger<ApplyCommand> logger)
         : base(CommandNames.Apply, Resources.ApplyCommandDescription)
     {
@@ -38,8 +36,8 @@ public class ApplyCommand : Command
         AddOption(CommandOptions.ForceOption());
 
         Handler = CommandHandler.Create(
-            (string connectionString, Uri server, MutuallyExclusiveType type, bool force, CancellationToken token)
-            => ApplyHandler(connectionString, server, type, force, token));
+            (MutuallyExclusiveType type, bool force, CancellationToken token)
+            => ApplyHandler(type, force, token));
 
         Argument.AddValidator(symbol => RequiredOptionValidator.Validate(symbol, CommandOptions.ConnectionStringOption(), Resources.ConnectionStringRequiredValidation));
         Argument.AddValidator(symbol => RequiredOptionValidator.Validate(symbol, CommandOptions.ServerOption(), Resources.ServerRequiredValidation));
@@ -47,23 +45,19 @@ public class ApplyCommand : Command
 
         EnsureArg.IsNotNull(logger, nameof(logger));
         EnsureArg.IsNotNull(schemaManager, nameof(schemaManager));
-        EnsureArg.IsNotNull(schemaClient, nameof(schemaClient));
 
         _logger = logger;
         _schemaManager = schemaManager;
-        _schemaClient = schemaClient;
     }
 
-    private Task ApplyHandler(string connectionString, Uri server, MutuallyExclusiveType exclusiveType, bool force, CancellationToken cancellationToken = default)
+    private Task ApplyHandler(MutuallyExclusiveType exclusiveType, bool force, CancellationToken cancellationToken = default)
     {
         if (force && !EnsureForce())
         {
             return Task.CompletedTask;
         }
 
-        _schemaClient.SetUri(server);
-
-        return _schemaManager.ApplySchema(connectionString, exclusiveType, cancellationToken);
+        return _schemaManager.ApplySchema(exclusiveType, cancellationToken);
     }
 
     private bool EnsureForce()

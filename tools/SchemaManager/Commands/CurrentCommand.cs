@@ -23,29 +23,26 @@ namespace SchemaManager.Commands;
 public class CurrentCommand : Command
 {
     private readonly ISchemaManager _schemaManager;
-    private readonly SchemaClient _schemaClient;
 
-    public CurrentCommand(ISchemaManager schemaManager, SchemaClient schemaClient)
+    public CurrentCommand(ISchemaManager schemaManager)
         : base(CommandNames.Current, Resources.CurrentCommandDescription)
     {
         AddOption(CommandOptions.ServerOption());
         AddOption(CommandOptions.ConnectionStringOption());
 
         Handler = CommandHandler.Create(
-            (InvocationContext context, Uri server, string connectionString, CancellationToken token)
-            => HandlerAsync(context, connectionString, server, token));
+            (InvocationContext context, CancellationToken token)
+            => HandlerAsync(context, token));
 
         Argument.AddValidator(symbol => RequiredOptionValidator.Validate(symbol, CommandOptions.ConnectionStringOption(), Resources.ConnectionStringRequiredValidation));
         Argument.AddValidator(symbol => RequiredOptionValidator.Validate(symbol, CommandOptions.ServerOption(), Resources.ServerRequiredValidation));
 
         EnsureArg.IsNotNull(schemaManager, nameof(schemaManager));
-        EnsureArg.IsNotNull(schemaClient, nameof(schemaClient));
 
         _schemaManager = schemaManager;
-        _schemaClient = schemaClient;
     }
 
-    private async Task HandlerAsync(InvocationContext invocationContext, string connectionString, Uri server, CancellationToken cancellationToken = default)
+    private async Task HandlerAsync(InvocationContext invocationContext, CancellationToken cancellationToken = default)
     {
         var region = new Region(
                       0,
@@ -54,9 +51,7 @@ public class CurrentCommand : Command
                       Console.WindowHeight,
                       true);
 
-        _schemaClient.SetUri(server);
-
-        IList<CurrentVersion> currentVersions = await _schemaManager.GetCurrentSchema(connectionString, cancellationToken).ConfigureAwait(false);
+        IList<CurrentVersion> currentVersions = await _schemaManager.GetCurrentSchema(cancellationToken).ConfigureAwait(false);
 
         var tableView = new TableView<CurrentVersion>
         {

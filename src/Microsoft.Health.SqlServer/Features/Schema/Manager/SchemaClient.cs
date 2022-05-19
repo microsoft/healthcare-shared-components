@@ -20,22 +20,14 @@ public class SchemaClient : ISchemaClient
 {
     private readonly HttpClient _httpClient;
 
-    public SchemaClient(IHttpClientFactory httpClientFactory)
+    public SchemaClient(HttpClient httpClient)
     {
-        _httpClient = httpClientFactory.CreateClient();
-    }
-
-    public void SetUri(Uri uri)
-    {
-        if (_httpClient.BaseAddress == null)
-        {
-            _httpClient.BaseAddress = uri;
-        }
+        _httpClient = httpClient;
     }
 
     public async Task<List<CurrentVersion>> GetCurrentVersionInformationAsync(CancellationToken cancellationToken)
     {
-        HttpResponseMessage response = await _httpClient.GetAsync(KnownRoutes.RootedCurrentUri, cancellationToken).ConfigureAwait(false);
+        HttpResponseMessage response = await _httpClient.GetAsync(SchemaClientRoutes.RootedCurrentUri, cancellationToken).ConfigureAwait(false);
         if (response.IsSuccessStatusCode)
         {
             var responseBodyAsString = await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
@@ -49,7 +41,7 @@ public class SchemaClient : ISchemaClient
 
     public async Task<string> GetScriptAsync(int version, CancellationToken cancellationToken)
     {
-        Uri rootedScriptUri = KnownRoutes.GetRootedScriptUri(version);
+        Uri rootedScriptUri = SchemaClientRoutes.GetRootedScriptUri(version);
         HttpResponseMessage response = await _httpClient.GetAsync(rootedScriptUri, cancellationToken).ConfigureAwait(false);
         if (response.IsSuccessStatusCode)
         {
@@ -63,7 +55,7 @@ public class SchemaClient : ISchemaClient
 
     public async Task<CompatibleVersion> GetCompatibilityAsync(CancellationToken cancellationToken)
     {
-        HttpResponseMessage response = await _httpClient.GetAsync(KnownRoutes.RootedCompatibilityUri, cancellationToken).ConfigureAwait(false);
+        HttpResponseMessage response = await _httpClient.GetAsync(SchemaClientRoutes.RootedCompatibilityUri, cancellationToken).ConfigureAwait(false);
         if (response.IsSuccessStatusCode)
         {
             var responseBodyAsString = await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
@@ -77,7 +69,7 @@ public class SchemaClient : ISchemaClient
 
     public async Task<List<AvailableVersion>> GetAvailabilityAsync(CancellationToken cancellationToken)
     {
-        HttpResponseMessage response = await _httpClient.GetAsync(KnownRoutes.RootedVersionsUri, cancellationToken).ConfigureAwait(false);
+        HttpResponseMessage response = await _httpClient.GetAsync(SchemaClientRoutes.RootedVersionsUri, cancellationToken).ConfigureAwait(false);
         if (response.IsSuccessStatusCode)
         {
             var responseBodyAsString = await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
@@ -91,7 +83,7 @@ public class SchemaClient : ISchemaClient
 
     public async Task<string> GetDiffScriptAsync(int version, CancellationToken cancellationToken)
     {
-        Uri rootedDiffUri = KnownRoutes.GetRootedDiffUri(version);
+        Uri rootedDiffUri = SchemaClientRoutes.GetRootedDiffUri(version);
         HttpResponseMessage response = await _httpClient.GetAsync(rootedDiffUri, cancellationToken).ConfigureAwait(false);
         if (response.IsSuccessStatusCode)
         {
