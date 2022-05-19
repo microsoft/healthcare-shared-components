@@ -3,7 +3,7 @@
 // Licensed under the MIT License (MIT). See LICENSE in the repo root for license information.
 // -------------------------------------------------------------------------------------------------
 
-namespace SchemaManager.Core.Model;
+namespace Microsoft.Health.SqlServer.Features.Schema.Manager.Model;
 
 public class MutuallyExclusiveType
 {

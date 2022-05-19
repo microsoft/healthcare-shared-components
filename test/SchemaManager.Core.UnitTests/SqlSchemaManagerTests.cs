@@ -15,7 +15,6 @@ using Microsoft.Health.SqlServer.Features.Schema.Manager;
 using Microsoft.Health.SqlServer.Features.Schema.Manager.Exceptions;
 using Microsoft.Health.SqlServer.Features.Schema.Manager.Model;
 using NSubstitute;
-using SchemaManager.Core.Model;
 using Xunit;
 
 namespace SchemaManager.Core.UnitTests;
