@@ -8,9 +8,8 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Health.SqlServer.Features.Schema.Manager.Model;
-using SchemaManager.Core.Model;
 
-namespace SchemaManager.Core;
+namespace Microsoft.Health.SqlServer.Features.Schema.Manager;
 
 public interface ISchemaManager
 {

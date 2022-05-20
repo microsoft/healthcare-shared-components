@@ -39,7 +39,6 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\src\Microsoft.Health.SqlServer\Microsoft.Health.SqlServer.csproj" />
-    <ProjectReference Include="..\SchemaManager.Core\SchemaManager.Core.csproj" />
   </ItemGroup>
 
 </Project>

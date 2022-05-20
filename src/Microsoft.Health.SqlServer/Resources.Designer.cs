@@ -70,6 +70,15 @@ namespace Microsoft.Health.SqlServer {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to The available versions are not up-to-date..
+        /// </summary>
+        internal static string AvailableVersionsErrorMessage {
+            get {
+                return ResourceManager.GetString("AvailableVersionsErrorMessage", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to The base script is not found..
         /// </summary>
         internal static string BaseScriptNotFound {
@@ -169,6 +178,15 @@ namespace Microsoft.Health.SqlServer {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to The schema version {0} cannot be applied because all the instances are not running the previous version..
+        /// </summary>
+        internal static string InvalidVersionMessage {
+            get {
+                return ResourceManager.GetString("InvalidVersionMessage", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to The SQL operation has failed..
         /// </summary>
         internal static string OperationFailed {
@@ -196,11 +214,29 @@ namespace Microsoft.Health.SqlServer {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to The specified schema version &quot;{0}&quot; is not available..
+        /// </summary>
+        internal static string SpecifiedVersionNotAvailable {
+            get {
+                return ResourceManager.GetString("SpecifiedVersionNotAvailable", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Value of length {0} is too long for column {1} with length {2}.
         /// </summary>
         internal static string StringTooLong {
             get {
                 return ResourceManager.GetString("StringTooLong", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The schema version &quot;{0}&quot; is not compatible..
+        /// </summary>
+        internal static string VersionIncompatibilityMessage {
+            get {
+                return ResourceManager.GetString("VersionIncompatibilityMessage", resourceCulture);
             }
         }
     }

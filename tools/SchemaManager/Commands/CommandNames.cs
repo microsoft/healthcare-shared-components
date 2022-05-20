@@ -3,8 +3,11 @@
 // Licensed under the MIT License (MIT). See LICENSE in the repo root for license information.
 // -------------------------------------------------------------------------------------------------
 
-using System;
-using System.Resources;
+namespace SchemaManager.Commands;
 
-[assembly: CLSCompliant(false)]
-[assembly: NeutralResourcesLanguage("en-us")]
+public static class CommandNames
+{
+    public const string Apply = "apply";
+    public const string Available = "available";
+    public const string Current = "current";
+}
