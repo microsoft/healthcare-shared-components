@@ -17,7 +17,7 @@ using Microsoft.Health.SqlServer.Features.Schema.Manager.Model;
 using NSubstitute;
 using Xunit;
 
-namespace SchemaManager.Core.UnitTests;
+namespace SchemaManager.UnitTests;
 
 public class SqlSchemaManagerTests
 {
