@@ -59,13 +59,7 @@ internal class Program
 
         builder.AddCommandLine(args);
 
-        IConfigurationRoot config = builder.Build();
-
-        services.AddOptions<CommandLineOptions>().Configure(x =>
-        {
-            x.ConnectionString = config["connection-string"];
-            x.Server = new Uri(config["server"]);
-        });
+        SetCommandLineOptions(services, builder);
 
         services.AddHttpClient<ISchemaClient, SchemaClient>((sp, client) =>
         {
@@ -89,7 +83,7 @@ internal class Program
                 _ => throw new NotImplementedException(),
             };
         });
-        
+
         services.AddOptions<SqlServerDataStoreConfiguration>().Configure<IOptions<CommandLineOptions>>((s, c) =>
         {
             s.ConnectionString = c.Value.ConnectionString;
@@ -103,5 +97,20 @@ internal class Program
         services.AddSingleton<ISchemaManager, SqlSchemaManager>();
         services.AddLogging(configure => configure.AddConsole());
         return services.BuildServiceProvider();
+    }
+
+    private static void SetCommandLineOptions(ServiceCollection services, ConfigurationBuilder builder)
+    {
+        IConfigurationRoot config = builder.Build();
+
+        services.AddOptions<CommandLineOptions>().Configure(x =>
+        {
+            x.ConnectionString = config["connection-string"];
+
+            if (!string.IsNullOrWhiteSpace(config["server"]))
+            {
+                x.Server = new Uri(config["server"]);
+            }
+        });
     }
 }
