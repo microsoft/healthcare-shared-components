@@ -106,6 +106,7 @@ internal class Program
         services.AddOptions<CommandLineOptions>().Configure(x =>
         {
             x.ConnectionString = config["connection-string"];
+            x.ConnectionString = config["cs"];
 
             if (!string.IsNullOrWhiteSpace(config["server"]))
             {
