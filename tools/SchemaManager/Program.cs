@@ -4,6 +4,7 @@
 // -------------------------------------------------------------------------------------------------
 
 using System;
+using System.Collections.Generic;
 using System.CommandLine;
 using System.CommandLine.Builder;
 using System.CommandLine.Invocation;
@@ -55,11 +56,7 @@ internal class Program
 
         services.AddOptions();
 
-        var builder = new ConfigurationBuilder();
-
-        builder.AddCommandLine(args);
-
-        SetCommandLineOptions(services, builder);
+        services.SetCommandLineOptions(args);
 
         services.AddHttpClient<ISchemaClient, SchemaClient>((sp, client) =>
         {
@@ -97,21 +94,5 @@ internal class Program
         services.AddSingleton<ISchemaManager, SqlSchemaManager>();
         services.AddLogging(configure => configure.AddConsole());
         return services.BuildServiceProvider();
-    }
-
-    private static void SetCommandLineOptions(ServiceCollection services, ConfigurationBuilder builder)
-    {
-        IConfigurationRoot config = builder.Build();
-
-        services.AddOptions<CommandLineOptions>().Configure(x =>
-        {
-            x.ConnectionString = config["connection-string"];
-            x.ConnectionString = config["cs"];
-
-            if (!string.IsNullOrWhiteSpace(config["server"]))
-            {
-                x.Server = new Uri(config["server"]);
-            }
-        });
     }
 }

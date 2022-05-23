@@ -2,7 +2,7 @@
   "profiles": {
     "SchemaManager": {
       "commandName": "Project",
-      "commandLineArgs": "Microsoft.Health.SchemaManager apply -cs \"server=(local);Initial Catalog=Dicom;Integrated Security=true;TrustServerCertificate=True\" --server https://localhost:63838 --latest"
+      "commandLineArgs": "Microsoft.Health.SchemaManager apply -cs \"server=(local);Initial Catalog=Dicom;Integrated Security=true;TrustServerCertificate=True\" -s https://localhost:63838 -l"
     }
   }
 }
