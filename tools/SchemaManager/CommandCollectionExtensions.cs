@@ -56,6 +56,12 @@ public static class CommandCollectionExtensions
             { OptionAliases.ShortNext, OptionAliases.Next },
             { OptionAliases.ShortServer, OptionAliases.Server },
             { OptionAliases.ShortVersion, OptionAliases.Version },
+            { OptionAliases.ConnectionString, OptionAliases.ConnectionString },
+            { OptionAliases.Force, OptionAliases.Force },
+            { OptionAliases.Latest, OptionAliases.Latest },
+            { OptionAliases.Next, OptionAliases.Next },
+            { OptionAliases.Server, OptionAliases.Server },
+            { OptionAliases.Version, OptionAliases.Version },
         };
 
         var builder = new ConfigurationBuilder();
