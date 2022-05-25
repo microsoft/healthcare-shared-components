@@ -294,7 +294,8 @@ public class SqlSchemaManager : ISchemaManager
 
         _logger.LogInformation("Schema migration completed successfully for the version : {Version}.", version);
 
-        // this notification is used by the fhir service to initialized the dictionaries
+        // It is to publish the SchemaUpgraded event to notify the service that schema initialization or upgrade is completed to this version
+        // for e.g. fhir service listents to this event and initialize its dictionaries after schema is initialized.
         await _mediator.NotifySchemaUpgradedAsync(version, applyFullSchemaSnapshot);
         _logger.LogInformation("Schema upgrade notification sent for version: {Version}, applyFullSchemaSnapshot: {ApplyFullSchemaSnapshot}", version, applyFullSchemaSnapshot);
     }
