@@ -89,7 +89,7 @@ Push-Location $RepoRootPath
 
 try {
     $branchName = &git rev-parse --abbrev-ref HEAD
-    $branchNameParts = $branchName.Split("/")
+    $branchNameParts = $branchName.Replace('#', '').Split("/")
     $version = "1.0.0-$($branchNameParts[$branchNameParts.Length - 1])-$(Get-Date -Format yyyyMMdd-HHmmss)-preview"
 
     # Find all projects in the components.
