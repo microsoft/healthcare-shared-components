@@ -61,7 +61,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Health.Client", "
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Health.Client.UnitTests", "src\Microsoft.Health.Client.UnitTests\Microsoft.Health.Client.UnitTests.csproj", "{D4DD763B-5246-47F4-A618-211AA820B65E}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SchemaManager.UnitTests", "test\SchemaManager.Core.UnitTests\SchemaManager.UnitTests.csproj", "{0BEB2EE3-DBC3-4DC4-BB01-141DBFFED8D2}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SchemaManager.UnitTests", "test\SchemaManager.UnitTests\SchemaManager.UnitTests.csproj", "{0BEB2EE3-DBC3-4DC4-BB01-141DBFFED8D2}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Health.SqlServer.Tests.Integration", "test\Microsoft.Health.SqlServer.Tests.Integration\Microsoft.Health.SqlServer.Tests.Integration.csproj", "{5429C3A8-3429-43EA-BA05-E347CB4D1F61}"
 EndProject
