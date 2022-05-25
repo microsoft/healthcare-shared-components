@@ -4,7 +4,6 @@
 // -------------------------------------------------------------------------------------------------
 
 using System;
-using System.Globalization;
 
 namespace Microsoft.Health.SqlServer.Features.Routing;
 
