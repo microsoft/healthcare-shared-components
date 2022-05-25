@@ -82,5 +82,4 @@ public static class CommandCollectionExtensions
 
         return services;
     }
-
 }
