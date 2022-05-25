@@ -8,6 +8,7 @@ using System.Collections.Generic;
 using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
+using MediatR;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 using Microsoft.Health.SqlServer.Configs;
@@ -26,6 +27,7 @@ public class SqlSchemaManagerTests
     private readonly ISchemaManagerDataStore _schemaManagerDataStore = Substitute.For<ISchemaManagerDataStore>();
     private readonly ISchemaClient _client = Substitute.For<ISchemaClient>();
     private readonly IBaseSchemaRunner _baseSchemaRunner = Substitute.For<IBaseSchemaRunner>();
+    private readonly IMediator _mediator = Substitute.For<IMediator>();
 
     public SqlSchemaManagerTests()
     {
@@ -36,7 +38,7 @@ public class SqlSchemaManagerTests
 
         _baseSchemaRunner.EnsureBaseSchemaExistsAsync(default).ReturnsForAnyArgs(Task.FromResult(true));
         _baseSchemaRunner.EnsureInstanceSchemaRecordExistsAsync(default).ReturnsForAnyArgs(Task.FromResult(true));
-        _sqlSchemaManager = new SqlSchemaManager(Options.Create(_configuration), _baseSchemaRunner, _schemaManagerDataStore, _client, NullLogger<SqlSchemaManager>.Instance);
+        _sqlSchemaManager = new SqlSchemaManager(Options.Create(_configuration), _baseSchemaRunner, _schemaManagerDataStore, _client, _mediator, NullLogger<SqlSchemaManager>.Instance);
     }
 
     [Fact]
