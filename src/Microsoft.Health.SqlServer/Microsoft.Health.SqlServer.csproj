@@ -33,7 +33,7 @@
     <PackageReference Include="Microsoft.Extensions.Http" Version="$(SdkPackageVersion)" />
     <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="$(SdkPackageVersion)" />
     <PackageReference Include="Microsoft.Extensions.Options" Version="$(SdkPackageVersion)" />
-    <PackageReference Include="Microsoft.SqlServer.SqlManagementObjects" Version="161.47008.0" />
+    <PackageReference Include="Microsoft.SqlServer.SqlManagementObjects" Version="161.47021.0" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
     <PackageReference Include="Polly" Version="7.2.3" />
     <PackageReference Include="Polly.Contrib.WaitAndRetry" Version="1.1.1" />
