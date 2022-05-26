@@ -19,6 +19,7 @@
     <PackageReference Include="Microsoft.Extensions.Options" Version="$(SdkPackageVersion)" />
     <PackageReference Include="System.CommandLine.Experimental" Version="0.2.0-alpha.19174.3" />
     <PackageReference Include="System.CommandLine.Rendering" Version="0.2.0-alpha.19174.3" />
+    <PackageReference Include="MediatR.Extensions.Microsoft.DependencyInjection" Version="9.0.0" />
   </ItemGroup>
 
   <ItemGroup>

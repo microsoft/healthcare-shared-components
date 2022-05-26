@@ -11,10 +11,12 @@ using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using EnsureThat;
+using MediatR;
 using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.Health.SqlServer.Configs;
+using Microsoft.Health.SqlServer.Features.Schema.Extensions;
 using Microsoft.Health.SqlServer.Features.Schema.Manager.Exceptions;
 using Microsoft.Health.SqlServer.Features.Schema.Manager.Model;
 using Microsoft.SqlServer.Management.Common;
@@ -29,6 +31,7 @@ public class SqlSchemaManager : ISchemaManager
     private readonly ISchemaManagerDataStore _schemaManagerDataStore;
     private readonly ISchemaClient _schemaClient;
     private readonly ILogger<SqlSchemaManager> _logger;
+    private readonly IMediator _mediator;
 
     private TimeSpan _retrySleepDuration = TimeSpan.FromSeconds(20);
     private const int RetryAttempts = 3;
@@ -38,12 +41,14 @@ public class SqlSchemaManager : ISchemaManager
         IBaseSchemaRunner baseSchemaRunner,
         ISchemaManagerDataStore schemaManagerDataStore,
         ISchemaClient schemaClient,
+        IMediator mediator,
         ILogger<SqlSchemaManager> logger)
     {
         _sqlServerDataStoreConfiguration = EnsureArg.IsNotNull(sqlServerDataStoreConfiguration?.Value, nameof(sqlServerDataStoreConfiguration));
         _baseSchemaRunner = EnsureArg.IsNotNull(baseSchemaRunner, nameof(baseSchemaRunner));
         _schemaManagerDataStore = EnsureArg.IsNotNull(schemaManagerDataStore, nameof(schemaManagerDataStore));
         _schemaClient = EnsureArg.IsNotNull(schemaClient, nameof(schemaClient));
+        _mediator = EnsureArg.IsNotNull(mediator, nameof(mediator));
         _logger = EnsureArg.IsNotNull(logger, nameof(logger));
     }
 
@@ -288,6 +293,11 @@ public class SqlSchemaManager : ISchemaManager
         await _schemaManagerDataStore.ExecuteScriptAndCompleteSchemaVersionAsync(script, version, applyFullSchemaSnapshot, cancellationToken).ConfigureAwait(false);
 
         _logger.LogInformation("Schema migration completed successfully for the version : {Version}.", version);
+
+        // It is to publish the SchemaUpgraded event to notify the service that schema initialization or upgrade is completed to this version
+        // for e.g. fhir service listents to this event and initialize its dictionaries after schema is initialized.
+        await _mediator.NotifySchemaUpgradedAsync(version, applyFullSchemaSnapshot);
+        _logger.LogInformation("Schema upgrade notification sent for version: {Version}, applyFullSchemaSnapshot: {ApplyFullSchemaSnapshot}", version, applyFullSchemaSnapshot);
     }
 
     private async Task ValidateInstancesVersionAsync(int version, CancellationToken cancellationToken)
