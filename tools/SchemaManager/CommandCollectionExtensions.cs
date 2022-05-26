@@ -7,6 +7,7 @@ using System;
 using System.Collections.Generic;
 using System.CommandLine;
 using System.Linq;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using SchemaManager.Commands;
 
@@ -41,6 +42,43 @@ public static class CommandCollectionExtensions
         {
             services.AddSingleton(commandType, command);
         }
+
+        return services;
+    }
+
+    public static IServiceCollection SetCommandLineOptions(this IServiceCollection services, string[] args)
+    {
+        var switchMappings = new Dictionary<string, string>()
+        {
+            { OptionAliases.ShortConnectionString, OptionAliases.ConnectionString },
+            { OptionAliases.ShortForce, OptionAliases.Force },
+            { OptionAliases.ShortLatest, OptionAliases.Latest },
+            { OptionAliases.ShortNext, OptionAliases.Next },
+            { OptionAliases.ShortServer, OptionAliases.Server },
+            { OptionAliases.ShortVersion, OptionAliases.Version },
+            { OptionAliases.ConnectionString, OptionAliases.ConnectionString },
+            { OptionAliases.Force, OptionAliases.Force },
+            { OptionAliases.Latest, OptionAliases.Latest },
+            { OptionAliases.Next, OptionAliases.Next },
+            { OptionAliases.Server, OptionAliases.Server },
+            { OptionAliases.Version, OptionAliases.Version },
+        };
+
+        var builder = new ConfigurationBuilder();
+
+        builder.AddCommandLine(args, switchMappings);
+
+        IConfigurationRoot config = builder.Build();
+
+        services.AddOptions<CommandLineOptions>().Configure(x =>
+        {
+            x.ConnectionString = config[OptionAliases.ConnectionString];
+
+            if (!string.IsNullOrWhiteSpace(config[OptionAliases.Server]))
+            {
+                x.Server = new Uri(config[OptionAliases.Server]);
+            }
+        });
 
         return services;
     }

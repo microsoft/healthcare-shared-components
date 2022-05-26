@@ -18,12 +18,11 @@ using Microsoft.Health.SqlServer.Features.Schema.Manager.Model;
 using NSubstitute;
 using Xunit;
 
-namespace SchemaManager.Core.UnitTests;
+namespace SchemaManager.UnitTests;
 
 public class SqlSchemaManagerTests
 {
     private readonly SqlSchemaManager _sqlSchemaManager;
-    private readonly SqlServerDataStoreConfiguration _configuration;
     private readonly ISchemaManagerDataStore _schemaManagerDataStore = Substitute.For<ISchemaManagerDataStore>();
     private readonly ISchemaClient _client = Substitute.For<ISchemaClient>();
     private readonly IBaseSchemaRunner _baseSchemaRunner = Substitute.For<IBaseSchemaRunner>();
@@ -31,14 +30,9 @@ public class SqlSchemaManagerTests
 
     public SqlSchemaManagerTests()
     {
-        _configuration = new SqlServerDataStoreConfiguration
-        {
-            ConnectionString = string.Empty,
-        };
-
         _baseSchemaRunner.EnsureBaseSchemaExistsAsync(default).ReturnsForAnyArgs(Task.FromResult(true));
         _baseSchemaRunner.EnsureInstanceSchemaRecordExistsAsync(default).ReturnsForAnyArgs(Task.FromResult(true));
-        _sqlSchemaManager = new SqlSchemaManager(Options.Create(_configuration), _baseSchemaRunner, _schemaManagerDataStore, _client, _mediator, NullLogger<SqlSchemaManager>.Instance);
+        _sqlSchemaManager = new SqlSchemaManager(_baseSchemaRunner, _schemaManagerDataStore, _client, _mediator, NullLogger<SqlSchemaManager>.Instance);
     }
 
     [Fact]
@@ -46,7 +40,7 @@ public class SqlSchemaManagerTests
     {
         _client.GetCurrentVersionInformationAsync(Arg.Any<CancellationToken>()).ReturnsForAnyArgs(new List<CurrentVersion> { new CurrentVersion(1, "Complete", new List<string> { "server1" }) });
 
-        IList<CurrentVersion> current = await _sqlSchemaManager.GetCurrentSchema("connectionString", new Uri("https://localhost/"));
+        IList<CurrentVersion> current = await _sqlSchemaManager.GetCurrentSchema();
 
         Assert.NotNull(current);
         Assert.Single(current);
@@ -60,7 +54,7 @@ public class SqlSchemaManagerTests
     {
         _client.GetCurrentVersionInformationAsync(Arg.Any<CancellationToken>()).ReturnsForAnyArgs(new List<CurrentVersion> { });
 
-        IList<CurrentVersion> current = await _sqlSchemaManager.GetCurrentSchema("connectionString", new Uri("https://localhost/"));
+        IList<CurrentVersion> current = await _sqlSchemaManager.GetCurrentSchema();
 
         Assert.NotNull(current);
         Assert.Empty(current);
@@ -72,7 +66,7 @@ public class SqlSchemaManagerTests
     public async Task GetAvailableSchema_SingleList_Succeeds()
     {
         _client.GetAvailabilityAsync(Arg.Any<CancellationToken>()).ReturnsForAnyArgs(new List<AvailableVersion> { new AvailableVersion(1, "_script/1.sql", "_script/1.diff.sql") });
-        IList<AvailableVersion> available = await _sqlSchemaManager.GetAvailableSchema(new Uri("https://localhost/"));
+        IList<AvailableVersion> available = await _sqlSchemaManager.GetAvailableSchema();
 
         Assert.NotNull(available);
         Assert.Single(available);
@@ -85,7 +79,7 @@ public class SqlSchemaManagerTests
     public async Task GetAvailableSchema_ContainsVersionZero_RemovesZero()
     {
         _client.GetAvailabilityAsync(Arg.Any<CancellationToken>()).ReturnsForAnyArgs(new List<AvailableVersion> { new AvailableVersion(0, "_script/0.sql", "_script/0.diff.sql"), new AvailableVersion(1, "_script/1.sql", "_script/1.diff.sql") });
-        IList<AvailableVersion> available = await _sqlSchemaManager.GetAvailableSchema(new Uri("https://localhost/"));
+        IList<AvailableVersion> available = await _sqlSchemaManager.GetAvailableSchema();
 
         Assert.NotNull(available);
         Assert.Single(available);
@@ -101,8 +95,8 @@ public class SqlSchemaManagerTests
         _client.GetCurrentVersionInformationAsync(Arg.Any<CancellationToken>()).ReturnsForAnyArgs(new List<CurrentVersion> { });
         _client.GetAvailabilityAsync(Arg.Any<CancellationToken>()).ReturnsForAnyArgs(new List<AvailableVersion> { new AvailableVersion(1, "_script/1.sql", "_script/1.diff.sql"), new AvailableVersion(2, "_script/2.sql", "_script/2.diff.sql") });
         _client.GetCompatibilityAsync(Arg.Any<CancellationToken>()).ReturnsForAnyArgs(new CompatibleVersion(1, 2));
-        _client.GetDiffScriptAsync(Arg.Is<Uri>(new Uri("_script/2.diff.sql", UriKind.Relative)), Arg.Any<CancellationToken>()).Returns("script");
-        await _sqlSchemaManager.ApplySchema("connectionString", new Uri("https://localhost/"), new MutuallyExclusiveType { Latest = false, Version = 2, Next = false });
+        _client.GetDiffScriptAsync(2, Arg.Any<CancellationToken>()).Returns("script");
+        await _sqlSchemaManager.ApplySchema(new MutuallyExclusiveType { Latest = false, Version = 2, Next = false });
         await _schemaManagerDataStore.Received(1).ExecuteScriptAndCompleteSchemaVersionAsync(Arg.Is("script"), Arg.Is(2), Arg.Is(false), Arg.Any<CancellationToken>());
     }
 
@@ -114,10 +108,10 @@ public class SqlSchemaManagerTests
         _schemaManagerDataStore.GetCurrentSchemaVersionAsync(default).ReturnsForAnyArgs(Task.FromResult(0));
         _client.GetCurrentVersionInformationAsync(Arg.Any<CancellationToken>()).ReturnsForAnyArgs(new List<CurrentVersion> { });
         _client.GetAvailabilityAsync(Arg.Any<CancellationToken>()).ReturnsForAnyArgs(list1, list2);
-        _client.GetScriptAsync(Arg.Is(new Uri("_script/2.sql", UriKind.Relative)), Arg.Any<CancellationToken>()).Returns("script");
+        _client.GetScriptAsync(2, Arg.Any<CancellationToken>()).Returns("script");
         _client.GetCompatibilityAsync(Arg.Any<CancellationToken>()).ReturnsForAnyArgs(new CompatibleVersion(1, 2));
 
-        await _sqlSchemaManager.ApplySchema("connectionString", new Uri("https://localhost/"), new MutuallyExclusiveType { Version = 2 });
+        await _sqlSchemaManager.ApplySchema(new MutuallyExclusiveType { Version = 2 });
 
         await _schemaManagerDataStore.Received(1).ExecuteScriptAndCompleteSchemaVersionAsync(Arg.Is("script"), Arg.Is(2), Arg.Is(true), Arg.Any<CancellationToken>());
     }
@@ -133,8 +127,8 @@ public class SqlSchemaManagerTests
         _client.GetCurrentVersionInformationAsync(Arg.Any<CancellationToken>()).ReturnsForAnyArgs(Task.FromException<List<CurrentVersion>>(new SchemaManagerException("anymessage")));
         _client.GetAvailabilityAsync(Arg.Any<CancellationToken>()).ReturnsForAnyArgs(new List<AvailableVersion> { new AvailableVersion(1, "_script/1.sql", "_script/1.diff.sql"), new AvailableVersion(2, "_script/2.sql", "_script/2.diff.sql") });
         _client.GetCompatibilityAsync(Arg.Any<CancellationToken>()).ReturnsForAnyArgs(new CompatibleVersion(1, 2));
-        _client.GetDiffScriptAsync(Arg.Is<Uri>(new Uri("_script/2.diff.sql", UriKind.Relative)), Arg.Any<CancellationToken>()).Returns("script");
-        await Assert.ThrowsAsync<SchemaManagerException>(async () => await _sqlSchemaManager.ApplySchema("connectionString", new Uri("https://localhost/"), new MutuallyExclusiveType { Latest = false, Version = 2, Next = false }));
+        _client.GetDiffScriptAsync(2, Arg.Any<CancellationToken>()).Returns("script");
+        await Assert.ThrowsAsync<SchemaManagerException>(async () => await _sqlSchemaManager.ApplySchema(new MutuallyExclusiveType { Latest = false, Version = 2, Next = false }));
     }
 
     [Fact]
@@ -144,8 +138,8 @@ public class SqlSchemaManagerTests
         _client.GetCurrentVersionInformationAsync(Arg.Any<CancellationToken>()).ReturnsForAnyArgs(Task.FromException<List<CurrentVersion>>(new InvalidOperationException()));
         _client.GetAvailabilityAsync(Arg.Any<CancellationToken>()).ReturnsForAnyArgs(new List<AvailableVersion> { new AvailableVersion(1, "_script/1.sql", "_script/1.diff.sql"), new AvailableVersion(2, "_script/2.sql", "_script/2.diff.sql") });
         _client.GetCompatibilityAsync(Arg.Any<CancellationToken>()).ReturnsForAnyArgs(new CompatibleVersion(1, 2));
-        _client.GetDiffScriptAsync(Arg.Is<Uri>(new Uri("_script/2.diff.sql", UriKind.Relative)), Arg.Any<CancellationToken>()).Returns("script");
-        await Assert.ThrowsAsync<InvalidOperationException>(() => _sqlSchemaManager.ApplySchema("connectionString", new Uri("https://localhost/"), new MutuallyExclusiveType { Latest = false, Version = 2, Next = false }));
+        _client.GetDiffScriptAsync(2, Arg.Any<CancellationToken>()).Returns("script");
+        await Assert.ThrowsAsync<InvalidOperationException>(() => _sqlSchemaManager.ApplySchema(new MutuallyExclusiveType { Latest = false, Version = 2, Next = false }));
     }
 
     [Fact]
@@ -155,9 +149,9 @@ public class SqlSchemaManagerTests
         _client.GetCurrentVersionInformationAsync(Arg.Any<CancellationToken>()).ReturnsForAnyArgs(new List<CurrentVersion> { new CurrentVersion(2, "completed", new List<string> { "2323" }) });
         _client.GetAvailabilityAsync(Arg.Any<CancellationToken>()).ReturnsForAnyArgs(new List<AvailableVersion> { new AvailableVersion(2, "_script/2.sql", "_script/2.diff.sql"), new AvailableVersion(3, "_script/3.sql", "_script/3.diff.sql") });
         _client.GetCompatibilityAsync(Arg.Any<CancellationToken>()).ReturnsForAnyArgs(new CompatibleVersion(1, 3));
-        _client.GetDiffScriptAsync(Arg.Is<Uri>(new Uri("_script/2.diff.sql", UriKind.Relative)), Arg.Any<CancellationToken>()).Returns("script");
+        _client.GetDiffScriptAsync(2, Arg.Any<CancellationToken>()).Returns("script");
 
-        await _sqlSchemaManager.ApplySchema("connectionString", new Uri("https://localhost/"), new MutuallyExclusiveType { Latest = false, Version = 2, Next = false });
+        await _sqlSchemaManager.ApplySchema(new MutuallyExclusiveType { Latest = false, Version = 2, Next = false });
 
         await _schemaManagerDataStore.DidNotReceive().ExecuteScriptAndCompleteSchemaVersionAsync(Arg.Is("script"), Arg.Is(2), Arg.Is(false), Arg.Any<CancellationToken>());
     }
