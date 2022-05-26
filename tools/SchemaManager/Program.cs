@@ -3,6 +3,7 @@
 // Licensed under the MIT License (MIT). See LICENSE in the repo root for license information.
 // -------------------------------------------------------------------------------------------------
 
+using MediatR;
 using System;
 using System.Collections.Generic;
 using System.CommandLine;
@@ -23,6 +24,7 @@ using Microsoft.Health.SqlServer.Configs;
 using Microsoft.Health.SqlServer.Features.Client;
 using Microsoft.Health.SqlServer.Features.Schema.Manager;
 using Microsoft.Health.SqlServer.Features.Storage;
+using Microsoft.Health.SqlServer.Features.Schema.Messages.Notifications;
 
 namespace SchemaManager;
 
@@ -92,6 +94,7 @@ internal class Program
         services.AddScoped<SqlTransactionHandler>();
         services.AddScoped<ISchemaManagerDataStore, SchemaManagerDataStore>();
         services.AddSingleton<ISchemaManager, SqlSchemaManager>();
+        services.AddMediatR(typeof(SchemaUpgradedNotification).Assembly);
         services.AddLogging(configure => configure.AddConsole());
         return services.BuildServiceProvider();
     }
