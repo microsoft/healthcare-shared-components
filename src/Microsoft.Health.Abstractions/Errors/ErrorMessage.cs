@@ -41,5 +41,10 @@ namespace Microsoft.Health.Abstractions.Errors
         /// A property bag for data which can provide additional context for the error.
         /// </summary>
         public IDictionary<string, object> Values { get; private set; }
+
+        public void SetValues(IDictionary<string, object> dictionary)
+        {
+            Values = dictionary;
+        }
     }
 }
