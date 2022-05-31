@@ -7,7 +7,7 @@ using System;
 using System.Security.Cryptography.X509Certificates;
 using EnsureThat;
 
-namespace Microsoft.Health.Client;
+namespace Microsoft.Health.Client.Configuration;
 
 public class OAuth2ClientCertificateCredentialConfiguration
 {

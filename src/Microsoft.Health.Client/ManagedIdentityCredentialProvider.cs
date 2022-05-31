@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using EnsureThat;
 using Microsoft.Azure.Services.AppAuthentication;
 using Microsoft.Extensions.Options;
+using Microsoft.Health.Client.Configuration;
 using Microsoft.IdentityModel.Clients.ActiveDirectory;
 
 namespace Microsoft.Health.Client;

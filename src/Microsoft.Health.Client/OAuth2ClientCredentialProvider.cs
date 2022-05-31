@@ -9,6 +9,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using EnsureThat;
 using Microsoft.Extensions.Options;
+using Microsoft.Health.Client.Configuration;
 using Microsoft.Health.Client.Exceptions;
 using Microsoft.IdentityModel.Protocols.OpenIdConnect;
 

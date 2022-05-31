@@ -6,7 +6,7 @@
 using System;
 using EnsureThat;
 
-namespace Microsoft.Health.Client;
+namespace Microsoft.Health.Client.Configuration;
 
 public class OAuth2UserPasswordCredentialConfiguration : OAuth2ClientCredentialConfiguration
 {
