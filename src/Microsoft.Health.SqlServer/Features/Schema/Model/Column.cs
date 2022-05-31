@@ -287,7 +287,10 @@ public class DecimalColumn : Column<decimal>
     public override void Set(SqlDataRecord record, int ordinal, decimal value)
     {
         EnsureArg.IsNotNull(record, nameof(record));
-        ColumnUtilities.ValidateLength(Metadata, value);
+
+        // TODO: restore the validation once we handle the error appropriately on the FHIR server, user story 92202
+        // ColumnUtilities.ValidateLength(Metadata, value);
+
         record.SetDecimal(ordinal, value);
     }
 }
@@ -532,7 +535,9 @@ public class NullableDecimalColumn : Column<decimal?>
 
         if (value.HasValue)
         {
-            ColumnUtilities.ValidateLength(Metadata, value.Value);
+            // TODO: restore the validation once we handle the error appropriately on the FHIR server, user story 92202
+            //ColumnUtilities.ValidateLength(Metadata, value.Value);
+
             record.SetDecimal(ordinal, value.Value);
         }
         else
