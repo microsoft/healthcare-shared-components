@@ -10,7 +10,6 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using Microsoft.Health.Client.Configuration;
 using Microsoft.Health.Extensions.DependencyInjection;
-using IHttpClientFactory = Microsoft.IdentityModel.Clients.ActiveDirectory.IHttpClientFactory;
 
 namespace Microsoft.Health.Client.Extensions;
 
@@ -27,8 +26,7 @@ public static class ServiceCollectionExtensions
         serviceCollection.Add(provider =>
             {
                 IOptionsMonitor<ManagedIdentityCredentialConfiguration> options = provider.GetService<IOptionsMonitor<ManagedIdentityCredentialConfiguration>>();
-                var httpClientFactory = provider.GetService<IHttpClientFactory>();
-                var credentialProvider = new ManagedIdentityCredentialProvider(options, httpClientFactory, name);
+                var credentialProvider = new ManagedIdentityCredentialProvider(options, name);
                 return new NamedCredentialProvider(name, credentialProvider);
             })
             .Singleton()
