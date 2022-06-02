@@ -62,7 +62,8 @@ public class ColumnsTests
         Assert.True(record.GetSqlString(0).Value.Equals("text", System.StringComparison.Ordinal));
     }
 
-    [Fact]
+
+    [Fact(Skip = "Renable after User Story 92202")]
     public void GivenDecimalValueGreaterThanDefinedColumnPrecisionAndScaleMax_WhenSettingDecimalValue_ThenSqlTruncateExceptionThrown()
     {
         var decimalColumn = new DecimalColumn("decimalColumn", 18, 6);

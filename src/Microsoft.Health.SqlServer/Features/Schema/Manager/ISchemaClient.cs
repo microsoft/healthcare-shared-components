@@ -13,13 +13,11 @@ namespace Microsoft.Health.SqlServer.Features.Schema.Manager;
 
 public interface ISchemaClient
 {
-    void SetUri(Uri uri);
-
     Task<List<CurrentVersion>> GetCurrentVersionInformationAsync(CancellationToken cancellationToken);
 
-    Task<string> GetScriptAsync(Uri scriptUri, CancellationToken cancellationToken);
+    Task<string> GetScriptAsync(int version, CancellationToken cancellationToken);
 
-    Task<string> GetDiffScriptAsync(Uri diffScriptUri, CancellationToken cancellationToken);
+    Task<string> GetDiffScriptAsync(int version, CancellationToken cancellationToken);
 
     Task<CompatibleVersion> GetCompatibilityAsync(CancellationToken cancellationToken);
 

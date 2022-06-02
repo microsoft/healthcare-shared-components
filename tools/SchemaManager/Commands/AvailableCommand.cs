@@ -28,19 +28,19 @@ public class AvailableCommand : Command
         AddOption(CommandOptions.ServerOption());
 
         Handler = CommandHandler.Create(
-            (InvocationContext context, Uri server, CancellationToken token)
-            => HandlerAsync(context, server, token));
+            (InvocationContext context, CancellationToken token)
+            => HandlerAsync(context, token));
 
         Argument.AddValidator(symbol => RequiredOptionValidator.Validate(symbol, CommandOptions.ServerOption(), Resources.ServerRequiredValidation));
 
-        EnsureArg.IsNotNull(schemaManager);
+        EnsureArg.IsNotNull(schemaManager, nameof(schemaManager));
 
         _schemaManager = schemaManager;
     }
 
-    private async Task HandlerAsync(InvocationContext invocationContext, Uri server, CancellationToken cancellationToken)
+    private async Task HandlerAsync(InvocationContext invocationContext, CancellationToken cancellationToken)
     {
-        var availableVersions = await _schemaManager.GetAvailableSchema(server, cancellationToken);
+        var availableVersions = await _schemaManager.GetAvailableSchema(cancellationToken);
 
         var region = new Region(
             0,

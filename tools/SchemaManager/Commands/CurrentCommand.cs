@@ -30,8 +30,8 @@ public class CurrentCommand : Command
         AddOption(CommandOptions.ConnectionStringOption());
 
         Handler = CommandHandler.Create(
-            (InvocationContext context, Uri server, string connectionString, CancellationToken token)
-            => HandlerAsync(context, connectionString, server, token));
+            (InvocationContext context, CancellationToken token)
+            => HandlerAsync(context, token));
 
         Argument.AddValidator(symbol => RequiredOptionValidator.Validate(symbol, CommandOptions.ConnectionStringOption(), Resources.ConnectionStringRequiredValidation));
         Argument.AddValidator(symbol => RequiredOptionValidator.Validate(symbol, CommandOptions.ServerOption(), Resources.ServerRequiredValidation));
@@ -41,7 +41,7 @@ public class CurrentCommand : Command
         _schemaManager = schemaManager;
     }
 
-    private async Task HandlerAsync(InvocationContext invocationContext, string connectionString, Uri server, CancellationToken cancellationToken = default)
+    private async Task HandlerAsync(InvocationContext invocationContext, CancellationToken cancellationToken = default)
     {
         var region = new Region(
                       0,
@@ -50,7 +50,7 @@ public class CurrentCommand : Command
                       Console.WindowHeight,
                       true);
 
-        IList<CurrentVersion> currentVersions = await _schemaManager.GetCurrentSchema(connectionString, server, cancellationToken).ConfigureAwait(false);
+        IList<CurrentVersion> currentVersions = await _schemaManager.GetCurrentSchema(cancellationToken).ConfigureAwait(false);
 
         var tableView = new TableView<CurrentVersion>
         {
