@@ -35,5 +35,5 @@ services.AddOptions<DicomWebConfiguration>().Bind(dicomWebConfigurationSection);
         client.BaseAddress = config.Endpoint;
     })
     .AddPolicyHandler(retryPolicy)
-    .AddAuthenticationHandler(services, dicomWebConfigurationSection.GetSection(AuthenticationConfiguration.SectionName), "Dicom");
+    .AddAuthenticationHandler(dicomWebConfigurationSection.GetSection(AuthenticationConfiguration.SectionName), "Dicom");
 ```
