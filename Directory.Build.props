@@ -12,6 +12,7 @@
     <IsPackable>true</IsPackable>
     <LangVersion>latest</LangVersion>
     <LtsVersion>net6.0</LtsVersion>
+    <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <Product>Microsoft Health</Product>
     <PublishRepositoryUrl>true</PublishRepositoryUrl>
@@ -47,7 +48,7 @@
   </Choose>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.1.1" PrivateAssets="All" />
+    <PackageReference Include="Microsoft.SourceLink.GitHub" PrivateAssets="All" />
   </ItemGroup>
 
   <Choose>
