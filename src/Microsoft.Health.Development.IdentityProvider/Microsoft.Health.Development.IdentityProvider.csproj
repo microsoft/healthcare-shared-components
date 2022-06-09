@@ -10,22 +10,22 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Ensure.That" Version="10.1.0" />
-    <PackageReference Include="IdentityServer4" Version="4.1.2" />
-    <PackageReference Include="IdentityServer4.Storage" Version="4.1.2" />
-    <PackageReference Include="Microsoft.Extensions.Configuration" Version="$(SdkPackageVersion)" />
-    <PackageReference Include="Microsoft.Extensions.Configuration.Abstractions" Version="$(SdkPackageVersion)" />
-    <PackageReference Include="Microsoft.Extensions.Configuration.Binder" Version="$(SdkPackageVersion)" />
-    <PackageReference Include="Microsoft.Extensions.Configuration.FileExtensions" Version="$(SdkPackageVersion)" />
-    <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="$(SdkPackageVersion)" />
-    <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="$(SdkPackageVersion)" />
-    <PackageReference Include="Microsoft.Extensions.Options" Version="$(SdkPackageVersion)" />
+    <PackageReference Include="Ensure.That" />
+    <PackageReference Include="IdentityServer4" />
+    <PackageReference Include="IdentityServer4.Storage" />
+    <PackageReference Include="Microsoft.Extensions.Configuration" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.Abstractions" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.Binder" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.FileExtensions" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.Json" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" />
+    <PackageReference Include="Microsoft.Extensions.Options" />
   </ItemGroup>
 
   <Choose>
     <When Condition="'$(TargetFramework)' == 'net5.0'">
       <ItemGroup>
-        <PackageReference Include="System.Text.Encodings.Web" Version="5.0.1" PrivateAssets="All" />
+        <PackageReference Include="System.Text.Encodings.Web" PrivateAssets="All" />
       </ItemGroup>
     </When>
   </Choose>
