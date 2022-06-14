@@ -5,7 +5,7 @@
 
 using System;
 
-namespace Microsoft.Health.Client.Exceptions;
+namespace Microsoft.Health.Client.Authentication.Exceptions;
 
 public class FailToRetrieveTokenException : Exception
 {

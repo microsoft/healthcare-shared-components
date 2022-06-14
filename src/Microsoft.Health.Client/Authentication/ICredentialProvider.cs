@@ -6,7 +6,7 @@
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Microsoft.Health.Client;
+namespace Microsoft.Health.Client.Authentication;
 
 public interface ICredentialProvider
 {

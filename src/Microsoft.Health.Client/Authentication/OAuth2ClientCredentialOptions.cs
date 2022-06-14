@@ -4,30 +4,29 @@
 // -------------------------------------------------------------------------------------------------
 
 using System;
-using System.Security.Cryptography.X509Certificates;
 using EnsureThat;
 
-namespace Microsoft.Health.Client.Configuration;
+namespace Microsoft.Health.Client.Authentication;
 
-public class OAuth2ClientCertificateCredentialConfiguration
+public class OAuth2ClientCredentialOptions
 {
-    public OAuth2ClientCertificateCredentialConfiguration()
+    public OAuth2ClientCredentialOptions()
     {
     }
 
-    public OAuth2ClientCertificateCredentialConfiguration(Uri tokenUri, string resource, string scope, string clientId, X509Certificate2 certificate)
+    public OAuth2ClientCredentialOptions(Uri tokenUri, string resource, string scope, string clientId, string clientSecret)
     {
         EnsureArg.IsNotNull(tokenUri, nameof(tokenUri));
         EnsureArg.IsNotNullOrWhiteSpace(resource, nameof(resource));
         EnsureArg.IsNotNullOrWhiteSpace(scope, nameof(scope));
         EnsureArg.IsNotNullOrWhiteSpace(clientId, nameof(clientId));
-        EnsureArg.IsNotNull(certificate, nameof(certificate));
+        EnsureArg.IsNotNullOrWhiteSpace(clientSecret, nameof(clientSecret));
 
         TokenUri = tokenUri;
         Resource = resource;
         Scope = scope;
         ClientId = clientId;
-        Certificate = certificate;
+        ClientSecret = clientSecret;
     }
 
     public Uri TokenUri { get; set; }
@@ -38,5 +37,5 @@ public class OAuth2ClientCertificateCredentialConfiguration
 
     public string ClientId { get; set; }
 
-    public X509Certificate2 Certificate { get; set; }
+    public string ClientSecret { get; set; }
 }

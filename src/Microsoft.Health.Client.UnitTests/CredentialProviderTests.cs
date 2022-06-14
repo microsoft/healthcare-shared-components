@@ -10,8 +10,8 @@ using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Options;
-using Microsoft.Health.Client.Configuration;
-using Microsoft.Health.Client.Exceptions;
+using Microsoft.Health.Client.Authentication;
+using Microsoft.Health.Client.Authentication.Exceptions;
 using NSubstitute;
 using Xunit;
 
@@ -52,7 +52,7 @@ public class CredentialProviderTests
 
         using var httpClient = new HttpClient(mockHandler);
 
-        var credentialConfiguration = new OAuth2ClientCredentialConfiguration(
+        var credentialConfiguration = new OAuth2ClientCredentialOptions(
                     new Uri("https://fakehost/connect/token"),
                     "invalid resource",
                     "invalid scope",
@@ -79,7 +79,7 @@ public class CredentialProviderTests
 
         using var httpClient = new HttpClient(mockHandler);
 
-        var credentialConfiguration = new OAuth2UserPasswordCredentialConfiguration(
+        var credentialConfiguration = new OAuth2UserPasswordCredentialOptions(
                     new Uri("https://fakehost/connect/token"),
                     "invalid resource",
                     "invalid scope",

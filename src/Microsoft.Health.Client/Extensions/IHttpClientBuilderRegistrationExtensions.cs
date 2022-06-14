@@ -6,7 +6,7 @@
 using EnsureThat;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Health.Client.Configuration;
+using Microsoft.Health.Client.Authentication;
 
 namespace Microsoft.Health.Client.Extensions;
 
@@ -17,7 +17,7 @@ public static class IHttpClientBuilderRegistrationExtensions
         EnsureArg.IsNotNull(httpClientBuilder, nameof(httpClientBuilder));
         EnsureArg.IsNotNull(authenticationConfigurationSection, nameof(authenticationConfigurationSection));
 
-        var auth = new AuthenticationConfiguration();
+        var auth = new AuthenticationOptions();
         authenticationConfigurationSection.Bind(auth);
         if (!auth.Enabled)
         {

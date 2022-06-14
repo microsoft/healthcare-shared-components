@@ -8,7 +8,7 @@ using EnsureThat;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
-using Microsoft.Health.Client.Configuration;
+using Microsoft.Health.Client.Authentication;
 using Microsoft.Health.Extensions.DependencyInjection;
 
 namespace Microsoft.Health.Client.Extensions;
@@ -21,11 +21,11 @@ public static class ServiceCollectionExtensions
         EnsureArg.IsNotNull(managedIdentityCredentialConfiguration, nameof(managedIdentityCredentialConfiguration));
         EnsureArg.IsNotNullOrWhiteSpace(name, nameof(name));
 
-        serviceCollection.Configure<ManagedIdentityCredentialConfiguration>(name, managedIdentityCredentialConfiguration);
+        serviceCollection.Configure<ManagedIdentityCredentialOptions>(name, managedIdentityCredentialConfiguration);
 
         serviceCollection.Add(provider =>
             {
-                IOptionsMonitor<ManagedIdentityCredentialConfiguration> options = provider.GetService<IOptionsMonitor<ManagedIdentityCredentialConfiguration>>();
+                IOptionsMonitor<ManagedIdentityCredentialOptions> options = provider.GetService<IOptionsMonitor<ManagedIdentityCredentialOptions>>();
                 var credentialProvider = new ManagedIdentityCredentialProvider(options, name);
                 return new NamedCredentialProvider(name, credentialProvider);
             })
@@ -39,11 +39,11 @@ public static class ServiceCollectionExtensions
         EnsureArg.IsNotNull(oAuth2ClientCertificateCredentialConfiguration, nameof(oAuth2ClientCertificateCredentialConfiguration));
         EnsureArg.IsNotNullOrWhiteSpace(name, nameof(name));
 
-        serviceCollection.Configure<OAuth2ClientCertificateCredentialConfiguration>(name, oAuth2ClientCertificateCredentialConfiguration);
+        serviceCollection.Configure<OAuth2ClientCertificateCredentialOptions>(name, oAuth2ClientCertificateCredentialConfiguration);
 
         serviceCollection.Add(provider =>
             {
-                IOptionsMonitor<OAuth2ClientCertificateCredentialConfiguration> options = provider.GetService<IOptionsMonitor<OAuth2ClientCertificateCredentialConfiguration>>();
+                IOptionsMonitor<OAuth2ClientCertificateCredentialOptions> options = provider.GetService<IOptionsMonitor<OAuth2ClientCertificateCredentialOptions>>();
                 var httpClient = new HttpClient();
                 var credentialProvider = new OAuth2ClientCertificateCredentialProvider(options, httpClient, name);
                 return new NamedCredentialProvider(name, credentialProvider);
@@ -58,10 +58,10 @@ public static class ServiceCollectionExtensions
         EnsureArg.IsNotNull(oAuth2ClientCredentialConfiguration, nameof(oAuth2ClientCredentialConfiguration));
         EnsureArg.IsNotNullOrWhiteSpace(name, nameof(name));
 
-        serviceCollection.Configure<OAuth2ClientCredentialConfiguration>(name, oAuth2ClientCredentialConfiguration);
+        serviceCollection.Configure<OAuth2ClientCredentialOptions>(name, oAuth2ClientCredentialConfiguration);
         serviceCollection.Add(provider =>
             {
-                IOptionsMonitor<OAuth2ClientCredentialConfiguration> options = provider.GetService<IOptionsMonitor<OAuth2ClientCredentialConfiguration>>();
+                IOptionsMonitor<OAuth2ClientCredentialOptions> options = provider.GetService<IOptionsMonitor<OAuth2ClientCredentialOptions>>();
                 var httpClient = new HttpClient();
                 var credentialProvider = new OAuth2ClientCredentialProvider(options, httpClient, name);
                 return new NamedCredentialProvider(name, credentialProvider);
@@ -76,10 +76,10 @@ public static class ServiceCollectionExtensions
         EnsureArg.IsNotNull(oAuth2UserPasswordCredentialConfiguration, nameof(oAuth2UserPasswordCredentialConfiguration));
         EnsureArg.IsNotNullOrWhiteSpace(name, nameof(name));
 
-        serviceCollection.Configure<OAuth2UserPasswordCredentialConfiguration>(name, oAuth2UserPasswordCredentialConfiguration);
+        serviceCollection.Configure<OAuth2UserPasswordCredentialOptions>(name, oAuth2UserPasswordCredentialConfiguration);
         serviceCollection.Add(provider =>
             {
-                IOptionsMonitor<OAuth2UserPasswordCredentialConfiguration> options = provider.GetService<IOptionsMonitor<OAuth2UserPasswordCredentialConfiguration>>();
+                IOptionsMonitor<OAuth2UserPasswordCredentialOptions> options = provider.GetService<IOptionsMonitor<OAuth2UserPasswordCredentialOptions>>();
                 var httpClient = new HttpClient();
                 var credentialProvider = new OAuth2UserPasswordCredentialProvider(options, httpClient, name);
                 return new NamedCredentialProvider(name, credentialProvider);

@@ -3,9 +3,9 @@
 // Licensed under the MIT License (MIT). See LICENSE in the repo root for license information.
 // -------------------------------------------------------------------------------------------------
 
-namespace Microsoft.Health.Client.Configuration;
+namespace Microsoft.Health.Client.Authentication;
 
-public class AuthenticationConfiguration
+public class AuthenticationOptions
 {
     public const string SectionName = "Authentication";
 
@@ -13,11 +13,11 @@ public class AuthenticationConfiguration
 
     public AuthenticationType? AuthenticationType { get; set; }
 
-    public OAuth2ClientCertificateCredentialConfiguration OAuth2ClientCertificateCredential { get; set; }
+    public OAuth2ClientCertificateCredentialOptions OAuth2ClientCertificateCredential { get; set; }
 
-    public OAuth2ClientCredentialConfiguration OAuth2ClientCredential { get; set; }
+    public OAuth2ClientCredentialOptions OAuth2ClientCredential { get; set; }
 
-    public OAuth2UserPasswordCredentialConfiguration OAuth2UserPasswordCredential { get; set; }
+    public OAuth2UserPasswordCredentialOptions OAuth2UserPasswordCredential { get; set; }
 
-    public ManagedIdentityCredentialConfiguration ManagedIdentityCredential { get; set; }
+    public ManagedIdentityCredentialOptions ManagedIdentityCredential { get; set; }
 }

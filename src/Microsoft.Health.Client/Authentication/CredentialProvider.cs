@@ -8,7 +8,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.IdentityModel.JsonWebTokens;
 
-namespace Microsoft.Health.Client;
+namespace Microsoft.Health.Client.Authentication;
 
 public abstract class CredentialProvider : ICredentialProvider
 {

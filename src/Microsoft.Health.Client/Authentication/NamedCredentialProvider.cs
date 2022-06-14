@@ -7,7 +7,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using EnsureThat;
 
-namespace Microsoft.Health.Client;
+namespace Microsoft.Health.Client.Authentication;
 
 public class NamedCredentialProvider : ICredentialProvider
 {

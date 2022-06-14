@@ -6,15 +6,15 @@
 using System;
 using EnsureThat;
 
-namespace Microsoft.Health.Client.Configuration;
+namespace Microsoft.Health.Client.Authentication;
 
-public class OAuth2UserPasswordCredentialConfiguration : OAuth2ClientCredentialConfiguration
+public class OAuth2UserPasswordCredentialOptions : OAuth2ClientCredentialOptions
 {
-    public OAuth2UserPasswordCredentialConfiguration()
+    public OAuth2UserPasswordCredentialOptions()
     {
     }
 
-    public OAuth2UserPasswordCredentialConfiguration(Uri tokenUri, string resource, string scope, string clientId, string clientSecret, string username, string password)
+    public OAuth2UserPasswordCredentialOptions(Uri tokenUri, string resource, string scope, string clientId, string clientSecret, string username, string password)
         : base(tokenUri, resource, scope, clientId, clientSecret)
     {
         EnsureArg.IsNotNullOrWhiteSpace(username, nameof(username));
