@@ -35,5 +35,7 @@ services.AddOptions<DicomWebConfiguration>().Bind(dicomWebConfigurationSection);
         client.BaseAddress = config.Endpoint;
     })
     .AddPolicyHandler(retryPolicy)
-    .AddAuthenticationHandler(dicomWebConfigurationSection.GetSection(AuthenticationConfiguration.SectionName), "Dicom");
+    .AddAuthenticationHandler(dicomWebConfigurationSection.GetSection(AuthenticationConfiguration.SectionName));
 ```
+
+> Note: If you wish to register multiple of the same type of client with different configurations, you will need to provide a `name` to the `AddHttpClient` extension.  

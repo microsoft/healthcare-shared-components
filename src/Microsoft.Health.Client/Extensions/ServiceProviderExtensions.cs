@@ -20,6 +20,6 @@ public static class ServiceProviderExtensions
 
         IEnumerable<NamedCredentialProvider> namedCredentialProviders = serviceProvider.GetServices<NamedCredentialProvider>();
 
-        return namedCredentialProviders.First(x => x.Name.Equals(name, StringComparison.Ordinal));
+        return namedCredentialProviders.Last(x => x.Name.Equals(name, StringComparison.Ordinal));
     }
 }

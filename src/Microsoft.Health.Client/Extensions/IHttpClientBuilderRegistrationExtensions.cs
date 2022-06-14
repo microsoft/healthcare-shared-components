@@ -3,7 +3,6 @@
 // Licensed under the MIT License (MIT). See LICENSE in the repo root for license information.
 // -------------------------------------------------------------------------------------------------
 
-using System;
 using EnsureThat;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -13,15 +12,10 @@ namespace Microsoft.Health.Client.Extensions;
 
 public static class IHttpClientBuilderRegistrationExtensions
 {
-    public static void AddAuthenticationHandler(this IHttpClientBuilder httpClientBuilder, IConfigurationSection authenticationConfigurationSection, string credentialProviderName = null)
+    public static void AddAuthenticationHandler(this IHttpClientBuilder httpClientBuilder, IConfigurationSection authenticationConfigurationSection)
     {
         EnsureArg.IsNotNull(httpClientBuilder, nameof(httpClientBuilder));
         EnsureArg.IsNotNull(authenticationConfigurationSection, nameof(authenticationConfigurationSection));
-
-        if (string.IsNullOrWhiteSpace(credentialProviderName))
-        {
-            credentialProviderName = Guid.NewGuid().ToString();
-        }
 
         var auth = new AuthenticationConfiguration();
         authenticationConfigurationSection.Bind(auth);
@@ -33,20 +27,20 @@ public static class IHttpClientBuilderRegistrationExtensions
         switch (auth.AuthenticationType)
         {
             case AuthenticationType.ManagedIdentity:
-                httpClientBuilder.Services.AddNamedManagedIdentityCredentialProvider(authenticationConfigurationSection.GetSection(nameof(auth.ManagedIdentityCredential)), credentialProviderName);
+                httpClientBuilder.Services.AddNamedManagedIdentityCredentialProvider(authenticationConfigurationSection.GetSection(nameof(auth.ManagedIdentityCredential)), httpClientBuilder.Name);
                 break;
             case AuthenticationType.OAuth2ClientCertificateCredential:
-                httpClientBuilder.Services.AddNamedOAuth2ClientCertificateCredentialProvider(authenticationConfigurationSection.GetSection(nameof(auth.OAuth2ClientCertificateCredential)), credentialProviderName);
+                httpClientBuilder.Services.AddNamedOAuth2ClientCertificateCredentialProvider(authenticationConfigurationSection.GetSection(nameof(auth.OAuth2ClientCertificateCredential)), httpClientBuilder.Name);
                 break;
             case AuthenticationType.OAuth2ClientCredential:
-                httpClientBuilder.Services.AddNamedOAuth2ClientCredentialProvider(authenticationConfigurationSection.GetSection(nameof(auth.OAuth2ClientCredential)), credentialProviderName);
+                httpClientBuilder.Services.AddNamedOAuth2ClientCredentialProvider(authenticationConfigurationSection.GetSection(nameof(auth.OAuth2ClientCredential)), httpClientBuilder.Name);
                 break;
             case AuthenticationType.OAuth2UserPasswordCredential:
-                httpClientBuilder.Services.AddNamedOAuth2UserPasswordCredentialProvider(authenticationConfigurationSection.GetSection(nameof(auth.OAuth2UserPasswordCredential)), credentialProviderName);
+                httpClientBuilder.Services.AddNamedOAuth2UserPasswordCredentialProvider(authenticationConfigurationSection.GetSection(nameof(auth.OAuth2UserPasswordCredential)), httpClientBuilder.Name);
                 break;
         }
 
         httpClientBuilder
-            .AddHttpMessageHandler(x => new AuthenticationHttpMessageHandler(x.ResolveNamedCredentialProvider(credentialProviderName)));
+            .AddHttpMessageHandler(x => new AuthenticationHttpMessageHandler(x.ResolveNamedCredentialProvider(httpClientBuilder.Name)));
     }
 }
