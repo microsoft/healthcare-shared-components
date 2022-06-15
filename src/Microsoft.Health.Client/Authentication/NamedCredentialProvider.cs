@@ -24,8 +24,8 @@ public class NamedCredentialProvider : ICredentialProvider
 
     public string Name { get; }
 
-    public Task<string> GetBearerToken(CancellationToken cancellationToken)
+    public Task<string> GetBearerTokenAsync(CancellationToken cancellationToken)
     {
-        return _credentialProvider.GetBearerToken(cancellationToken);
+        return _credentialProvider.GetBearerTokenAsync(cancellationToken);
     }
 }

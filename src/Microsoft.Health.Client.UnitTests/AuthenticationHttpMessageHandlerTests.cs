@@ -20,7 +20,7 @@ public sealed class AuthenticationHttpMessageHandlerTests : IDisposable
     public AuthenticationHttpMessageHandlerTests()
     {
         var credentialProvider = Substitute.For<ICredentialProvider>();
-        credentialProvider.GetBearerToken(Arg.Any<CancellationToken>()).Returns("token");
+        credentialProvider.GetBearerTokenAsync(Arg.Any<CancellationToken>()).Returns("token");
         _authenticationHttpMessageHandler = new AuthenticationHttpMessageHandler(credentialProvider)
         {
             InnerHandler = new TestInnerHandler(),

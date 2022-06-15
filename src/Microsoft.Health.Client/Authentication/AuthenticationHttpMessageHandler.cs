@@ -29,7 +29,7 @@ public class AuthenticationHttpMessageHandler : DelegatingHandler
         EnsureArg.IsNotNull(request, nameof(request));
 
         request.Headers.Authorization =
-            new AuthenticationHeaderValue("Bearer", await _credentialProvider.GetBearerToken(cancellationToken).ConfigureAwait(false));
+            new AuthenticationHeaderValue("Bearer", await _credentialProvider.GetBearerTokenAsync(cancellationToken).ConfigureAwait(false));
 
         return await base.SendAsync(request, cancellationToken).ConfigureAwait(false);
     }
