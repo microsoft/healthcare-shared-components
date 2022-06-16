@@ -48,6 +48,7 @@
     <PackageVersion Include="Microsoft.Extensions.Logging.Abstractions" Version="$(SdkPackageVersion)" />
     <PackageVersion Include="Microsoft.Extensions.Logging.Console" Version="$(SdkPackageVersion)" />
     <PackageVersion Include="Microsoft.Extensions.Options" Version="$(SdkPackageVersion)" />
+    <PackageVersion Include="Microsoft.Extensions.Options.ConfigurationExtensions" Version="$(SdkPackageVersion)" />
     <PackageVersion Include="Microsoft.Extensions.Primitives" Version="$(SdkPackageVersion)" />
     <PackageVersion Include="Microsoft.IdentityModel.Clients.ActiveDirectory" Version="5.2.9" />
     <PackageVersion Include="Microsoft.IdentityModel.JsonWebTokens" Version="6.17.0" />

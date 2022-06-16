@@ -8,7 +8,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.IdentityModel.JsonWebTokens;
 
-namespace Microsoft.Health.Client;
+namespace Microsoft.Health.Client.Authentication;
 
 public abstract class CredentialProvider : ICredentialProvider
 {
@@ -18,7 +18,7 @@ public abstract class CredentialProvider : ICredentialProvider
 
     internal DateTime TokenExpiration { get; private set; }
 
-    public async Task<string> GetBearerToken(CancellationToken cancellationToken)
+    public async Task<string> GetBearerTokenAsync(CancellationToken cancellationToken)
     {
         if (TokenExpiration < DateTime.UtcNow + _tokenTimeout)
         {

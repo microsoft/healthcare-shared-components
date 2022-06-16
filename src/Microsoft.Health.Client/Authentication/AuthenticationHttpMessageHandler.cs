@@ -9,7 +9,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using EnsureThat;
 
-namespace Microsoft.Health.Client;
+namespace Microsoft.Health.Client.Authentication;
 
 public class AuthenticationHttpMessageHandler : DelegatingHandler
 {
@@ -29,7 +29,7 @@ public class AuthenticationHttpMessageHandler : DelegatingHandler
         EnsureArg.IsNotNull(request, nameof(request));
 
         request.Headers.Authorization =
-            new AuthenticationHeaderValue("Bearer", await _credentialProvider.GetBearerToken(cancellationToken).ConfigureAwait(false));
+            new AuthenticationHeaderValue("Bearer", await _credentialProvider.GetBearerTokenAsync(cancellationToken).ConfigureAwait(false));
 
         return await base.SendAsync(request, cancellationToken).ConfigureAwait(false);
     }

@@ -10,7 +10,8 @@ using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Options;
-using Microsoft.Health.Client.Exceptions;
+using Microsoft.Health.Client.Authentication;
+using Microsoft.Health.Client.Authentication.Exceptions;
 using NSubstitute;
 using Xunit;
 
@@ -27,7 +28,7 @@ public class CredentialProviderTests
         Assert.Null(credentialProvider.Token);
         Assert.Equal(default, credentialProvider.TokenExpiration);
 
-        var token = await credentialProvider.GetBearerToken(cancellationToken: default);
+        var token = await credentialProvider.GetBearerTokenAsync(cancellationToken: default);
 
         Assert.Equal(token, credentialProvider.Token);
 
@@ -51,7 +52,7 @@ public class CredentialProviderTests
 
         using var httpClient = new HttpClient(mockHandler);
 
-        var credentialConfiguration = new OAuth2ClientCredentialConfiguration(
+        var credentialConfiguration = new OAuth2ClientCredentialOptions(
                     new Uri("https://fakehost/connect/token"),
                     "invalid resource",
                     "invalid scope",
@@ -59,7 +60,7 @@ public class CredentialProviderTests
                     "invalid client secret");
 
         var credentialProvider = new OAuth2ClientCredentialProvider(GetOptionsMonitor(credentialConfiguration), httpClient);
-        await Assert.ThrowsAsync<FailToRetrieveTokenException>(() => credentialProvider.GetBearerToken(cancellationToken: default));
+        await Assert.ThrowsAsync<FailToRetrieveTokenException>(() => credentialProvider.GetBearerTokenAsync(cancellationToken: default));
     }
 
     [Fact]
@@ -78,7 +79,7 @@ public class CredentialProviderTests
 
         using var httpClient = new HttpClient(mockHandler);
 
-        var credentialConfiguration = new OAuth2UserPasswordCredentialConfiguration(
+        var credentialConfiguration = new OAuth2UserPasswordCredentialOptions(
                     new Uri("https://fakehost/connect/token"),
                     "invalid resource",
                     "invalid scope",
@@ -88,7 +89,7 @@ public class CredentialProviderTests
                     "invalid password");
 
         var credentialProvider = new OAuth2UserPasswordCredentialProvider(GetOptionsMonitor(credentialConfiguration), httpClient);
-        await Assert.ThrowsAsync<FailToRetrieveTokenException>(() => credentialProvider.GetBearerToken(cancellationToken: default));
+        await Assert.ThrowsAsync<FailToRetrieveTokenException>(() => credentialProvider.GetBearerTokenAsync(cancellationToken: default));
     }
 
     [Fact]
@@ -99,7 +100,7 @@ public class CredentialProviderTests
         var credentialProvider = new TestCredentialProvider(initialToken);
 
         // Returns the initialToken
-        var initialResult = await credentialProvider.GetBearerToken(cancellationToken: default);
+        var initialResult = await credentialProvider.GetBearerTokenAsync(cancellationToken: default);
         Assert.Equal(initialToken, initialResult);
 
         // Update the token that would be returned if BearerTokenFunction() was called
@@ -108,7 +109,7 @@ public class CredentialProviderTests
         credentialProvider.EncodedToken = secondToken;
 
         // Should return the initialToken since it is not within the expiration window
-        var secondResult = await credentialProvider.GetBearerToken(cancellationToken: default);
+        var secondResult = await credentialProvider.GetBearerTokenAsync(cancellationToken: default);
 
         Assert.Equal(initialResult, secondResult);
     }
@@ -121,7 +122,7 @@ public class CredentialProviderTests
         var credentialProvider = new TestCredentialProvider(initialToken);
 
         // Returns the initialToken
-        var initialResult = await credentialProvider.GetBearerToken(cancellationToken: default);
+        var initialResult = await credentialProvider.GetBearerTokenAsync(cancellationToken: default);
         Assert.Equal(initialToken, initialResult);
 
         // Update the token that will be returned since the initial token is within the expiration window
@@ -130,7 +131,7 @@ public class CredentialProviderTests
         credentialProvider.EncodedToken = secondToken;
 
         // Should return the initialToken since it is not within the expiration window
-        var secondResult = await credentialProvider.GetBearerToken(cancellationToken: default);
+        var secondResult = await credentialProvider.GetBearerTokenAsync(cancellationToken: default);
 
         Assert.Equal(secondToken, secondResult);
         Assert.NotEqual(initialResult, secondResult);

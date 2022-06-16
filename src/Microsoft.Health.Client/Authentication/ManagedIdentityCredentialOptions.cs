@@ -5,15 +5,15 @@
 
 using EnsureThat;
 
-namespace Microsoft.Health.Client;
+namespace Microsoft.Health.Client.Authentication;
 
-public class ManagedIdentityCredentialConfiguration
+public class ManagedIdentityCredentialOptions
 {
-    public ManagedIdentityCredentialConfiguration()
+    public ManagedIdentityCredentialOptions()
     {
     }
 
-    public ManagedIdentityCredentialConfiguration(string resource, string tenantId)
+    public ManagedIdentityCredentialOptions(string resource, string tenantId)
     {
         EnsureArg.IsNotNullOrWhiteSpace(resource, nameof(resource));
         EnsureArg.IsNotNullOrWhiteSpace(tenantId, nameof(tenantId));

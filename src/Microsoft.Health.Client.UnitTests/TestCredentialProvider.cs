@@ -5,6 +5,7 @@
 
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Health.Client.Authentication;
 
 namespace Microsoft.Health.Client.UnitTests;
 
