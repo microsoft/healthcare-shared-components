@@ -52,7 +52,7 @@
     <PackageVersion Include="Microsoft.Extensions.Primitives" Version="$(SdkPackageVersion)" />
     <PackageVersion Include="Microsoft.IdentityModel.Clients.ActiveDirectory" Version="5.2.9" />
     <PackageVersion Include="Microsoft.IdentityModel.JsonWebTokens" Version="6.17.0" />
-    <PackageVersion Include="Microsoft.IdentityModel.Protocols.OpenIdConnect" Version="6.17.0" />
+    <PackageVersion Include="Microsoft.IdentityModel.Protocols.OpenIdConnect" Version="6.20.0" />
     <PackageVersion Include="Microsoft.IdentityModel.Tokens" Version="6.17.0" />
     <PackageVersion Include="Microsoft.IO.RecyclableMemoryStream" Version="2.2.0" />
     <PackageVersion Include="Microsoft.NET.Sdk.Functions" Version="4.1.1" />
