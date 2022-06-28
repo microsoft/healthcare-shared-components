@@ -4,6 +4,7 @@
 // -------------------------------------------------------------------------------------------------
 
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
@@ -30,7 +31,12 @@ public static class ServiceCollectionExtensions
 
         var moduleType = typeof(T);
         Debug.Assert(moduleType.IsClass && !moduleType.IsAbstract, "Module should be non-abstract class");
-        collection.RegisterModule(moduleType, constructorParams);
+
+        // have the registration follow same rules as fn RegisterAssemblyModules
+        if (moduleType.IsClass && !moduleType.IsAbstract)
+        {
+            collection.RegisterModule(moduleType, constructorParams);
+        }
     }
 
     /// <summary>
@@ -49,6 +55,25 @@ public static class ServiceCollectionExtensions
         {
             collection.RegisterModule(moduleType, constructorParams);
         }
+    }
+
+    public static ICollection<string> CheckIssues(this IServiceCollection collection)
+    {
+        var issues = new List<string>();
+        var multipleRegisteredServices = collection
+            .GroupBy(x => (x.ServiceType, x.ImplementationType, x.ImplementationInstance, x.ImplementationFactory))
+            .Where(x => x.Count() > 1)
+            .ToArray();
+
+        if (multipleRegisteredServices.Any())
+        {
+            foreach (var service in multipleRegisteredServices)
+            {
+                issues.Add($"** IoC Config Warning: Service implementation '{service.Key.ImplementationType ?? service.Key.ImplementationInstance ?? service.Key.ImplementationFactory}' was registered multiple times.");
+            }
+        }
+
+        return issues;
     }
 
     private static void RegisterModule(this IServiceCollection collection, Type moduleType, params object[] constructorParams)

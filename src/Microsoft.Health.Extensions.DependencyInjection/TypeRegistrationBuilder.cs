@@ -218,7 +218,7 @@ public class TypeRegistrationBuilder
         }
         else
         {
-            _serviceCollection.Add(serviceDescriptor);
+            _serviceCollection.TryAdd(serviceDescriptor);
         }
     }
 
