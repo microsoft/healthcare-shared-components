@@ -75,6 +75,27 @@ public class TypeRegistrationTests
     }
 
     [Fact]
+    public void GivenAType_WhenAddingTypeMultipleTimes_ThenOnlyOnlyOneInstanceIsRegistered()
+    {
+        _collection.Add<StringReader>()
+            .Transient()
+            .AsSelf()
+            .AsImplementedInterfaces();
+
+        _collection.Add<StringReader>()
+            .Transient()
+            .AsSelf()
+            .AsImplementedInterfaces();
+
+        Assert.True(_collection.Count == 1);
+
+        Assert.Collection(_collection, x =>
+        {
+            Assert.Equal(typeof(StringReader), x.ImplementationType);
+        });
+    }
+
+    [Fact]
     public void GivenAFactory_WhenReplacingSelf_ThenOnlyTheNewServiceIsRegistered()
     {
         _collection
