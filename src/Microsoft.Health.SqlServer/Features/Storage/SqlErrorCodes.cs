@@ -49,4 +49,9 @@ public static class SqlErrorCodes
     /// Cannot continue the execution because the session is in the kill state.
     /// </summary>
     public const short KilledSessionState = 596;
+
+    /// <summary>
+    /// Could not found stored procedure
+    /// </summary>
+    public const short CouldNotFoundStoredProc = 2812;
 }
