@@ -78,11 +78,11 @@ public class TypeRegistrationTests
     public void GivenAType_WhenAddingTypeMultipleTimes_ThenOnlyOnlyOneInstanceIsRegistered()
     {
         _collection.Add<StringReader>()
-            .Transient()
+            .Singleton()
             .AsImplementedInterfaces();
 
         _collection.Add<StringWriter>()
-            .Transient()
+            .Singleton()
             .AsImplementedInterfaces();        
 
         Assert.True(TypeRegistrationBuilder.RegistrationWarnings.Count == 2);
