@@ -4,6 +4,7 @@
 // -------------------------------------------------------------------------------------------------
 
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
@@ -45,6 +46,11 @@ public class TypeRegistrationBuilder
     public TypeRegistrationBuilder AsService<T>() => AsService(typeof(T));
 
     /// <summary>
+    /// Keeps track of the Debug.Assert items
+    /// </summary>
+    public static ICollection<string> RegistrationWarnings { get; } = new List<string>();
+
+    /// <summary>
     /// Creates a service registration for the specified interface
     /// </summary>
     /// <param name="serviceType">The service type to be registered</param>
@@ -53,7 +59,14 @@ public class TypeRegistrationBuilder
     {
         EnsureArg.IsNotNull(serviceType, nameof(serviceType));
 
-        Debug.Assert(serviceType != _type, $"The \"AsSelf()\" registration should be used instead of \"AsService<{_type.Name}>()\".");
+        bool assertion = serviceType != _type;
+        string msg = $"The \"AsSelf()\" registration should be used instead of \"AsService<{_type.Name}>()\".";
+        Debug.Assert(assertion, msg);
+
+        if (!assertion)
+        {
+            RegistrationWarnings.Add(msg);
+        }
 
         RegisterType(serviceType);
 
@@ -122,9 +135,14 @@ public class TypeRegistrationBuilder
     /// <exception cref="NotSupportedException">Throws when Type was not explicitly defined</exception>
     public TypeRegistrationBuilder AsImplementedInterfaces(Predicate<Type> interfaceFilter = null)
     {
-        Debug.Assert(
-            _firstRegisteredType != null || _registrationMode == TypeRegistration.RegistrationMode.Transient,
-            $"Using \"AsImplementedInterfaces()\" without calling \"AsSelf()\" first in registration for \"{_type.Name}\" could have inconsistent results.");
+        bool assertion = _firstRegisteredType != null || _registrationMode == TypeRegistration.RegistrationMode.Transient;
+        string msg = $"Using \"AsImplementedInterfaces()\" without calling \"AsSelf()\" first in registration for \"{_type.Name}\" could have inconsistent results.";
+        Debug.Assert(assertion, msg);
+
+        if (!assertion)
+        {
+            RegistrationWarnings.Add(msg);
+        }
 
         if (interfaceFilter == null)
         {
@@ -148,7 +166,14 @@ public class TypeRegistrationBuilder
     /// <exception cref="NotSupportedException">Throws when Type was not explicitly defined</exception>
     public TypeRegistrationBuilder AsSelf()
     {
-        Debug.Assert(_firstRegisteredType == null, $"The \"AsSelf()\" registration for \"{_type.Name}\" should come first.");
+        bool assertion = _firstRegisteredType == null;
+        string msg = $"The \"AsSelf()\" registration for \"{_type.Name}\" should come first.";
+        Debug.Assert(assertion, msg);
+
+        if (!assertion)
+        {
+            RegistrationWarnings.Add(msg);
+        }
 
         RegisterType(_type);
 
@@ -162,7 +187,14 @@ public class TypeRegistrationBuilder
     /// <exception cref="NotSupportedException">Throws when Type was not explicitly defined</exception>
     public TypeRegistrationBuilder ReplaceSelf()
     {
-        Debug.Assert(_firstRegisteredType == null, $"The \"ReplaceSelf()\" registration for \"{_type.Name}\" should come first.");
+        bool assertion = _firstRegisteredType == null;
+        string msg = $"The \"ReplaceSelf()\" registration for \"{_type.Name}\" should come first.";
+        Debug.Assert(assertion, msg);
+
+        if (!assertion)
+        {
+            RegistrationWarnings.Add(msg);
+        }
 
         RegisterType(_type, replace: true);
 

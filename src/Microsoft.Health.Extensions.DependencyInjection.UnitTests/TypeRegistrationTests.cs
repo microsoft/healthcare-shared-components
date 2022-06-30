@@ -79,20 +79,13 @@ public class TypeRegistrationTests
     {
         _collection.Add<StringReader>()
             .Transient()
-            .AsSelf()
             .AsImplementedInterfaces();
 
-        _collection.Add<StringReader>()
+        _collection.Add<StringWriter>()
             .Transient()
-            .AsSelf()
-            .AsImplementedInterfaces();
+            .AsImplementedInterfaces();        
 
-        Assert.True(_collection.Count == 1);
-
-        Assert.Collection(_collection, x =>
-        {
-            Assert.Equal(typeof(StringReader), x.ImplementationType);
-        });
+        Assert.True(TypeRegistrationBuilder.RegistrationWarnings.Count == 2);
     }
 
     [Fact]
