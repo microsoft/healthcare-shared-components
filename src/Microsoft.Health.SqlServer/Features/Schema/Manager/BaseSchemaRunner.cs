@@ -89,7 +89,7 @@ public class BaseSchemaRunner : IBaseSchemaRunner
         {
             if (!await _schemaManagerDataStore.InstanceSchemaRecordExistsAsync(cancellationToken))
             {
-                throw new SchemaManagerException(Resources.InstanceSchemaRecordErrorMessage);
+                throw new InstanceSchemaNotFoundException(Resources.InstanceSchemaRecordErrorMessage);
             }
         }
         catch (SqlException e) when (e.Message.Contains("Invalid object name", StringComparison.OrdinalIgnoreCase))

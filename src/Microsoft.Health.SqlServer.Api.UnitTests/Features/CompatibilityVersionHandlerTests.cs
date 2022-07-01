@@ -7,7 +7,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using MediatR;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Health.Extensions.DependencyInjection;
 using Microsoft.Health.SqlServer.Api.Features;
 using Microsoft.Health.SqlServer.Features.Schema;
@@ -29,7 +28,7 @@ public class CompatibilityVersionHandlerTests
     {
         _schemaMigrationDataStore = Substitute.For<ISchemaDataStore>();
         var collection = new ServiceCollection();
-        collection.Add(sp => new CompatibilityVersionHandler(_schemaMigrationDataStore)).Singleton().AsSelf().AsImplementedInterfaces();
+        collection.Add(_ => new CompatibilityVersionHandler(_schemaMigrationDataStore)).Singleton().AsSelf().AsImplementedInterfaces();
 
         ServiceProvider provider = collection.BuildServiceProvider();
         _mediator = new Mediator(type => provider.GetService(type));
