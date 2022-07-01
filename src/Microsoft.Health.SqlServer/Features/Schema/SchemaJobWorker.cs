@@ -9,6 +9,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using EnsureThat;
 using MediatR;
+using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -16,6 +17,7 @@ using Microsoft.Health.Core;
 using Microsoft.Health.Core.Features.Control;
 using Microsoft.Health.SqlServer.Configs;
 using Microsoft.Health.SqlServer.Features.Schema.Extensions;
+using Microsoft.Health.SqlServer.Features.Storage;
 
 namespace Microsoft.Health.SqlServer.Features.Schema;
 
@@ -83,6 +85,10 @@ public class SchemaJobWorker
                 {
                     _processTerminator.Terminate(cancellationToken);
                 }
+            }
+            catch (SqlException se) when (se.ErrorCode == SqlErrorCodes.CouldNotFoundStoredProc && schemaInformation.Current == null)
+            {
+                // this could happen during schema initialization until base schema is not executed so can be ignored
             }
             catch (Exception ex)
             {
