@@ -77,7 +77,7 @@ internal class SqlServerSchemaDataStore : ISchemaDataStore
         }
     }
 
-    public async Task<int?> UpsertInstanceSchemaInformationAsync(string name, SchemaInformation schemaInformation, CancellationToken cancellationToken)
+    public async Task<int> UpsertInstanceSchemaInformationAsync(string name, SchemaInformation schemaInformation, CancellationToken cancellationToken)
     {
         using (SqlConnectionWrapper sqlConnectionWrapper = await _sqlConnectionWrapperFactory.ObtainSqlConnectionWrapperAsync(cancellationToken: cancellationToken))
         using (SqlCommandWrapper sqlCommandWrapper = sqlConnectionWrapper.CreateRetrySqlCommand())
@@ -97,7 +97,7 @@ internal class SqlServerSchemaDataStore : ISchemaDataStore
                 if (e.ErrorCode == SqlErrorCodes.CouldNotFoundStoredProc && schemaInformation.Current == null)
                 {
                     // this could happen during schema initialization until base schema is not executed
-                    return null;
+                    throw;
                 }
 
                 _logger.LogError(e, "Error from SQL database on upserting InstanceSchema information");
