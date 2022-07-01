@@ -7,6 +7,7 @@ using System;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Health.Client.Authentication;
 using NSubstitute;
 using Xunit;
 
@@ -19,7 +20,7 @@ public sealed class AuthenticationHttpMessageHandlerTests : IDisposable
     public AuthenticationHttpMessageHandlerTests()
     {
         var credentialProvider = Substitute.For<ICredentialProvider>();
-        credentialProvider.GetBearerToken(Arg.Any<CancellationToken>()).Returns("token");
+        credentialProvider.GetBearerTokenAsync(Arg.Any<CancellationToken>()).Returns("token");
         _authenticationHttpMessageHandler = new AuthenticationHttpMessageHandler(credentialProvider)
         {
             InnerHandler = new TestInnerHandler(),

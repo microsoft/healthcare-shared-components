@@ -9,14 +9,14 @@ using System.Threading;
 using System.Threading.Tasks;
 using EnsureThat;
 using Microsoft.Extensions.Options;
-using Microsoft.Health.Client.Exceptions;
+using Microsoft.Health.Client.Authentication.Exceptions;
 using Microsoft.IdentityModel.Protocols.OpenIdConnect;
 
-namespace Microsoft.Health.Client;
+namespace Microsoft.Health.Client.Authentication;
 
 public class OAuth2UserPasswordCredentialProvider : CredentialProvider
 {
-    private readonly IOptionsMonitor<OAuth2UserPasswordCredentialConfiguration> _oAuth2UserPasswordCredentialConfiguration;
+    private readonly IOptionsMonitor<OAuth2UserPasswordCredentialOptions> _oAuth2UserPasswordCredentialOptions;
     private readonly HttpClient _httpClient;
     private readonly string _optionsName;
 
@@ -24,36 +24,36 @@ public class OAuth2UserPasswordCredentialProvider : CredentialProvider
     /// Initializes a new instance of the <see cref="OAuth2UserPasswordCredentialProvider"/> class.
     /// This class is used to obtain a token for the configured resource via the OAuth2 token endpoint via user password.
     /// </summary>
-    /// <param name="oAuth2UserCredentialConfigurationMonitor">The configuration to use when obtaining a token.</param>
+    /// <param name="oAuth2UserCredentialOptionsMonitor">The configuration to use when obtaining a token.</param>
     /// <param name="httpClient">The <see cref="HttpClient" /> to use when calling the token uri.</param>
     /// <param name="optionsName">Optional name to use when retrieving options from the IOptionsMonitor</param>
-    public OAuth2UserPasswordCredentialProvider(IOptionsMonitor<OAuth2UserPasswordCredentialConfiguration> oAuth2UserCredentialConfigurationMonitor, HttpClient httpClient, string optionsName = null)
+    public OAuth2UserPasswordCredentialProvider(IOptionsMonitor<OAuth2UserPasswordCredentialOptions> oAuth2UserCredentialOptionsMonitor, HttpClient httpClient, string optionsName = null)
     {
-        EnsureArg.IsNotNull(oAuth2UserCredentialConfigurationMonitor, nameof(oAuth2UserCredentialConfigurationMonitor));
+        EnsureArg.IsNotNull(oAuth2UserCredentialOptionsMonitor, nameof(oAuth2UserCredentialOptionsMonitor));
         EnsureArg.IsNotNull(httpClient, nameof(httpClient));
 
         _httpClient = httpClient;
-        _oAuth2UserPasswordCredentialConfiguration = oAuth2UserCredentialConfigurationMonitor;
+        _oAuth2UserPasswordCredentialOptions = oAuth2UserCredentialOptionsMonitor;
         _optionsName = optionsName;
     }
 
     protected override async Task<string> BearerTokenFunction(CancellationToken cancellationToken)
     {
-        OAuth2UserPasswordCredentialConfiguration oAuth2UserPasswordCredentialConfiguration = _oAuth2UserPasswordCredentialConfiguration.Get(_optionsName);
+        OAuth2UserPasswordCredentialOptions oAuth2UserPasswordCredentialOptions = _oAuth2UserPasswordCredentialOptions.Get(_optionsName);
 
         var formData = new List<KeyValuePair<string, string>>
         {
-            new (OpenIdConnectParameterNames.ClientId, oAuth2UserPasswordCredentialConfiguration.ClientId),
-            new (OpenIdConnectParameterNames.ClientSecret, oAuth2UserPasswordCredentialConfiguration.ClientSecret),
+            new (OpenIdConnectParameterNames.ClientId, oAuth2UserPasswordCredentialOptions.ClientId),
+            new (OpenIdConnectParameterNames.ClientSecret, oAuth2UserPasswordCredentialOptions.ClientSecret),
             new (OpenIdConnectParameterNames.GrantType, OpenIdConnectGrantTypes.Password),
-            new (OpenIdConnectParameterNames.Scope, oAuth2UserPasswordCredentialConfiguration.Scope),
-            new (OpenIdConnectParameterNames.Resource, oAuth2UserPasswordCredentialConfiguration.Resource),
-            new (OpenIdConnectParameterNames.Username, oAuth2UserPasswordCredentialConfiguration.Username),
-            new (OpenIdConnectParameterNames.Password, oAuth2UserPasswordCredentialConfiguration.Password),
+            new (OpenIdConnectParameterNames.Scope, oAuth2UserPasswordCredentialOptions.Scope),
+            new (OpenIdConnectParameterNames.Resource, oAuth2UserPasswordCredentialOptions.Resource),
+            new (OpenIdConnectParameterNames.Username, oAuth2UserPasswordCredentialOptions.Username),
+            new (OpenIdConnectParameterNames.Password, oAuth2UserPasswordCredentialOptions.Password),
         };
 
         using var formContent = new FormUrlEncodedContent(formData);
-        using HttpResponseMessage tokenResponse = await _httpClient.PostAsync(oAuth2UserPasswordCredentialConfiguration.TokenUri, formContent, cancellationToken).ConfigureAwait(false);
+        using HttpResponseMessage tokenResponse = await _httpClient.PostAsync(oAuth2UserPasswordCredentialOptions.TokenUri, formContent, cancellationToken).ConfigureAwait(false);
 
         var openIdConnectMessage = new OpenIdConnectMessage(await tokenResponse.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false));
 

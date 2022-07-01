@@ -767,12 +767,6 @@ public abstract class StringColumn : Column<string>
 
         if (value != null)
         {
-            // NVarChar(max) column has -1 length
-            if (Metadata.MaxLength > 0 && Metadata.MaxLength < value.Length)
-            {
-                throw new SqlTruncateException(string.Format(CultureInfo.CurrentCulture, Resources.StringTooLong, value.Length, Metadata.Name, Metadata.MaxLength));
-            }
-
             record.SetString(ordinal, value);
         }
         else
