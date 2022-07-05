@@ -57,8 +57,12 @@ public class ParameterDefinition<T>
     {
         EnsureArg.IsNotNull(parameters, nameof(parameters));
 
-        return parameters.Add(
-            new SqlParameter(
+        return parameters.Add(CreateSqlParameter(value));
+    }
+
+    protected virtual SqlParameter CreateSqlParameter(T value)
+    {
+        return new SqlParameter(
                 parameterName: Name,
                 dbType: _type,
                 size: (int)_length,
@@ -68,6 +72,6 @@ public class ParameterDefinition<T>
                 scale: _scale,
                 sourceColumn: null,
                 sourceVersion: DataRowVersion.Current,
-                value: value));
+                value: value);
     }
 }
