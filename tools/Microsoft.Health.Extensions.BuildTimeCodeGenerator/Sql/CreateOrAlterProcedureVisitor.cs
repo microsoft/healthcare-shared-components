@@ -97,11 +97,10 @@ internal class CreateOrAlterProcedureVisitor : SqlVisitor
         if (TryGetSqlDbTypeForParameter(parameter, out SqlDbType sqlDbType))
         {
             // new ParameterDefinition<int>("@paramName", SqlDbType.Int, nullable, maxlength,...)
-            string parameterDefinitionType = "ParameterDefinition";
-            if (parameter.Modifier == ParameterModifier.Output)
-            {
-                parameterDefinitionType = "OutputParameterDefinition";
-            }
+            string parameterDefinitionType = parameter.Modifier != ParameterModifier.Output 
+                                                ? "ParameterDefinition" 
+                                                : "OutputParameterDefinition";
+
             typeName = GenericName(parameterDefinitionType)
                 .AddTypeArgumentListArguments(SqlDbTypeToClrType(sqlDbType, nullable: parameter.Value != null).ToTypeSyntax(true));
 
