@@ -292,7 +292,7 @@ internal class CreateOrAlterProcedureVisitor : SqlVisitor
                         InvocationExpression(
                             MemberAccessExpression(
                                 SyntaxKind.SimpleMemberAccessExpression,
-                                IdentifierName("ValueTuple"),
+                                IdentifierName("global::System.ValueTuple"),
                                 IdentifierName("Create")))
                             .AddArgumentListArguments(
                                 outputExpressions.Select(o => Argument(o)).ToArray())))
