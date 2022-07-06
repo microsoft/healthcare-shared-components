@@ -59,16 +59,17 @@ public class ParameterDefinition<T>
     {
         EnsureArg.IsNotNull(parameters, nameof(parameters));
 
-        return parameters.Add(new SqlParameter(
-                                parameterName: Name,
-                                dbType: _type,
-                                size: (int)_length,
-                                direction: Direction,
-                                isNullable: _nullable,
-                                precision: _precision,
-                                scale: _scale,
-                                sourceColumn: null,
-                                sourceVersion: DataRowVersion.Current,
-                                value: value));
+        return parameters.Add(
+            new SqlParameter(
+                parameterName: Name,
+                dbType: _type,
+                size: (int)_length,
+                direction: Direction,
+                isNullable: _nullable,
+                precision: _precision,
+                scale: _scale,
+                sourceColumn: null,
+                sourceVersion: DataRowVersion.Current,
+                value: value));
     }
 }
