@@ -30,17 +30,12 @@ public class OutputParameterDefinition<T> : ParameterDefinition<T>
     {
     }
 
+    public override ParameterDirection Direction => ParameterDirection.Output;
+
     public T GetOutputValue(SqlCommandWrapper command)
     {
         EnsureArg.IsNotNull(command, nameof(command));
 
         return (T)command.Parameters[Name].Value;
-    }
-
-    protected override SqlParameter CreateSqlParameter(T value)
-    {
-        SqlParameter result = base.CreateSqlParameter(value);
-        result.Direction = ParameterDirection.Output;
-        return result;
     }
 }

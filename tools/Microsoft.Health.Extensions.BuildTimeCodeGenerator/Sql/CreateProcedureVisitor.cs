@@ -63,7 +63,7 @@ internal class CreateProcedureVisitor : SqlVisitor
 
                 // add fields for each parameter
                 .AddMembers(node.Parameters.Select(CreateFieldForParameter).ToArray())
-                
+
                 // add the PopulateCommand method
                 .AddMembers(AddPopulateCommandMethod(node, schemaQualifiedProcedureName), AddPopulateCommandMethodForTableValuedParameters(node, procedureName))
 
@@ -258,21 +258,31 @@ internal class CreateProcedureVisitor : SqlVisitor
 
     private MethodDeclarationSyntax[] AddGetOutputMethod(CreateProcedureStatement node)
     {
-        List<MethodDeclarationSyntax> result = new List<MethodDeclarationSyntax>();
+        List<TypeSyntax> outputTypes = new List<TypeSyntax>();
+        List<ExpressionSyntax> outputExpressions = new List<ExpressionSyntax>();
+        IEnumerable<ProcedureParameter> procedureParameters = node.Parameters.Where(p => p.Modifier == ParameterModifier.Output);
 
-        foreach (ProcedureParameter parameter in node.Parameters)
+        if (procedureParameters.Count() == 0)
         {
-            if (parameter.Modifier != ParameterModifier.Output)
-            {
-                continue;
-            }
+            return new MethodDeclarationSyntax[0];
+        }
 
-            TypeSyntax typeSyntax = DataTypeReferenceToClrType(parameter.DataType, parameter.Value != null);
-            result.Add(
-                MethodDeclaration(
-                    typeSyntax,
-                    Identifier($"Get{ParameterNameForParameter(parameter)}FromOutput"))
+        foreach (ProcedureParameter parameter in procedureParameters)
+        {
+            outputTypes.Add(DataTypeReferenceToClrType(parameter.DataType, parameter.Value != null));
+            outputExpressions.Add(InvocationExpression(
+                                    MemberAccessExpression(
+                                        SyntaxKind.SimpleMemberAccessExpression,
+                                        IdentifierName(FieldNameForParameter(parameter)),
+                                        IdentifierName("GetOutputValue")))
+                                    .AddArgumentListArguments(
+                                        Argument(IdentifierName(CommandParameterName))));
+        }
 
+        return new MethodDeclarationSyntax[] {
+            MethodDeclaration(
+                    TypeExtensions.CreateGenericTypeFromGenericTypeDefinition(typeof(ValueTuple<>).ToTypeSyntax(), outputTypes.ToArray()),
+                    Identifier($"GetOutputs"))
                 .AddModifiers(Token(SyntaxKind.PublicKeyword))
 
                 // Parameter is the SqlCommand
@@ -283,13 +293,11 @@ internal class CreateProcedureVisitor : SqlVisitor
                         InvocationExpression(
                             MemberAccessExpression(
                                 SyntaxKind.SimpleMemberAccessExpression,
-                                IdentifierName(FieldNameForParameter(parameter)),
-                                IdentifierName("GetOutputValue")))
+                                IdentifierName("global::System.ValueTuple"), // to avoid conflict with variable "System"
+                                IdentifierName("Create")))
                             .AddArgumentListArguments(
-                                Argument(IdentifierName(CommandParameterName))))));
-        }
-
-        return result.ToArray();
+                                outputExpressions.Select(o => Argument(o)).ToArray())))
+        };
     }
 
 

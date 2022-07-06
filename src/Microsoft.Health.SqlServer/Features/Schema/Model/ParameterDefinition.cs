@@ -47,6 +47,8 @@ public class ParameterDefinition<T>
     /// </summary>
     public string Name { get; }
 
+    public virtual ParameterDirection Direction => ParameterDirection.Input;
+
     /// <summary>
     /// Adds a parameter to a <see cref="SqlCommand"/>'s parameter collection with a given value.
     /// </summary>
@@ -57,21 +59,16 @@ public class ParameterDefinition<T>
     {
         EnsureArg.IsNotNull(parameters, nameof(parameters));
 
-        return parameters.Add(CreateSqlParameter(value));
-    }
-
-    protected virtual SqlParameter CreateSqlParameter(T value)
-    {
-        return new SqlParameter(
-                parameterName: Name,
-                dbType: _type,
-                size: (int)_length,
-                direction: ParameterDirection.Input,
-                isNullable: _nullable,
-                precision: _precision,
-                scale: _scale,
-                sourceColumn: null,
-                sourceVersion: DataRowVersion.Current,
-                value: value);
+        return parameters.Add(new SqlParameter(
+                                parameterName: Name,
+                                dbType: _type,
+                                size: (int)_length,
+                                direction: Direction,
+                                isNullable: _nullable,
+                                precision: _precision,
+                                scale: _scale,
+                                sourceColumn: null,
+                                sourceVersion: DataRowVersion.Current,
+                                value: value));
     }
 }
