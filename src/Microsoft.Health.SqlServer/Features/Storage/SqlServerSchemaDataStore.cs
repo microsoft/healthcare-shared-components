@@ -94,7 +94,7 @@ internal class SqlServerSchemaDataStore : ISchemaDataStore
             }
             catch (SqlException e)
             {
-                if (e.ErrorCode == SqlErrorCodes.CouldNotFoundStoredProc && schemaInformation.Current == null)
+                if (e.Number == SqlErrorCodes.CouldNotFoundStoredProc && schemaInformation.Current == null)
                 {
                     // this could happen during schema initialization until base schema is not executed
                     throw;

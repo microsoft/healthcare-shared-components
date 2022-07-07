@@ -86,7 +86,7 @@ public class SchemaJobWorker
                     _processTerminator.Terminate(cancellationToken);
                 }
             }
-            catch (SqlException se) when (se.ErrorCode == SqlErrorCodes.CouldNotFoundStoredProc && schemaInformation.Current == null)
+            catch (SqlException se) when (se.Number == SqlErrorCodes.CouldNotFoundStoredProc && schemaInformation.Current == null)
             {
                 // this could happen during schema initialization until base schema is not executed so can be ignored
             }
