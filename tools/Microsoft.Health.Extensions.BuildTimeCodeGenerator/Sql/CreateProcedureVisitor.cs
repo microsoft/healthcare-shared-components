@@ -97,9 +97,10 @@ internal class CreateProcedureVisitor : SqlVisitor
         if (TryGetSqlDbTypeForParameter(parameter, out SqlDbType sqlDbType))
         {
             // new ParameterDefinition<int>("@paramName", SqlDbType.Int, nullable, maxlength,...)
-            string parameterDefinitionType = parameter.Modifier != ParameterModifier.Output
-                                                ? "ParameterDefinition"
-                                                : "OutputParameterDefinition";
+            string parameterDefinitionType = 
+                parameter.Modifier != ParameterModifier.Output
+                    ? "ParameterDefinition"
+                    : "OutputParameterDefinition";
 
             typeName = GenericName(parameterDefinitionType)
                 .AddTypeArgumentListArguments(SqlDbTypeToClrType(sqlDbType, nullable: parameter.Value != null).ToTypeSyntax(true));
@@ -260,9 +261,9 @@ internal class CreateProcedureVisitor : SqlVisitor
     {
         List<TypeSyntax> outputTypes = new List<TypeSyntax>();
         List<ExpressionSyntax> outputExpressions = new List<ExpressionSyntax>();
-        IEnumerable<ProcedureParameter> procedureParameters = node.Parameters.Where(p => p.Modifier == ParameterModifier.Output);
+        List<ProcedureParameter> procedureParameters = node.Parameters.Where(p => p.Modifier == ParameterModifier.Output).ToList();
 
-        if (procedureParameters.Count() == 0)
+        if (procedureParameters.Count == 0)
         {
             return new MethodDeclarationSyntax[0];
         }
@@ -270,17 +271,36 @@ internal class CreateProcedureVisitor : SqlVisitor
         foreach (ProcedureParameter parameter in procedureParameters)
         {
             outputTypes.Add(DataTypeReferenceToClrType(parameter.DataType, parameter.Value != null));
-            outputExpressions.Add(InvocationExpression(
-                                    MemberAccessExpression(
-                                        SyntaxKind.SimpleMemberAccessExpression,
-                                        IdentifierName(FieldNameForParameter(parameter)),
-                                        IdentifierName("GetOutputValue")))
-                                    .AddArgumentListArguments(
-                                        Argument(IdentifierName(CommandParameterName))));
+            outputExpressions.Add(
+                InvocationExpression(
+                    MemberAccessExpression(
+                        SyntaxKind.SimpleMemberAccessExpression,
+                        IdentifierName(FieldNameForParameter(parameter)),
+                        IdentifierName("GetOutputValue")))
+                .AddArgumentListArguments(
+                    Argument(IdentifierName(CommandParameterName))));
         }
 
-        return new MethodDeclarationSyntax[] {
-            MethodDeclaration(
+        // For single output, T GetOutputs(SqlCommandWrapper)
+        if (procedureParameters.Count == 1)
+        {
+            return new MethodDeclarationSyntax[] {
+                MethodDeclaration(
+                    outputTypes.First(),
+                    Identifier($"GetOutputs"))
+                .AddModifiers(Token(SyntaxKind.PublicKeyword))
+
+                // Parameter is the SqlCommand
+                .AddParameterListParameters(Parameter(Identifier(CommandParameterName)).WithType(ParseTypeName("SqlCommandWrapper")))
+
+                .AddBodyStatements(ReturnStatement(outputExpressions.First()))
+            };
+        }
+        // For multi outputs, (T1, T2, ..) GetOutputs(SqlCommandWrapper)
+        else
+        {
+            return new MethodDeclarationSyntax[] {
+                MethodDeclaration(
                     TypeExtensions.CreateGenericTypeFromGenericTypeDefinition(typeof(ValueTuple<>).ToTypeSyntax(), outputTypes.ToArray()),
                     Identifier($"GetOutputs"))
                 .AddModifiers(Token(SyntaxKind.PublicKeyword))
@@ -293,11 +313,12 @@ internal class CreateProcedureVisitor : SqlVisitor
                         InvocationExpression(
                             MemberAccessExpression(
                                 SyntaxKind.SimpleMemberAccessExpression,
-                                IdentifierName("global::System.ValueTuple"), // to avoid conflict with variable "System"
+                                IdentifierName("global::System.ValueTuple"),
                                 IdentifierName("Create")))
                             .AddArgumentListArguments(
                                 outputExpressions.Select(o => Argument(o)).ToArray())))
-        };
+            };
+        }
     }
 
 
