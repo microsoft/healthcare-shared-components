@@ -65,7 +65,10 @@ internal class CreateOrAlterProcedureVisitor : SqlVisitor
                 .AddMembers(node.Parameters.Select(CreateFieldForParameter).ToArray())
 
                 // add the PopulateCommand method
-                .AddMembers(AddPopulateCommandMethod(node, schemaQualifiedProcedureName), AddPopulateCommandMethodForTableValuedParameters(node, procedureName));
+                .AddMembers(AddPopulateCommandMethod(node, schemaQualifiedProcedureName), AddPopulateCommandMethodForTableValuedParameters(node, procedureName))
+
+                // add the get output value method
+                .AddMembers(AddGetOutputMethod(node));
 
         FieldDeclarationSyntax fieldDeclarationSyntax = CreateStaticFieldForClass(className, procedureName);
 
@@ -94,7 +97,12 @@ internal class CreateOrAlterProcedureVisitor : SqlVisitor
         if (TryGetSqlDbTypeForParameter(parameter, out SqlDbType sqlDbType))
         {
             // new ParameterDefinition<int>("@paramName", SqlDbType.Int, nullable, maxlength,...)
-            typeName = GenericName("ParameterDefinition")
+            string parameterDefinitionType = 
+                parameter.Modifier != ParameterModifier.Output 
+                    ? "ParameterDefinition" 
+                    : "OutputParameterDefinition";
+
+            typeName = GenericName(parameterDefinitionType)
                 .AddTypeArgumentListArguments(SqlDbTypeToClrType(sqlDbType, nullable: parameter.Value != null).ToTypeSyntax(true));
 
             arguments.Add(
@@ -246,6 +254,70 @@ internal class CreateOrAlterProcedureVisitor : SqlVisitor
                                         IdentifierName(tableValuedParametersParameterName),
                                         IdentifierName(PropertyNameForParameter(p))))
                                     .WithNameColon(NameColon(ParameterNameForParameter(p)))).ToArray())));
+    }
+
+    private MethodDeclarationSyntax[] AddGetOutputMethod(CreateOrAlterProcedureStatement node)
+    {
+        List<TypeSyntax> outputTypes = new List<TypeSyntax>();
+        List<ExpressionSyntax> outputExpressions = new List<ExpressionSyntax>();
+        List<ProcedureParameter> procedureParameters = node.Parameters.Where(p => p.Modifier == ParameterModifier.Output).ToList();
+
+        if (procedureParameters.Count == 0)
+        {
+            return new MethodDeclarationSyntax[0];
+        }
+
+        foreach (ProcedureParameter parameter in procedureParameters)
+        {
+            outputTypes.Add(DataTypeReferenceToClrType(parameter.DataType, parameter.Value != null));
+            outputExpressions.Add(
+                InvocationExpression(
+                    MemberAccessExpression(
+                        SyntaxKind.SimpleMemberAccessExpression,
+                        IdentifierName(FieldNameForParameter(parameter)),
+                        IdentifierName("GetOutputValue")))
+                .AddArgumentListArguments(
+                    Argument(IdentifierName(CommandParameterName))));
+        }
+
+        // For single output, T GetOutputs(SqlCommandWrapper)
+        if (procedureParameters.Count == 1)
+        {
+            return new MethodDeclarationSyntax[] {
+                MethodDeclaration(
+                    outputTypes.First(),
+                    Identifier($"GetOutputs"))
+                .AddModifiers(Token(SyntaxKind.PublicKeyword))
+
+                // Parameter is the SqlCommand
+                .AddParameterListParameters(Parameter(Identifier(CommandParameterName)).WithType(ParseTypeName("SqlCommandWrapper")))
+
+                .AddBodyStatements(ReturnStatement(outputExpressions.First()))
+            };
+        }
+        // For multi outputs, (T1, T2, ..) GetOutputs(SqlCommandWrapper)
+        else
+        {
+            return new MethodDeclarationSyntax[] {
+                MethodDeclaration(
+                    TypeExtensions.CreateGenericTypeFromGenericTypeDefinition(typeof(ValueTuple<>).ToTypeSyntax(), outputTypes.ToArray()),
+                    Identifier($"GetOutputs"))
+                .AddModifiers(Token(SyntaxKind.PublicKeyword))
+
+                // Parameter is the SqlCommand
+                .AddParameterListParameters(Parameter(Identifier(CommandParameterName)).WithType(ParseTypeName("SqlCommandWrapper")))
+
+                .AddBodyStatements(
+                    ReturnStatement(
+                        InvocationExpression(
+                            MemberAccessExpression(
+                                SyntaxKind.SimpleMemberAccessExpression,
+                                IdentifierName("global::System.ValueTuple"),
+                                IdentifierName("Create")))
+                            .AddArgumentListArguments(
+                                outputExpressions.Select(o => Argument(o)).ToArray())))
+            };
+        }
     }
 
     private (MemberDeclarationSyntax tvpGeneratorClass, MemberDeclarationSyntax tvpHolderStruct) CreateTvpGeneratorTypes(CreateOrAlterProcedureStatement node, string procedureName)

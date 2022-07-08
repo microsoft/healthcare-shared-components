@@ -47,6 +47,8 @@ public class ParameterDefinition<T>
     /// </summary>
     public string Name { get; }
 
+    public virtual ParameterDirection Direction => ParameterDirection.Input;
+
     /// <summary>
     /// Adds a parameter to a <see cref="SqlCommand"/>'s parameter collection with a given value.
     /// </summary>
@@ -62,7 +64,7 @@ public class ParameterDefinition<T>
                 parameterName: Name,
                 dbType: _type,
                 size: (int)_length,
-                direction: ParameterDirection.Input,
+                direction: Direction,
                 isNullable: _nullable,
                 precision: _precision,
                 scale: _scale,
