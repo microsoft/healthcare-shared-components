@@ -36,6 +36,12 @@ public class ManagedIdentityCredentialProvider : CredentialProvider
         ManagedIdentityCredentialOptions managedIdentityCredentialOptions = _managedIdentityCredentialOptionsMonitor.Get(_optionsName);
 
         var defaultAzureCredential = new DefaultAzureCredential();
+
+        if (!string.IsNullOrEmpty(managedIdentityCredentialOptions.ClientId))
+        {
+            defaultAzureCredential = new DefaultAzureCredential(new DefaultAzureCredentialOptions { ManagedIdentityClientId = managedIdentityCredentialOptions.ClientId });
+        }
+
         var tokenRequestContext = new TokenRequestContext(
             scopes: new[] { managedIdentityCredentialOptions.Resource },
             tenantId: managedIdentityCredentialOptions.TenantId);

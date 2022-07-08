@@ -22,7 +22,20 @@ public class ManagedIdentityCredentialOptions
         TenantId = tenantId;
     }
 
+    public ManagedIdentityCredentialOptions(string resource, string tenantId, string clientId)
+    {
+        EnsureArg.IsNotNullOrWhiteSpace(resource, nameof(resource));
+        EnsureArg.IsNotNullOrWhiteSpace(tenantId, nameof(tenantId));
+        EnsureArg.IsNotNullOrWhiteSpace(clientId, nameof(clientId));
+
+        Resource = resource;
+        TenantId = tenantId;
+        ClientId = clientId;
+    }
+
     public string Resource { get; set; }
 
     public string TenantId { get; set; }
+
+    public string ClientId { get; set; }
 }
