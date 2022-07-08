@@ -35,7 +35,6 @@ public class ManagedIdentityCredentialProvider : CredentialProvider
     {
         ManagedIdentityCredentialOptions managedIdentityCredentialOptions = _managedIdentityCredentialOptionsMonitor.Get(_optionsName);
 
-
         var defaultAzureCredentialOptions = new DefaultAzureCredentialOptions();        
 
         if (!string.IsNullOrEmpty(managedIdentityCredentialOptions.ClientId))
