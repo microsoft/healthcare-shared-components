@@ -3,16 +3,6 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.1.32228.430
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{8AD2A324-DAB5-4380-94A5-31F7D817C384}"
-EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Health.Extensions.DependencyInjection", "src\Microsoft.Health.Extensions.DependencyInjection\Microsoft.Health.Extensions.DependencyInjection.csproj", "{E2C2B117-32CD-449F-A4A8-4C8BA874D693}"
-EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Health.Extensions.DependencyInjection.UnitTests", "src\Microsoft.Health.Extensions.DependencyInjection.UnitTests\Microsoft.Health.Extensions.DependencyInjection.UnitTests.csproj", "{614DE061-52A0-4471-A3F1-50C9C907FFDB}"
-EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tools", "tools", "{B70945F4-01A6-4351-955B-C4A2943B5E3B}"
-EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Health.Extensions.BuildTimeCodeGenerator", "tools\Microsoft.Health.Extensions.BuildTimeCodeGenerator\Microsoft.Health.Extensions.BuildTimeCodeGenerator.csproj", "{CA276939-8071-4734-9FE4-ADC825B72116}"
-EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{404C6C33-DB00-4182-BD90-F10A8B17C321}"
 	ProjectSection(SolutionItems) = preProject
 		.editorconfig = .editorconfig
@@ -21,6 +11,16 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		global.json = global.json
 		GlobalSuppressions.Test.cs = GlobalSuppressions.Test.cs
 	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{8AD2A324-DAB5-4380-94A5-31F7D817C384}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tools", "tools", "{B70945F4-01A6-4351-955B-C4A2943B5E3B}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Health.Extensions.DependencyInjection", "src\Microsoft.Health.Extensions.DependencyInjection\Microsoft.Health.Extensions.DependencyInjection.csproj", "{E2C2B117-32CD-449F-A4A8-4C8BA874D693}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Health.Extensions.DependencyInjection.UnitTests", "src\Microsoft.Health.Extensions.DependencyInjection.UnitTests\Microsoft.Health.Extensions.DependencyInjection.UnitTests.csproj", "{614DE061-52A0-4471-A3F1-50C9C907FFDB}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Health.Extensions.BuildTimeCodeGenerator", "tools\Microsoft.Health.Extensions.BuildTimeCodeGenerator\Microsoft.Health.Extensions.BuildTimeCodeGenerator.csproj", "{CA276939-8071-4734-9FE4-ADC825B72116}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Health.Abstractions", "src\Microsoft.Health.Abstractions\Microsoft.Health.Abstractions.csproj", "{E0CD7A0A-116D-4612-83BE-0DE036DADDF1}"
 EndProject
@@ -89,6 +89,8 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Health.Operations.UnitTests", "src\Microsoft.Health.Operations.UnitTests\Microsoft.Health.Operations.UnitTests.csproj", "{AE4F71D4-12D4-4A20-9520-FB75ADFD1C1A}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Health.Operations.Functions.UnitTests", "src\Microsoft.Health.Operations.Functions.UnitTests\Microsoft.Health.Operations.Functions.UnitTests.csproj", "{9163ACB0-DF25-4924-A721-72BFAD9C430E}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.Health.Functions.Extensions.UnitTests", "src\Microsoft.Health.Functions.Extensions.UnitTests\Microsoft.Health.Functions.Extensions.UnitTests.csproj", "{85EE87C1-D278-47FC-A296-633D1DBF0E87}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -240,6 +242,10 @@ Global
 		{9163ACB0-DF25-4924-A721-72BFAD9C430E}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{9163ACB0-DF25-4924-A721-72BFAD9C430E}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{9163ACB0-DF25-4924-A721-72BFAD9C430E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{85EE87C1-D278-47FC-A296-633D1DBF0E87}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{85EE87C1-D278-47FC-A296-633D1DBF0E87}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{85EE87C1-D278-47FC-A296-633D1DBF0E87}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{85EE87C1-D278-47FC-A296-633D1DBF0E87}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -281,9 +287,10 @@ Global
 		{100FA4FC-C429-46EC-9B43-4D3644011D80} = {CCD9FF99-E177-446E-B9E5-9F570FD96A34}
 		{AE4F71D4-12D4-4A20-9520-FB75ADFD1C1A} = {8AD2A324-DAB5-4380-94A5-31F7D817C384}
 		{9163ACB0-DF25-4924-A721-72BFAD9C430E} = {8AD2A324-DAB5-4380-94A5-31F7D817C384}
+		{85EE87C1-D278-47FC-A296-633D1DBF0E87} = {8AD2A324-DAB5-4380-94A5-31F7D817C384}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
-		SolutionGuid = {562bbd07-1817-4af5-ab66-8837cf849248}
 		RESX_SortFileContentOnSave = True
+		SolutionGuid = {562bbd07-1817-4af5-ab66-8837cf849248}
 	EndGlobalSection
 EndGlobal

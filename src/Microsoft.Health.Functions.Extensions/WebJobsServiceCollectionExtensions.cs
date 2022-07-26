@@ -11,6 +11,7 @@ using System.Threading.Tasks;
 using EnsureThat;
 using Microsoft.ApplicationInsights.Extensibility;
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using Microsoft.Extensions.Diagnostics.HealthChecks;
 
 namespace Microsoft.Extensions.DependencyInjection;
 
@@ -19,6 +20,19 @@ namespace Microsoft.Extensions.DependencyInjection;
 /// </summary>
 public static class WebJobsServiceCollectionExtensions
 {
+    /// <inheritdoc cref="HealthCheckServiceCollectionExtensions.AddHealthChecks(IServiceCollection)"/>
+    public static IHealthChecksBuilder AddWebJobsHealthChecks(this IServiceCollection services)
+    {
+        EnsureArg.IsNotNull(services, nameof(services));
+
+        // We cannot run any hosted services in Azure Functions, so the newly added one must be removed
+        IHealthChecksBuilder builder = services.AddHealthChecks();
+        ServiceDescriptor hostedService = services.Single(x => x.ServiceType.Name == "IHostedService" && x.ImplementationType?.Name == "HealthCheckPublisherHostedService");
+        services.Remove(hostedService);
+
+        return builder;
+    }
+
     /// <summary>
     /// Configures the application insights telemetry for Azure Functions applications.
     /// </summary>
