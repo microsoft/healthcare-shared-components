@@ -5,7 +5,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 using MediatR;
@@ -118,8 +117,7 @@ public class SqlSchemaManagerTests
     public async Task ApplySchema_OnDependencyThrowSchemaManagerException_ThrowsSchemaManagerException()
     {
         // Set a zero retry sleep duration to expedite fail-case unit test.
-        FieldInfo retrySleepDurationField = typeof(SqlSchemaManager).GetField("_retrySleepDuration", BindingFlags.NonPublic | BindingFlags.Instance);
-        retrySleepDurationField.SetValue(_sqlSchemaManager, TimeSpan.FromSeconds(0));
+        _sqlSchemaManager.RetrySleepDuration = TimeSpan.Zero;
 
         _schemaManagerDataStore.GetCurrentSchemaVersionAsync(default).ReturnsForAnyArgs(Task.FromResult(1));
         _client.GetCurrentVersionInformationAsync(Arg.Any<CancellationToken>()).ReturnsForAnyArgs(Task.FromException<List<CurrentVersion>>(new SchemaManagerException("anymessage")));

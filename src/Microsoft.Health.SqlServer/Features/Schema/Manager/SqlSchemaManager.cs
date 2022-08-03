@@ -30,7 +30,6 @@ public class SqlSchemaManager : ISchemaManager
     private readonly ILogger<SqlSchemaManager> _logger;
     private readonly IMediator _mediator;
 
-    private static readonly TimeSpan RetrySleepDuration = TimeSpan.FromSeconds(20);
     private const int RetryAttempts = 3;
 
     public SqlSchemaManager(
@@ -46,6 +45,8 @@ public class SqlSchemaManager : ISchemaManager
         _mediator = EnsureArg.IsNotNull(mediator, nameof(mediator));
         _logger = EnsureArg.IsNotNull(logger, nameof(logger));
     }
+
+    internal TimeSpan RetrySleepDuration { get; set; } = TimeSpan.FromSeconds(20);
 
     /// <inheritdoc />
     public virtual async Task ApplySchema(MutuallyExclusiveType type, CancellationToken token = default)
