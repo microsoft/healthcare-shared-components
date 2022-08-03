@@ -10,8 +10,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using MediatR;
 using Microsoft.Extensions.Logging.Abstractions;
-using Microsoft.Extensions.Options;
-using Microsoft.Health.SqlServer.Configs;
 using Microsoft.Health.SqlServer.Features.Schema.Manager;
 using Microsoft.Health.SqlServer.Features.Schema.Manager.Exceptions;
 using Microsoft.Health.SqlServer.Features.Schema.Manager.Model;
@@ -40,13 +38,13 @@ public class SqlSchemaManagerTests
     {
         _client.GetCurrentVersionInformationAsync(Arg.Any<CancellationToken>()).ReturnsForAnyArgs(new List<CurrentVersion> { new CurrentVersion(1, "Complete", new List<string> { "server1" }) });
 
-        IList<CurrentVersion> current = await _sqlSchemaManager.GetCurrentSchema();
+        IList<CurrentVersion> current = await _sqlSchemaManager.GetCurrentSchema().ConfigureAwait(false);
 
         Assert.NotNull(current);
         Assert.Single(current);
         Assert.Equal(1, current[0].Id);
-        await _baseSchemaRunner.ReceivedWithAnyArgs().EnsureBaseSchemaExistsAsync(default);
-        await _baseSchemaRunner.ReceivedWithAnyArgs().EnsureInstanceSchemaRecordExistsAsync(default);
+        await _baseSchemaRunner.ReceivedWithAnyArgs().EnsureBaseSchemaExistsAsync(default).ConfigureAwait(false);
+        await _baseSchemaRunner.ReceivedWithAnyArgs().EnsureInstanceSchemaRecordExistsAsync(default).ConfigureAwait(false);
     }
 
     [Fact]
@@ -54,19 +52,19 @@ public class SqlSchemaManagerTests
     {
         _client.GetCurrentVersionInformationAsync(Arg.Any<CancellationToken>()).ReturnsForAnyArgs(new List<CurrentVersion> { });
 
-        IList<CurrentVersion> current = await _sqlSchemaManager.GetCurrentSchema();
+        IList<CurrentVersion> current = await _sqlSchemaManager.GetCurrentSchema().ConfigureAwait(false);
 
         Assert.NotNull(current);
         Assert.Empty(current);
-        await _baseSchemaRunner.ReceivedWithAnyArgs().EnsureBaseSchemaExistsAsync(default);
-        await _baseSchemaRunner.ReceivedWithAnyArgs().EnsureInstanceSchemaRecordExistsAsync(default);
+        await _baseSchemaRunner.ReceivedWithAnyArgs().EnsureBaseSchemaExistsAsync(default).ConfigureAwait(false);
+        await _baseSchemaRunner.ReceivedWithAnyArgs().EnsureInstanceSchemaRecordExistsAsync(default).ConfigureAwait(false);
     }
 
     [Fact]
     public async Task GetAvailableSchema_SingleList_Succeeds()
     {
         _client.GetAvailabilityAsync(Arg.Any<CancellationToken>()).ReturnsForAnyArgs(new List<AvailableVersion> { new AvailableVersion(1, "_script/1.sql", "_script/1.diff.sql") });
-        IList<AvailableVersion> available = await _sqlSchemaManager.GetAvailableSchema();
+        IList<AvailableVersion> available = await _sqlSchemaManager.GetAvailableSchema().ConfigureAwait(false);
 
         Assert.NotNull(available);
         Assert.Single(available);
@@ -79,7 +77,7 @@ public class SqlSchemaManagerTests
     public async Task GetAvailableSchema_ContainsVersionZero_RemovesZero()
     {
         _client.GetAvailabilityAsync(Arg.Any<CancellationToken>()).ReturnsForAnyArgs(new List<AvailableVersion> { new AvailableVersion(0, "_script/0.sql", "_script/0.diff.sql"), new AvailableVersion(1, "_script/1.sql", "_script/1.diff.sql") });
-        IList<AvailableVersion> available = await _sqlSchemaManager.GetAvailableSchema();
+        IList<AvailableVersion> available = await _sqlSchemaManager.GetAvailableSchema().ConfigureAwait(false);
 
         Assert.NotNull(available);
         Assert.Single(available);
@@ -96,8 +94,8 @@ public class SqlSchemaManagerTests
         _client.GetAvailabilityAsync(Arg.Any<CancellationToken>()).ReturnsForAnyArgs(new List<AvailableVersion> { new AvailableVersion(1, "_script/1.sql", "_script/1.diff.sql"), new AvailableVersion(2, "_script/2.sql", "_script/2.diff.sql") });
         _client.GetCompatibilityAsync(Arg.Any<CancellationToken>()).ReturnsForAnyArgs(new CompatibleVersion(1, 2));
         _client.GetDiffScriptAsync(2, Arg.Any<CancellationToken>()).Returns("script");
-        await _sqlSchemaManager.ApplySchema(new MutuallyExclusiveType { Latest = false, Version = 2, Next = false });
-        await _schemaManagerDataStore.Received(1).ExecuteScriptAndCompleteSchemaVersionAsync(Arg.Is("script"), Arg.Is(2), Arg.Is(false), Arg.Any<CancellationToken>());
+        await _sqlSchemaManager.ApplySchema(new MutuallyExclusiveType { Latest = false, Version = 2, Next = false }).ConfigureAwait(false);
+        await _schemaManagerDataStore.Received(1).ExecuteScriptAndCompleteSchemaVersionAsync(Arg.Is("script"), Arg.Is(2), Arg.Is(false), Arg.Any<CancellationToken>()).ConfigureAwait(false);
     }
 
     [Fact]
@@ -111,9 +109,9 @@ public class SqlSchemaManagerTests
         _client.GetScriptAsync(2, Arg.Any<CancellationToken>()).Returns("script");
         _client.GetCompatibilityAsync(Arg.Any<CancellationToken>()).ReturnsForAnyArgs(new CompatibleVersion(1, 2));
 
-        await _sqlSchemaManager.ApplySchema(new MutuallyExclusiveType { Version = 2 });
+        await _sqlSchemaManager.ApplySchema(new MutuallyExclusiveType { Version = 2 }).ConfigureAwait(false);
 
-        await _schemaManagerDataStore.Received(1).ExecuteScriptAndCompleteSchemaVersionAsync(Arg.Is("script"), Arg.Is(2), Arg.Is(true), Arg.Any<CancellationToken>());
+        await _schemaManagerDataStore.Received(1).ExecuteScriptAndCompleteSchemaVersionAsync(Arg.Is("script"), Arg.Is(2), Arg.Is(true), Arg.Any<CancellationToken>()).ConfigureAwait(false);
     }
 
     [Fact]
@@ -128,7 +126,7 @@ public class SqlSchemaManagerTests
         _client.GetAvailabilityAsync(Arg.Any<CancellationToken>()).ReturnsForAnyArgs(new List<AvailableVersion> { new AvailableVersion(1, "_script/1.sql", "_script/1.diff.sql"), new AvailableVersion(2, "_script/2.sql", "_script/2.diff.sql") });
         _client.GetCompatibilityAsync(Arg.Any<CancellationToken>()).ReturnsForAnyArgs(new CompatibleVersion(1, 2));
         _client.GetDiffScriptAsync(2, Arg.Any<CancellationToken>()).Returns("script");
-        await Assert.ThrowsAsync<SchemaManagerException>(async () => await _sqlSchemaManager.ApplySchema(new MutuallyExclusiveType { Latest = false, Version = 2, Next = false }));
+        await Assert.ThrowsAsync<SchemaManagerException>(() => _sqlSchemaManager.ApplySchema(new MutuallyExclusiveType { Latest = false, Version = 2, Next = false })).ConfigureAwait(false);
     }
 
     [Fact]
@@ -139,7 +137,7 @@ public class SqlSchemaManagerTests
         _client.GetAvailabilityAsync(Arg.Any<CancellationToken>()).ReturnsForAnyArgs(new List<AvailableVersion> { new AvailableVersion(1, "_script/1.sql", "_script/1.diff.sql"), new AvailableVersion(2, "_script/2.sql", "_script/2.diff.sql") });
         _client.GetCompatibilityAsync(Arg.Any<CancellationToken>()).ReturnsForAnyArgs(new CompatibleVersion(1, 2));
         _client.GetDiffScriptAsync(2, Arg.Any<CancellationToken>()).Returns("script");
-        await Assert.ThrowsAsync<InvalidOperationException>(() => _sqlSchemaManager.ApplySchema(new MutuallyExclusiveType { Latest = false, Version = 2, Next = false }));
+        await Assert.ThrowsAsync<InvalidOperationException>(() => _sqlSchemaManager.ApplySchema(new MutuallyExclusiveType { Latest = false, Version = 2, Next = false })).ConfigureAwait(false);
     }
 
     [Fact]
@@ -151,8 +149,8 @@ public class SqlSchemaManagerTests
         _client.GetCompatibilityAsync(Arg.Any<CancellationToken>()).ReturnsForAnyArgs(new CompatibleVersion(1, 3));
         _client.GetDiffScriptAsync(2, Arg.Any<CancellationToken>()).Returns("script");
 
-        await _sqlSchemaManager.ApplySchema(new MutuallyExclusiveType { Latest = false, Version = 2, Next = false });
+        await _sqlSchemaManager.ApplySchema(new MutuallyExclusiveType { Latest = false, Version = 2, Next = false }).ConfigureAwait(false);
 
-        await _schemaManagerDataStore.DidNotReceive().ExecuteScriptAndCompleteSchemaVersionAsync(Arg.Is("script"), Arg.Is(2), Arg.Is(false), Arg.Any<CancellationToken>());
+        await _schemaManagerDataStore.DidNotReceive().ExecuteScriptAndCompleteSchemaVersionAsync(Arg.Is("script"), Arg.Is(2), Arg.Is(false), Arg.Any<CancellationToken>()).ConfigureAwait(false);
     }
 }

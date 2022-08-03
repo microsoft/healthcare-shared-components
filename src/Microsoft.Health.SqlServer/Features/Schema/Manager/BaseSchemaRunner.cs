@@ -1,4 +1,4 @@
-﻿// -------------------------------------------------------------------------------------------------
+// -------------------------------------------------------------------------------------------------
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License (MIT). See LICENSE in the repo root for license information.
 // -------------------------------------------------------------------------------------------------
@@ -45,15 +45,15 @@ public class BaseSchemaRunner : IBaseSchemaRunner
     {
         IBaseScriptProvider baseScriptProvider = new BaseScriptProvider();
 
-        await InitializeAsync(cancellationToken);
+        await InitializeAsync(cancellationToken).ConfigureAwait(false);
 
-        if (!await _schemaManagerDataStore.BaseSchemaExistsAsync(cancellationToken))
+        if (!await _schemaManagerDataStore.BaseSchemaExistsAsync(cancellationToken).ConfigureAwait(false))
         {
             var script = baseScriptProvider.GetScript();
 
             _logger.LogInformation("The base schema execution is started.");
 
-            await _schemaManagerDataStore.ExecuteScriptAsync(script, cancellationToken);
+            await _schemaManagerDataStore.ExecuteScriptAsync(script, cancellationToken).ConfigureAwait(false);
 
             _logger.LogInformation("The base schema execution is completed.");
         }
@@ -80,14 +80,14 @@ public class BaseSchemaRunner : IBaseSchemaRunner
                     attempts++,
                     RetryAttempts);
             })
-        .ExecuteAsync(token => InstanceSchemaRecordCreatedAsync(token), cancellationToken);
+        .ExecuteAsync(token => InstanceSchemaRecordCreatedAsync(token), cancellationToken).ConfigureAwait(false);
     }
 
     private async Task InstanceSchemaRecordCreatedAsync(CancellationToken cancellationToken)
     {
         try
         {
-            if (!await _schemaManagerDataStore.InstanceSchemaRecordExistsAsync(cancellationToken))
+            if (!await _schemaManagerDataStore.InstanceSchemaRecordExistsAsync(cancellationToken).ConfigureAwait(false))
             {
                 throw new InstanceSchemaNotFoundException(Resources.InstanceSchemaRecordErrorMessage);
             }
@@ -101,20 +101,20 @@ public class BaseSchemaRunner : IBaseSchemaRunner
 
     private async Task InitializeAsync(CancellationToken cancellationToken)
     {
-        string sqlConnectionString = await _sqlConnectionStringProvider.GetSqlConnectionString(cancellationToken);
+        string sqlConnectionString = await _sqlConnectionStringProvider.GetSqlConnectionString(cancellationToken).ConfigureAwait(false);
         var configuredConnectionBuilder = new SqlConnectionStringBuilder(sqlConnectionString);
         string databaseName = configuredConnectionBuilder.InitialCatalog;
 
         SchemaInitializer.ValidateDatabaseName(databaseName);
 
-        await CreateDatabaseIfNotExists(databaseName, cancellationToken);
+        await CreateDatabaseIfNotExists(databaseName, cancellationToken).ConfigureAwait(false);
 
         bool canInitialize = false;
 
         // now switch to the target database
-        using (SqlConnectionWrapper connection = await _sqlConnectionFactory.ObtainSqlConnectionWrapperAsync(cancellationToken: cancellationToken))
+        using (SqlConnectionWrapper connection = await _sqlConnectionFactory.ObtainSqlConnectionWrapperAsync(cancellationToken: cancellationToken).ConfigureAwait(false))
         {
-            canInitialize = await SchemaInitializer.CheckDatabasePermissionsAsync(connection, cancellationToken);
+            canInitialize = await SchemaInitializer.CheckDatabasePermissionsAsync(connection, cancellationToken).ConfigureAwait(false);
         }
 
         if (!canInitialize)
@@ -125,14 +125,14 @@ public class BaseSchemaRunner : IBaseSchemaRunner
 
     private async Task CreateDatabaseIfNotExists(string databaseName, CancellationToken cancellationToken)
     {
-        using SqlConnectionWrapper connection = await _sqlConnectionFactory.ObtainSqlConnectionWrapperAsync(cancellationToken: cancellationToken);
+        using SqlConnectionWrapper connection = await _sqlConnectionFactory.ObtainSqlConnectionWrapperAsync(cancellationToken: cancellationToken).ConfigureAwait(false);
 
-        bool doesDatabaseExist = await SchemaInitializer.DoesDatabaseExistAsync(connection, databaseName, cancellationToken);
+        bool doesDatabaseExist = await SchemaInitializer.DoesDatabaseExistAsync(connection, databaseName, cancellationToken).ConfigureAwait(false);
         if (!doesDatabaseExist)
         {
             _logger.LogInformation("The database does not exists.");
 
-            bool created = await SchemaInitializer.CreateDatabaseAsync(connection, databaseName, cancellationToken);
+            bool created = await SchemaInitializer.CreateDatabaseAsync(connection, databaseName, cancellationToken).ConfigureAwait(false);
 
             if (created)
             {

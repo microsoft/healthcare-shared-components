@@ -1,4 +1,4 @@
-﻿// -------------------------------------------------------------------------------------------------
+// -------------------------------------------------------------------------------------------------
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License (MIT). See LICENSE in the repo root for license information.
 // -------------------------------------------------------------------------------------------------
@@ -95,7 +95,7 @@ public class IDurableContextExtensionsTests
             .Returns(new DurableOrchestrationStatus { CreatedTime = expected });
 
         // Invoke
-        DateTime actual = await context.GetCreatedTimeAsync();
+        DateTime actual = await context.GetCreatedTimeAsync().ConfigureAwait(false);
 
         // Assert behavior
         Assert.Equal(expected, actual);
@@ -104,7 +104,8 @@ public class IDurableContextExtensionsTests
             .Received(1)
             .CallActivityAsync<DurableOrchestrationStatus>(
                 nameof(DurableOrchestrationClientActivity.GetInstanceStatusAsync),
-                Arg.Any<GetInstanceStatusOptions>());
+                Arg.Any<GetInstanceStatusOptions>())
+            .ConfigureAwait(false);
     }
 
     [Fact]
@@ -128,7 +129,7 @@ public class IDurableContextExtensionsTests
             .Returns(new DurableOrchestrationStatus { CreatedTime = expected });
 
         // Invoke
-        DateTime actual = await context.GetCreatedTimeAsync(options);
+        DateTime actual = await context.GetCreatedTimeAsync(options).ConfigureAwait(false);
 
         // Assert behavior
         Assert.Equal(expected, actual);
@@ -138,6 +139,7 @@ public class IDurableContextExtensionsTests
             .CallActivityWithRetryAsync<DurableOrchestrationStatus>(
                 nameof(DurableOrchestrationClientActivity.GetInstanceStatusAsync),
                 options,
-                Arg.Any<GetInstanceStatusOptions>());
+                Arg.Any<GetInstanceStatusOptions>())
+            .ConfigureAwait(false);
     }
 }

@@ -1,4 +1,4 @@
-﻿// -------------------------------------------------------------------------------------------------
+// -------------------------------------------------------------------------------------------------
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License (MIT). See LICENSE in the repo root for license information.
 // -------------------------------------------------------------------------------------------------
@@ -8,7 +8,6 @@ using System.Buffers;
 using System.Data;
 using System.Data.SqlTypes;
 using System.Diagnostics.CodeAnalysis;
-using System.Globalization;
 using System.IO;
 using EnsureThat;
 using Microsoft.Data.SqlClient;
@@ -553,7 +552,6 @@ public class NullableFloatColumn : Column<double?>
         : base(name, SqlDbType.Float, true)
     {
     }
-    
     public NullableFloatColumn(string name, byte precision)
         : base(name, SqlDbType.Float, true, ColumnUtilities.GetLengthForFloatColumn(precision), precision, 0, 0, SqlCompareOptions.None, null)
     {

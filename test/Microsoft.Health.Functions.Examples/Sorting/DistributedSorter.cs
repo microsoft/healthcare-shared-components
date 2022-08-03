@@ -1,4 +1,4 @@
-﻿// -------------------------------------------------------------------------------------------------
+// -------------------------------------------------------------------------------------------------
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License (MIT). See LICENSE in the repo root for license information.
 // -------------------------------------------------------------------------------------------------
@@ -45,7 +45,7 @@ public class DistributedSorter
             int[] sorted = await context.CallActivityWithRetryAsync<int[]>(
                 nameof(SortRange),
                 _options.Retry,
-                checkpoint.Values[0..sortedLength]);
+                checkpoint.Values[0..sortedLength]).ConfigureAwait(false);
 
             logger.LogInformation(
                 "Sorted {SortedLength}/{TotalLength} numbers: [{Values}]",
@@ -57,7 +57,7 @@ public class DistributedSorter
                 new SortingCheckpoint(
                     Concat(sorted, checkpoint.Values[sortedLength..]),
                     sortedLength,
-                    checkpoint.CreatedTime ?? await context.GetCreatedTimeAsync(_options.Retry)));
+                    checkpoint.CreatedTime ?? await context.GetCreatedTimeAsync(_options.Retry).ConfigureAwait(false)));
         }
         else
         {

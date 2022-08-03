@@ -1,4 +1,4 @@
-﻿// -------------------------------------------------------------------------------------------------
+// -------------------------------------------------------------------------------------------------
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License (MIT). See LICENSE in the repo root for license information.
 // -------------------------------------------------------------------------------------------------
@@ -69,8 +69,8 @@ public static class IDurableContextExtensions
 
         var input = new GetInstanceStatusOptions { ShowHistory = false, ShowHistoryOutput = false, ShowInput = false };
         DurableOrchestrationStatus status = retryOptions is not null
-            ? await context.CallActivityWithRetryAsync<DurableOrchestrationStatus>(nameof(DurableOrchestrationClientActivity.GetInstanceStatusAsync), retryOptions, input)
-            : await context.CallActivityAsync<DurableOrchestrationStatus>(nameof(DurableOrchestrationClientActivity.GetInstanceStatusAsync), input);
+            ? await context.CallActivityWithRetryAsync<DurableOrchestrationStatus>(nameof(DurableOrchestrationClientActivity.GetInstanceStatusAsync), retryOptions, input).ConfigureAwait(false)
+            : await context.CallActivityAsync<DurableOrchestrationStatus>(nameof(DurableOrchestrationClientActivity.GetInstanceStatusAsync), input).ConfigureAwait(false);
 
         return status.CreatedTime;
     }

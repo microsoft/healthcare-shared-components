@@ -1,4 +1,4 @@
-﻿// -------------------------------------------------------------------------------------------------
+// -------------------------------------------------------------------------------------------------
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License (MIT). See LICENSE in the repo root for license information.
 // -------------------------------------------------------------------------------------------------
@@ -20,10 +20,10 @@ namespace Microsoft.Health.Checkpoints.Storage;
 
 public class StorageCheckpointClient : ICheckpointClient
 {
-    private BlobContainerClient _storageClient;
-    private ILogger<StorageCheckpointClient> _logger;
-    private const string _lastProcessedDateTime = "LastProcessedDateTime";
-    private const string _lastProcessedIdentifier = "LastProcessedIdentifier";
+    private readonly BlobContainerClient _storageClient;
+    private readonly ILogger<StorageCheckpointClient> _logger;
+    private const string LastProcessedDateTime = "LastProcessedDateTime";
+    private const string LastProcessedIdentifier = "LastProcessedIdentifier";
 
     public StorageCheckpointClient(BlobContainerClient containerClient, ILogger<StorageCheckpointClient> logger)
     {
@@ -65,13 +65,13 @@ public class StorageCheckpointClient : ICheckpointClient
             {
                 string lastProcessedDateTime;
                 string lastProcessedIdentifier;
-                if (blobItem.Metadata.TryGetValue(_lastProcessedDateTime, out lastProcessedDateTime))
+                if (blobItem.Metadata.TryGetValue(LastProcessedDateTime, out lastProcessedDateTime))
                 {
                     DateTimeOffset.TryParse(lastProcessedDateTime, null, DateTimeStyles.RoundtripKind, out DateTimeOffset lastEventTimestamp);
                     checkpoint.LastProcessedDateTime = lastEventTimestamp;
                 }
 
-                if (blobItem.Metadata.TryGetValue(_lastProcessedIdentifier, out lastProcessedIdentifier))
+                if (blobItem.Metadata.TryGetValue(LastProcessedIdentifier, out lastProcessedIdentifier))
                 {
                     checkpoint.LastProcessedIdentifier = lastProcessedIdentifier;
                 }
@@ -105,14 +105,14 @@ public class StorageCheckpointClient : ICheckpointClient
 
         var metadata = new Dictionary<string, string>()
         {
-            { _lastProcessedDateTime,  lastProcessedDateTime },
-            { _lastProcessedIdentifier,  lastProcessedIdentifier },
+            { LastProcessedDateTime,  lastProcessedDateTime },
+            { LastProcessedIdentifier,  lastProcessedIdentifier },
         };
 
         try
         {
             var blobRequestOptions = new BlobRequestConditions() { IfMatch = new ETag(checkpoint.ETag) };
-            BlobInfo result = await blobClient.SetMetadataAsync(metadata, blobRequestOptions, token);
+            BlobInfo result = await blobClient.SetMetadataAsync(metadata, blobRequestOptions, token).ConfigureAwait(false);
             checkpoint.ETag = result.ETag.ToString();
         }
         catch (RequestFailedException ex) when (ex.Status == (int)HttpStatusCode.PreconditionFailed)

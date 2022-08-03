@@ -1,4 +1,4 @@
-﻿// -------------------------------------------------------------------------------------------------
+// -------------------------------------------------------------------------------------------------
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License (MIT). See LICENSE in the repo root for license information.
 // -------------------------------------------------------------------------------------------------
@@ -174,7 +174,7 @@ public class RoleLoaderTests
             },
         };
 
-        AuthorizationConfiguration<DataActions> authConfig = await LoadAsync(roles);
+        AuthorizationConfiguration<DataActions> authConfig = await LoadAsync(roles).ConfigureAwait(false);
 
         Role<DataActions> actualRole = Assert.Single(authConfig.Roles);
         Assert.Equal(roles.roles.First().name, actualRole.Name);
@@ -200,7 +200,7 @@ public class RoleLoaderTests
                 }).ToArray(),
         };
 
-        AuthorizationConfiguration<DataActions> authConfig = await LoadAsync(roles);
+        AuthorizationConfiguration<DataActions> authConfig = await LoadAsync(roles).ConfigureAwait(false);
 
         Assert.All(
             actionNames.Zip(authConfig.Roles.Select(r => r.AllowedDataActions)),
@@ -212,7 +212,7 @@ public class RoleLoaderTests
     public async Task GivenInvalidRoles_WhenLoaded_RaiseValidationErrors(string description, object roles)
     {
         Assert.NotEmpty(description);
-        await Assert.ThrowsAsync<InvalidDefinitionException>(() => LoadAsync(roles));
+        await Assert.ThrowsAsync<InvalidDefinitionException>(() => LoadAsync(roles)).ConfigureAwait(false);
     }
 
     private static async Task<AuthorizationConfiguration<DataActions>> LoadAsync(object roles)
@@ -227,7 +227,7 @@ public class RoleLoaderTests
 
         var authConfig = new AuthorizationConfiguration<DataActions>();
         var roleLoader = new SamplesRoleLoader(authConfig, hostEnvironment);
-        await roleLoader.StartAsync(CancellationToken.None);
+        await roleLoader.StartAsync(CancellationToken.None).ConfigureAwait(false);
         return authConfig;
     }
 }

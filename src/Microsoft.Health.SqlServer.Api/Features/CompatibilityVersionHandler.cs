@@ -1,4 +1,4 @@
-﻿// -------------------------------------------------------------------------------------------------
+// -------------------------------------------------------------------------------------------------
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License (MIT). See LICENSE in the repo root for license information.
 // -------------------------------------------------------------------------------------------------
@@ -27,7 +27,7 @@ public class CompatibilityVersionHandler : IRequestHandler<GetCompatibilityVersi
     {
         EnsureArg.IsNotNull(request, nameof(request));
 
-        CompatibleVersions compatibleVersions = await _schemaDataStore.GetLatestCompatibleVersionsAsync(cancellationToken);
+        CompatibleVersions compatibleVersions = await _schemaDataStore.GetLatestCompatibleVersionsAsync(cancellationToken).ConfigureAwait(false);
 
         return new GetCompatibilityVersionResponse(compatibleVersions);
     }

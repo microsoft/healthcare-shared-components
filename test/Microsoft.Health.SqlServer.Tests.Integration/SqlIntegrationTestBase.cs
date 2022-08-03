@@ -1,9 +1,10 @@
-﻿// -------------------------------------------------------------------------------------------------
+// -------------------------------------------------------------------------------------------------
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License (MIT). See LICENSE in the repo root for license information.
 // -------------------------------------------------------------------------------------------------
 
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Data.SqlClient;
@@ -64,19 +65,19 @@ public abstract class SqlIntegrationTestBase : IAsyncLifetime
             SqlConfigurableRetryFactory.CreateFixedRetryProvider(new SqlClientRetryOptions().Settings),
             options);
 
-        ConnectionWrapper = await ConnectionFactory.ObtainSqlConnectionWrapperAsync("master", CancellationToken.None);
+        ConnectionWrapper = await ConnectionFactory.ObtainSqlConnectionWrapperAsync("master", CancellationToken.None).ConfigureAwait(false);
 
-        await SchemaInitializer.CreateDatabaseAsync(ConnectionWrapper, DatabaseName, CancellationToken.None);
-        await ConnectionWrapper.SqlConnection.ChangeDatabaseAsync(DatabaseName);
+        await SchemaInitializer.CreateDatabaseAsync(ConnectionWrapper, DatabaseName, CancellationToken.None).ConfigureAwait(false);
+        await ConnectionWrapper.SqlConnection.ChangeDatabaseAsync(DatabaseName).ConfigureAwait(false);
         Output.WriteLine($"Using database '{DatabaseName}'.");
     }
 
     public virtual async Task DisposeAsync()
     {
-        await ConnectionWrapper.SqlConnection.ChangeDatabaseAsync("master");
+        await ConnectionWrapper.SqlConnection.ChangeDatabaseAsync("master").ConfigureAwait(false);
         try
         {
-            await DeleteDatabaseAsync(DatabaseName);
+            await DeleteDatabaseAsync(DatabaseName).ConfigureAwait(false);
         }
         catch (Exception e)
         {
@@ -84,7 +85,7 @@ public abstract class SqlIntegrationTestBase : IAsyncLifetime
             throw;
         }
 
-        await ConnectionWrapper.SqlConnection.CloseAsync();
+        await ConnectionWrapper.SqlConnection.CloseAsync().ConfigureAwait(false);
         ConnectionWrapper.Dispose();
         TransactionHandler.Dispose();
     }
@@ -102,10 +103,10 @@ public abstract class SqlIntegrationTestBase : IAsyncLifetime
         if (ConnectionWrapper.SqlConnection.Database == dbName)
         {
             Output.WriteLine($"Switching from '{dbName}' to master prior to delete.");
-            await ConnectionWrapper.SqlConnection.ChangeDatabaseAsync("master", CancellationToken.None);
+            await ConnectionWrapper.SqlConnection.ChangeDatabaseAsync("master", CancellationToken.None).ConfigureAwait(false);
         }
 
-        int result = await deleteDatabaseCommand.ExecuteNonQueryAsync(CancellationToken.None);
+        int result = await deleteDatabaseCommand.ExecuteNonQueryAsync(CancellationToken.None).ConfigureAwait(false);
         if (result != -1)
         {
             Output.WriteLine($"Clean up of {dbName} failed with result code {result}.");
@@ -113,11 +114,12 @@ public abstract class SqlIntegrationTestBase : IAsyncLifetime
         }
     }
 
+    [SuppressMessage("Reliability", "CA2000:Dispose objects before losing scope", Justification = "Callers are responsible for disposal.")]
     protected async Task<SqlConnection> GetSqlConnection()
     {
         var connectionBuilder = new SqlConnectionStringBuilder(Config.ConnectionString);
         var result = new SqlConnection(connectionBuilder.ToString());
-        await result.OpenAsync();
+        await result.OpenAsync().ConfigureAwait(false);
         return result;
     }
 }

@@ -1,8 +1,9 @@
-﻿// -------------------------------------------------------------------------------------------------
+// -------------------------------------------------------------------------------------------------
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License (MIT). See LICENSE in the repo root for license information.
 // -------------------------------------------------------------------------------------------------
 
+using System.Diagnostics.CodeAnalysis;
 using System.Threading;
 using System.Threading.Tasks;
 using EnsureThat;
@@ -31,17 +32,19 @@ public class ManagedIdentitySqlConnectionBuilder : ISqlConnectionBuilder
         _sqlRetryLogicBaseProvider = sqlRetryLogicBaseProvider;
     }
 
+
     /// <inheritdoc />
+    [SuppressMessage("Reliability", "CA2000:Dispose objects before losing scope", Justification = "Callers are responsible for disposal.")]
     public async Task<SqlConnection> GetSqlConnectionAsync(string initialCatalog = null, CancellationToken cancellationToken = default)
     {
         SqlConnection sqlConnection = await SqlConnectionHelper.GetBaseSqlConnectionAsync(
             _sqlConnectionStringProvider,
             _sqlRetryLogicBaseProvider,
             initialCatalog,
-            cancellationToken);
+            cancellationToken).ConfigureAwait(false);
 
         // set managed identity access token
-        sqlConnection.AccessToken = await _accessTokenHandler.GetAccessTokenAsync(_azureResource, cancellationToken);
+        sqlConnection.AccessToken = await _accessTokenHandler.GetAccessTokenAsync(_azureResource, cancellationToken).ConfigureAwait(false);
         return sqlConnection;
     }
 }

@@ -1,4 +1,4 @@
-﻿// -------------------------------------------------------------------------------------------------
+// -------------------------------------------------------------------------------------------------
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License (MIT). See LICENSE in the repo root for license information.
 // -------------------------------------------------------------------------------------------------
@@ -57,19 +57,19 @@ public class MonitoredStreamTests
         byte[] bytes = Encoding.UTF8.GetBytes("This is a string");
         using (var monitoredStream = new MonitoredStream(new MemoryStream()))
         {
-            await monitoredStream.WriteAsync(bytes);
+            await monitoredStream.WriteAsync(bytes).ConfigureAwait(false);
             Assert.Equal(bytes.Length, monitoredStream.WriteCount);
         }
 
         using (var monitoredStream = new MonitoredStream(new MemoryStream()))
         {
-            await monitoredStream.WriteAsync(bytes, 0, bytes.Length);
+            await monitoredStream.WriteAsync(bytes, 0, bytes.Length).ConfigureAwait(false);
             Assert.Equal(bytes.Length, monitoredStream.WriteCount);
         }
 
         using (var monitoredStream = new MonitoredStream(new MemoryStream()))
         {
-            await monitoredStream.WriteAsync(bytes.AsMemory(0, bytes.Length), CancellationToken.None);
+            await monitoredStream.WriteAsync(bytes.AsMemory(0, bytes.Length), CancellationToken.None).ConfigureAwait(false);
             Assert.Equal(bytes.Length, monitoredStream.WriteCount);
         }
 
@@ -121,6 +121,7 @@ public class MonitoredStreamTests
     }
 
     [Fact]
+    [SuppressMessage("Reliability", "CA2000:Dispose objects before losing scope", Justification = "Testing Dispose")]
     public void BillingResponseLogMiddleware_MonitoredStream_IsDisposed()
     {
         var memoryStream = new MemoryStream();

@@ -1,4 +1,4 @@
-﻿// -------------------------------------------------------------------------------------------------
+// -------------------------------------------------------------------------------------------------
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License (MIT). See LICENSE in the repo root for license information.
 // -------------------------------------------------------------------------------------------------
@@ -29,8 +29,6 @@ public abstract class TableValuedParameterDefinition<TRow> : ParameterDefinition
         _tableTypeName = tableTypeName;
     }
 
-    private SqlMetaData[] ColumnMetadata => _columnMetadata ??= Columns.Select(c => c.Metadata).ToArray();
-
     /// <summary>
     /// Gets the columns that make up the table type. In order.
     /// </summary>
@@ -56,7 +54,12 @@ public abstract class TableValuedParameterDefinition<TRow> : ParameterDefinition
 
     private IEnumerable<SqlDataRecord> ToDataRecordEnumerable(IEnumerable<TRow> rows)
     {
-        var sqlDataRecord = new SqlDataRecord(ColumnMetadata);
+        if (_columnMetadata == null)
+        {
+            _columnMetadata = Columns.Select(c => c.Metadata).ToArray();
+        }
+
+        var sqlDataRecord = new SqlDataRecord(_columnMetadata);
         foreach (TRow row in rows)
         {
             FillSqlDataRecord(sqlDataRecord, row);
