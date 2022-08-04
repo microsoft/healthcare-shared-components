@@ -80,14 +80,14 @@ public sealed class PurgeOrchestrationInstanceHistory
             RuntimeStatus = statuses
         };
 
-        OrchestrationStatusQueryResult instances = await client.ListInstancesAsync(condition, CancellationToken.None).ConfigureAwait(false);
+        OrchestrationStatusQueryResult instances = await client.ListInstancesAsync(condition, CancellationToken.None);
 
         IEnumerable<DurableOrchestrationStatus> instancesToPurge = instances.DurableOrchestrationState.Where(x => !excludeFunctions.Contains(x.Name, StringComparer.OrdinalIgnoreCase));
 
         int purgedInstances = 0;
         foreach (DurableOrchestrationStatus instance in instancesToPurge)
         {
-            PurgeHistoryResult result = await client.PurgeInstanceHistoryAsync(instance.InstanceId).ConfigureAwait(false);
+            PurgeHistoryResult result = await client.PurgeInstanceHistoryAsync(instance.InstanceId);
             log.LogInformation("Instance '{InstanceName}' with {InstanceId} deleted from the task hub.", instance.Name, instance.InstanceId);
             purgedInstances++;
         }

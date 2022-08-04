@@ -69,8 +69,8 @@ public static class IDurableContextExtensions
 
         var input = new GetInstanceStatusOptions { ShowHistory = false, ShowHistoryOutput = false, ShowInput = false };
         DurableOrchestrationStatus status = retryOptions is not null
-            ? await context.CallActivityWithRetryAsync<DurableOrchestrationStatus>(nameof(DurableOrchestrationClientActivity.GetInstanceStatusAsync), retryOptions, input).ConfigureAwait(false)
-            : await context.CallActivityAsync<DurableOrchestrationStatus>(nameof(DurableOrchestrationClientActivity.GetInstanceStatusAsync), input).ConfigureAwait(false);
+            ? await context.CallActivityWithRetryAsync<DurableOrchestrationStatus>(nameof(DurableOrchestrationClientActivity.GetInstanceStatusAsync), retryOptions, input)
+            : await context.CallActivityAsync<DurableOrchestrationStatus>(nameof(DurableOrchestrationClientActivity.GetInstanceStatusAsync), input);
 
         return status.CreatedTime;
     }
