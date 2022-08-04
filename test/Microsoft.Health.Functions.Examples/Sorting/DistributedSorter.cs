@@ -45,7 +45,7 @@ public class DistributedSorter
             int[] sorted = await context.CallActivityWithRetryAsync<int[]>(
                 nameof(SortRange),
                 _options.Retry,
-                checkpoint.Values[0..sortedLength]).ConfigureAwait(false);
+                checkpoint.Values[0..sortedLength]);
 
             logger.LogInformation(
                 "Sorted {SortedLength}/{TotalLength} numbers: [{Values}]",
@@ -57,7 +57,7 @@ public class DistributedSorter
                 new SortingCheckpoint(
                     Concat(sorted, checkpoint.Values[sortedLength..]),
                     sortedLength,
-                    checkpoint.CreatedTime ?? await context.GetCreatedTimeAsync(_options.Retry).ConfigureAwait(false)));
+                    checkpoint.CreatedTime ?? await context.GetCreatedTimeAsync(_options.Retry)));
         }
         else
         {

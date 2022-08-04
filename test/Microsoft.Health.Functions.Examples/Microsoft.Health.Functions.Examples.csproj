@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <AzureFunctionsVersion>v4</AzureFunctionsVersion>
@@ -15,6 +15,7 @@
     <PackageReference Include="Microsoft.Azure.Functions.Extensions" />
     <PackageReference Include="Microsoft.Azure.WebJobs.Core" />
     <PackageReference Include="Microsoft.Azure.WebJobs.Extensions.DurableTask" />
+    <PackageReference Include="Microsoft.Azure.WebJobs.Host.Storage" PrivateAssets="All" />
     <PackageReference Include="Microsoft.NET.Sdk.Functions" PrivateAssets="All" />
   </ItemGroup>
 
