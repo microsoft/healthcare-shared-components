@@ -30,5 +30,5 @@ public static class OperationStatusExtensions
     /// <see langword="true"/> if the operation has reached a terminal status; otherwise <see langword="false"/>.
     /// </returns>
     public static bool IsStopped(this OperationStatus status)
-        => status is OperationStatus.Completed or OperationStatus.Canceled or OperationStatus.Failed;
+        => status is OperationStatus.Succeeded or OperationStatus.Canceled or OperationStatus.Failed;
 }

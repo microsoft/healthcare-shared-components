@@ -24,7 +24,7 @@ internal class SortingCheckpoint : SortingInput, IOperationCheckpoint
     [JsonProperty(nameof(SortedLength), DefaultValueHandling = DefaultValueHandling.Populate)]
     public int SortedLength { get; }
 
-    public IReadOnlyDictionary<string, string>? AdditionalProperties => null;
+    public object? Results => null;
 
     public SortingCheckpoint(int[] values, int sortedLength = 1, DateTime? createdTime = null)
         : base(values)

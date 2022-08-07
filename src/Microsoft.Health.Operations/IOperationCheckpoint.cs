@@ -38,8 +38,14 @@ public interface IOperationCheckpoint
     IReadOnlyCollection<string>? ResourceIds { get; }
 
     /// <summary>
-    /// Gets the optional collection of operation-specific properties.
+    /// Gets the optional results of the operation.
     /// </summary>
-    /// <value>Zero or more key-value pairs based on the <see cref="OperationState{T}.Type"/>.</value>
-    IReadOnlyDictionary<string, string>? AdditionalProperties { get; }
+    /// <remarks>
+    /// The results may change over time as the operation continues execution.
+    /// </remarks>
+    /// <value>
+    /// An object whose type depends on the <see cref="OperationState{T}.Type"/> if specified;
+    /// otherwise <see langword="null"/>.
+    /// </value>
+    object? Results { get; }
 }

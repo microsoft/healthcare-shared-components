@@ -28,8 +28,8 @@ public sealed class NullOperationCheckpoint : IOperationCheckpoint
     /// <inheritdoc cref="IOperationCheckpoint.ResourceIds" />
     public IReadOnlyCollection<string>? ResourceIds => null;
 
-    /// <inheritdoc cref="IOperationCheckpoint.AdditionalProperties" />
-    public IReadOnlyDictionary<string, string>? AdditionalProperties => null;
+    /// <inheritdoc cref="IOperationCheckpoint.Results" />
+    public object? Results => null;
 
     private NullOperationCheckpoint()
     { }

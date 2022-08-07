@@ -3,6 +3,7 @@
 // Licensed under the MIT License (MIT). See LICENSE in the repo root for license information.
 // -------------------------------------------------------------------------------------------------
 
+using System.Collections.Generic;
 using Microsoft.Azure.WebJobs.Extensions.DurableTask;
 
 namespace Microsoft.Health.Operations.Functions.DurableTask;
@@ -49,13 +50,71 @@ public static class OrchestrationRuntimeStatusExtensions
     public static OperationStatus ToOperationStatus(this OrchestrationRuntimeStatus status)
         => status switch
         {
-            OrchestrationRuntimeStatus.Running => OperationStatus.Running,
-            OrchestrationRuntimeStatus.Completed => OperationStatus.Completed,
-            OrchestrationRuntimeStatus.ContinuedAsNew => OperationStatus.Running,
+            OrchestrationRuntimeStatus.Running or OrchestrationRuntimeStatus.ContinuedAsNew => OperationStatus.Running,
+            OrchestrationRuntimeStatus.Completed => OperationStatus.Succeeded,
             OrchestrationRuntimeStatus.Failed => OperationStatus.Failed,
-            OrchestrationRuntimeStatus.Canceled => OperationStatus.Canceled,
-            OrchestrationRuntimeStatus.Terminated => OperationStatus.Canceled,
+            OrchestrationRuntimeStatus.Canceled or OrchestrationRuntimeStatus.Terminated => OperationStatus.Canceled,
             OrchestrationRuntimeStatus.Pending => OperationStatus.NotStarted,
             _ => OperationStatus.Unknown
         };
+
+    /// <summary>
+    /// Gets the corresponding <see cref="OrchestrationRuntimeStatus"/> value for the given
+    /// <see cref="OperationStatus"/> value.
+    /// </summary>
+    /// <param name="status">The operation's reported status.</param>
+    /// <returns>
+    /// The corresponding <see cref="OrchestrationRuntimeStatus"/> value or <see cref="OrchestrationRuntimeStatus.Unknown"/>
+    /// if the given <paramref name="status"/> is not recognized.
+    /// </returns>
+    public static OrchestrationRuntimeStatus ToOrchestrationRuntimeStatus(this OperationStatus status)
+        => status switch
+        {
+            OperationStatus.NotStarted => OrchestrationRuntimeStatus.Pending,
+            OperationStatus.Running => OrchestrationRuntimeStatus.Running,
+            OperationStatus.Succeeded => OrchestrationRuntimeStatus.Completed,
+            OperationStatus.Failed => OrchestrationRuntimeStatus.Failed,
+            OperationStatus.Canceled => OrchestrationRuntimeStatus.Canceled,
+            _ => OrchestrationRuntimeStatus.Unknown,
+        };
+
+    /// <summary>
+    /// Gets the corresponding <see cref="OrchestrationRuntimeStatus"/> values for the given
+    /// <see cref="OperationStatus"/> value.
+    /// </summary>
+    /// <remarks>
+    /// There may be more than one corresponding <see cref="OrchestrationRuntimeStatus"/> value
+    /// for a given <see cref="OperationStatus"/> value.
+    /// </remarks>
+    /// <param name="status">The operation's reported status.</param>
+    /// <returns>
+    /// The corresponding <see cref="OrchestrationRuntimeStatus"/> value or <see cref="OrchestrationRuntimeStatus.Unknown"/>
+    /// if the given <paramref name="status"/> is not recognized.
+    /// </returns>
+    public static IEnumerable<OrchestrationRuntimeStatus> ToOrchestrationRuntimeStatuses(this OperationStatus status)
+    {
+        switch (status)
+        {
+            case OperationStatus.NotStarted:
+                yield return OrchestrationRuntimeStatus.Pending;
+                break;
+            case OperationStatus.Running:
+                yield return OrchestrationRuntimeStatus.Running;
+                yield return OrchestrationRuntimeStatus.ContinuedAsNew;
+                break;
+            case OperationStatus.Succeeded:
+                yield return OrchestrationRuntimeStatus.Completed;
+                break;
+            case OperationStatus.Failed:
+                yield return OrchestrationRuntimeStatus.Failed;
+                break;
+            case OperationStatus.Canceled:
+                yield return OrchestrationRuntimeStatus.Canceled;
+                yield return OrchestrationRuntimeStatus.Terminated;
+                break;
+            default:
+                yield return OrchestrationRuntimeStatus.Unknown;
+                break;
+        }
+    }
 }

@@ -3,6 +3,7 @@
 // Licensed under the MIT License (MIT). See LICENSE in the repo root for license information.
 // -------------------------------------------------------------------------------------------------
 
+using System.Linq;
 using Microsoft.Azure.WebJobs.Extensions.DurableTask;
 using Microsoft.Health.Operations.Functions.DurableTask;
 using Xunit;
@@ -39,7 +40,7 @@ public class OrchestrationRuntimeStatusExtensionsTests
     [InlineData((OrchestrationRuntimeStatus)47, OperationStatus.Unknown)]
     [InlineData(OrchestrationRuntimeStatus.Unknown, OperationStatus.Unknown)]
     [InlineData(OrchestrationRuntimeStatus.Running, OperationStatus.Running)]
-    [InlineData(OrchestrationRuntimeStatus.Completed, OperationStatus.Completed)]
+    [InlineData(OrchestrationRuntimeStatus.Completed, OperationStatus.Succeeded)]
     [InlineData(OrchestrationRuntimeStatus.ContinuedAsNew, OperationStatus.Running)]
     [InlineData(OrchestrationRuntimeStatus.Failed, OperationStatus.Failed)]
     [InlineData(OrchestrationRuntimeStatus.Canceled, OperationStatus.Canceled)]
@@ -47,4 +48,32 @@ public class OrchestrationRuntimeStatusExtensionsTests
     [InlineData(OrchestrationRuntimeStatus.Pending, OperationStatus.NotStarted)]
     public void GivenStatus_WhenConvertingToOperationStatus_ThenReturnCorrespondingValue(OrchestrationRuntimeStatus status, OperationStatus expected)
         => Assert.Equal(expected, status.ToOperationStatus());
+
+    [Theory]
+    [InlineData((OperationStatus)47, OrchestrationRuntimeStatus.Unknown)]
+    [InlineData(OperationStatus.Unknown, OrchestrationRuntimeStatus.Unknown)]
+    [InlineData(OperationStatus.Running, OrchestrationRuntimeStatus.Running)]
+    [InlineData(OperationStatus.Succeeded, OrchestrationRuntimeStatus.Completed)]
+#pragma warning disable CS0618, xUnit1025
+    [InlineData(OperationStatus.Completed, OrchestrationRuntimeStatus.Completed)]
+#pragma warning restore CS0618, xUnit1025
+    [InlineData(OperationStatus.Failed, OrchestrationRuntimeStatus.Failed)]
+    [InlineData(OperationStatus.Canceled, OrchestrationRuntimeStatus.Canceled)]
+    [InlineData(OperationStatus.NotStarted, OrchestrationRuntimeStatus.Pending)]
+    public void GivenStatus_WhenConvertingToOrchestrationRuntimeStatus_ThenReturnCorrespondingValue(OperationStatus status, OrchestrationRuntimeStatus expected)
+        => Assert.Equal(expected, status.ToOrchestrationRuntimeStatus());
+
+    [Theory]
+    [InlineData((OperationStatus)47, OrchestrationRuntimeStatus.Unknown)]
+    [InlineData(OperationStatus.Unknown, OrchestrationRuntimeStatus.Unknown)]
+    [InlineData(OperationStatus.Running, OrchestrationRuntimeStatus.Running, OrchestrationRuntimeStatus.ContinuedAsNew)]
+    [InlineData(OperationStatus.Succeeded, OrchestrationRuntimeStatus.Completed)]
+#pragma warning disable CS0618, xUnit1025
+    [InlineData(OperationStatus.Completed, OrchestrationRuntimeStatus.Completed)]
+#pragma warning restore CS0618, xUnit1025
+    [InlineData(OperationStatus.Failed, OrchestrationRuntimeStatus.Failed)]
+    [InlineData(OperationStatus.Canceled, OrchestrationRuntimeStatus.Canceled, OrchestrationRuntimeStatus.Terminated)]
+    [InlineData(OperationStatus.NotStarted, OrchestrationRuntimeStatus.Pending)]
+    public void GivenStatus_WhenConvertingToOrchestrationRuntimeStatuses_ThenReturnCorrespondingValue(OperationStatus status, params OrchestrationRuntimeStatus[] expected)
+        => Assert.True(expected.SequenceEqual(status.ToOrchestrationRuntimeStatuses()));
 }
