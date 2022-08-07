@@ -36,16 +36,4 @@ public interface IOperationCheckpoint
     /// </remarks>
     /// <value>A collection of resource IDs, or <see langword="null"/> if there are no targeted resources.</value>
     IReadOnlyCollection<string>? ResourceIds { get; }
-
-    /// <summary>
-    /// Gets the optional results of the operation.
-    /// </summary>
-    /// <remarks>
-    /// The results may change over time as the operation continues execution.
-    /// </remarks>
-    /// <value>
-    /// An object whose type depends on the <see cref="OperationState{T}.Type"/> if specified;
-    /// otherwise <see langword="null"/>.
-    /// </value>
-    object? Results { get; }
 }
