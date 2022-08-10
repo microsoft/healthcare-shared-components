@@ -58,7 +58,7 @@
     <PackageVersion Include="Microsoft.IdentityModel.Tokens" Version="6.22.0" />
     <PackageVersion Include="Microsoft.IO.RecyclableMemoryStream" Version="2.2.0" />
     <PackageVersion Include="Microsoft.NET.Sdk.Functions" Version="4.1.1" />
-    <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="17.2.0" />
+    <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="17.3.0" />
     <PackageVersion Include="Microsoft.SourceLink.GitHub" Version="1.1.1" />
     <PackageVersion Include="Microsoft.SqlServer.DacFx" Version="160.6161.0" />
     <PackageVersion Include="Microsoft.SqlServer.SqlManagementObjects" Version="161.47021.0" />
