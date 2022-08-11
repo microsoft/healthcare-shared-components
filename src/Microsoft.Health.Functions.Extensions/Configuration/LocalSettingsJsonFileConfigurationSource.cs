@@ -1,4 +1,4 @@
-﻿// -------------------------------------------------------------------------------------------------
+// -------------------------------------------------------------------------------------------------
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License (MIT). See LICENSE in the repo root for license information.
 // -------------------------------------------------------------------------------------------------
@@ -15,7 +15,7 @@ namespace Microsoft.Health.Functions.Extensions.Configuration;
 
 internal sealed class LocalSettingsJsonFileConfigurationSource : IConfigurationSource
 {
-    public readonly string _scriptPath;
+    private readonly string _scriptPath;
 
     public LocalSettingsJsonFileConfigurationSource(string scriptPath)
         => _scriptPath = EnsureArg.IsNotNull(scriptPath, nameof(scriptPath));
@@ -27,7 +27,7 @@ internal sealed class LocalSettingsJsonFileConfigurationSource : IConfigurationS
     {
         private const string LocalSettingsFileName = "local.settings.json";
 
-        public readonly string _scriptPath;
+        private readonly string _scriptPath;
 
         public LocalSettingsJsonFileConfigurationProvider(string scriptPath)
             => _scriptPath = EnsureArg.IsNotNull(scriptPath, nameof(scriptPath));

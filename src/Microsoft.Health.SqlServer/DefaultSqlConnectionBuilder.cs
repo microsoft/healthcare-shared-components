@@ -1,4 +1,4 @@
-﻿// -------------------------------------------------------------------------------------------------
+// -------------------------------------------------------------------------------------------------
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License (MIT). See LICENSE in the repo root for license information.
 // -------------------------------------------------------------------------------------------------
@@ -31,9 +31,9 @@ public class DefaultSqlConnectionBuilder : ISqlConnectionBuilder
     }
 
     /// <inheritdoc />
-    public async Task<SqlConnection> GetSqlConnectionAsync(string initialCatalog = null, CancellationToken cancellationToken = default)
+    public Task<SqlConnection> GetSqlConnectionAsync(string initialCatalog = null, CancellationToken cancellationToken = default)
     {
-        return await SqlConnectionHelper.GetBaseSqlConnectionAsync(
+        return SqlConnectionHelper.GetBaseSqlConnectionAsync(
             _sqlConnectionStringProvider,
             _sqlRetryLogicBaseProvider,
             initialCatalog,

@@ -1,4 +1,4 @@
-﻿// -------------------------------------------------------------------------------------------------
+// -------------------------------------------------------------------------------------------------
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License (MIT). See LICENSE in the repo root for license information.
 // -------------------------------------------------------------------------------------------------
@@ -97,7 +97,7 @@ internal class CreateProcedureVisitor : SqlVisitor
         if (TryGetSqlDbTypeForParameter(parameter, out SqlDbType sqlDbType))
         {
             // new ParameterDefinition<int>("@paramName", SqlDbType.Int, nullable, maxlength,...)
-            string parameterDefinitionType = 
+            string parameterDefinitionType =
                 parameter.Modifier != ParameterModifier.Output
                     ? "ParameterDefinition"
                     : "OutputParameterDefinition";
@@ -141,7 +141,7 @@ internal class CreateProcedureVisitor : SqlVisitor
     /// <param name="node">The CREATE STORED PROCEDURE statement</param>
     /// <param name="schemaQualifiedProcedureName">The full name of the stored procedure</param>
     /// <returns>The method declaration</returns>
-    private MethodDeclarationSyntax AddPopulateCommandMethod(CreateProcedureStatement node, string schemaQualifiedProcedureName)
+    private static MethodDeclarationSyntax AddPopulateCommandMethod(CreateProcedureStatement node, string schemaQualifiedProcedureName)
     {
         return MethodDeclaration(
                 typeof(void).ToTypeSyntax(),
@@ -196,7 +196,7 @@ internal class CreateProcedureVisitor : SqlVisitor
                         Argument(IdentifierName(ParameterNameForParameter(p)))))).ToArray());
     }
 
-    private MemberDeclarationSyntax AddPopulateCommandMethodForTableValuedParameters(CreateProcedureStatement node, string procedureName)
+    private static MemberDeclarationSyntax AddPopulateCommandMethodForTableValuedParameters(CreateProcedureStatement node, string procedureName)
     {
         var nonTableParameters = new List<ProcedureParameter>();
         var tableParameters = new List<ProcedureParameter>();
@@ -257,7 +257,7 @@ internal class CreateProcedureVisitor : SqlVisitor
     }
 
 
-    private MethodDeclarationSyntax[] AddGetOutputMethod(CreateProcedureStatement node)
+    private static MethodDeclarationSyntax[] AddGetOutputMethod(CreateProcedureStatement node)
     {
         List<TypeSyntax> outputTypes = new List<TypeSyntax>();
         List<ExpressionSyntax> outputExpressions = new List<ExpressionSyntax>();
@@ -322,7 +322,7 @@ internal class CreateProcedureVisitor : SqlVisitor
     }
 
 
-    private (MemberDeclarationSyntax tvpGeneratorClass, MemberDeclarationSyntax tvpHolderStruct) CreateTvpGeneratorTypes(CreateProcedureStatement node, string procedureName)
+    private static (MemberDeclarationSyntax tvpGeneratorClass, MemberDeclarationSyntax tvpHolderStruct) CreateTvpGeneratorTypes(CreateProcedureStatement node, string procedureName)
     {
         List<(string parameterName, string rowStructName)> rowTypes = node.Parameters
             .Where(p => !TryGetSqlDbTypeForParameter(p, out _))

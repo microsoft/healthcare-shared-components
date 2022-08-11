@@ -1,4 +1,4 @@
-﻿// -------------------------------------------------------------------------------------------------
+// -------------------------------------------------------------------------------------------------
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License (MIT). See LICENSE in the repo root for license information.
 // -------------------------------------------------------------------------------------------------
@@ -28,7 +28,7 @@ public class CredentialProviderTests
         Assert.Null(credentialProvider.Token);
         Assert.Equal(default, credentialProvider.TokenExpiration);
 
-        var token = await credentialProvider.GetBearerTokenAsync(cancellationToken: default);
+        var token = await credentialProvider.GetBearerTokenAsync(cancellationToken: default).ConfigureAwait(false);
 
         Assert.Equal(token, credentialProvider.Token);
 
@@ -60,7 +60,7 @@ public class CredentialProviderTests
                     "invalid client secret");
 
         var credentialProvider = new OAuth2ClientCredentialProvider(GetOptionsMonitor(credentialConfiguration), httpClient);
-        await Assert.ThrowsAsync<FailToRetrieveTokenException>(() => credentialProvider.GetBearerTokenAsync(cancellationToken: default));
+        await Assert.ThrowsAsync<FailToRetrieveTokenException>(() => credentialProvider.GetBearerTokenAsync(cancellationToken: default)).ConfigureAwait(false);
     }
 
     [Fact]
@@ -89,7 +89,7 @@ public class CredentialProviderTests
                     "invalid password");
 
         var credentialProvider = new OAuth2UserPasswordCredentialProvider(GetOptionsMonitor(credentialConfiguration), httpClient);
-        await Assert.ThrowsAsync<FailToRetrieveTokenException>(() => credentialProvider.GetBearerTokenAsync(cancellationToken: default));
+        await Assert.ThrowsAsync<FailToRetrieveTokenException>(() => credentialProvider.GetBearerTokenAsync(cancellationToken: default)).ConfigureAwait(false);
     }
 
     [Fact]
@@ -100,7 +100,7 @@ public class CredentialProviderTests
         var credentialProvider = new TestCredentialProvider(initialToken);
 
         // Returns the initialToken
-        var initialResult = await credentialProvider.GetBearerTokenAsync(cancellationToken: default);
+        var initialResult = await credentialProvider.GetBearerTokenAsync(cancellationToken: default).ConfigureAwait(false);
         Assert.Equal(initialToken, initialResult);
 
         // Update the token that would be returned if BearerTokenFunction() was called
@@ -109,7 +109,7 @@ public class CredentialProviderTests
         credentialProvider.EncodedToken = secondToken;
 
         // Should return the initialToken since it is not within the expiration window
-        var secondResult = await credentialProvider.GetBearerTokenAsync(cancellationToken: default);
+        var secondResult = await credentialProvider.GetBearerTokenAsync(cancellationToken: default).ConfigureAwait(false);
 
         Assert.Equal(initialResult, secondResult);
     }
@@ -122,7 +122,7 @@ public class CredentialProviderTests
         var credentialProvider = new TestCredentialProvider(initialToken);
 
         // Returns the initialToken
-        var initialResult = await credentialProvider.GetBearerTokenAsync(cancellationToken: default);
+        var initialResult = await credentialProvider.GetBearerTokenAsync(cancellationToken: default).ConfigureAwait(false);
         Assert.Equal(initialToken, initialResult);
 
         // Update the token that will be returned since the initial token is within the expiration window
@@ -131,7 +131,7 @@ public class CredentialProviderTests
         credentialProvider.EncodedToken = secondToken;
 
         // Should return the initialToken since it is not within the expiration window
-        var secondResult = await credentialProvider.GetBearerTokenAsync(cancellationToken: default);
+        var secondResult = await credentialProvider.GetBearerTokenAsync(cancellationToken: default).ConfigureAwait(false);
 
         Assert.Equal(secondToken, secondResult);
         Assert.NotEqual(initialResult, secondResult);

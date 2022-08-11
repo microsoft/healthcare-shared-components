@@ -1,4 +1,4 @@
-﻿// -------------------------------------------------------------------------------------------------
+// -------------------------------------------------------------------------------------------------
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License (MIT). See LICENSE in the repo root for license information.
 // -------------------------------------------------------------------------------------------------
@@ -65,7 +65,7 @@ public sealed class SchemaJobWorkerTests : IDisposable
 
         try
         {
-            await _worker.ExecuteAsync(info, "blah", _cts.Token);
+            await _worker.ExecuteAsync(info, "blah", _cts.Token).ConfigureAwait(false);
         }
         catch (TaskCanceledException)
         {
@@ -91,7 +91,7 @@ public sealed class SchemaJobWorkerTests : IDisposable
 
         try
         {
-            await _worker.ExecuteAsync(info, "blah", _cts.Token);
+            await _worker.ExecuteAsync(info, "blah", _cts.Token).ConfigureAwait(false);
         }
         catch (TaskCanceledException)
         {
@@ -117,7 +117,7 @@ public sealed class SchemaJobWorkerTests : IDisposable
 
         try
         {
-            await _worker.ExecuteAsync(info, "blah", _cts.Token);
+            await _worker.ExecuteAsync(info, "blah", _cts.Token).ConfigureAwait(false);
         }
         catch (TaskCanceledException)
         {
@@ -145,7 +145,7 @@ public sealed class SchemaJobWorkerTests : IDisposable
 
         try
         {
-            await _worker.ExecuteAsync(info, "blah", _cts.Token);
+            await _worker.ExecuteAsync(info, "blah", _cts.Token).ConfigureAwait(false);
         }
         catch (TaskCanceledException)
         {

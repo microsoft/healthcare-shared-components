@@ -1,4 +1,4 @@
-﻿// -------------------------------------------------------------------------------------------------
+// -------------------------------------------------------------------------------------------------
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License (MIT). See LICENSE in the repo root for license information.
 // -------------------------------------------------------------------------------------------------
@@ -30,16 +30,12 @@ public class EventGridSinkTests
         _publisher = Substitute.For<IEventGridPublisher>();
         _eventGridSink = new EventGridSink(_publisher);
         _testEventData =
-            new EventGridEvent(
-                "test",
-                "testEvent",
-                "1",
-                new BinaryData("testing"))
-        {
-            Topic = "Test Topic",
-            Id = Guid.NewGuid().ToString(),
-            EventTime = DateTimeOffset.UtcNow,
-        };
+            new EventGridEvent("test", "testEvent", "1", new BinaryData("testing"))
+            {
+                Topic = "Test Topic",
+                Id = Guid.NewGuid().ToString(),
+                EventTime = DateTimeOffset.UtcNow,
+            };
     }
 
     /// <summary>

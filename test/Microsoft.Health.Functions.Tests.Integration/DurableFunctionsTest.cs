@@ -1,4 +1,4 @@
-﻿// -------------------------------------------------------------------------------------------------
+// -------------------------------------------------------------------------------------------------
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License (MIT). See LICENSE in the repo root for license information.
 // -------------------------------------------------------------------------------------------------
@@ -25,15 +25,17 @@ public class DurableFunctionsTest : IClassFixture<WebJobsTestFixture<Startup>>
     [Fact]
     public async Task GivenOrchestration_WhenStarting_ThenCompleteSuccessfully()
     {
-        string instanceId = await _durableClient.StartNewAsync(
-            nameof(DistributedSorter.InsertionSortAsync),
-            new SortingInput(new int[] { 3, 4, 1, 5, 4, 2 }));
+        string instanceId = await _durableClient
+            .StartNewAsync(
+                nameof(DistributedSorter.InsertionSortAsync),
+                new SortingInput(new int[] { 3, 4, 1, 5, 4, 2 }))
+            .ConfigureAwait(false);
 
-        DurableOrchestrationStatus status = await _durableClient.GetStatusAsync(instanceId);
+        DurableOrchestrationStatus status = await _durableClient.GetStatusAsync(instanceId).ConfigureAwait(false);
         while (status.RuntimeStatus.IsInProgress())
         {
-            await Task.Delay(1000);
-            status = await _durableClient.GetStatusAsync(instanceId);
+            await Task.Delay(1000).ConfigureAwait(false);
+            status = await _durableClient.GetStatusAsync(instanceId).ConfigureAwait(false);
         }
 
         Assert.Equal(OrchestrationRuntimeStatus.Completed, status.RuntimeStatus);

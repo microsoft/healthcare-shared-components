@@ -1,4 +1,4 @@
-﻿// -------------------------------------------------------------------------------------------------
+// -------------------------------------------------------------------------------------------------
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License (MIT). See LICENSE in the repo root for license information.
 // -------------------------------------------------------------------------------------------------
@@ -41,7 +41,7 @@ internal class BlobInitializer : IBlobInitializer
 
             foreach (IBlobContainerInitializer collectionInitializer in containerInitializers)
             {
-                await collectionInitializer.InitializeContainerAsync(_client, cancellationToken);
+                await collectionInitializer.InitializeContainerAsync(_client, cancellationToken).ConfigureAwait(false);
             }
 
             _logger.LogInformation("Blob Storage and containers successfully initialized");
@@ -62,7 +62,7 @@ internal class BlobInitializer : IBlobInitializer
 
         try
         {
-            await _testProvider.PerformTestAsync(_client, blobContainerConfiguration, cancellationToken);
+            await _testProvider.PerformTestAsync(_client, blobContainerConfiguration, cancellationToken).ConfigureAwait(false);
 
             _logger.LogInformation("Established blob client connection to container {ContainerName}", blobContainerConfiguration.ContainerName);
         }

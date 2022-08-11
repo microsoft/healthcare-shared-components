@@ -1,4 +1,4 @@
-﻿// -------------------------------------------------------------------------------------------------
+// -------------------------------------------------------------------------------------------------
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License (MIT). See LICENSE in the repo root for license information.
 // -------------------------------------------------------------------------------------------------
@@ -14,7 +14,6 @@ using Microsoft.Health.SqlServer.Features.Client;
 using Microsoft.Health.SqlServer.Features.Schema.Manager;
 using Microsoft.Health.SqlServer.Features.Schema.Manager.Exceptions;
 using Microsoft.Health.SqlServer.Features.Storage;
-using NSubstitute;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -24,7 +23,7 @@ public sealed class BaseSchemaRunnerTests : SqlIntegrationTestBase, IDisposable
 {
     private readonly BaseSchemaRunner _runner;
     private readonly ISchemaManagerDataStore _dataStore;
-    private SqlTransactionHandler _sqlTransactionHandler = new SqlTransactionHandler();
+    private readonly SqlTransactionHandler _sqlTransactionHandler = new SqlTransactionHandler();
 
     public BaseSchemaRunnerTests(ITestOutputHelper output)
         : base(output)
@@ -42,25 +41,25 @@ public sealed class BaseSchemaRunnerTests : SqlIntegrationTestBase, IDisposable
     [Fact]
     public async Task EnsureBaseSchemaExist_DoesNotExist_CreatesIt()
     {
-        Assert.False(await _dataStore.BaseSchemaExistsAsync(CancellationToken.None));
-        await _runner.EnsureBaseSchemaExistsAsync(CancellationToken.None);
-        Assert.True(await _dataStore.BaseSchemaExistsAsync(CancellationToken.None));
+        Assert.False(await _dataStore.BaseSchemaExistsAsync(CancellationToken.None).ConfigureAwait(false));
+        await _runner.EnsureBaseSchemaExistsAsync(CancellationToken.None).ConfigureAwait(false);
+        Assert.True(await _dataStore.BaseSchemaExistsAsync(CancellationToken.None).ConfigureAwait(false));
     }
 
     [Fact]
     public async Task EnsureBaseSchemaExist_Exists_DoesNothing()
     {
-        Assert.False(await _dataStore.BaseSchemaExistsAsync(CancellationToken.None));
-        await _runner.EnsureBaseSchemaExistsAsync(CancellationToken.None);
-        Assert.True(await _dataStore.BaseSchemaExistsAsync(CancellationToken.None));
-        await _runner.EnsureBaseSchemaExistsAsync(CancellationToken.None);
-        Assert.True(await _dataStore.BaseSchemaExistsAsync(CancellationToken.None));
+        Assert.False(await _dataStore.BaseSchemaExistsAsync(CancellationToken.None).ConfigureAwait(false));
+        await _runner.EnsureBaseSchemaExistsAsync(CancellationToken.None).ConfigureAwait(false);
+        Assert.True(await _dataStore.BaseSchemaExistsAsync(CancellationToken.None).ConfigureAwait(false));
+        await _runner.EnsureBaseSchemaExistsAsync(CancellationToken.None).ConfigureAwait(false);
+        Assert.True(await _dataStore.BaseSchemaExistsAsync(CancellationToken.None).ConfigureAwait(false));
     }
 
     [Fact]
     public async Task EnsureInstanceSchemaRecordExists_WhenNotExists_Throws()
     {
-        await Assert.ThrowsAsync<SchemaManagerException>(() => _runner.EnsureInstanceSchemaRecordExistsAsync(CancellationToken.None));
+        await Assert.ThrowsAsync<SchemaManagerException>(() => _runner.EnsureInstanceSchemaRecordExistsAsync(CancellationToken.None)).ConfigureAwait(false);
     }
 
     public void Dispose()

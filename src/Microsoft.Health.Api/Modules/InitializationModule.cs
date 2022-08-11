@@ -1,4 +1,4 @@
-﻿// -------------------------------------------------------------------------------------------------
+// -------------------------------------------------------------------------------------------------
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License (MIT). See LICENSE in the repo root for license information.
 // -------------------------------------------------------------------------------------------------
@@ -55,13 +55,13 @@ public class InitializationModule : IStartupModule, IStartupFilter
             {
                 foreach (var initializable in requireInitializationsOnFirstRequest)
                 {
-                    await initializable.EnsureInitialized();
+                    await initializable.EnsureInitialized().ConfigureAwait(false);
                 }
 
                 initializationComplete = true;
             }
 
-            await next();
+            await next().ConfigureAwait(false);
         });
     }
 }

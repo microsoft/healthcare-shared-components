@@ -1,4 +1,4 @@
-﻿// -------------------------------------------------------------------------------------------------
+// -------------------------------------------------------------------------------------------------
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License (MIT). See LICENSE in the repo root for license information.
 // -------------------------------------------------------------------------------------------------
@@ -44,14 +44,14 @@ internal class SqlServerSchemaDataStore : ISchemaDataStore
     public async Task<CompatibleVersions> GetLatestCompatibleVersionsAsync(CancellationToken cancellationToken)
     {
         CompatibleVersions compatibleVersions;
-        using (SqlConnectionWrapper sqlConnectionWrapper = await _sqlConnectionWrapperFactory.ObtainSqlConnectionWrapperAsync(cancellationToken: cancellationToken))
+        using (SqlConnectionWrapper sqlConnectionWrapper = await _sqlConnectionWrapperFactory.ObtainSqlConnectionWrapperAsync(cancellationToken: cancellationToken).ConfigureAwait(false))
         using (SqlCommandWrapper sqlCommandWrapper = sqlConnectionWrapper.CreateRetrySqlCommand())
         {
             SchemaShared.SelectCompatibleSchemaVersions.PopulateCommand(sqlCommandWrapper);
 
-            using (var dataReader = await sqlCommandWrapper.ExecuteReaderAsync(cancellationToken))
+            using (var dataReader = await sqlCommandWrapper.ExecuteReaderAsync(cancellationToken).ConfigureAwait(false))
             {
-                if (await dataReader.ReadAsync(cancellationToken))
+                if (await dataReader.ReadAsync(cancellationToken).ConfigureAwait(false))
                 {
                     compatibleVersions = new CompatibleVersions(ConvertToInt(dataReader.GetValue(0)), ConvertToInt(dataReader.GetValue(1)));
                 }
@@ -64,7 +64,7 @@ internal class SqlServerSchemaDataStore : ISchemaDataStore
             return compatibleVersions;
         }
 
-        int ConvertToInt(object o)
+        static int ConvertToInt(object o)
         {
             if (o == DBNull.Value)
             {
@@ -79,7 +79,7 @@ internal class SqlServerSchemaDataStore : ISchemaDataStore
 
     public async Task<int> UpsertInstanceSchemaInformationAsync(string name, SchemaInformation schemaInformation, CancellationToken cancellationToken)
     {
-        using (SqlConnectionWrapper sqlConnectionWrapper = await _sqlConnectionWrapperFactory.ObtainSqlConnectionWrapperAsync(cancellationToken: cancellationToken))
+        using (SqlConnectionWrapper sqlConnectionWrapper = await _sqlConnectionWrapperFactory.ObtainSqlConnectionWrapperAsync(cancellationToken: cancellationToken).ConfigureAwait(false))
         using (SqlCommandWrapper sqlCommandWrapper = sqlConnectionWrapper.CreateRetrySqlCommand())
         {
             SchemaShared.UpsertInstanceSchema.PopulateCommand(
@@ -90,7 +90,7 @@ internal class SqlServerSchemaDataStore : ISchemaDataStore
                  _configuration.SchemaOptions.InstanceRecordExpirationTimeInMinutes);
             try
             {
-                return (int)await sqlCommandWrapper.ExecuteScalarAsync(cancellationToken);
+                return (int)await sqlCommandWrapper.ExecuteScalarAsync(cancellationToken).ConfigureAwait(false);
             }
             catch (SqlException e)
             {
@@ -108,13 +108,13 @@ internal class SqlServerSchemaDataStore : ISchemaDataStore
 
     public async Task DeleteExpiredInstanceSchemaAsync(CancellationToken cancellationToken)
     {
-        using (SqlConnectionWrapper sqlConnectionWrapper = await _sqlConnectionWrapperFactory.ObtainSqlConnectionWrapperAsync(cancellationToken: cancellationToken))
+        using (SqlConnectionWrapper sqlConnectionWrapper = await _sqlConnectionWrapperFactory.ObtainSqlConnectionWrapperAsync(cancellationToken: cancellationToken).ConfigureAwait(false))
         using (SqlCommandWrapper sqlCommandWrapper = sqlConnectionWrapper.CreateRetrySqlCommand())
         {
             SchemaShared.DeleteInstanceSchema.PopulateCommand(sqlCommandWrapper);
             try
             {
-                await sqlCommandWrapper.ExecuteNonQueryAsync(cancellationToken);
+                await sqlCommandWrapper.ExecuteNonQueryAsync(cancellationToken).ConfigureAwait(false);
             }
             catch (SqlException e)
             {
@@ -127,21 +127,21 @@ internal class SqlServerSchemaDataStore : ISchemaDataStore
     public async Task<List<CurrentVersionInformation>> GetCurrentVersionAsync(CancellationToken cancellationToken)
     {
         var currentVersions = new List<CurrentVersionInformation>();
-        using (SqlConnectionWrapper sqlConnectionWrapper = await _sqlConnectionWrapperFactory.ObtainSqlConnectionWrapperAsync(cancellationToken: cancellationToken))
+        using (SqlConnectionWrapper sqlConnectionWrapper = await _sqlConnectionWrapperFactory.ObtainSqlConnectionWrapperAsync(cancellationToken: cancellationToken).ConfigureAwait(false))
         using (SqlCommandWrapper sqlCommandWrapper = sqlConnectionWrapper.CreateRetrySqlCommand())
         {
             SchemaShared.SelectCurrentVersionsInformation.PopulateCommand(sqlCommandWrapper);
 
             try
             {
-                using (var dataReader = await sqlCommandWrapper.ExecuteReaderAsync(cancellationToken))
+                using (var dataReader = await sqlCommandWrapper.ExecuteReaderAsync(cancellationToken).ConfigureAwait(false))
                 {
                     if (dataReader.HasRows)
                     {
-                        while (await dataReader.ReadAsync(cancellationToken))
+                        while (await dataReader.ReadAsync(cancellationToken).ConfigureAwait(false))
                         {
                             IList<string> instanceNames = new List<string>();
-                            if (!await dataReader.IsDBNullAsync(2, cancellationToken))
+                            if (!await dataReader.IsDBNullAsync(2, cancellationToken).ConfigureAwait(false))
                             {
                                 string names = dataReader.GetString(2);
                                 instanceNames = names.Split(",").ToList();

@@ -1,4 +1,4 @@
-﻿// -------------------------------------------------------------------------------------------------
+// -------------------------------------------------------------------------------------------------
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License (MIT). See LICENSE in the repo root for license information.
 // -------------------------------------------------------------------------------------------------
@@ -7,7 +7,6 @@ using System.Data.SqlTypes;
 using System.IO;
 using Microsoft.Data.SqlClient.Server;
 using Microsoft.Health.SqlServer.Features.Schema.Model;
-using Microsoft.SqlServer.Management.Smo;
 using Xunit;
 
 namespace Microsoft.Health.SqlServer.UnitTests.Features.Schema;
@@ -31,7 +30,7 @@ public class ColumnsTests
         Assert.Equal(data2, ((SqlBinary)record.GetSqlValue(0)).Value);
     }
 
-    [Fact(Skip="true")]
+    [Fact(Skip = "true")]
     public void GivenStringValueGreaterThanColumnMax_WhenSettingStringValue_ThenSqlTruncateExceptionThrown()
     {
         var varCharColumn = new VarCharColumn("text", 10);

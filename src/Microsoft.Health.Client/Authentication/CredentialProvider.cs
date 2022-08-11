@@ -1,4 +1,4 @@
-﻿// -------------------------------------------------------------------------------------------------
+// -------------------------------------------------------------------------------------------------
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License (MIT). See LICENSE in the repo root for license information.
 // -------------------------------------------------------------------------------------------------
@@ -22,7 +22,7 @@ public abstract class CredentialProvider : ICredentialProvider
     {
         if (TokenExpiration < DateTime.UtcNow + _tokenTimeout)
         {
-            Token = await BearerTokenFunction(cancellationToken);
+            Token = await BearerTokenFunction(cancellationToken).ConfigureAwait(false);
             var decodedToken = new JsonWebToken(Token);
             TokenExpiration = decodedToken.ValidTo;
         }

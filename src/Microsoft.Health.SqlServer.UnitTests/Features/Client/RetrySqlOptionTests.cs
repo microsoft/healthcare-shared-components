@@ -1,4 +1,4 @@
-﻿// -------------------------------------------------------------------------------------------------
+// -------------------------------------------------------------------------------------------------
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License (MIT). See LICENSE in the repo root for license information.
 // -------------------------------------------------------------------------------------------------
@@ -24,7 +24,7 @@ public class RetrySqlOptionTests
         var options = Substitute.For<IOptions<SqlServerDataStoreConfiguration>>();
         options.Value.Returns(new SqlServerDataStoreConfiguration() { ConnectionString = "server=(local);Initial Catalog=DatabaseName;Integrated Security=true" });
         var sqlConnectionBuilder = new DefaultSqlConnectionBuilder(new DefaultSqlConnectionStringProvider(options), retryOption);
-        var sqlConnection = await sqlConnectionBuilder.GetSqlConnectionAsync(null);
+        var sqlConnection = await sqlConnectionBuilder.GetSqlConnectionAsync(null).ConfigureAwait(false);
         Assert.True(sqlConnection.RetryLogicProvider == retryOption);
     }
 }

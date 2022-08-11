@@ -1,4 +1,4 @@
-﻿// -------------------------------------------------------------------------------------------------
+// -------------------------------------------------------------------------------------------------
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License (MIT). See LICENSE in the repo root for license information.
 // -------------------------------------------------------------------------------------------------
@@ -16,9 +16,7 @@ namespace Microsoft.Health.Extensions.DependencyInjection;
 public static class TypeRegistrationExtensions
 {
     public static IEnumerable<TypeRegistration> TypesInSameAssemblyAs<T>(this IServiceCollection serviceCollection)
-    {
-        return TypesInSameAssembly(serviceCollection, typeof(T).Assembly);
-    }
+        => TypesInSameAssembly(serviceCollection, typeof(T).Assembly);
 
     public static IEnumerable<TypeRegistration> TypesInSameAssembly(this IServiceCollection serviceCollection, params Assembly[] assemblies)
     {

@@ -1,4 +1,4 @@
-﻿// -------------------------------------------------------------------------------------------------
+// -------------------------------------------------------------------------------------------------
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License (MIT). See LICENSE in the repo root for license information.
 // -------------------------------------------------------------------------------------------------
@@ -8,7 +8,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using EnsureThat;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Extensions.DurableTask;
 using Microsoft.Extensions.Logging.Abstractions;
@@ -64,12 +63,13 @@ public class PurgeOrchestrationInstanceHistoryTests
 
         using (Mock.Property(() => ClockResolver.UtcNowFunc, () => _utcNow))
         {
-            await _purgeTask.Run(_timer, _durableClient, NullLogger.Instance);
+            await _purgeTask.Run(_timer, _durableClient, NullLogger.Instance).ConfigureAwait(false);
         }
 
         await _durableClient
             .Received(count)
-            .PurgeInstanceHistoryAsync(instanceId);
+            .PurgeInstanceHistoryAsync(instanceId)
+            .ConfigureAwait(false);
     }
 
     [Fact]
@@ -82,7 +82,7 @@ public class PurgeOrchestrationInstanceHistoryTests
 
         _purgeConfig.ExcludeFunctions = new string[] { instanceName2 };
 
-        var durableOrchestrationState = new List<DurableOrchestrationStatus> 
+        var durableOrchestrationState = new List<DurableOrchestrationStatus>
         {
             new DurableOrchestrationStatus { InstanceId = instanceId1, Name = instanceName1 },
             new DurableOrchestrationStatus { InstanceId = instanceId2, Name = instanceName2 }
@@ -101,12 +101,13 @@ public class PurgeOrchestrationInstanceHistoryTests
 
         using (Mock.Property(() => ClockResolver.UtcNowFunc, () => _utcNow))
         {
-            await _purgeTask.Run(_timer, _durableClient, NullLogger.Instance);
+            await _purgeTask.Run(_timer, _durableClient, NullLogger.Instance).ConfigureAwait(false);
         }
 
         await _durableClient
             .Received(1)
-            .PurgeInstanceHistoryAsync(instanceId1);
+            .PurgeInstanceHistoryAsync(instanceId1)
+            .ConfigureAwait(false);
     }
 
     private bool AreConditionEqual(OrchestrationStatusQueryCondition condition)

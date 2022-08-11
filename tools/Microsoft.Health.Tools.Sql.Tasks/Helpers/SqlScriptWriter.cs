@@ -1,4 +1,4 @@
-﻿// -------------------------------------------------------------------------------------------------
+// -------------------------------------------------------------------------------------------------
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License (MIT). See LICENSE in the repo root for license information.
 // -------------------------------------------------------------------------------------------------
@@ -13,17 +13,15 @@ namespace Microsoft.Health.Tools.Sql.Tasks.Helpers;
 public class SqlScriptWriter : IDisposable
 {
     private StreamWriter _writer;
-    private Sql140ScriptGenerator _sqlScriptGenerator;
+    private readonly Sql140ScriptGenerator _sqlScriptGenerator;
     private bool _disposed;
 
     public SqlScriptWriter(string path)
-        : this(CreateStreamWriter(path))
     {
-    }
+        // Ensure that the directory exist.
+        Directory.CreateDirectory(Path.GetDirectoryName(path));
 
-    private SqlScriptWriter(StreamWriter writer)
-    {
-        _writer = writer;
+        _writer = File.CreateText(path);
         _sqlScriptGenerator = new Sql140ScriptGenerator();
     }
 
@@ -72,12 +70,5 @@ public class SqlScriptWriter : IDisposable
     {
         _sqlScriptGenerator.GenerateScript(sqlObject, _writer);
         _writer.Flush();
-    }
-
-    private static StreamWriter CreateStreamWriter(string path)
-    {
-        // Ensure that the directory exist.
-        Directory.CreateDirectory(Path.GetDirectoryName(path));
-        return File.CreateText(path);
     }
 }
