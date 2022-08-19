@@ -49,7 +49,7 @@ public class SqlSchemaManager : ISchemaManager
     internal TimeSpan RetrySleepDuration { get; set; } = TimeSpan.FromSeconds(20);
 
     /// <inheritdoc />
-    public virtual async Task ApplySchema(MutuallyExclusiveType type, CancellationToken token = default)
+    public virtual async Task ApplySchema(MutuallyExclusiveType type, bool force = false, CancellationToken token = default)
     {
         EnsureArg.IsNotNull(type, nameof(type));
 
@@ -141,7 +141,12 @@ public class SqlSchemaManager : ISchemaManager
 
                 attemptCount = 1;
 
-                await Policy.Handle<SchemaManagerException>()
+                // Given that the service is not running (meaning SchemaJobWorker is also not running which is responsible to update CurrentVersion in InstanceSchema table)
+                // If the current schemaVersion is set to x and we want to upgrade it to version x+5 then after applying first version x+1 we will start getting an error to verify if all the instances are running the previous version
+                // This could happen for services that are in Warned or Suspended state. Forcing the apply schema by skipping the ValidateInstancesVersionAsync
+                if (!force)
+                {
+                    await Policy.Handle<SchemaManagerException>()
                     .WaitAndRetryAsync(
                         retryCount: RetryAttempts,
                         sleepDurationProvider: (retryCount) => RetrySleepDuration,
@@ -149,6 +154,7 @@ public class SqlSchemaManager : ISchemaManager
                             _logger.LogError(exception, "Attempt {Attempt} of {MaxAttempts} to verify if all the instances are running the previous version.", attemptCount++, RetryAttempts))
                     .ExecuteAsync(token => ValidateInstancesVersionAsync(executingVersion, token), token)
                     .ConfigureAwait(false);
+                }
 
                 string script = await _schemaClient.GetDiffScriptAsync(executingVersion, token).ConfigureAwait(false);
 

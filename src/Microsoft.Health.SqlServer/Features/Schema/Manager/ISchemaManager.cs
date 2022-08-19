@@ -16,9 +16,10 @@ public interface ISchemaManager
     /// Applies SQL schemas specified by the range in <paramref name="type"/>.
     /// </summary>
     /// <param name="type">The schema version to apply.</param>
+    /// <param name="force">Forces the apply schema</param>
     /// <param name="token">A cancellation token.</param>
     /// <returns>A task.</returns>
-    public Task ApplySchema(MutuallyExclusiveType type, CancellationToken token = default);
+    public Task ApplySchema(MutuallyExclusiveType type, bool force, CancellationToken token = default);
 
     /// <summary>
     /// Gets a list of available schema versions.
