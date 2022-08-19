@@ -1,4 +1,4 @@
-﻿// -------------------------------------------------------------------------------------------------
+// -------------------------------------------------------------------------------------------------
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License (MIT). See LICENSE in the repo root for license information.
 // -------------------------------------------------------------------------------------------------
@@ -68,15 +68,17 @@ public static class OrchestrationRuntimeStatusExtensions
     /// if the given <paramref name="status"/> is not recognized.
     /// </returns>
     public static OrchestrationRuntimeStatus ToOrchestrationRuntimeStatus(this OperationStatus status)
+#pragma warning disable CS0618
         => status switch
         {
             OperationStatus.NotStarted => OrchestrationRuntimeStatus.Pending,
             OperationStatus.Running => OrchestrationRuntimeStatus.Running,
-            OperationStatus.Succeeded => OrchestrationRuntimeStatus.Completed,
+            OperationStatus.Completed or OperationStatus.Succeeded => OrchestrationRuntimeStatus.Completed,
             OperationStatus.Failed => OrchestrationRuntimeStatus.Failed,
             OperationStatus.Canceled => OrchestrationRuntimeStatus.Canceled,
             _ => OrchestrationRuntimeStatus.Unknown,
         };
+#pragma warning restore CS0618
 
     /// <summary>
     /// Gets the corresponding <see cref="OrchestrationRuntimeStatus"/> values for the given
@@ -93,6 +95,7 @@ public static class OrchestrationRuntimeStatusExtensions
     /// </returns>
     public static IEnumerable<OrchestrationRuntimeStatus> ToOrchestrationRuntimeStatuses(this OperationStatus status)
     {
+#pragma warning disable CS0618
         switch (status)
         {
             case OperationStatus.NotStarted:
@@ -102,6 +105,7 @@ public static class OrchestrationRuntimeStatusExtensions
                 yield return OrchestrationRuntimeStatus.Running;
                 yield return OrchestrationRuntimeStatus.ContinuedAsNew;
                 break;
+            case OperationStatus.Completed:
             case OperationStatus.Succeeded:
                 yield return OrchestrationRuntimeStatus.Completed;
                 break;
@@ -116,5 +120,6 @@ public static class OrchestrationRuntimeStatusExtensions
                 yield return OrchestrationRuntimeStatus.Unknown;
                 break;
         }
+#pragma warning restore CS0618
     }
 }

@@ -1,4 +1,4 @@
-﻿// -------------------------------------------------------------------------------------------------
+// -------------------------------------------------------------------------------------------------
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License (MIT). See LICENSE in the repo root for license information.
 // -------------------------------------------------------------------------------------------------
@@ -30,5 +30,7 @@ public static class OperationStatusExtensions
     /// <see langword="true"/> if the operation has reached a terminal status; otherwise <see langword="false"/>.
     /// </returns>
     public static bool IsStopped(this OperationStatus status)
-        => status is OperationStatus.Succeeded or OperationStatus.Canceled or OperationStatus.Failed;
+#pragma warning disable CS0618
+        => status is OperationStatus.Completed or OperationStatus.Succeeded or OperationStatus.Canceled or OperationStatus.Failed;
+#pragma warning restore CS0618
 }

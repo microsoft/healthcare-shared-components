@@ -1,4 +1,4 @@
-﻿// -------------------------------------------------------------------------------------------------
+// -------------------------------------------------------------------------------------------------
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License (MIT). See LICENSE in the repo root for license information.
 // -------------------------------------------------------------------------------------------------
@@ -33,6 +33,6 @@ public sealed class NullOrchestrationCheckpoint : IOrchestrationCheckpoint
     { }
 
     /// <inheritdoc cref="IOrchestrationCheckpoint.GetResults(JToken?)" />
-    object? IOrchestrationCheckpoint.GetResults(JToken? result)
+    object? IOrchestrationCheckpoint.GetResults(JToken? output)
         => null;
 }
