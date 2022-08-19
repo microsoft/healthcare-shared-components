@@ -19,7 +19,7 @@ public interface ISchemaManager
     /// <param name="force">Forces the apply schema</param>
     /// <param name="token">A cancellation token.</param>
     /// <returns>A task.</returns>
-    public Task ApplySchema(MutuallyExclusiveType type, bool force, CancellationToken token = default);
+    public Task ApplySchema(MutuallyExclusiveType type, bool force = false, CancellationToken token = default);
 
     /// <summary>
     /// Gets a list of available schema versions.
