@@ -1,4 +1,4 @@
-﻿// -------------------------------------------------------------------------------------------------
+// -------------------------------------------------------------------------------------------------
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License (MIT). See LICENSE in the repo root for license information.
 // -------------------------------------------------------------------------------------------------
@@ -72,6 +72,7 @@ public class HttpIntegrationTestFixture<TStartup> : IDisposable
 
     public HttpClient Client { get; }
 
+    [SuppressMessage("Reliability", "CA2000:Dispose objects before losing scope", Justification = "Callers are responsible for disposal.")]
     public HttpClient CreateHttpClient()
         => new HttpClient(_messageHandler) { BaseAddress = new Uri(_environmentUrl) };
 

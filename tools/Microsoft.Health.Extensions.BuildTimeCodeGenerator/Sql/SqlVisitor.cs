@@ -1,4 +1,4 @@
-﻿// -------------------------------------------------------------------------------------------------
+// -------------------------------------------------------------------------------------------------
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License (MIT). See LICENSE in the repo root for license information.
 // -------------------------------------------------------------------------------------------------
@@ -6,6 +6,7 @@
 using System;
 using System.Collections.Generic;
 using System.Data;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
@@ -176,7 +177,7 @@ public abstract class SqlVisitor : TSqlFragmentVisitor
                 yield return Argument(
                     LiteralExpression(
                         SyntaxKind.NumericLiteralExpression,
-                        Literal(parameter.LiteralType == LiteralType.Max ? -1 : int.Parse(parameter.Value))));
+                        Literal(parameter.LiteralType == LiteralType.Max ? -1 : int.Parse(parameter.Value, CultureInfo.InvariantCulture))));
             }
         }
 
@@ -228,7 +229,7 @@ public abstract class SqlVisitor : TSqlFragmentVisitor
         return Regex.Replace(objectName.BaseIdentifier.Value, @"_\d+$", string.Empty);
     }
 
-    protected MemberDeclarationSyntax CreatePropertyForTableColumn(ColumnDefinition column)
+    protected static MemberDeclarationSyntax CreatePropertyForTableColumn(ColumnDefinition column)
     {
         string normalizedSqlDbType = null;
 

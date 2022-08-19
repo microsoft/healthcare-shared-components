@@ -1,4 +1,4 @@
-﻿// -------------------------------------------------------------------------------------------------
+// -------------------------------------------------------------------------------------------------
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License (MIT). See LICENSE in the repo root for license information.
 // -------------------------------------------------------------------------------------------------
@@ -28,7 +28,7 @@ public class CurrentVersionHandler : IRequestHandler<GetCurrentVersionRequest, G
     {
         EnsureArg.IsNotNull(request, nameof(request));
 
-        List<CurrentVersionInformation> currentVersions = await _schemaDataStore.GetCurrentVersionAsync(cancellationToken);
+        List<CurrentVersionInformation> currentVersions = await _schemaDataStore.GetCurrentVersionAsync(cancellationToken).ConfigureAwait(false);
 
         return new GetCurrentVersionResponse(currentVersions);
     }

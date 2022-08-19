@@ -1,4 +1,4 @@
-﻿// -------------------------------------------------------------------------------------------------
+// -------------------------------------------------------------------------------------------------
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License (MIT). See LICENSE in the repo root for license information.
 // -------------------------------------------------------------------------------------------------
@@ -53,7 +53,7 @@ public static class ApplicationBuilderExtensions
                     });
 
                 httpContext.Response.ContentType = MediaTypeNames.Application.Json;
-                await httpContext.Response.WriteAsync(response);
+                await httpContext.Response.WriteAsync(response).ConfigureAwait(false);
             },
         });
     }

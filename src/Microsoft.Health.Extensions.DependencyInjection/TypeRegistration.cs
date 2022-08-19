@@ -1,4 +1,4 @@
-﻿// -------------------------------------------------------------------------------------------------
+// -------------------------------------------------------------------------------------------------
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License (MIT). See LICENSE in the repo root for license information.
 // -------------------------------------------------------------------------------------------------
@@ -35,11 +35,9 @@ public class TypeRegistration
 
     public enum RegistrationMode
     {
-#pragma warning disable SA1602 // Enumeration items must be documented
         Transient,
         Scoped,
         Singleton,
-#pragma warning restore SA1602 // Enumeration items must be documented
     }
 
     public Type Type { get; }

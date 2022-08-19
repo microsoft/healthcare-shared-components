@@ -1,4 +1,4 @@
-﻿// -------------------------------------------------------------------------------------------------
+// -------------------------------------------------------------------------------------------------
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License (MIT). See LICENSE in the repo root for license information.
 // -------------------------------------------------------------------------------------------------
@@ -33,7 +33,7 @@ public sealed class AuthenticationHttpMessageHandlerTests : IDisposable
         using var invoker = new HttpMessageInvoker(_authenticationHttpMessageHandler);
         using var message = new HttpRequestMessage();
 
-        var result = await invoker.SendAsync(message, CancellationToken.None);
+        var result = await invoker.SendAsync(message, CancellationToken.None).ConfigureAwait(false);
 
         Assert.Equal("Bearer", result.RequestMessage.Headers.Authorization.Scheme);
         Assert.Equal("token", result.RequestMessage.Headers.Authorization.Parameter);

@@ -1,4 +1,4 @@
-﻿// -------------------------------------------------------------------------------------------------
+// -------------------------------------------------------------------------------------------------
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License (MIT). See LICENSE in the repo root for license information.
 // -------------------------------------------------------------------------------------------------
@@ -12,7 +12,7 @@ namespace Microsoft.Health.SqlServer.Features.Schema.Model;
 /// </summary>
 /// <typeparam name="TInput">The input type</typeparam>
 /// <typeparam name="TRow">The row struct type</typeparam>
-public interface ITableValuedParameterRowGenerator<in TInput,  out TRow>
+public interface ITableValuedParameterRowGenerator<in TInput, out TRow>
     where TRow : struct
 {
     IEnumerable<TRow> GenerateRows(TInput input);

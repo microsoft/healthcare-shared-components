@@ -1,4 +1,4 @@
-﻿// -------------------------------------------------------------------------------------------------
+// -------------------------------------------------------------------------------------------------
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License (MIT). See LICENSE in the repo root for license information.
 // -------------------------------------------------------------------------------------------------
@@ -56,9 +56,11 @@ public class BlobClientReadWriteTestProvider : IBlobClientTestProvider
 
     private async Task<byte[]> DownloadBlobContentAsync(BlockBlobClient blob, CancellationToken cancellationToken)
     {
-        await using MemoryStream stream = _recyclableMemoryStreamManager.GetStream();
-
-        await blob.DownloadToAsync(stream, cancellationToken).ConfigureAwait(false);
-        return stream.ToArray();
+        MemoryStream stream = _recyclableMemoryStreamManager.GetStream();
+        await using (stream.ConfigureAwait(false))
+        {
+            await blob.DownloadToAsync(stream, cancellationToken).ConfigureAwait(false);
+            return stream.ToArray();
+        }
     }
 }

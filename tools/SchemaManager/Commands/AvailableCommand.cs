@@ -1,4 +1,4 @@
-﻿// -------------------------------------------------------------------------------------------------
+// -------------------------------------------------------------------------------------------------
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License (MIT). See LICENSE in the repo root for license information.
 // -------------------------------------------------------------------------------------------------
@@ -40,7 +40,7 @@ public class AvailableCommand : Command
 
     private async Task HandlerAsync(InvocationContext invocationContext, CancellationToken cancellationToken)
     {
-        var availableVersions = await _schemaManager.GetAvailableSchema(cancellationToken);
+        var availableVersions = await _schemaManager.GetAvailableSchema(cancellationToken).ConfigureAwait(false);
 
         var region = new Region(
             0,

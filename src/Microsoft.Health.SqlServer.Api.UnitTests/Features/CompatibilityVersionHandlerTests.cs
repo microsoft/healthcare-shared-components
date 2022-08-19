@@ -1,4 +1,4 @@
-﻿// -------------------------------------------------------------------------------------------------
+// -------------------------------------------------------------------------------------------------
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License (MIT). See LICENSE in the repo root for license information.
 // -------------------------------------------------------------------------------------------------
@@ -40,7 +40,7 @@ public class CompatibilityVersionHandlerTests
     {
         _schemaMigrationDataStore.GetLatestCompatibleVersionsAsync(Arg.Any<CancellationToken>())
                 .Returns(new CompatibleVersions(1, 3));
-        GetCompatibilityVersionResponse response = await _mediator.GetCompatibleVersionAsync(_cancellationToken);
+        GetCompatibilityVersionResponse response = await _mediator.GetCompatibleVersionAsync(_cancellationToken).ConfigureAwait(false);
 
         Assert.Equal(1, response.CompatibleVersions.Min);
         Assert.Equal(3, response.CompatibleVersions.Max);

@@ -52,7 +52,7 @@ public static class DevelopmentIdentityProviderRegistrationExtensions
         {
             services.AddIdentityServer()
                 .AddDeveloperSigningCredential()
-                .AddInMemoryApiScopes(new[] { new ApiScope(DevelopmentIdentityProviderConfiguration.Audience), new ApiScope(WrongAudienceClient),  })
+                .AddInMemoryApiScopes(new[] { new ApiScope(DevelopmentIdentityProviderConfiguration.Audience), new ApiScope(WrongAudienceClient) })
                 .AddInMemoryApiResources(new[]
                 {
                     new ApiResource(

@@ -1,4 +1,4 @@
-﻿// -------------------------------------------------------------------------------------------------
+// -------------------------------------------------------------------------------------------------
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License (MIT). See LICENSE in the repo root for license information.
 // -------------------------------------------------------------------------------------------------
@@ -51,7 +51,7 @@ public class CurrentVersionHandlerTests
 
         _schemaDataStore.GetCurrentVersionAsync(Arg.Any<CancellationToken>())
                 .Returns(mockCurrentVersions);
-        GetCurrentVersionResponse response = await _mediator.GetCurrentVersionAsync(_cancellationToken);
+        GetCurrentVersionResponse response = await _mediator.GetCurrentVersionAsync(_cancellationToken).ConfigureAwait(false);
         var currentVersionsResponse = response.CurrentVersions;
 
         Assert.Equal(mockCurrentVersions.Count, currentVersionsResponse.Count);
@@ -68,7 +68,7 @@ public class CurrentVersionHandlerTests
         _schemaDataStore.GetCurrentVersionAsync(Arg.Any<CancellationToken>())
                 .Returns(mockCurrentVersions);
 
-        GetCurrentVersionResponse response = await _mediator.GetCurrentVersionAsync(_cancellationToken);
+        GetCurrentVersionResponse response = await _mediator.GetCurrentVersionAsync(_cancellationToken).ConfigureAwait(false);
 
         Assert.Equal(0, response.CurrentVersions.Count);
     }

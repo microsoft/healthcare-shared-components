@@ -1,4 +1,4 @@
-﻿// -------------------------------------------------------------------------------------------------
+// -------------------------------------------------------------------------------------------------
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License (MIT). See LICENSE in the repo root for license information.
 // -------------------------------------------------------------------------------------------------
@@ -35,20 +35,20 @@ public class ManagedIdentityCredentialProvider : CredentialProvider
     {
         ManagedIdentityCredentialOptions managedIdentityCredentialOptions = _managedIdentityCredentialOptionsMonitor.Get(_optionsName);
 
-        var defaultAzureCredentialOptions = new DefaultAzureCredentialOptions();        
+        var defaultAzureCredentialOptions = new DefaultAzureCredentialOptions();
 
         if (!string.IsNullOrEmpty(managedIdentityCredentialOptions.ClientId))
         {
             defaultAzureCredentialOptions.ManagedIdentityClientId = managedIdentityCredentialOptions.ClientId;
         }
-        
+
         var defaultAzureCredential = new DefaultAzureCredential(defaultAzureCredentialOptions);
 
         var tokenRequestContext = new TokenRequestContext(
             scopes: new[] { managedIdentityCredentialOptions.Resource },
             tenantId: managedIdentityCredentialOptions.TenantId);
 
-        AccessToken accessToken = await defaultAzureCredential.GetTokenAsync(tokenRequestContext, cancellationToken);
+        AccessToken accessToken = await defaultAzureCredential.GetTokenAsync(tokenRequestContext, cancellationToken).ConfigureAwait(false);
         return accessToken.Token;
     }
 }

@@ -1,9 +1,7 @@
-﻿// -------------------------------------------------------------------------------------------------
+// -------------------------------------------------------------------------------------------------
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License (MIT). See LICENSE in the repo root for license information.
 // -------------------------------------------------------------------------------------------------
-
-using Microsoft.Azure.Functions.Extensions.DependencyInjection;
 
 namespace Microsoft.Health.Functions.Extensions;
 
@@ -16,5 +14,4 @@ public static class AzureFunctionsJobHost
     /// The name of the configuration section in which all user-specified configurations reside.
     /// </summary>
     public const string RootSectionName = "AzureFunctionsJobHost";
-
 }

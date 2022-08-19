@@ -1,4 +1,4 @@
-﻿// -------------------------------------------------------------------------------------------------
+// -------------------------------------------------------------------------------------------------
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License (MIT). See LICENSE in the repo root for license information.
 // -------------------------------------------------------------------------------------------------
@@ -29,6 +29,6 @@ public class DefaultSqlConnectionStringProviderTests
         var sqlServerDataStoreConfiguration = new SqlServerDataStoreConfiguration() { ConnectionString = sqlConnectionString };
         ISqlConnectionStringProvider sqlConnectionStringProvider = new DefaultSqlConnectionStringProvider(Options.Create(sqlServerDataStoreConfiguration));
 
-        Assert.Equal(sqlConnectionString, await sqlConnectionStringProvider.GetSqlConnectionString(CancellationToken.None));
+        Assert.Equal(sqlConnectionString, await sqlConnectionStringProvider.GetSqlConnectionString(CancellationToken.None).ConfigureAwait(false));
     }
 }

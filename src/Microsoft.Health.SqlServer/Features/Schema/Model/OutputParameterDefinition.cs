@@ -1,11 +1,10 @@
-﻿// -------------------------------------------------------------------------------------------------
+// -------------------------------------------------------------------------------------------------
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License (MIT). See LICENSE in the repo root for license information.
 // -------------------------------------------------------------------------------------------------
 
 using System.Data;
 using EnsureThat;
-using Microsoft.Data.SqlClient;
 using Microsoft.Health.SqlServer.Features.Client;
 
 namespace Microsoft.Health.SqlServer.Features.Schema.Model;

@@ -1,4 +1,4 @@
-﻿// -------------------------------------------------------------------------------------------------
+// -------------------------------------------------------------------------------------------------
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License (MIT). See LICENSE in the repo root for license information.
 // -------------------------------------------------------------------------------------------------
@@ -15,7 +15,7 @@ namespace Microsoft.Health.Core.UnitTests.Features.Security.Samples;
 
 internal class SamplesRoleLoader : RoleLoader<DataActions>
 {
-    private Dictionary<string, DataActions> _dataActionsMap = new Dictionary<string, DataActions>();
+    private readonly Dictionary<string, DataActions> _dataActionsMap = new Dictionary<string, DataActions>();
 
     public SamplesRoleLoader(AuthorizationConfiguration<DataActions> authorizationConfiguration, IHostEnvironment hostEnvironment)
         : base(authorizationConfiguration, hostEnvironment)

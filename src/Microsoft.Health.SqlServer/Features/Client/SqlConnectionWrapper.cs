@@ -1,4 +1,4 @@
-﻿// -------------------------------------------------------------------------------------------------
+// -------------------------------------------------------------------------------------------------
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License (MIT). See LICENSE in the repo root for license information.
 // -------------------------------------------------------------------------------------------------
@@ -21,8 +21,6 @@ public class SqlConnectionWrapper : IDisposable
     private readonly ISqlConnectionBuilder _sqlConnectionBuilder;
     private readonly SqlRetryLogicBaseProvider _sqlRetryLogicBaseProvider;
     private readonly SqlServerDataStoreConfiguration _sqlServerDataStoreConfiguration;
-    private SqlConnection _sqlConnection;
-    private SqlTransaction _sqlTransaction;
 
     internal SqlConnectionWrapper(
         SqlTransactionHandler sqlTransactionHandler,
@@ -44,28 +42,19 @@ public class SqlConnectionWrapper : IDisposable
         _sqlRetryLogicBaseProvider = sqlRetryLogicBaseProvider;
     }
 
-    public SqlConnection SqlConnection
-    {
-        get { return _sqlConnection; }
-    }
+    public SqlConnection SqlConnection { get; private set; }
 
-    public SqlTransaction SqlTransaction
-    {
-        get
-        {
-            return _sqlTransaction;
-        }
-    }
+    public SqlTransaction SqlTransaction { get; private set; }
 
     internal async Task InitializeAsync(string initialCatalog = null, CancellationToken cancellationToken = default)
     {
         if (_enlistInTransactionIfPresent && _sqlTransactionHandler.SqlTransactionScope?.SqlConnection != null)
         {
-            _sqlConnection = _sqlTransactionHandler.SqlTransactionScope.SqlConnection;
+            SqlConnection = _sqlTransactionHandler.SqlTransactionScope.SqlConnection;
         }
         else
         {
-            _sqlConnection = await _sqlConnectionBuilder.GetSqlConnectionAsync(initialCatalog, cancellationToken: cancellationToken);
+            SqlConnection = await _sqlConnectionBuilder.GetSqlConnectionAsync(initialCatalog, cancellationToken: cancellationToken).ConfigureAwait(false);
         }
 
         if (_enlistInTransactionIfPresent && _sqlTransactionHandler.SqlTransactionScope != null && _sqlTransactionHandler.SqlTransactionScope.SqlConnection == null)
@@ -75,12 +64,12 @@ public class SqlConnectionWrapper : IDisposable
 
         if (SqlConnection.State != ConnectionState.Open)
         {
-            await SqlConnection.OpenAsync(cancellationToken);
+            await SqlConnection.OpenAsync(cancellationToken).ConfigureAwait(false);
         }
 
         if (_enlistInTransactionIfPresent && _sqlTransactionHandler.SqlTransactionScope != null)
         {
-            _sqlTransaction = _sqlTransactionHandler.SqlTransactionScope.SqlTransaction ?? SqlConnection.BeginTransaction();
+            SqlTransaction = _sqlTransactionHandler.SqlTransactionScope.SqlTransaction ?? SqlConnection.BeginTransaction();
 
             if (_sqlTransactionHandler.SqlTransactionScope.SqlTransaction == null)
             {
