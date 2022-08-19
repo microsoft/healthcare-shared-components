@@ -113,6 +113,34 @@ public class SqlSchemaManagerTests
         await _schemaManagerDataStore.Received(1).ExecuteScriptAndCompleteSchemaVersionAsync(Arg.Is("script"), Arg.Is(2), Arg.Is(true), Arg.Any<CancellationToken>()).ConfigureAwait(false);
     }
 
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task ApplySchema_UsingMultipleDiffScriptAndOlderVersionInstance_ThrowsSchemaManagerExceptionOrSucceedsDependingOnForceFlag(bool force)
+    {
+        // Set a zero retry sleep duration to expedite fail-case unit test.
+        _sqlSchemaManager.RetrySleepDuration = TimeSpan.Zero;
+
+        var list1 = new List<AvailableVersion> { new AvailableVersion(1, "_script/1.sql", "_script/1.diff.sql"), new AvailableVersion(2, "_script/2.sql", "_script/2.diff.sql"), new AvailableVersion(3, "_script/3.sql", "_script/3.diff.sql") };
+        var list2 = new List<AvailableVersion> { new AvailableVersion(1, "_script/1.sql", "_script/1.diff.sql"), new AvailableVersion(2, "_script/2.sql", "_script/2.diff.sql"), new AvailableVersion(3, "_script/3.sql", "_script/3.diff.sql") };
+        _schemaManagerDataStore.GetCurrentSchemaVersionAsync(default).ReturnsForAnyArgs(Task.FromResult(1));
+        _client.GetCurrentVersionInformationAsync(Arg.Any<CancellationToken>()).ReturnsForAnyArgs(new List<CurrentVersion> { new CurrentVersion(1, "status", new List<string>() { "1", "2" }) });
+        _client.GetAvailabilityAsync(Arg.Any<CancellationToken>()).ReturnsForAnyArgs(list1, list2);
+        _client.GetDiffScriptAsync(2, Arg.Any<CancellationToken>()).Returns("script");
+        _client.GetDiffScriptAsync(3, Arg.Any<CancellationToken>()).Returns("script");
+        _client.GetCompatibilityAsync(Arg.Any<CancellationToken>()).ReturnsForAnyArgs(new CompatibleVersion(2, 3));
+
+        if (force)
+        {
+            await _sqlSchemaManager.ApplySchema(new MutuallyExclusiveType { Version = 3 }, force: force).ConfigureAwait(false);
+            await _schemaManagerDataStore.Received(2).ExecuteScriptAndCompleteSchemaVersionAsync(Arg.Is("script"), Arg.Any<int>(), Arg.Is(false), Arg.Any<CancellationToken>()).ConfigureAwait(false);
+        }
+        else
+        {
+            await Assert.ThrowsAsync<SchemaManagerException>(() => _sqlSchemaManager.ApplySchema(new MutuallyExclusiveType { Version = 3 }, force: force)).ConfigureAwait(false);
+        }
+    }
+
     [Fact]
     public async Task ApplySchema_OnDependencyThrowSchemaManagerException_ThrowsSchemaManagerException()
     {
