@@ -2,7 +2,7 @@
 
   <ItemGroup>
     <PackageVersion Include="Azure.Core" Version="1.25.0" />
-    <PackageVersion Include="Azure.Identity" Version="1.6.0" />
+    <PackageVersion Include="Azure.Identity" Version="1.6.1" />
     <PackageVersion Include="Azure.Messaging.EventGrid" Version="4.11.0" />
     <PackageVersion Include="Azure.Storage.Blobs" Version="12.13.0" />
     <PackageVersion Include="Azure.Storage.Common" Version="12.12.0" />
@@ -24,6 +24,7 @@
     <PackageVersion Include="Microsoft.Azure.WebJobs.Core" Version="3.0.33" />
     <PackageVersion Include="Microsoft.Azure.WebJobs.Extensions" Version="4.0.1" />
     <PackageVersion Include="Microsoft.Azure.WebJobs.Extensions.DurableTask" Version="2.7.2" />
+    <PackageVersion Include="Microsoft.Azure.WebJobs.Host.Storage" Version="4.1.0" />
     <PackageVersion Include="Microsoft.Build.Framework" Version="17.2.0" />
     <PackageVersion Include="Microsoft.Build.Utilities.Core" Version="17.2.0" />
     <PackageVersion Include="Microsoft.CodeAnalysis" Version="4.2.0" />
@@ -58,10 +59,10 @@
     <PackageVersion Include="Microsoft.IdentityModel.Tokens" Version="6.22.0" />
     <PackageVersion Include="Microsoft.IO.RecyclableMemoryStream" Version="2.2.0" />
     <PackageVersion Include="Microsoft.NET.Sdk.Functions" Version="4.1.1" />
-    <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="17.2.0" />
+    <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="17.3.0" />
     <PackageVersion Include="Microsoft.SourceLink.GitHub" Version="1.1.1" />
     <PackageVersion Include="Microsoft.SqlServer.DacFx" Version="160.6161.0" />
-    <PackageVersion Include="Microsoft.SqlServer.SqlManagementObjects" Version="161.47021.0" />
+    <PackageVersion Include="Microsoft.SqlServer.SqlManagementObjects" Version="161.47027.0" />
     <PackageVersion Include="Mseng.Sql.Dac" Version="13.0.4" />
     <PackageVersion Include="Newtonsoft.Json" Version="13.0.1" />
     <PackageVersion Include="Newtonsoft.Json.Schema" Version="3.0.14" />

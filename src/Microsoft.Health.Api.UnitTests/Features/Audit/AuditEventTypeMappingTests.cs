@@ -1,4 +1,4 @@
-﻿// -------------------------------------------------------------------------------------------------
+// -------------------------------------------------------------------------------------------------
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License (MIT). See LICENSE in the repo root for license information.
 // -------------------------------------------------------------------------------------------------
@@ -100,9 +100,9 @@ public class AuditEventTypeMappingTests : IAsyncLifetime
         _auditEventTypeMapping = new AuditEventTypeMapping(_actionDescriptorCollectionProvider);
     }
 
-    public async Task InitializeAsync()
+    public Task InitializeAsync()
     {
-        await ((IHostedService)_auditEventTypeMapping).StartAsync(CancellationToken.None);
+        return ((IHostedService)_auditEventTypeMapping).StartAsync(CancellationToken.None);
     }
 
     public Task DisposeAsync() => Task.CompletedTask;

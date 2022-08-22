@@ -1,4 +1,4 @@
-﻿// -------------------------------------------------------------------------------------------------
+// -------------------------------------------------------------------------------------------------
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License (MIT). See LICENSE in the repo root for license information.
 // -------------------------------------------------------------------------------------------------
@@ -14,7 +14,7 @@ namespace Microsoft.Health.SqlServer;
 /// Helper class to build the base <see cref="SqlConnection"/> object
 /// </summary>
 /// Could not do a real builder class because SqlConnection is of type IDisposable and it cannot be a member, since its disposal is handled in SqlConnectionWrapper
-internal class SqlConnectionHelper
+internal static class SqlConnectionHelper
 {
     /// <summary>
     /// Get the SqlConnection object with right connection properties to retry
@@ -31,7 +31,7 @@ internal class SqlConnectionHelper
         string initialCatalog = null,
         CancellationToken cancellationToken = default)
     {
-        string sqlConnectionString = await sqlConnectionStringProvider.GetSqlConnectionString(cancellationToken);
+        string sqlConnectionString = await sqlConnectionStringProvider.GetSqlConnectionString(cancellationToken).ConfigureAwait(false);
         if (string.IsNullOrEmpty(sqlConnectionString))
         {
             throw new InvalidOperationException("The SQL connection string cannot be null or empty.");
@@ -44,10 +44,6 @@ internal class SqlConnectionHelper
             connectionStringBuilder.InitialCatalog = initialCatalog;
         }
 
-        var sqlConnection = new SqlConnection(connectionStringBuilder.ToString())
-            {
-                RetryLogicProvider = sqlRetryLogic,
-            };
-        return sqlConnection;
+        return new SqlConnection(connectionStringBuilder.ToString()) { RetryLogicProvider = sqlRetryLogic };
     }
 }

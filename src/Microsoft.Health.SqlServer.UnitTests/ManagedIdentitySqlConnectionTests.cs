@@ -1,4 +1,4 @@
-﻿// -------------------------------------------------------------------------------------------------
+// -------------------------------------------------------------------------------------------------
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License (MIT). See LICENSE in the repo root for license information.
 // -------------------------------------------------------------------------------------------------
@@ -41,7 +41,7 @@ public class ManagedIdentitySqlConnectionTests
     [Fact]
     public async Task GivenManagedIdentityConnectionType_WhenSqlConnectionRequested_AccessTokenIsSet()
     {
-        SqlConnection sqlConnection = await _sqlConnectionFactory.GetSqlConnectionAsync();
+        SqlConnection sqlConnection = await _sqlConnectionFactory.GetSqlConnectionAsync().ConfigureAwait(false);
 
         Assert.Equal(TestAccessToken, sqlConnection.AccessToken);
     }
@@ -49,7 +49,7 @@ public class ManagedIdentitySqlConnectionTests
     [Fact]
     public async Task GivenDefaultConnectionType_WhenSqlConnectionRequested_DatabaseIsSet()
     {
-        SqlConnection sqlConnection = await _sqlConnectionFactory.GetSqlConnectionAsync();
+        SqlConnection sqlConnection = await _sqlConnectionFactory.GetSqlConnectionAsync().ConfigureAwait(false);
 
         Assert.Equal(DatabaseName, sqlConnection.Database);
     }
@@ -57,7 +57,7 @@ public class ManagedIdentitySqlConnectionTests
     [Fact]
     public async Task GivenDefaultConnectionType_WhenSqlConnectionToMasterRequested_MasterDatabaseIsSet()
     {
-        SqlConnection sqlConnection = await _sqlConnectionFactory.GetSqlConnectionAsync(MasterDatabase);
+        SqlConnection sqlConnection = await _sqlConnectionFactory.GetSqlConnectionAsync(MasterDatabase).ConfigureAwait(false);
 
         Assert.Equal(MasterDatabase, sqlConnection.Database);
     }

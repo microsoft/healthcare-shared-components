@@ -1,9 +1,10 @@
-﻿// -------------------------------------------------------------------------------------------------
+// -------------------------------------------------------------------------------------------------
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License (MIT). See LICENSE in the repo root for license information.
 // -------------------------------------------------------------------------------------------------
 
 using System;
+using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.IO;
@@ -88,6 +89,6 @@ public abstract class RoleLoader<TDataActions> : IHostedService
 
     private class RolesContract
     {
-        public RoleContract[] Roles { get; set; }
+        public IReadOnlyCollection<RoleContract> Roles { get; set; }
     }
 }

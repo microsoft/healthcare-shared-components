@@ -1,4 +1,4 @@
-﻿// -------------------------------------------------------------------------------------------------
+// -------------------------------------------------------------------------------------------------
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License (MIT). See LICENSE in the repo root for license information.
 // -------------------------------------------------------------------------------------------------
@@ -37,7 +37,7 @@ internal sealed class CachedHealthCheck : IHealthCheck, IDisposable
         DateTimeOffset currentTime = Clock.UtcNow;
         if (!IsUpToDate(currentTime))
         {
-            await RefreshCacheAsync(context, !HasExpired(currentTime), cancellationToken);
+            await RefreshCacheAsync(context, !HasExpired(currentTime), cancellationToken).ConfigureAwait(false);
         }
 
         return _cache.Result;

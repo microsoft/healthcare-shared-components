@@ -1,4 +1,4 @@
-﻿// -------------------------------------------------------------------------------------------------
+// -------------------------------------------------------------------------------------------------
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License (MIT). See LICENSE in the repo root for license information.
 // -------------------------------------------------------------------------------------------------
@@ -36,7 +36,7 @@ public class BlobContainerInitializer : IBlobContainerInitializer
         BlobContainerClient container = client.GetBlobContainerClient(_containerName);
 
         _logger.LogDebug("Creating blob container if not exists: {ContainerName}", _containerName);
-        await container.CreateIfNotExistsAsync(cancellationToken: cancellationToken);
+        await container.CreateIfNotExistsAsync(cancellationToken: cancellationToken).ConfigureAwait(false);
 
         return container;
     }

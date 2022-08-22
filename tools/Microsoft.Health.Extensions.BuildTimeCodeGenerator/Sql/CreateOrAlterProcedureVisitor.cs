@@ -1,4 +1,4 @@
-﻿// -------------------------------------------------------------------------------------------------
+// -------------------------------------------------------------------------------------------------
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License (MIT). See LICENSE in the repo root for license information.
 // -------------------------------------------------------------------------------------------------
@@ -97,9 +97,9 @@ internal class CreateOrAlterProcedureVisitor : SqlVisitor
         if (TryGetSqlDbTypeForParameter(parameter, out SqlDbType sqlDbType))
         {
             // new ParameterDefinition<int>("@paramName", SqlDbType.Int, nullable, maxlength,...)
-            string parameterDefinitionType = 
-                parameter.Modifier != ParameterModifier.Output 
-                    ? "ParameterDefinition" 
+            string parameterDefinitionType =
+                parameter.Modifier != ParameterModifier.Output
+                    ? "ParameterDefinition"
                     : "OutputParameterDefinition";
 
             typeName = GenericName(parameterDefinitionType)
@@ -141,7 +141,7 @@ internal class CreateOrAlterProcedureVisitor : SqlVisitor
     /// <param name="node">The CREATE STORED PROCEDURE statement</param>
     /// <param name="schemaQualifiedProcedureName">The full name of the stored procedure</param>
     /// <returns>The method declaration</returns>
-    private MethodDeclarationSyntax AddPopulateCommandMethod(CreateOrAlterProcedureStatement node, string schemaQualifiedProcedureName)
+    private static MethodDeclarationSyntax AddPopulateCommandMethod(CreateOrAlterProcedureStatement node, string schemaQualifiedProcedureName)
     {
         return MethodDeclaration(
                 typeof(void).ToTypeSyntax(),
@@ -196,7 +196,7 @@ internal class CreateOrAlterProcedureVisitor : SqlVisitor
                         Argument(IdentifierName(ParameterNameForParameter(p)))))).ToArray());
     }
 
-    private MemberDeclarationSyntax AddPopulateCommandMethodForTableValuedParameters(CreateOrAlterProcedureStatement node, string procedureName)
+    private static MemberDeclarationSyntax AddPopulateCommandMethodForTableValuedParameters(CreateOrAlterProcedureStatement node, string procedureName)
     {
         var nonTableParameters = new List<ProcedureParameter>();
         var tableParameters = new List<ProcedureParameter>();
@@ -256,7 +256,7 @@ internal class CreateOrAlterProcedureVisitor : SqlVisitor
                                     .WithNameColon(NameColon(ParameterNameForParameter(p)))).ToArray())));
     }
 
-    private MethodDeclarationSyntax[] AddGetOutputMethod(CreateOrAlterProcedureStatement node)
+    private static MethodDeclarationSyntax[] AddGetOutputMethod(CreateOrAlterProcedureStatement node)
     {
         List<TypeSyntax> outputTypes = new List<TypeSyntax>();
         List<ExpressionSyntax> outputExpressions = new List<ExpressionSyntax>();
@@ -320,7 +320,7 @@ internal class CreateOrAlterProcedureVisitor : SqlVisitor
         }
     }
 
-    private (MemberDeclarationSyntax tvpGeneratorClass, MemberDeclarationSyntax tvpHolderStruct) CreateTvpGeneratorTypes(CreateOrAlterProcedureStatement node, string procedureName)
+    private static (MemberDeclarationSyntax tvpGeneratorClass, MemberDeclarationSyntax tvpHolderStruct) CreateTvpGeneratorTypes(CreateOrAlterProcedureStatement node, string procedureName)
     {
         List<(string parameterName, string rowStructName)> rowTypes = node.Parameters
             .Where(p => !TryGetSqlDbTypeForParameter(p, out _))

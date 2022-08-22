@@ -1,4 +1,4 @@
-﻿// -------------------------------------------------------------------------------------------------
+// -------------------------------------------------------------------------------------------------
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License (MIT). See LICENSE in the repo root for license information.
 // -------------------------------------------------------------------------------------------------
@@ -14,8 +14,6 @@ using EnsureThat;
 using MediatR;
 using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
-using Microsoft.Health.SqlServer.Configs;
 using Microsoft.Health.SqlServer.Features.Schema.Extensions;
 using Microsoft.Health.SqlServer.Features.Schema.Manager.Exceptions;
 using Microsoft.Health.SqlServer.Features.Schema.Manager.Model;
@@ -32,7 +30,6 @@ public class SqlSchemaManager : ISchemaManager
     private readonly ILogger<SqlSchemaManager> _logger;
     private readonly IMediator _mediator;
 
-    private TimeSpan _retrySleepDuration = TimeSpan.FromSeconds(20);
     private const int RetryAttempts = 3;
 
     public SqlSchemaManager(
@@ -49,8 +46,10 @@ public class SqlSchemaManager : ISchemaManager
         _logger = EnsureArg.IsNotNull(logger, nameof(logger));
     }
 
+    internal TimeSpan RetrySleepDuration { get; set; } = TimeSpan.FromSeconds(20);
+
     /// <inheritdoc />
-    public virtual async Task ApplySchema(MutuallyExclusiveType type, CancellationToken token = default)
+    public virtual async Task ApplySchema(MutuallyExclusiveType type, bool force = false, CancellationToken token = default)
     {
         EnsureArg.IsNotNull(type, nameof(type));
 
@@ -85,7 +84,7 @@ public class SqlSchemaManager : ISchemaManager
             availableVersions = await Policy.Handle<SchemaManagerException>()
             .WaitAndRetryAsync(
                 retryCount: RetryAttempts,
-                sleepDurationProvider: (retryCount) => _retrySleepDuration,
+                sleepDurationProvider: (retryCount) => RetrySleepDuration,
                 onRetry: (exception, retryCount) =>
                 {
                     _logger.LogError(exception, "Attempt {Attempt} of {MaxAttempts} to wait for the current version to be updated on the server.", attemptCount++, RetryAttempts);
@@ -142,14 +141,20 @@ public class SqlSchemaManager : ISchemaManager
 
                 attemptCount = 1;
 
-                await Policy.Handle<SchemaManagerException>()
+                // Given that the service is not running (meaning SchemaJobWorker is also not running which is responsible to update CurrentVersion in InstanceSchema table)
+                // If the current schemaVersion is set to x and we want to upgrade it to version x+5 then after applying first version x+1 we will start getting an error to verify if all the instances are running the previous version
+                // This could happen for services that are in Warned or Suspended state. Forcing the apply schema by skipping the ValidateInstancesVersionAsync
+                if (!force)
+                {
+                    await Policy.Handle<SchemaManagerException>()
                     .WaitAndRetryAsync(
                         retryCount: RetryAttempts,
-                        sleepDurationProvider: (retryCount) => _retrySleepDuration,
+                        sleepDurationProvider: (retryCount) => RetrySleepDuration,
                         onRetry: (exception, delay) =>
                             _logger.LogError(exception, "Attempt {Attempt} of {MaxAttempts} to verify if all the instances are running the previous version.", attemptCount++, RetryAttempts))
                     .ExecuteAsync(token => ValidateInstancesVersionAsync(executingVersion, token), token)
                     .ConfigureAwait(false);
+                }
 
                 string script = await _schemaClient.GetDiffScriptAsync(executingVersion, token).ConfigureAwait(false);
 
@@ -267,7 +272,7 @@ public class SqlSchemaManager : ISchemaManager
 
         // It is to publish the SchemaUpgraded event to notify the service that schema initialization or upgrade is completed to this version
         // for e.g. fhir service listents to this event and initialize its dictionaries after schema is initialized.
-        await _mediator.NotifySchemaUpgradedAsync(version, applyFullSchemaSnapshot);
+        await _mediator.NotifySchemaUpgradedAsync(version, applyFullSchemaSnapshot).ConfigureAwait(false);
         _logger.LogInformation("Schema upgrade notification sent for version: {Version}, applyFullSchemaSnapshot: {ApplyFullSchemaSnapshot}", version, applyFullSchemaSnapshot);
     }
 
@@ -284,7 +289,7 @@ public class SqlSchemaManager : ISchemaManager
 
     public async Task<int> GetLatestSchema(CancellationToken cancellationToken = default)
     {
-        int latestVersion = await _schemaManagerDataStore.GetCurrentSchemaVersionAsync(cancellationToken);
+        int latestVersion = await _schemaManagerDataStore.GetCurrentSchemaVersionAsync(cancellationToken).ConfigureAwait(false);
         _logger.LogInformation("Latest schema version in db is : {Version}", latestVersion);
         return latestVersion;
     }

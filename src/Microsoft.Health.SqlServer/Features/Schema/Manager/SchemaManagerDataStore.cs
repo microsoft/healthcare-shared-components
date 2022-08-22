@@ -1,4 +1,4 @@
-﻿// -------------------------------------------------------------------------------------------------
+// -------------------------------------------------------------------------------------------------
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License (MIT). See LICENSE in the repo root for license information.
 // -------------------------------------------------------------------------------------------------
@@ -14,7 +14,6 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.Health.Core;
 using Microsoft.Health.SqlServer.Configs;
-using Microsoft.Health.SqlServer.Extensions;
 using Microsoft.Health.SqlServer.Features.Client;
 using Microsoft.SqlServer.Management.Common;
 using Microsoft.SqlServer.Management.Smo;
@@ -43,7 +42,7 @@ public class SchemaManagerDataStore : ISchemaManagerDataStore
         EnsureArg.IsNotNull(script, nameof(script));
         EnsureArg.IsGte(version, 1);
 
-        using SqlConnectionWrapper sqlConnectionWrapper = await _sqlConnectionWrapperFactory.ObtainSqlConnectionWrapperAsync(cancellationToken: cancellationToken);
+        using SqlConnectionWrapper sqlConnectionWrapper = await _sqlConnectionWrapperFactory.ObtainSqlConnectionWrapperAsync(cancellationToken: cancellationToken).ConfigureAwait(false);
         using SqlCommandWrapper sqlCommandWrapper = sqlConnectionWrapper.CreateRetrySqlCommand();
 
         var serverConnection = GetServerConnectionWithTimeout(sqlCommandWrapper.Connection);
@@ -79,7 +78,7 @@ public class SchemaManagerDataStore : ISchemaManagerDataStore
         EnsureArg.IsNotNull(status, nameof(status));
         EnsureArg.IsGte(version, 1);
 
-        using SqlConnectionWrapper sqlConnectionWrapper = await _sqlConnectionWrapperFactory.ObtainSqlConnectionWrapperAsync(cancellationToken: cancellationToken);
+        using SqlConnectionWrapper sqlConnectionWrapper = await _sqlConnectionWrapperFactory.ObtainSqlConnectionWrapperAsync(cancellationToken: cancellationToken).ConfigureAwait(false);
         using SqlCommandWrapper sqlCommandWrapper = sqlConnectionWrapper.CreateRetrySqlCommand();
 
         sqlCommandWrapper.CommandText = "DELETE FROM dbo.SchemaVersion WHERE Version = @version AND Status = @status";
@@ -92,7 +91,7 @@ public class SchemaManagerDataStore : ISchemaManagerDataStore
     /// <inheritdoc />
     public async Task<int> GetCurrentSchemaVersionAsync(CancellationToken cancellationToken)
     {
-        using SqlConnectionWrapper sqlConnectionWrapper = await _sqlConnectionWrapperFactory.ObtainSqlConnectionWrapperAsync(cancellationToken: cancellationToken);
+        using SqlConnectionWrapper sqlConnectionWrapper = await _sqlConnectionWrapperFactory.ObtainSqlConnectionWrapperAsync(cancellationToken: cancellationToken).ConfigureAwait(false);
         using SqlCommandWrapper sqlCommandWrapper = sqlConnectionWrapper.CreateRetrySqlCommand();
 
         sqlCommandWrapper.CommandType = CommandType.StoredProcedure;
@@ -123,7 +122,7 @@ public class SchemaManagerDataStore : ISchemaManagerDataStore
     {
         EnsureArg.IsNotNull(script, nameof(script));
 
-        using SqlConnectionWrapper sqlConnectionWrapper = await _sqlConnectionWrapperFactory.ObtainSqlConnectionWrapperAsync(cancellationToken: cancellationToken);
+        using SqlConnectionWrapper sqlConnectionWrapper = await _sqlConnectionWrapperFactory.ObtainSqlConnectionWrapperAsync(cancellationToken: cancellationToken).ConfigureAwait(false);
         using SqlCommandWrapper sqlCommandWrapper = sqlConnectionWrapper.CreateRetrySqlCommand();
 
         var server = new Server(GetServerConnectionWithTimeout(sqlCommandWrapper.Connection));
@@ -133,13 +132,13 @@ public class SchemaManagerDataStore : ISchemaManagerDataStore
     /// <inheritdoc />
     public async Task<bool> BaseSchemaExistsAsync(CancellationToken cancellationToken)
     {
-        return await ObjectExistsAsync("SelectCurrentVersionsInformation", "P", cancellationToken);
+        return await ObjectExistsAsync("SelectCurrentVersionsInformation", "P", cancellationToken).ConfigureAwait(false);
     }
 
     /// <inheritdoc />
     public async Task<bool> ObjectExistsAsync(string objectName, string objectType, CancellationToken cancellationToken)
     {
-        using SqlConnectionWrapper sqlConnectionWrapper = await _sqlConnectionWrapperFactory.ObtainSqlConnectionWrapperAsync(cancellationToken: cancellationToken);
+        using SqlConnectionWrapper sqlConnectionWrapper = await _sqlConnectionWrapperFactory.ObtainSqlConnectionWrapperAsync(cancellationToken: cancellationToken).ConfigureAwait(false);
         using SqlCommandWrapper sqlCommandWrapper = sqlConnectionWrapper.CreateRetrySqlCommand();
 
         sqlCommandWrapper.CommandText = "SELECT COUNT(*) FROM sys.objects WHERE name = @name and type = @type";
@@ -152,9 +151,9 @@ public class SchemaManagerDataStore : ISchemaManagerDataStore
     /// <inheritdoc />
     public async Task<bool> InstanceSchemaRecordExistsAsync(CancellationToken cancellationToken)
     {
-        using SqlConnectionWrapper sqlConnectionWrapper = await _sqlConnectionWrapperFactory.ObtainSqlConnectionWrapperAsync(cancellationToken: cancellationToken);
+        using SqlConnectionWrapper sqlConnectionWrapper = await _sqlConnectionWrapperFactory.ObtainSqlConnectionWrapperAsync(cancellationToken: cancellationToken).ConfigureAwait(false);
         using SqlCommandWrapper sqlCommandWrapper = sqlConnectionWrapper.CreateRetrySqlCommand();
-        
+
         sqlCommandWrapper.CommandText = "SELECT COUNT(*) FROM dbo.InstanceSchema";
 
         return (int)await sqlCommandWrapper.ExecuteScalarAsync(cancellationToken).ConfigureAwait(false) != 0;

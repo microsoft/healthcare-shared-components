@@ -1,4 +1,4 @@
-﻿// -------------------------------------------------------------------------------------------------
+// -------------------------------------------------------------------------------------------------
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License (MIT). See LICENSE in the repo root for license information.
 // -------------------------------------------------------------------------------------------------
@@ -198,9 +198,9 @@ public class BlobClientRegistrationExtensionsTest
         List<IBlobContainerInitializer> intializers = provider.GetRequiredService<IEnumerable<IBlobContainerInitializer>>().ToList();
 
         Assert.Equal(3, intializers.Count);
-        await AssertBlobInitializationAsync(intializers[0], "FooContainer");
-        await AssertBlobInitializationAsync(intializers[1], "BarContainer");
-        await AssertBlobInitializationAsync(intializers[2], "BazContainer");
+        await AssertBlobInitializationAsync(intializers[0], "FooContainer").ConfigureAwait(false);
+        await AssertBlobInitializationAsync(intializers[1], "BarContainer").ConfigureAwait(false);
+        await AssertBlobInitializationAsync(intializers[2], "BazContainer").ConfigureAwait(false);
     }
 
     [Fact]
@@ -231,9 +231,9 @@ public class BlobClientRegistrationExtensionsTest
         BlobContainerClient containerClient = Substitute.For<BlobContainerClient>();
         client.GetBlobContainerClient(expectedContainer).Returns(containerClient);
 
-        await initializer.InitializeContainerAsync(client);
+        await initializer.InitializeContainerAsync(client).ConfigureAwait(false);
 
         client.Received(1).GetBlobContainerClient(expectedContainer);
-        await containerClient.Received(1).CreateIfNotExistsAsync();
+        await containerClient.Received(1).CreateIfNotExistsAsync().ConfigureAwait(false);
     }
 }

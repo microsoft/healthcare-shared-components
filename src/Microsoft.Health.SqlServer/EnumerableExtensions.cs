@@ -1,10 +1,11 @@
-﻿// -------------------------------------------------------------------------------------------------
+// -------------------------------------------------------------------------------------------------
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License (MIT). See LICENSE in the repo root for license information.
 // -------------------------------------------------------------------------------------------------
 
 using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Microsoft.Health.SqlServer;
 
@@ -33,7 +34,8 @@ public static class EnumerableExtensions
         return new EnumerableFromStartedEnumerator<T>(enumerator, enumerable);
     }
 
-    private class EnumerableFromStartedEnumerator<T> : IEnumerable<T>
+    [SuppressMessage("Naming", "CA1710:Identifiers should have correct suffix", Justification = "Class does not implement entire Collection interface.")]
+    private sealed class EnumerableFromStartedEnumerator<T> : IEnumerable<T>
     {
         private readonly IEnumerable<T> _original;
         private IEnumerator<T> _startedEnumerator;
@@ -46,7 +48,7 @@ public static class EnumerableExtensions
 
         public IEnumerator<T> GetEnumerator()
         {
-            IEnumerable<T> Inner(IEnumerator<T> e)
+            static IEnumerable<T> Inner(IEnumerator<T> e)
             {
                 try
                 {

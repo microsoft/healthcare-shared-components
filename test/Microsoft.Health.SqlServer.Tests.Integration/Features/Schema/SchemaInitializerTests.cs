@@ -1,4 +1,4 @@
-﻿// -------------------------------------------------------------------------------------------------
+// -------------------------------------------------------------------------------------------------
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License (MIT). See LICENSE in the repo root for license information.
 // -------------------------------------------------------------------------------------------------
@@ -23,13 +23,13 @@ public class SchemaInitializerTests : SqlIntegrationTestBase
     public async Task InvalidDatabaseName_CreateDatabaseAsync_ThrowsException()
     {
         await Assert.ThrowsAsync<ArgumentException>(
-            () => SchemaInitializer.CreateDatabaseAsync(ConnectionWrapper, "[something] DROP DATABASE Production --", CancellationToken.None));
+            () => SchemaInitializer.CreateDatabaseAsync(ConnectionWrapper, "[something] DROP DATABASE Production --", CancellationToken.None)).ConfigureAwait(false);
     }
 
     [Fact]
     public async Task DatabaseDoesNotExist_DoesDatabaseExistAsync_ReturnsFalse()
     {
-        Assert.False(await SchemaInitializer.DoesDatabaseExistAsync(ConnectionWrapper, "doesnotexist", CancellationToken.None));
+        Assert.False(await SchemaInitializer.DoesDatabaseExistAsync(ConnectionWrapper, "doesnotexist", CancellationToken.None).ConfigureAwait(false));
     }
 
     [Fact]
@@ -39,13 +39,13 @@ public class SchemaInitializerTests : SqlIntegrationTestBase
 
         try
         {
-            Assert.False(await SchemaInitializer.DoesDatabaseExistAsync(ConnectionWrapper, dbName, CancellationToken.None));
-            Assert.True(await SchemaInitializer.CreateDatabaseAsync(ConnectionWrapper, dbName, CancellationToken.None));
-            Assert.True(await SchemaInitializer.DoesDatabaseExistAsync(ConnectionWrapper, dbName, CancellationToken.None));
+            Assert.False(await SchemaInitializer.DoesDatabaseExistAsync(ConnectionWrapper, dbName, CancellationToken.None).ConfigureAwait(false));
+            Assert.True(await SchemaInitializer.CreateDatabaseAsync(ConnectionWrapper, dbName, CancellationToken.None).ConfigureAwait(false));
+            Assert.True(await SchemaInitializer.DoesDatabaseExistAsync(ConnectionWrapper, dbName, CancellationToken.None).ConfigureAwait(false));
         }
         finally
         {
-            await DeleteDatabaseAsync(dbName);
+            await DeleteDatabaseAsync(dbName).ConfigureAwait(false);
         }
     }
 }
