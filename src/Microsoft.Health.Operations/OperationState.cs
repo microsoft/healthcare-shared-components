@@ -45,7 +45,7 @@ public class OperationState<T>
     /// <summary>
     /// Gets the percentage of work that has been completed by the operation.
     /// </summary>
-    /// <value>An integer ranging from 0 to 100.</value>
+    /// <value>An optional integer ranging from 0 to 100 if supported.</value>
     public int? PercentComplete { get; init; }
 
     /// <summary>
@@ -58,8 +58,14 @@ public class OperationState<T>
     public IReadOnlyCollection<Uri>? Resources { get; init; }
 
     /// <summary>
-    /// Gets the optional collection of operation-specific properties.
+    /// Gets the optional results of the operation.
     /// </summary>
-    /// <value>Zero or more key-value pairs based on the <see cref="Type"/>.</value>
-    public IReadOnlyDictionary<string, string>? AdditionalProperties { get; init; }
+    /// <remarks>
+    /// The results may change over time as the operation continues execution.
+    /// </remarks>
+    /// <value>
+    /// An object whose type depends on the <see cref="OperationState{T}.Type"/> if specified;
+    /// otherwise <see langword="null"/>.
+    /// </value>
+    public object? Results { get; init; }
 }

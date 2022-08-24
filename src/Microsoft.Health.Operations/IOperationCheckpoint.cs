@@ -36,10 +36,4 @@ public interface IOperationCheckpoint
     /// </remarks>
     /// <value>A collection of resource IDs, or <see langword="null"/> if there are no targeted resources.</value>
     IReadOnlyCollection<string>? ResourceIds { get; }
-
-    /// <summary>
-    /// Gets the optional collection of operation-specific properties.
-    /// </summary>
-    /// <value>Zero or more key-value pairs based on the <see cref="OperationState{T}.Type"/>.</value>
-    IReadOnlyDictionary<string, string>? AdditionalProperties { get; }
 }
