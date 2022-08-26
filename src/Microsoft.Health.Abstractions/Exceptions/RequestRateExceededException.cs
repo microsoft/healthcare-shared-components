@@ -1,4 +1,4 @@
-﻿// -------------------------------------------------------------------------------------------------
+// -------------------------------------------------------------------------------------------------
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License (MIT). See LICENSE in the repo root for license information.
 // -------------------------------------------------------------------------------------------------
@@ -12,6 +12,20 @@ namespace Microsoft.Health.Abstractions.Exceptions;
 /// </summary>
 public class RequestRateExceededException : MicrosoftHealthException
 {
+    public RequestRateExceededException()
+    {
+    }
+
+    public RequestRateExceededException(string message)
+        : base(message)
+    {
+    }
+
+    public RequestRateExceededException(string message, Exception innerException)
+        : base(message, innerException)
+    {
+    }
+
     /// <summary>
     /// Initializes a new instance of the <see cref="RequestRateExceededException"/> class.
     /// </summary>
