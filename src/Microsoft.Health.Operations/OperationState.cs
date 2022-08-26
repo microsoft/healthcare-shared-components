@@ -1,4 +1,4 @@
-﻿// -------------------------------------------------------------------------------------------------
+// -------------------------------------------------------------------------------------------------
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License (MIT). See LICENSE in the repo root for license information.
 // -------------------------------------------------------------------------------------------------
@@ -12,53 +12,63 @@ namespace Microsoft.Health.Operations;
 /// Represents the state of a long-running operation.
 /// </summary>
 /// <typeparam name="T">The type used to denote the category of operation.</typeparam>
-public class OperationState<T>
+public sealed class OperationState<T> : IOperationState<T>
 {
-    /// <summary>
-    /// Gets or sets the operation ID.
-    /// </summary>
-    /// <value>The unique ID that denotes a particular operation.</value>
+    /// <inheritdoc cref="IOperationState{T}.OperationId"/>
     public Guid OperationId { get; init; }
 
-    /// <summary>
-    /// Gets or sets the category of the operation.
-    /// </summary>
+    /// <inheritdoc cref="IOperationState{T}.Type"/>
     public T? Type { get; init; }
 
-    /// <summary>
-    /// Gets or sets the date and time the operation was started.
-    /// </summary>
-    /// <value>The <see cref="DateTime"/> when the operation was started.</value>
+    /// <inheritdoc cref="IOperationState{T}.CreatedTime"/>
     public DateTime CreatedTime { get; init; }
 
-    /// <summary>
-    /// Gets or sets the last date and time the state was updated.
-    /// </summary>
-    /// <value>The last <see cref="DateTime"/> when the operation state was updated.</value>
+    /// <inheritdoc cref="IOperationState{T}.LastUpdatedTime"/>
     public DateTime LastUpdatedTime { get; init; }
 
-    /// <summary>
-    /// Gets or sets the execution status of the operation.
-    /// </summary>
+    /// <inheritdoc cref="IOperationState{T}.Status"/>
     public OperationStatus Status { get; init; }
 
-    /// <summary>
-    /// Gets the percentage of work that has been completed by the operation.
-    /// </summary>
-    /// <value>An optional integer ranging from 0 to 100 if supported.</value>
+    /// <inheritdoc cref="IOperationState{T}.PercentComplete"/>
     public int? PercentComplete { get; init; }
 
-    /// <summary>
-    /// Gets the optional collection of resources locations that the operation is creating or manipulating.
-    /// </summary>
-    /// <remarks>
-    /// The set of resources may change until the <see cref="Status"/> indicates completion.
-    /// </remarks>
-    /// <value>A collection of resource IDs, or <see langword="null"/> if there are no targeted resources.</value>
+    /// <inheritdoc cref="IOperationState{T}.Resources"/>
+    public IReadOnlyCollection<Uri>? Resources { get; init; }
+
+    /// <inheritdoc cref="IOperationState{T}.Results"/>
+    public virtual object? Results => null;
+}
+
+/// <summary>
+/// Represents the state and results of a long-running operation
+/// </summary>
+/// <typeparam name="TType">The type used to denote the category of operation.</typeparam>
+/// <typeparam name="TResults">The type used to represent the results of the operation.</typeparam>
+public sealed class OperationState<TType, TResults> : IOperationState<TType>
+{
+    /// <inheritdoc cref="IOperationState{T}.OperationId"/>
+    public Guid OperationId { get; init; }
+
+    /// <inheritdoc cref="IOperationState{T}.Type"/>
+    public TType? Type { get; init; }
+
+    /// <inheritdoc cref="IOperationState{T}.CreatedTime"/>
+    public DateTime CreatedTime { get; init; }
+
+    /// <inheritdoc cref="IOperationState{T}.LastUpdatedTime"/>
+    public DateTime LastUpdatedTime { get; init; }
+
+    /// <inheritdoc cref="IOperationState{T}.Status"/>
+    public OperationStatus Status { get; init; }
+
+    /// <inheritdoc cref="IOperationState{T}.PercentComplete"/>
+    public int? PercentComplete { get; init; }
+
+    /// <inheritdoc cref="IOperationState{T}.Resources"/>
     public IReadOnlyCollection<Uri>? Resources { get; init; }
 
     /// <summary>
-    /// Gets the optional results of the operation.
+    /// Gets the results of the operation.
     /// </summary>
     /// <remarks>
     /// The results may change over time as the operation continues execution.
@@ -67,5 +77,7 @@ public class OperationState<T>
     /// An object whose type depends on the <see cref="OperationState{T}.Type"/> if specified;
     /// otherwise <see langword="null"/>.
     /// </value>
-    public object? Results { get; init; }
+    public TResults? Results { get; init; }
+
+    object? IOperationState<TType>.Results => Results;
 }
