@@ -36,7 +36,7 @@ public sealed class OperationState<T> : IOperationState<T>
     public IReadOnlyCollection<Uri>? Resources { get; init; }
 
     /// <inheritdoc cref="IOperationState{T}.Results"/>
-    public object? Results => null;
+    object? IOperationState<T>.Results => null;
 }
 
 /// <summary>
@@ -79,5 +79,6 @@ public sealed class OperationState<TType, TResults> : IOperationState<TType>
     /// </value>
     public TResults? Results { get; init; }
 
+    /// <inheritdoc cref="IOperationState{T}.Results"/>
     object? IOperationState<TType>.Results => Results;
 }
