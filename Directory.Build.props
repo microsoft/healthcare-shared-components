@@ -3,6 +3,7 @@
   <PropertyGroup>
     <Authors>Microsoft Health Team</Authors>
     <AllowedOutputExtensionsInPackageBuildOutputFolder>$(AllowedOutputExtensionsInPackageBuildOutputFolder);.pdb</AllowedOutputExtensionsInPackageBuildOutputFolder>
+    <CodeAnalysisPackageVersion>4.3.0</CodeAnalysisPackageVersion>
     <Company>Microsoft Corporation</Company>
     <Copyright>Copyright © Microsoft Corporation. All rights reserved.</Copyright>
     <Deterministic>true</Deterministic>
