@@ -25,12 +25,9 @@ public class OperationStateTests
     public void GivenState_WhenSerializing_OperationIdUsesProperFormat(Type type, IOperationState<int> state)
     {
         string json = JsonSerializer.Serialize(state, type);
-        AssertOperationId(JsonSerializer.Deserialize<JsonElement>(json), state.OperationId.ToString(OperationId.FormatSpecifier));
-    }
+        JsonElement element = JsonSerializer.Deserialize<JsonElement>(json);
 
-    private static void AssertOperationId(JsonElement element, string expected)
-    {
         Assert.True(element.TryGetProperty(nameof(IOperationState<int>.OperationId), out JsonElement property));
-        Assert.Equal(expected, property.GetString());
+        Assert.Equal(state.OperationId.ToString(OperationId.FormatSpecifier), property.GetString());
     }
 }
