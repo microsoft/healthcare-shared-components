@@ -4,6 +4,8 @@
 // -------------------------------------------------------------------------------------------------
 
 using System;
+using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
 using Xunit;
 
@@ -11,20 +13,19 @@ namespace Microsoft.Health.Operations.UnitTests;
 
 public class OperationStateTests
 {
-    [Fact]
-    public void GivenState_WhenSerializing_OperationIdUsesProperFormat()
+    public static IEnumerable<object[]> SerializationTestArguments => new object[][]
     {
-        string json;
+        new object[] { typeof(OperationState<int>), new OperationState<int> { OperationId = Guid.NewGuid() } },
+        new object[] { typeof(OperationState<int, string>), new OperationState<int, string> { OperationId = Guid.NewGuid(), Results = "Hello World" } }
+    };
 
-        // No payload
-        var s1 = new OperationState<int> { OperationId = Guid.NewGuid() };
-        json = JsonSerializer.Serialize(s1);
-        AssertOperationId(JsonSerializer.Deserialize<JsonElement>(json), s1.OperationId.ToString(OperationId.FormatSpecifier));
-
-        // With payload
-        var s2 = new OperationState<int, string> { OperationId = Guid.NewGuid(), Results = "Hello World" };
-        json = JsonSerializer.Serialize(s2);
-        AssertOperationId(JsonSerializer.Deserialize<JsonElement>(json), s2.OperationId.ToString(OperationId.FormatSpecifier));
+    [Theory]
+    [MemberData(nameof(SerializationTestArguments))]
+    [SuppressMessage("Design", "CA1062:Validate arguments of public methods", Justification = "Test method.")]
+    public void GivenState_WhenSerializing_OperationIdUsesProperFormat(Type type, IOperationState<int> state)
+    {
+        string json = JsonSerializer.Serialize(state, type);
+        AssertOperationId(JsonSerializer.Deserialize<JsonElement>(json), state.OperationId.ToString(OperationId.FormatSpecifier));
     }
 
     private static void AssertOperationId(JsonElement element, string expected)
