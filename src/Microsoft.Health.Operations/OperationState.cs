@@ -5,6 +5,8 @@
 
 using System;
 using System.Collections.Generic;
+using System.Text.Json.Serialization;
+using Microsoft.Health.Operations.Serialization;
 
 namespace Microsoft.Health.Operations;
 
@@ -15,6 +17,7 @@ namespace Microsoft.Health.Operations;
 public sealed class OperationState<T> : IOperationState<T>
 {
     /// <inheritdoc cref="IOperationState{T}.OperationId"/>
+    [JsonConverter(typeof(OperationIdJsonConverter))]
     public Guid OperationId { get; init; }
 
     /// <inheritdoc cref="IOperationState{T}.Type"/>
@@ -47,6 +50,7 @@ public sealed class OperationState<T> : IOperationState<T>
 public sealed class OperationState<TType, TResults> : IOperationState<TType>
 {
     /// <inheritdoc cref="IOperationState{T}.OperationId"/>
+    [JsonConverter(typeof(OperationIdJsonConverter))]
     public Guid OperationId { get; init; }
 
     /// <inheritdoc cref="IOperationState{T}.Type"/>
