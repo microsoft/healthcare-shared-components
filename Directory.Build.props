@@ -25,6 +25,10 @@
     <WarningsAsErrors />
   </PropertyGroup>
 
+  <ItemGroup>
+    <Compile Include="$(RootDirectory)\lang\*" Visible="false" />
+  </ItemGroup>
+
   <Choose>
     <When Condition="$(MSBuildProjectName.Contains('Test'))">
       <PropertyGroup>
