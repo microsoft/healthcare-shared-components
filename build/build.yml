@@ -24,9 +24,17 @@ steps:
   inputs:
     command: test
     projects: |
-      **/*[t|T]est*/*.csproj
+      **/*[t|T]ests*/*.csproj
       !**/*.Tests.Integration.csproj
-    arguments: '--configuration $(buildConfiguration) --no-build'
+    arguments: '--configuration $(buildConfiguration) -p:ContinuousIntegrationBuild=true --no-build --collect "XPlat Code Coverage" -s "$(build.sourcesDirectory)/CodeCoverage.runsettings" -v normal'
+
+- task: PublishCodeCoverageResults@1
+  displayName: 'Publish Code Coverage Report'
+  inputs:
+    codeCoverageTool: 'Cobertura'
+    summaryFileLocation: '$(Agent.TempDirectory)/*/coverage.cobertura.xml'
+    failIfCoverageEmpty: true
+    condition: succeededOrFailed()
 
 - ${{ if eq(parameters.pack, 'true') }}:
   - task: DotNetCoreCLI@2

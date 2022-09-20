@@ -19,6 +19,7 @@
     <Product>Microsoft Health</Product>
     <PublishRepositoryUrl>true</PublishRepositoryUrl>
     <RootDirectory>$(MSBuildThisFileDirectory)</RootDirectory>
+    <RunSettingsFilePath>$(RootDirectory)CodeCoverage.runsettings</RunSettingsFilePath>
     <SupportedFrameworks>net5.0;$(LtsVersion)</SupportedFrameworks>
     <TargetLatestRuntimePatch>true</TargetLatestRuntimePatch>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
@@ -30,10 +31,13 @@
   </ItemGroup>
 
   <Choose>
-    <When Condition="$(MSBuildProjectName.Contains('Test'))">
+    <When Condition="$(MSBuildProjectName.Contains('Tests'))">
       <PropertyGroup>
         <IsPackable>false</IsPackable>
       </PropertyGroup>
+      <ItemGroup>
+        <PackageReference Include="coverlet.collector" PrivateAssets="All" />
+      </ItemGroup>
       <ItemGroup>
         <Compile Include="$(RootDirectory)GlobalSuppressions.Test.cs" Visible="false" />
       </ItemGroup>

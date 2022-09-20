@@ -15,11 +15,19 @@ steps:
   inputs:
     command: test
     projects: '**/*.Tests.Integration.csproj'
-    arguments: '--configuration $(buildConfiguration) --no-build'
+    arguments: '--configuration $(buildConfiguration) -p:ContinuousIntegrationBuild=true --no-build --collect "XPlat Code Coverage" -s "$(build.sourcesDirectory)/CodeCoverage.runsettings" -v normal'
   env:
     AzureWebJobsStorage: 'UseDevelopmentStorage=true'
     DurableTask__ConnectionName: 'AzureWebJobsStorage'
     TestSqlConnectionString: 'Server=(local);Persist Security Info=False;User ID=sa;Password=T3stP@ssw0rd;MultipleActiveResultSets=False;Connection Timeout=30;TrustServerCertificate=true'
+
+- task: PublishCodeCoverageResults@1
+  displayName: 'Publish Code Coverage Report'
+  inputs:
+    codeCoverageTool: 'Cobertura'
+    summaryFileLocation: '$(Agent.TempDirectory)/*/coverage.cobertura.xml'
+    failIfCoverageEmpty: true
+    condition: succeededOrFailed()
 
 - script: docker stop azure-storage
   displayName: 'Stop Azurite'
