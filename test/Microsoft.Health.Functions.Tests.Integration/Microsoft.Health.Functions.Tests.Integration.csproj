@@ -1,7 +1,7 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>$(LtsVersion)</TargetFrameworks>
+    <TargetFrameworks>$(SupportedFrameworks)</TargetFrameworks>
     <Nullable>enable</Nullable>
     <XunitStartupFullName>Microsoft.Health.Functions.Tests.Integration.TestStartup</XunitStartupFullName>
   </PropertyGroup>
