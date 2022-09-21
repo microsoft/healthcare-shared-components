@@ -4,7 +4,6 @@
 
   <PropertyGroup>
     <ToolTargetFramework>net6.0</ToolTargetFramework>
-    <ToolTargetFramework Condition="'$(TargetFramework)' == 'net5.0' Or '$(TargetFramework)' == 'net6.0'">$(TargetFramework)</ToolTargetFramework>
     <GeneratorPath>$(MSBuildThisFileDirectory)../../tools/$(ToolTargetFramework)/Microsoft.Health.Extensions.BuildTimeCodeGenerator.dll</GeneratorPath>
   </PropertyGroup>
 

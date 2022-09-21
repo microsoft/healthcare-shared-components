@@ -1,5 +1,6 @@
 <Project>
 
+  <!-- Common Properties -->
   <PropertyGroup>
     <Authors>Microsoft Health Team</Authors>
     <AllowedOutputExtensionsInPackageBuildOutputFolder>$(AllowedOutputExtensionsInPackageBuildOutputFolder);.pdb</AllowedOutputExtensionsInPackageBuildOutputFolder>
@@ -19,51 +20,58 @@
     <Product>Microsoft Health</Product>
     <PublishRepositoryUrl>true</PublishRepositoryUrl>
     <RootDirectory>$(MSBuildThisFileDirectory)</RootDirectory>
-    <SupportedFrameworks>net5.0;$(LtsVersion)</SupportedFrameworks>
+    <SdkPackageVersion>6.0.0</SdkPackageVersion>
+    <SupportedFrameworks>$(LtsVersion)</SupportedFrameworks>
     <TargetLatestRuntimePatch>true</TargetLatestRuntimePatch>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <WarningsAsErrors />
   </PropertyGroup>
 
+  <!-- Dynamic Assembly Info -->
+  <ItemGroup>
+    <AssemblyAttribute Include="System.CLSCompliantAttribute ">
+      <_Parameter1>false</_Parameter1>
+      <_Parameter1_TypeName>System.Boolean</_Parameter1_TypeName>
+    </AssemblyAttribute>
+    <AssemblyAttribute Include="System.Resources.NeutralResourcesLanguage ">
+      <_Parameter1>en</_Parameter1>
+      <_Parameter1_TypeName>System.String</_Parameter1_TypeName>
+    </AssemblyAttribute>
+  </ItemGroup>
+
+  <!-- Support New Lanuage Features in .NET Standard 2.0 -->
   <ItemGroup>
     <Compile Include="$(RootDirectory)\lang\*" Visible="false" />
   </ItemGroup>
 
-  <Choose>
-    <When Condition="$(MSBuildProjectName.Contains('Test'))">
-      <PropertyGroup>
-        <IsPackable>false</IsPackable>
-      </PropertyGroup>
-      <ItemGroup>
-        <Compile Include="$(RootDirectory)GlobalSuppressions.Test.cs" Visible="false" />
-      </ItemGroup>
-    </When>
-  </Choose>
+  <!-- .NET Analyzers -->
+  <PropertyGroup Condition="'$(MSBuildProjectName)' != 'Microsoft.Health.Extensions.BuildTimeCodeGenerator'">
+    <AnalysisLevel>latest-All</AnalysisLevel>
+    <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
+  </PropertyGroup>
 
-  <Choose>
-    <When Condition="'$(TargetFramework)' == '$(LtsVersion)'">
-      <PropertyGroup>
-        <SdkPackageVersion>6.0.0</SdkPackageVersion>
-      </PropertyGroup>
-    </When>
-    <Otherwise>
-      <PropertyGroup>
-        <SdkPackageVersion>5.0.0</SdkPackageVersion>
-      </PropertyGroup>
-    </Otherwise>
-  </Choose>
-
+  <!-- Common Packages -->
   <ItemGroup>
     <PackageReference Include="Microsoft.SourceLink.GitHub" PrivateAssets="All" />
   </ItemGroup>
 
+  <!-- Test Properties -->
   <Choose>
-    <When Condition="'$(MSBuildProjectName)' != 'Microsoft.Health.Extensions.BuildTimeCodeGenerator'">
+    <When Condition="$(MSBuildProjectName.Contains('Test'))">
       <PropertyGroup>
-        <AnalysisLevel>latest-All</AnalysisLevel>
-        <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
+        <IsPackable>false</IsPackable>
+        <!-- CA1707: Identifiers should not contain underscores -->
+        <NoWarn>($NoWarn);CA1707</NoWarn>
       </PropertyGroup>
     </When>
+    <Otherwise>
+      <ItemGroup>
+        <AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleTo">
+          <_Parameter1>$(MSBuildProjectName).UnitTests</_Parameter1>
+          <_Parameter1_TypeName>System.String</_Parameter1_TypeName>
+        </AssemblyAttribute>
+      </ItemGroup>
+    </Otherwise>
   </Choose>
 
 </Project>
