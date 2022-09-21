@@ -1,6 +1,6 @@
 steps:
 - task: reportgenerator@5
-  displayName: 'Generate Code Coverage Report'
+  displayName: 'Aggregate Code Coverage'
   condition: succeededOrFailed()
   inputs:
     reports: '$(Agent.TempDirectory)/*/coverage.cobertura.xml'
@@ -8,7 +8,7 @@ steps:
     targetdir: '$(Agent.TempDirectory)/coverage'
 
 - task: PublishCodeCoverageResults@1
-  displayName: 'Publish Code Coverage Report'
+  displayName: 'Publish Code Coverage'
   condition: succeededOrFailed()
   inputs:
     codeCoverageTool: 'Cobertura'
