@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <package xmlns="http://schemas.microsoft.com/packaging/2012/06/nuspec.xsd">
   <metadata>
     <id>Microsoft.Health.Extensions.BuildTimeCodeGenerator</id>
@@ -12,9 +12,7 @@
   <files>
     <file src="_._" target="lib/netstandard2.0/" />
     <file src="Microsoft.Health.Extensions.BuildTimeCodeGenerator.targets" target="build/netstandard2.0/Microsoft.Health.Extensions.BuildTimeCodeGenerator.targets" />
-
     <file src="Microsoft.Health.Extensions.BuildTimeCodeGenerator.targets" target="tools/" />
-    <file src="$publishdir$\net5.0\**\*" target="tools/net5.0/" />
     <file src="$publishdir$\net6.0\**\*" target="tools/net6.0/" />
   </files>
 </package>

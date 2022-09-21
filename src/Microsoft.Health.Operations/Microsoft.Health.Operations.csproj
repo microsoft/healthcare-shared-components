@@ -1,8 +1,8 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <Description>Abstractions for long-running operations used by Microsoft Health.</Description>
-    <TargetFrameworks>$(LtsVersion);netstandard2.0</TargetFrameworks>
+    <TargetFrameworks>$(SupportedFrameworks);netstandard2.0</TargetFrameworks>
     <Nullable>enable</Nullable>
   </PropertyGroup>
 

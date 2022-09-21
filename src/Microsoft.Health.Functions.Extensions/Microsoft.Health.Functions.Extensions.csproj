@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <Description>Common extensions for running Azure Functions used by Microsoft Health.</Description>
-    <TargetFrameworks>$(LtsVersion)</TargetFrameworks>
+    <TargetFrameworks>$(SupportedFrameworks)</TargetFrameworks>
     <Nullable>enable</Nullable>
   </PropertyGroup>
 

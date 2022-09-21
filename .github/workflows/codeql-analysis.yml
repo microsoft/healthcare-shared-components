@@ -15,8 +15,6 @@ jobs:
 
     strategy:
       fail-fast: false
-      matrix:
-        language: [ 'csharp' ]
 
     steps:
     - name: Checkout repository
@@ -24,24 +22,16 @@ jobs:
 
     - name: Install .NET SDK
       uses: actions/setup-dotnet@v2
-      if: ${{ matrix.language == 'csharp' }}
-
-    - name: Install .NET 5.0 SDK
-      uses: actions/setup-dotnet@v2
-      if: ${{ matrix.language == 'csharp' }}
-      with:
-        dotnet-version: '5.x'
 
     # Initializes the CodeQL tools for scanning.
     - name: Initialize CodeQL
       uses: github/codeql-action/init@v2
       with:
-        languages: ${{ matrix.language }}
+        languages: 'csharp'
 
     # Build solution
     - name: dotnet build
       run: dotnet build Microsoft.Health.sln -c Release -p:ContinuousIntegrationBuild=true
-      if: ${{ matrix.language == 'csharp' }}
 
     - name: Perform CodeQL Analysis
       uses: github/codeql-action/analyze@v2

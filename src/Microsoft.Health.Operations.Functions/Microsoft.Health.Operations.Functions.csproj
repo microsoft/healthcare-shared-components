@@ -1,8 +1,8 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <Description>Common utilities and Azure Functions for long-running operations used by Microsoft Health.</Description>
-    <TargetFrameworks>$(LtsVersion)</TargetFrameworks>
+    <TargetFrameworks>$(SupportedFrameworks)</TargetFrameworks>
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
