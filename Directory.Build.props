@@ -20,6 +20,7 @@
     <Product>Microsoft Health</Product>
     <PublishRepositoryUrl>true</PublishRepositoryUrl>
     <RootDirectory>$(MSBuildThisFileDirectory)</RootDirectory>
+    <RunSettingsFilePath>$(RootDirectory)CodeCoverage.runsettings</RunSettingsFilePath>
     <SdkPackageVersion>6.0.0</SdkPackageVersion>
     <SupportedFrameworks>$(LtsVersion)</SupportedFrameworks>
     <TargetLatestRuntimePatch>true</TargetLatestRuntimePatch>
@@ -57,12 +58,15 @@
 
   <!-- Test Properties -->
   <Choose>
-    <When Condition="$(MSBuildProjectName.Contains('Test'))">
+    <When Condition="$(MSBuildProjectName.Contains('Tests'))">
       <PropertyGroup>
         <IsPackable>false</IsPackable>
         <!-- CA1707: Identifiers should not contain underscores -->
         <NoWarn>($NoWarn);CA1707</NoWarn>
       </PropertyGroup>
+      <ItemGroup>
+        <PackageReference Include="coverlet.collector" PrivateAssets="All" />
+      </ItemGroup>
     </When>
     <Otherwise>
       <ItemGroup>

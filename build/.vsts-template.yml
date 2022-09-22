@@ -28,6 +28,7 @@ jobs:
     parameters:
       pack: 'false'
   - template: integration-tests.yml
+  - template: coverage.yml
 
 - job: WindowsBuild
   displayName: 'Build (Windows)'

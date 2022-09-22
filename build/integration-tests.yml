@@ -15,7 +15,7 @@ steps:
   inputs:
     command: test
     projects: '**/*.Tests.Integration.csproj'
-    arguments: '--configuration $(buildConfiguration) --no-build'
+    arguments: '--configuration $(buildConfiguration) -p:ContinuousIntegrationBuild=true --no-build --collect "XPlat Code Coverage" -s "$(build.sourcesDirectory)/CodeCoverage.runsettings" -v normal'
   env:
     AzureWebJobsStorage: 'UseDevelopmentStorage=true'
     DurableTask__ConnectionName: 'AzureWebJobsStorage'
