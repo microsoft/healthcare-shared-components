@@ -22,6 +22,7 @@ namespace Microsoft.Health.Extensions.BuildTimeCodeGenerator.Sql;
 /// </summary>
 public abstract class SqlVisitor : TSqlFragmentVisitor
 {
+    private static readonly ISet<string> Keywords = new HashSet<string>() { "TableName" };
     /// <summary>
     /// These members will be added to the generated class.
     /// </summary>
@@ -229,6 +230,11 @@ public abstract class SqlVisitor : TSqlFragmentVisitor
         return Regex.Replace(objectName.BaseIdentifier.Value, @"_\d+$", string.Empty);
     }
 
+    private static string GetColunmName(string sqlColumnName)
+    {
+        return Keywords.Contains(sqlColumnName) ? sqlColumnName + "_1" : sqlColumnName;
+    }
+
     protected static MemberDeclarationSyntax CreatePropertyForTableColumn(ColumnDefinition column)
     {
         string normalizedSqlDbType = null;
@@ -266,7 +272,7 @@ public abstract class SqlVisitor : TSqlFragmentVisitor
 
         return FieldDeclaration(
                 VariableDeclaration(typeName)
-                    .AddVariables(VariableDeclarator($"{column.ColumnIdentifier.Value}")
+                    .AddVariables(VariableDeclarator(GetColunmName(column.ColumnIdentifier.Value))
                         .WithInitializer(
                             EqualsValueClause(
                                 ObjectCreationExpression(
