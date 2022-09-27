@@ -20,7 +20,7 @@
   </PropertyGroup>
 
   <Target Name="PublishAll" BeforeTargets="GenerateNuspec">
-    <MSBuild Projects="$(MSBuildProjectFullPath)" Targets="Publish" Properties="TargetFramework=netstandard2.0" />
+    <MSBuild Projects="$(MSBuildProjectFullPath)" Targets="Publish" Properties="TargetFramework=net462" />
   </Target>
 
 </Project>
