@@ -10,6 +10,7 @@
 
   <ItemGroup>
     <Folder Include="Schema\" />
+    <Folder Include="Sql\" />
   </ItemGroup>
 
   <ItemGroup>
