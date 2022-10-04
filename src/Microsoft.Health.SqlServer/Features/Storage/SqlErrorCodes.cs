@@ -1,4 +1,4 @@
-﻿// -------------------------------------------------------------------------------------------------
+// -------------------------------------------------------------------------------------------------
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License (MIT). See LICENSE in the repo root for license information.
 // -------------------------------------------------------------------------------------------------
@@ -54,4 +54,9 @@ public static class SqlErrorCodes
     /// Could not found stored procedure
     /// </summary>
     public const short CouldNotFoundStoredProc = 2812;
+
+    /// <summary>
+    /// The query processor ran out of internal resources and could not produce a query plan.
+    /// </summary>
+    public const short QueryProcessorNoQueryPlan = 8623;
 }
