@@ -12,13 +12,13 @@ namespace Microsoft.Health.Api.Features.Security;
 
 internal static class SecurityHeadersHelper
 {
-    private const string XContentTypeOptions = "X-Content-Type-Options";
+    internal const string XContentTypeOptions = "X-Content-Type-Options";
     private const string XContentTypeOptionsValue = "nosniff";
 
-    private const string XFrameOptions = "X-Frame-Options";
+    internal const string XFrameOptions = "X-Frame-Options";
     private const string XFrameOptionsValue = "SAMEORIGIN";
 
-    private const string ContentSecurityPolicy = "Content-Security-Policy";
+    internal const string ContentSecurityPolicy = "Content-Security-Policy";
     private const string ContentSecurityPolicyValue = "frame-src 'self';";
 
     internal static Task SetSecurityHeaders(object context)

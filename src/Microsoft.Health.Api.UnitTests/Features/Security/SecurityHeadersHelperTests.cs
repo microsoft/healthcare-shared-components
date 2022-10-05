@@ -1,4 +1,4 @@
-﻿// -------------------------------------------------------------------------------------------------
+// -------------------------------------------------------------------------------------------------
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License (MIT). See LICENSE in the repo root for license information.
 // -------------------------------------------------------------------------------------------------
@@ -35,7 +35,31 @@ public class SecurityHeadersHelperTests
 
         Assert.NotNull(defaultHttpContext.Response.Headers);
         Assert.NotEmpty(defaultHttpContext.Response.Headers);
-        Assert.True(defaultHttpContext.Response.Headers.TryGetValue("X-Content-Type-Options", out StringValues headerValue));
+        Assert.True(defaultHttpContext.Response.Headers.TryGetValue(SecurityHeadersHelper.XContentTypeOptions, out StringValues headerValue));
         Assert.Equal("nosniff", headerValue);
+    }
+
+    [Fact]
+    public async void GivenAContext_WhenSettingSecurityHeaders_TheXFrameOptionsHeaderIsSet()
+    {
+        var defaultHttpContext = new DefaultHttpContext();
+        await SecurityHeadersHelper.SetSecurityHeaders(defaultHttpContext);
+
+        Assert.NotNull(defaultHttpContext.Response.Headers);
+        Assert.NotEmpty(defaultHttpContext.Response.Headers);
+        Assert.True(defaultHttpContext.Response.Headers.TryGetValue(SecurityHeadersHelper.XFrameOptions, out StringValues headerValue));
+        Assert.Equal("SAMEORIGIN", headerValue);
+    }
+
+    [Fact]
+    public async void GivenAContext_WhenSettingSecurityHeaders_TheContentSecurityPolicyHeaderIsSet()
+    {
+        var defaultHttpContext = new DefaultHttpContext();
+        await SecurityHeadersHelper.SetSecurityHeaders(defaultHttpContext);
+
+        Assert.NotNull(defaultHttpContext.Response.Headers);
+        Assert.NotEmpty(defaultHttpContext.Response.Headers);
+        Assert.True(defaultHttpContext.Response.Headers.TryGetValue(SecurityHeadersHelper.ContentSecurityPolicy, out StringValues headerValue));
+        Assert.Equal("frame-src 'self';", headerValue);
     }
 }
