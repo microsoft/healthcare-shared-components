@@ -1,4 +1,4 @@
-﻿// -------------------------------------------------------------------------------------------------
+// -------------------------------------------------------------------------------------------------
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License (MIT). See LICENSE in the repo root for license information.
 // -------------------------------------------------------------------------------------------------
@@ -15,6 +15,12 @@ internal static class SecurityHeadersHelper
     private const string XContentTypeOptions = "X-Content-Type-Options";
     private const string XContentTypeOptionsValue = "nosniff";
 
+    private const string XFrameOptions = "X-Frame-Options";
+    private const string XFrameOptionsValue = "SAMEORIGIN";
+
+    private const string ContentSecurityPolicy = "Content-Security-Policy";
+    private const string ContentSecurityPolicyValue = "frame-src 'self';";
+
     internal static Task SetSecurityHeaders(object context)
     {
         EnsureArg.IsNotNull(context, nameof(context));
@@ -22,6 +28,9 @@ internal static class SecurityHeadersHelper
         var httpContext = (HttpContext)context;
 
         httpContext.Response.Headers.TryAdd(XContentTypeOptions, XContentTypeOptionsValue);
+
+        httpContext.Response.Headers.TryAdd(XFrameOptions, XFrameOptionsValue);
+        httpContext.Response.Headers.TryAdd(ContentSecurityPolicy, ContentSecurityPolicyValue);
 
         return Task.CompletedTask;
     }
