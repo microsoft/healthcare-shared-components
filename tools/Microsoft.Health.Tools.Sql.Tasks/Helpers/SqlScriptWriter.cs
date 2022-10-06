@@ -13,7 +13,7 @@ namespace Microsoft.Health.Tools.Sql.Tasks.Helpers;
 public class SqlScriptWriter : IDisposable
 {
     private StreamWriter _writer;
-    private readonly Sql160ScriptGenerator _sqlScriptGenerator;
+    private readonly Sql150ScriptGenerator _sqlScriptGenerator;
     private bool _disposed;
 
     public SqlScriptWriter(string path)
@@ -22,7 +22,7 @@ public class SqlScriptWriter : IDisposable
         Directory.CreateDirectory(Path.GetDirectoryName(path));
 
         _writer = File.CreateText(path);
-        _sqlScriptGenerator = new Sql160ScriptGenerator();
+        _sqlScriptGenerator = new Sql150ScriptGenerator();
     }
 
     public void Dispose()

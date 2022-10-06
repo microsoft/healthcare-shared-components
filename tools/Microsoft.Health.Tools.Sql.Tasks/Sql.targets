@@ -28,6 +28,6 @@
             SqlScript="@(SqlScript)" />
     </Target>
 
-    <UsingTask TaskName="GenerateFullScript" AssemblyFile="net462\Microsoft.Health.Tools.Sql.Tasks.dll" />
+    <UsingTask TaskName="GenerateFullScript" AssemblyFile="netstandard2.1\Microsoft.Health.Tools.Sql.Tasks.dll" />
 
 </Project>

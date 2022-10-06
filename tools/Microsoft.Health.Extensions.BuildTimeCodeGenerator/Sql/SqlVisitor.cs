@@ -22,7 +22,7 @@ namespace Microsoft.Health.Extensions.BuildTimeCodeGenerator.Sql;
 /// </summary>
 public abstract class SqlVisitor : TSqlFragmentVisitor
 {
-    private static readonly ISet<string> Keywords = new HashSet<string>() { "TableName" };
+    private static readonly HashSet<string> Keywords = new HashSet<string>() { "TableName" };
 
     /// <summary>
     /// These members will be added to the generated class.
