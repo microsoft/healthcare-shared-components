@@ -35,6 +35,7 @@ public class SecurityHeadersHelperTests
 
         Assert.NotNull(defaultHttpContext.Response.Headers);
         Assert.NotEmpty(defaultHttpContext.Response.Headers);
+        Assert.Equal("X-Content-Type-Options", SecurityHeadersHelper.XContentTypeOptions);
         Assert.True(defaultHttpContext.Response.Headers.TryGetValue(SecurityHeadersHelper.XContentTypeOptions, out StringValues headerValue));
         Assert.Equal("nosniff", headerValue);
     }
@@ -47,6 +48,7 @@ public class SecurityHeadersHelperTests
 
         Assert.NotNull(defaultHttpContext.Response.Headers);
         Assert.NotEmpty(defaultHttpContext.Response.Headers);
+        Assert.Equal("X-Frame-Options", SecurityHeadersHelper.XFrameOptions);
         Assert.True(defaultHttpContext.Response.Headers.TryGetValue(SecurityHeadersHelper.XFrameOptions, out StringValues headerValue));
         Assert.Equal("SAMEORIGIN", headerValue);
     }
@@ -59,6 +61,7 @@ public class SecurityHeadersHelperTests
 
         Assert.NotNull(defaultHttpContext.Response.Headers);
         Assert.NotEmpty(defaultHttpContext.Response.Headers);
+        Assert.Equal("Content-Security-Policy", SecurityHeadersHelper.ContentSecurityPolicy);
         Assert.True(defaultHttpContext.Response.Headers.TryGetValue(SecurityHeadersHelper.ContentSecurityPolicy, out StringValues headerValue));
         Assert.Equal("frame-src 'self';", headerValue);
     }
