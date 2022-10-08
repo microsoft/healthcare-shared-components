@@ -16,9 +16,17 @@
     <PackageReference Include="Microsoft.SqlServer.DacFx" />
   </ItemGroup>
 
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)|$(TargetFramework)' == 'Debug|AnyCPU|netstandard2.1' Or'$(Configuration)|$(Platform)|$(TargetFramework)' == 'Debug|AnyCPU|net462'">
+  <PropertyGroup Condition="'$(TargetFrameWork)' == 'netstandard2.1'">
     <NoPackageAnalysis>true</NoPackageAnalysis>
     <NuspecFile>Sql.nuspec</NuspecFile>
+    <IntermediatePackDir>$(MSBuildProjectDirectory)/bin/$(Configuration)/publish/</IntermediatePackDir>
+    <PublishDir>$(IntermediatePackDir)$(TargetFramework)/</PublishDir>
+    <NuspecProperties>publishDir=$([MSBuild]::NormalizeDirectory($(IntermediatePackDir)));version=$(PackageVersion)</NuspecProperties>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(TargetFrameWork)' == 'net462'">
+    <NoPackageAnalysis>true</NoPackageAnalysis>
+    <NuspecFile>Sql_462.nuspec</NuspecFile>
     <IntermediatePackDir>$(MSBuildProjectDirectory)/bin/$(Configuration)/publish/</IntermediatePackDir>
     <PublishDir>$(IntermediatePackDir)$(TargetFramework)/</PublishDir>
     <NuspecProperties>publishDir=$([MSBuild]::NormalizeDirectory($(IntermediatePackDir)));version=$(PackageVersion)</NuspecProperties>
