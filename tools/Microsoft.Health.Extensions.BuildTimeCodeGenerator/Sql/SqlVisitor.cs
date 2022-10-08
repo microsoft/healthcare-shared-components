@@ -233,7 +233,7 @@ public abstract class SqlVisitor : TSqlFragmentVisitor
 
     private static string GetColunmName(string sqlColumnName)
     {
-        return Keywords.Contains(sqlColumnName) ? sqlColumnName + "_1" : sqlColumnName;
+        return Keywords.Contains(sqlColumnName) ? sqlColumnName + "Column" : sqlColumnName;
     }
 
     protected static MemberDeclarationSyntax CreatePropertyForTableColumn(ColumnDefinition column)

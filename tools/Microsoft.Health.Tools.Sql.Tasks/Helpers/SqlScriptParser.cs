@@ -31,7 +31,7 @@ public static class SqlScriptParser
         using (var stream = File.OpenRead(sqlFile))
         using (var reader = new StreamReader(stream))
         {
-            var parser = new TSql160Parser(true);
+            var parser = new TSql150Parser(true);
             sqlFragment = parser.Parse(reader, out var errors);
 
             if (errors != null && errors.Any())
