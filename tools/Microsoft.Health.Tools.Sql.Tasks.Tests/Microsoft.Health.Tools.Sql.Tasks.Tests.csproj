@@ -33,11 +33,11 @@
     <GeneratedFullScriptPath>Schema\$(LatestSchemaVersion).sql</GeneratedFullScriptPath>
   </PropertyGroup>
 
-  <Target Name="PublishSqlTasks" BeforeTargets="CoreCompile" Condition="'$(TargetFrameWork)' == 'net462'">
-    <MSBuild Projects="..\Microsoft.Health.Tools.Sql.Tasks\Microsoft.Health.Tools.Sql.Tasks.csproj" Targets="Publish" Properties="TargetFramework=net462" />
-  </Target>
   <Target Name="PublishSqlTasks" BeforeTargets="CoreCompile" Condition="'$(TargetFrameWork)' == 'netstandard2.1'">
     <MSBuild Projects="..\Microsoft.Health.Tools.Sql.Tasks\Microsoft.Health.Tools.Sql.Tasks.csproj" Targets="Publish" Properties="TargetFramework=netstandard2.1" />
+  </Target>
+  <Target Name="PublishSqlTasks" BeforeTargets="CoreCompile" Condition="'$(TargetFrameWork)' == 'net462'">
+    <MSBuild Projects="..\Microsoft.Health.Tools.Sql.Tasks\Microsoft.Health.Tools.Sql.Tasks.csproj" Targets="Publish" Properties="TargetFramework=net462" />
   </Target>
  
   

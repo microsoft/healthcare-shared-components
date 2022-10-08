@@ -9,8 +9,12 @@
     <description>MS Build tasks to generate Sql scripts used in health projects</description>
     <repository type="git" url="https://github.com/microsoft/healthcare-shared-components.git" />
   </metadata>
-  <files>
+  <files Condition="'$(TargetFramework)' == 'netstandard2.1'">
     <file src="Sql.targets" target="build" />
     <file src="$publishDir$\netstandard2.1\**\*" target="build/netstandard2.1/" />
+  </files>
+  <files Condition="'$(TargetFramework)' == 'net462'">
+    <file src="Sql.targets" target="build" />
+    <file src="$publishDir$\net462\**\*" target="build/net462/" />
   </files>
 </package>

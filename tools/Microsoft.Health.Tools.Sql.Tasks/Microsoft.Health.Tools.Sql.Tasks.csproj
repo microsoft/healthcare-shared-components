@@ -16,7 +16,7 @@
     <PackageReference Include="Microsoft.SqlServer.DacFx" />
   </ItemGroup>
 
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)|$(TargetFramework)' == 'Debug|AnyCPU|netstandard2.1'">
+  <PropertyGroup>
     <NoPackageAnalysis>true</NoPackageAnalysis>
     <NuspecFile>Sql.nuspec</NuspecFile>
     <IntermediatePackDir>$(MSBuildProjectDirectory)/bin/$(Configuration)/publish/</IntermediatePackDir>
