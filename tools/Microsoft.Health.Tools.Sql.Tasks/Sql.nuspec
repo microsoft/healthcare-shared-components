@@ -12,5 +12,6 @@
   <files>
     <file src="Sql.targets" target="build" />
     <file src="$publishDir$\netstandard2.1\**\*" target="build/netstandard2.1/" />
+    <file src="$publishDir$\net462\**\*" target="build/net462/" />
   </files>
 </package>
