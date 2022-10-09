@@ -1,11 +1,11 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup Condition=" '$(MSBuildRuntimeType)' == 'Core' ">
-    <TargetFrameworks>netstandard2.1</TargetFrameworks>
+    <TargetFramework>netstandard2.1</TargetFramework>
     <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
   </PropertyGroup>
 
   <PropertyGroup Condition=" '$(MSBuildRuntimeType)' != 'Core' ">
-    <TargetFrameworks>net462</TargetFrameworks>
+    <TargetFramework>net462</TargetFramework>
     <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
   </PropertyGroup>
 
@@ -33,10 +33,10 @@
     <GeneratedFullScriptPath>Schema\$(LatestSchemaVersion).sql</GeneratedFullScriptPath>
   </PropertyGroup>
 
-  <Target Name="PublishSqlTasks" BeforeTargets="CoreCompile" Condition="'$(TargetFrameWork)' == 'netstandard2.1'">
+  <Target Name="PublishSqlTasks" BeforeTargets="CoreCompile" Condition=" '$(MSBuildRuntimeType)' == 'Core' ">
     <MSBuild Projects="..\Microsoft.Health.Tools.Sql.Tasks\Microsoft.Health.Tools.Sql.Tasks.csproj" Targets="Publish" Properties="TargetFramework=netstandard2.1" />
   </Target>
-  <Target Name="PublishSqlTasks" BeforeTargets="CoreCompile" Condition="'$(TargetFrameWork)' == 'net462'">
+  <Target Name="PublishSqlTasks" BeforeTargets="CoreCompile" Condition=" '$(MSBuildRuntimeType)' != 'Core' ">
     <MSBuild Projects="..\Microsoft.Health.Tools.Sql.Tasks\Microsoft.Health.Tools.Sql.Tasks.csproj" Targets="Publish" Properties="TargetFramework=net462" />
   </Target>
  

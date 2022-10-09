@@ -1,12 +1,12 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup Condition=" '$(MSBuildRuntimeType)' == 'Core' ">
-    <TargetFrameworks>netstandard2.1</TargetFrameworks>
+    <TargetFramework>netstandard2.1</TargetFramework>
     <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
   </PropertyGroup>
 
   <PropertyGroup Condition=" '$(MSBuildRuntimeType)' != 'Core' ">
-    <TargetFrameworks>net462</TargetFrameworks>
+    <TargetFramework>net462</TargetFramework>
     <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
   </PropertyGroup>
 
@@ -24,11 +24,9 @@
     <NuspecProperties>publishDir=$([MSBuild]::NormalizeDirectory($(IntermediatePackDir)));version=$(PackageVersion)</NuspecProperties>
   </PropertyGroup>
 
-  <Target Name="PublishAll" BeforeTargets="GenerateNuspec" Condition="'$(TargetFrameWork)' == 'netstandard2.1'">
+  <Target Name="PublishAll" BeforeTargets="GenerateNuspec" Condition=" '$(MSBuildRuntimeType)' == 'Core' ">
     <MSBuild Projects="$(MSBuildProjectFullPath)" Targets="Publish" Properties="TargetFramework=netstandard2.1" />
   </Target>
-  <Target Name="PublishAll" BeforeTargets="GenerateNuspec" Condition="'$(TargetFrameWork)' == 'net462'">
-    <MSBuild Projects="$(MSBuildProjectFullPath)" Targets="Publish" Properties="TargetFramework=net462" />
-  </Target>
+
 
 </Project>
