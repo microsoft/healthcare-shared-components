@@ -23,4 +23,5 @@
     <MSBuild Projects="$(MSBuildProjectFullPath)" Targets="Publish" Properties="TargetFramework=net462" />
     <MSBuild Projects="$(MSBuildProjectFullPath)" Targets="Publish" Properties="TargetFramework=netstandard2.1" />
   </Target>
+  
 </Project>
