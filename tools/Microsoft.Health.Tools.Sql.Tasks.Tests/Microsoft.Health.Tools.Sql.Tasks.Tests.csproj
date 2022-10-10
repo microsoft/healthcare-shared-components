@@ -1,11 +1,6 @@
 <Project Sdk="Microsoft.NET.Sdk">
-  <PropertyGroup Condition=" '$(MSBuildRuntimeType)' == 'Core' ">
-    <TargetFramework>netstandard2.1</TargetFramework>
-    <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
-  </PropertyGroup>
-
-  <PropertyGroup Condition=" '$(MSBuildRuntimeType)' != 'Core' ">
-    <TargetFramework>net462</TargetFramework>
+  <PropertyGroup>
+    <TargetFrameworks>$(SupportedFrameworks)</TargetFrameworks>
     <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
   </PropertyGroup>
 
@@ -40,6 +35,5 @@
     <MSBuild Projects="..\Microsoft.Health.Tools.Sql.Tasks\Microsoft.Health.Tools.Sql.Tasks.csproj" Targets="Publish" Properties="TargetFramework=net462" />
   </Target>
  
-  
   <Import Project="..\Microsoft.Health.Tools.Sql.Tasks\Sql.test.targets" />  
 </Project>
