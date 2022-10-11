@@ -28,10 +28,8 @@
     <GeneratedFullScriptPath>Schema\$(LatestSchemaVersion).sql</GeneratedFullScriptPath>
   </PropertyGroup>
 
-  <Target Name="PublishSqlTasks" BeforeTargets="CoreCompile" Condition=" '$(MSBuildRuntimeType)' == 'Core' Or '$(MSBuildRuntimeType)' == 'Mono'">
+  <Target Name="PublishSqlTasks" BeforeTargets="CoreCompile">
     <MSBuild Projects="..\Microsoft.Health.Tools.Sql.Tasks\Microsoft.Health.Tools.Sql.Tasks.csproj" Targets="Publish" Properties="TargetFramework=netstandard2.1" />
-  </Target>
-  <Target Name="PublishSqlTasks" BeforeTargets="CoreCompile" Condition=" '$(MSBuildRuntimeType)' == 'Full' ">
     <MSBuild Projects="..\Microsoft.Health.Tools.Sql.Tasks\Microsoft.Health.Tools.Sql.Tasks.csproj" Targets="Publish" Properties="TargetFramework=net462" />
   </Target>
  
