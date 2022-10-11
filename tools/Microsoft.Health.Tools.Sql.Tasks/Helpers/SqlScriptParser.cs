@@ -1,4 +1,4 @@
-﻿// -------------------------------------------------------------------------------------------------
+// -------------------------------------------------------------------------------------------------
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License (MIT). See LICENSE in the repo root for license information.
 // -------------------------------------------------------------------------------------------------
@@ -31,7 +31,7 @@ public static class SqlScriptParser
         using (var stream = File.OpenRead(sqlFile))
         using (var reader = new StreamReader(stream))
         {
-            var parser = new TSql140Parser(true);
+            var parser = new TSql150Parser(true);
             sqlFragment = parser.Parse(reader, out var errors);
 
             if (errors != null && errors.Any())

@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
 
@@ -28,6 +28,7 @@
             SqlScript="@(SqlScript)" />
     </Target>
 
-    <UsingTask TaskName="GenerateFullScript" AssemblyFile="bin\$(Configuration)\publish\netstandard2.0\Microsoft.Health.Tools.Sql.Tasks.dll" />
+    <UsingTask TaskName="GenerateFullScript" AssemblyFile="bin\$(Configuration)\publish\net462\Microsoft.Health.Tools.Sql.Tasks.dll" Condition=" '$(MSBuildRuntimeType)' == 'Full' "/>
+    <UsingTask TaskName="GenerateFullScript" AssemblyFile="bin\$(Configuration)\publish\netstandard2.1\Microsoft.Health.Tools.Sql.Tasks.dll" Condition=" '$(MSBuildRuntimeType)' == 'Core' Or '$(MSBuildRuntimeType)' == 'Mono'"/>
 
 </Project>
