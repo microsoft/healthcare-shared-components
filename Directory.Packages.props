@@ -33,7 +33,7 @@
     <PackageVersion Include="Microsoft.CodeAnalysis.CSharp" Version="$(CodeAnalysisPackageVersion)" />
     <PackageVersion Include="Microsoft.CodeAnalysis.CSharp.Workspaces" Version="$(CodeAnalysisPackageVersion)" />
     <PackageVersion Include="Microsoft.Data.SqlClient" Version="4.1.0" />
-    <PackageVersion Include="Microsoft.Extensions.Azure" Version="1.5.0" />
+    <PackageVersion Include="Microsoft.Extensions.Azure" Version="1.6.0" />
     <PackageVersion Include="Microsoft.Extensions.Configuration" Version="$(SdkPackageVersion)" />
     <PackageVersion Include="Microsoft.Extensions.Configuration.Abstractions" Version="$(SdkPackageVersion)" />
     <PackageVersion Include="Microsoft.Extensions.Configuration.CommandLine" Version="$(SdkPackageVersion)" />
