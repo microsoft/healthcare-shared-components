@@ -75,6 +75,44 @@ public class TypeRegistrationTests
     }
 
     [Fact]
+    public void GivenAType_WhenRegisteringAndReplacingExactService_ThenTheNewServicesIsRegisteredAndOtherInstanceRemain()
+    {
+        new TypeRegistration(_collection, typeof(StringReader))
+            .Transient()
+            .AsService<TextReader>();
+
+        new TypeRegistration(_collection, typeof(StreamReader))
+            .Transient()
+            .AsService<TextReader>();
+
+        new TypeRegistration(_collection, typeof(StringReader))
+            .Singleton()
+            .ReplaceServiceExact<TextReader>();
+
+        Assert.Collection(_collection, x =>
+            {
+                Assert.Equal(typeof(StreamReader), x.ImplementationType);
+                Assert.Equal(typeof(TextReader), x.ServiceType);
+                Assert.Equal(ServiceLifetime.Transient, x.Lifetime);
+            },
+            x =>
+            {
+                Assert.Equal(typeof(StringReader), x.ImplementationType);
+                Assert.Equal(typeof(TextReader), x.ServiceType);
+                Assert.Equal(ServiceLifetime.Singleton, x.Lifetime);
+            });
+    }
+
+    [Fact]
+    public void GivenAType_WhenRegisteringAndReplacingExactServiceWithDelegateRegistration_ThenAnExceptionIsThrown()
+    {
+        Assert.Throws<InvalidOperationException>(() =>
+            _collection.Add(x => (StringReader)null)
+                .Singleton()
+                .ReplaceServiceExact<TextReader>());
+    }
+
+    [Fact]
     public void GivenAFactory_WhenReplacingSelf_ThenOnlyTheNewServiceIsRegistered()
     {
         _collection

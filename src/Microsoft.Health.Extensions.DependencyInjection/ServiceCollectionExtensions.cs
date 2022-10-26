@@ -76,4 +76,20 @@ public static class ServiceCollectionExtensions
         var module = (IStartupModule)constructor.Invoke(constructorArguments);
         module.Load(collection);
     }
+
+    public static IServiceCollection RemoveServiceTypeExact(this IServiceCollection serviceCollection, Type concreteClass, Type serviceType)
+    {
+        EnsureArg.IsNotNull(serviceCollection, nameof(serviceCollection));
+
+        for (int i = serviceCollection.Count - 1; i >= 0; i--)
+        {
+            ServiceDescriptor descriptor = serviceCollection[i];
+            if (descriptor.ServiceType == serviceType && descriptor.ImplementationType == concreteClass)
+            {
+                serviceCollection.RemoveAt(i);
+            }
+        }
+
+        return serviceCollection;
+    }
 }

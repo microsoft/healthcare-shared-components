@@ -103,13 +103,33 @@ public class TypeRegistrationBuilder
     }
 
     /// <summary>
-    /// Replaces a service registration for the specified interface
+    /// Replaces the first occurrence of a service registration for the specified interface
     /// </summary>
     /// <typeparam name="T">Type of service to be registered</typeparam>
     /// <returns>The registration builder</returns>
     public TypeRegistrationBuilder ReplaceService<T>()
     {
         RegisterType(typeof(T), true);
+
+        return this;
+    }
+
+    /// <summary>
+    /// Removes all instances of a service registration for the specified interface and registered type and adds a new registration
+    /// </summary>
+    /// <typeparam name="TServiceType">Type of service to be replaced</typeparam>
+    /// <returns>The registration builder</returns>
+    /// <remarks>This method checks for the exact implementation to replace instead of checking only the service type.</remarks>
+    public TypeRegistrationBuilder ReplaceServiceExact<TServiceType>()
+    {
+        if (_delegateRegistration != null)
+        {
+            throw new InvalidOperationException("Cannot replace a service when using a delegate registration.");
+        }
+
+        _serviceCollection.RemoveServiceTypeExact(_type, typeof(TServiceType));
+
+        RegisterType(typeof(TServiceType));
 
         return this;
     }
