@@ -104,6 +104,49 @@ public class TypeRegistrationTests
     }
 
     [Fact]
+    public void GivenAType_WhenRegisteringAndRemoveExactService_ThenTheOldRegistrationIsRemoved()
+    {
+        new TypeRegistration(_collection, typeof(StreamReader))
+            .Transient()
+            .AsService<TextReader>();
+
+        new TypeRegistration(_collection, typeof(StreamReader))
+            .Singleton()
+            .RemoveServiceExact<TextReader>()
+            .AsService<TextReader>();
+
+        Assert.Collection(_collection,
+            x =>
+            {
+                Assert.Equal(typeof(StreamReader), x.ImplementationType);
+                Assert.Equal(typeof(TextReader), x.ServiceType);
+                Assert.Equal(ServiceLifetime.Singleton, x.Lifetime);
+            });
+    }
+
+    [Fact]
+    public void GivenAType_WhenRegisteringAndRemoveAllForSelf_ThenTheOldRegistrationsAreRemoved()
+    {
+        new TypeRegistration(_collection, typeof(StreamReader))
+            .Transient()
+            .AsService<TextReader>()
+            .AsService<IDisposable>();
+
+        new TypeRegistration(_collection, typeof(StreamReader))
+            .Singleton()
+            .RemoveAllRegistrationsForSelf()
+            .AsService<TextReader>();
+
+        Assert.Collection(_collection,
+            x =>
+            {
+                Assert.Equal(typeof(StreamReader), x.ImplementationType);
+                Assert.Equal(typeof(TextReader), x.ServiceType);
+                Assert.Equal(ServiceLifetime.Singleton, x.Lifetime);
+            });
+    }
+
+    [Fact]
     public void GivenAType_WhenRegisteringAndReplacingExactServiceWithDelegateRegistration_ThenAnExceptionIsThrown()
     {
         Assert.Throws<InvalidOperationException>(() =>

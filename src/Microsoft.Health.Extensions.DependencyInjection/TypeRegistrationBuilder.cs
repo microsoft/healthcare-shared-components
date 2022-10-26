@@ -135,6 +135,48 @@ public class TypeRegistrationBuilder
     }
 
     /// <summary>
+    /// Removes all instances of a service registration for the specified interface
+    /// </summary>
+    /// <typeparam name="TServiceType">Type of service to be removed</typeparam>
+    /// <returns>The registration builder</returns>
+    /// <remarks>This method checks for the exact implementation to replace instead of checking only the service type.</remarks>
+    public TypeRegistrationBuilder RemoveServiceExact<TServiceType>()
+    {
+        if (_delegateRegistration != null)
+        {
+            throw new InvalidOperationException("Cannot replace a service when using a delegate registration.");
+        }
+
+        _serviceCollection.RemoveServiceTypeExact(_type, typeof(TServiceType));
+
+        return this;
+    }
+
+    /// <summary>
+    /// Removes all instances of a service registration for the specified interface
+    /// </summary>
+    /// <returns>The registration builder</returns>
+    /// <remarks>This method checks for the exact implementation to replace instead of checking only the service type.</remarks>
+    public TypeRegistrationBuilder RemoveAllRegistrationsForSelf()
+    {
+        if (_delegateRegistration != null)
+        {
+            throw new InvalidOperationException("Cannot remove when using a delegate registration.");
+        }
+
+        for (int i = _serviceCollection.Count - 1; i >= 0; i--)
+        {
+            ServiceDescriptor descriptor = _serviceCollection[i];
+            if (descriptor.ImplementationType == _type)
+            {
+                _serviceCollection.RemoveAt(i);
+            }
+        }
+
+        return this;
+    }
+
+    /// <summary>
     /// Creates a service registration for all interfaces implemented by the type
     /// </summary>
     /// <param name="interfaceFilter">A predicate specifying which interfaces to register.</param>
