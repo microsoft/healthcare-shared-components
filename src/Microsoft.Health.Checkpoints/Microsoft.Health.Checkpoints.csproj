@@ -9,6 +9,7 @@
     <PackageReference Include="Azure.Storage.Blobs" />
     <PackageReference Include="Ensure.That" />
     <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" />
+    <PackageReference Include="System.Drawing.Common" PrivateAssets="All" />
   </ItemGroup>
   
 </Project>
