@@ -9,8 +9,10 @@ using System.Threading;
 using System.Threading.Tasks;
 using EnsureThat;
 using Microsoft.Data.SqlClient;
+using Microsoft.Extensions.Logging;
 using Microsoft.Health.SqlServer.Configs;
 using Microsoft.Health.SqlServer.Features.Storage;
+using Polly;
 
 namespace Microsoft.Health.SqlServer.Features.Client;
 
@@ -21,18 +23,24 @@ public class SqlConnectionWrapper : IDisposable
     private readonly ISqlConnectionBuilder _sqlConnectionBuilder;
     private readonly SqlRetryLogicBaseProvider _sqlRetryLogicBaseProvider;
     private readonly SqlServerDataStoreConfiguration _sqlServerDataStoreConfiguration;
+    private readonly ILogger<SqlConnectionWrapper> _logger;
+
+    private const int RetryAttempts = 3;
+    private static readonly TimeSpan RetrySleepDuration = TimeSpan.FromSeconds(2);
 
     internal SqlConnectionWrapper(
         SqlTransactionHandler sqlTransactionHandler,
         ISqlConnectionBuilder connectionBuilder,
         SqlRetryLogicBaseProvider sqlRetryLogicBaseProvider,
         bool enlistInTransactionIfPresent,
-        SqlServerDataStoreConfiguration sqlServerDataStoreConfiguration)
+        SqlServerDataStoreConfiguration sqlServerDataStoreConfiguration,
+        ILogger<SqlConnectionWrapper> logger)
     {
         EnsureArg.IsNotNull(sqlTransactionHandler, nameof(sqlTransactionHandler));
         EnsureArg.IsNotNull(connectionBuilder, nameof(connectionBuilder));
         EnsureArg.IsNotNull(sqlRetryLogicBaseProvider, nameof(sqlRetryLogicBaseProvider));
         EnsureArg.IsNotNull(sqlServerDataStoreConfiguration, nameof(sqlServerDataStoreConfiguration));
+        EnsureArg.IsNotNull(logger, nameof(logger));
 
         _sqlServerDataStoreConfiguration = EnsureArg.IsNotNull(sqlServerDataStoreConfiguration, nameof(sqlServerDataStoreConfiguration));
 
@@ -40,6 +48,7 @@ public class SqlConnectionWrapper : IDisposable
         _enlistInTransactionIfPresent = enlistInTransactionIfPresent;
         _sqlConnectionBuilder = connectionBuilder;
         _sqlRetryLogicBaseProvider = sqlRetryLogicBaseProvider;
+        _logger = logger;
     }
 
     public SqlConnection SqlConnection { get; private set; }
@@ -64,7 +73,7 @@ public class SqlConnectionWrapper : IDisposable
 
         if (SqlConnection.State != ConnectionState.Open)
         {
-            await SqlConnection.OpenAsync(cancellationToken).ConfigureAwait(false);
+            await OpenRetriableSqlConnectionAsync(cancellationToken).ConfigureAwait(false);
         }
 
         if (_enlistInTransactionIfPresent && _sqlTransactionHandler.SqlTransactionScope != null)
@@ -76,6 +85,34 @@ public class SqlConnectionWrapper : IDisposable
                 _sqlTransactionHandler.SqlTransactionScope.SqlTransaction = SqlTransaction;
             }
         }
+    }
+
+    /// <summary>
+    /// Open sql connection which is retried up to 3 times if <see cref="SqlException"/> is caught with state 35.
+    /// <remarks>
+    /// Retries have been added to cater to the following exception:
+    /// "A connection was successfully established with the server, but then an error occurred during the login process.
+    /// (provider: TCP Provider, error: 35 - An internal exception was caught)"
+    /// </remarks>
+    /// </summary>
+    /// <param name="cancellationToken">Cancellation Token.</param>
+    private async Task OpenRetriableSqlConnectionAsync(CancellationToken cancellationToken)
+    {
+        int attempts = 1;
+
+        await Policy.Handle<SqlException>(se => se.State == 35)
+        .WaitAndRetryAsync(
+            retryCount: RetryAttempts,
+            sleepDurationProvider: (retryCount) => RetrySleepDuration,
+            onRetry: (exception, retryCount) =>
+            {
+                _logger.LogWarning(
+                    exception,
+                    "Attempt {Attempt} of {MaxAttempts} to open Sql connection.",
+                    attempts++,
+                    RetryAttempts);
+            })
+        .ExecuteAsync(token => SqlConnection.OpenAsync(token), cancellationToken).ConfigureAwait(false);
     }
 
     [Obsolete("Please use " + nameof(CreateRetrySqlCommand) + " or " + nameof(CreateNonRetrySqlCommand) + " instead.")]

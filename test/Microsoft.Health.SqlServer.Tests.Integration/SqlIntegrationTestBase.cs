@@ -8,6 +8,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Data.SqlClient;
+using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 using Microsoft.Health.SqlServer.Configs;
 using Microsoft.Health.SqlServer.Features.Client;
@@ -63,7 +64,8 @@ public abstract class SqlIntegrationTestBase : IAsyncLifetime
             TransactionHandler,
             new DefaultSqlConnectionBuilder(ConnectionStringProvider, SqlConfigurableRetryFactory.CreateNoneRetryProvider()),
             SqlConfigurableRetryFactory.CreateFixedRetryProvider(new SqlClientRetryOptions().Settings),
-            options);
+            options,
+            NullLoggerFactory.Instance);
 
         ConnectionWrapper = await ConnectionFactory.ObtainSqlConnectionWrapperAsync("master", CancellationToken.None).ConfigureAwait(false);
 

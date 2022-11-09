@@ -1,4 +1,4 @@
-﻿// -------------------------------------------------------------------------------------------------
+// -------------------------------------------------------------------------------------------------
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License (MIT). See LICENSE in the repo root for license information.
 // -------------------------------------------------------------------------------------------------
@@ -101,6 +101,7 @@ public static class SqlServerBaseRegistrationExtensions
         // TODO: Does SqlTransactionHandler need to be registered directly? Should usage change to ITransactionHandler?
         Func<IServiceProvider, SqlTransactionHandler> handlerFactory = p => p.GetRequiredService<SqlTransactionHandler>();
 
+        services.AddLogging();
         services.TryAddScoped<SqlConnectionWrapperFactory>();
         services.TryAddScoped<SqlTransactionHandler>();
         services.TryAddScoped<ITransactionHandler>(handlerFactory);

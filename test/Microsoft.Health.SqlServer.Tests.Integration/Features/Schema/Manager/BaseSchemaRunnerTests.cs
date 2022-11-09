@@ -32,7 +32,7 @@ public sealed class BaseSchemaRunnerTests : SqlIntegrationTestBase, IDisposable
         var sqlConnection = new DefaultSqlConnectionBuilder(ConnectionStringProvider, SqlConfigurableRetryFactory.CreateNoneRetryProvider());
         SqlRetryLogicBaseProvider sqlRetryLogicBaseProvider = SqlConfigurableRetryFactory.CreateFixedRetryProvider(new SqlClientRetryOptions().Settings);
 
-        var sqlConnectionWrapperFactory = new SqlConnectionWrapperFactory(_sqlTransactionHandler, sqlConnection, sqlRetryLogicBaseProvider, options);
+        var sqlConnectionWrapperFactory = new SqlConnectionWrapperFactory(_sqlTransactionHandler, sqlConnection, sqlRetryLogicBaseProvider, options, NullLoggerFactory.Instance);
         _dataStore = new SchemaManagerDataStore(sqlConnectionWrapperFactory, options, NullLogger<SchemaManagerDataStore>.Instance);
 
         _runner = new BaseSchemaRunner(sqlConnectionWrapperFactory, _dataStore, ConnectionStringProvider, NullLogger<BaseSchemaRunner>.Instance);
