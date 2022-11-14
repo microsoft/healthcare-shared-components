@@ -1,4 +1,4 @@
-﻿// -------------------------------------------------------------------------------------------------
+// -------------------------------------------------------------------------------------------------
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License (MIT). See LICENSE in the repo root for license information.
 // -------------------------------------------------------------------------------------------------
@@ -118,7 +118,7 @@ public sealed class AzureFunctionsJobHostBuilder
     private static IConfigurationSource CreateRootConfigurationSource()
         => new MemoryConfigurationSource
         {
-            InitialData = new KeyValuePair<string, string>[] { KeyValuePair.Create("AzureWebJobsConfigurationSection", AzureFunctionsJobHost.RootSectionName) },
+            InitialData = new KeyValuePair<string, string?>[] { KeyValuePair.Create<string, string?>("AzureWebJobsConfigurationSection", AzureFunctionsJobHost.RootSectionName) },
         };
 
     private static void BeginConfigureLogging(HostBuilderContext context, ILoggingBuilder builder)

@@ -2,8 +2,20 @@
 
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
 
+  <Choose>
+    <When Condition="'$(TargetFramework)' == 'net6.0'">
+      <PropertyGroup>
+        <ToolTargetFramework>6.0.0</ToolTargetFramework>
+      </PropertyGroup>
+    </When>
+    <Otherwise>
+      <PropertyGroup>
+        <ToolTargetFramework>7.0.0</ToolTargetFramework>
+    </PropertyGroup>
+    </Otherwise>
+  </Choose>
+
   <PropertyGroup>
-    <ToolTargetFramework>net6.0</ToolTargetFramework>
     <GeneratorPath>$(MSBuildThisFileDirectory)../../tools/$(ToolTargetFramework)/Microsoft.Health.Extensions.BuildTimeCodeGenerator.dll</GeneratorPath>
   </PropertyGroup>
 

@@ -21,12 +21,26 @@
     <PublishRepositoryUrl>true</PublishRepositoryUrl>
     <RootDirectory>$(MSBuildThisFileDirectory)</RootDirectory>
     <RunSettingsFilePath>$(RootDirectory)CodeCoverage.runsettings</RunSettingsFilePath>
-    <SdkPackageVersion>6.0.0</SdkPackageVersion>
-    <SupportedFrameworks>$(LtsVersion)</SupportedFrameworks>
+    <StsVersion>net7.0</StsVersion>
+    <SupportedFrameworks>$(LtsVersion);$(StsVersion)</SupportedFrameworks>
     <TargetLatestRuntimePatch>true</TargetLatestRuntimePatch>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <WarningsAsErrors />
   </PropertyGroup>
+
+  <!-- SDK Packages -->
+  <Choose>
+    <When Condition="'$(TargetFramework)' == '$(LtsVersion)'">
+      <PropertyGroup>
+        <SdkPackageVersion>6.0.0</SdkPackageVersion>
+      </PropertyGroup>
+    </When>
+    <Otherwise>
+      <PropertyGroup>
+        <SdkPackageVersion>7.0.0</SdkPackageVersion>
+      </PropertyGroup>
+    </Otherwise>
+  </Choose>
 
   <!-- Dynamic Assembly Info -->
   <ItemGroup>

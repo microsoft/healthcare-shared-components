@@ -2,33 +2,33 @@
 
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
 
-    <PropertyGroup>
-      <IntermediateOutputPath Condition=" '$(IntermediateOutputPath)' == '' ">$(MSBuildThisFileDirectory)obj\$(Configuration)</IntermediateOutputPath>
-    </PropertyGroup>
+  <PropertyGroup>
+    <IntermediateOutputPath Condition=" '$(IntermediateOutputPath)' == '' ">$(MSBuildThisFileDirectory)obj\$(Configuration)</IntermediateOutputPath>
+  </PropertyGroup>
 
-    <ItemGroup>
-        <AvailableItemName Include="TInitSqlScript" />
-        <AvailableItemName Include="TSqlScript" />
-        <AvailableItemName Include="SqlScript" />
-    </ItemGroup>
+  <ItemGroup>
+    <AvailableItemName Include="TInitSqlScript" />
+    <AvailableItemName Include="TSqlScript" />
+    <AvailableItemName Include="SqlScript" />
+  </ItemGroup>
 
-    <ItemGroup>
-        <GenerateFullScriptsInputs Include="@(TInitSqlScript)"/>
-        <GenerateFullScriptsInputs Include="@(TSqlScript)"/>
-        <GenerateFullScriptsInputs Include="@(SqlScript)"/>
-        <GenerateFullScriptsOutputs Include="$(GeneratedFullScriptPath)" />
-    </ItemGroup>
+  <ItemGroup>
+    <GenerateFullScriptsInputs Include="@(TInitSqlScript)"/>
+    <GenerateFullScriptsInputs Include="@(TSqlScript)"/>
+    <GenerateFullScriptsInputs Include="@(SqlScript)"/>
+    <GenerateFullScriptsOutputs Include="$(GeneratedFullScriptPath)" />
+  </ItemGroup>
 
-   <Target Name="GenerateFullSqlScript" BeforeTargets="CoreCompile" Inputs="@(GenerateFullScriptsInputs)" Outputs="@(GenerateFullScriptsOutputs)">
-        <GenerateFullScript
-            IntermediateOutputPath="$(IntermediateOutputPath)"
-            OutputFile="$(GeneratedFullScriptPath)"
-            TInitSqlScript="@(TInitSqlScript)"
-            TSqlScript="@(TSqlScript)"
-            SqlScript="@(SqlScript)" />
-    </Target>
+  <Target Name="GenerateFullSqlScript" BeforeTargets="CoreCompile" Inputs="@(GenerateFullScriptsInputs)" Outputs="@(GenerateFullScriptsOutputs)">
+    <GenerateFullScript
+        IntermediateOutputPath="$(IntermediateOutputPath)"
+        OutputFile="$(GeneratedFullScriptPath)"
+        TInitSqlScript="@(TInitSqlScript)"
+        TSqlScript="@(TSqlScript)"
+        SqlScript="@(SqlScript)" />
+  </Target>
 
-    <UsingTask TaskName="GenerateFullScript" AssemblyFile="bin\$(Configuration)\publish\net462\Microsoft.Health.Tools.Sql.Tasks.dll" Condition=" '$(MSBuildRuntimeType)' == 'Full' "/>
-    <UsingTask TaskName="GenerateFullScript" AssemblyFile="bin\$(Configuration)\publish\netstandard2.1\Microsoft.Health.Tools.Sql.Tasks.dll" Condition=" '$(MSBuildRuntimeType)' == 'Core' Or '$(MSBuildRuntimeType)' == 'Mono'"/>
+  <UsingTask TaskName="GenerateFullScript" AssemblyFile="bin\$(Configuration)\publish\net462\Microsoft.Health.Tools.Sql.Tasks.dll" Condition="'$(MSBuildRuntimeType)' == 'Full'"/>
+  <UsingTask TaskName="GenerateFullScript" AssemblyFile="bin\$(Configuration)\publish\netstandard2.1\Microsoft.Health.Tools.Sql.Tasks.dll" Condition="'$(MSBuildRuntimeType)' == 'Core' Or '$(MSBuildRuntimeType)' == 'Mono'"/>
 
 </Project>

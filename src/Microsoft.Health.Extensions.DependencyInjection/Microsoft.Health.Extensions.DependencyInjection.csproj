@@ -1,8 +1,8 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <Description>Dependency injection extensions for Microsoft's default implementation used by Microsoft Health.</Description>
-    <TargetFramework>netstandard2.0</TargetFramework>
+    <TargetFrameworks>$(SupportedFrameworks)</TargetFrameworks>
   </PropertyGroup>
 
   <ItemGroup>

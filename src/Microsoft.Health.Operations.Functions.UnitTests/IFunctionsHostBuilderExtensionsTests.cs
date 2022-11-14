@@ -1,4 +1,4 @@
-﻿// -------------------------------------------------------------------------------------------------
+// -------------------------------------------------------------------------------------------------
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License (MIT). See LICENSE in the repo root for license information.
 // -------------------------------------------------------------------------------------------------
@@ -22,12 +22,12 @@ public class IFunctionsHostBuilderExtensionsTests
     {
         const string SectionName = "Options";
         IConfiguration config = new ConfigurationBuilder()
-            .AddInMemoryCollection(new KeyValuePair<string, string>[]
+            .AddInMemoryCollection(new KeyValuePair<string, string?>[]
             {
-                KeyValuePair.Create($"{nameof(TestOptions.Word)}", "foo"),
-                KeyValuePair.Create($"{AzureFunctionsJobHost.RootSectionName}:{nameof(TestOptions.Word)}", "bar"),
-                KeyValuePair.Create($"{AzureFunctionsJobHost.RootSectionName}:{SectionName}:{nameof(TestOptions.Word)}", "baz"),
-                KeyValuePair.Create($"{AzureFunctionsJobHost.RootSectionName}:{SectionName}:{nameof(TestOptions.Number)}", "42"),
+                KeyValuePair.Create<string, string?>($"{nameof(TestOptions.Word)}", "foo"),
+                KeyValuePair.Create<string, string?>($"{AzureFunctionsJobHost.RootSectionName}:{nameof(TestOptions.Word)}", "bar"),
+                KeyValuePair.Create<string, string?>($"{AzureFunctionsJobHost.RootSectionName}:{SectionName}:{nameof(TestOptions.Word)}", "baz"),
+                KeyValuePair.Create<string, string?>($"{AzureFunctionsJobHost.RootSectionName}:{SectionName}:{nameof(TestOptions.Number)}", "42"),
             })
             .Build();
 
