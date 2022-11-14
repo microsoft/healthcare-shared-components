@@ -5,12 +5,12 @@
   <Choose>
     <When Condition="'$(TargetFramework)' == 'net6.0'">
       <PropertyGroup>
-        <ToolTargetFramework>6.0.0</ToolTargetFramework>
+        <ToolTargetFramework>net6.0</ToolTargetFramework>
       </PropertyGroup>
     </When>
     <Otherwise>
       <PropertyGroup>
-        <ToolTargetFramework>7.0.0</ToolTargetFramework>
+        <ToolTargetFramework>net7.0</ToolTargetFramework>
     </PropertyGroup>
     </Otherwise>
   </Choose>
