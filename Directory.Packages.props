@@ -2,9 +2,9 @@
 
   <ItemGroup>
     <PackageVersion Include="Azure.Core" Version="1.25.0" />
-    <PackageVersion Include="Azure.Identity" Version="1.7.0" />
-    <PackageVersion Include="Azure.Messaging.EventGrid" Version="4.11.0" />
-    <PackageVersion Include="Azure.Storage.Blobs" Version="12.13.1" />
+    <PackageVersion Include="Azure.Identity" Version="1.8.0" />
+    <PackageVersion Include="Azure.Messaging.EventGrid" Version="4.12.0" />
+    <PackageVersion Include="Azure.Storage.Blobs" Version="12.14.1" />
     <PackageVersion Include="Azure.Storage.Common" Version="12.13.0" />
     <PackageVersion Include="coverlet.collector" Version="3.2.0" />
     <PackageVersion Include="DistributedLock.SqlServer" Version="1.0.2" />
@@ -27,8 +27,8 @@
     <PackageVersion Include="Microsoft.Azure.WebJobs.Extensions" Version="4.0.1" />
     <PackageVersion Include="Microsoft.Azure.WebJobs.Extensions.DurableTask" Version="2.8.1" />
     <PackageVersion Include="Microsoft.Azure.WebJobs.Host.Storage" Version="4.1.0" />
-    <PackageVersion Include="Microsoft.Build.Framework" Version="17.3.2" />
-    <PackageVersion Include="Microsoft.Build.Utilities.Core" Version="17.3.2" />
+    <PackageVersion Include="Microsoft.Build.Framework" Version="17.4.0" />
+    <PackageVersion Include="Microsoft.Build.Utilities.Core" Version="17.4.0" />
     <PackageVersion Include="Microsoft.CodeAnalysis.Common" Version="$(CodeAnalysisPackageVersion)" />
     <PackageVersion Include="Microsoft.CodeAnalysis.CSharp" Version="$(CodeAnalysisPackageVersion)" />
     <PackageVersion Include="Microsoft.CodeAnalysis.CSharp.Workspaces" Version="$(CodeAnalysisPackageVersion)" />
@@ -61,9 +61,9 @@
     <PackageVersion Include="Microsoft.IdentityModel.Tokens" Version="$(IdentityModelTokenPackageVersion)" />
     <PackageVersion Include="Microsoft.IO.RecyclableMemoryStream" Version="2.2.1" />
     <PackageVersion Include="Microsoft.NET.Sdk.Functions" Version="4.1.3" />
-    <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="17.3.2" />
+    <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="17.4.0" />
     <PackageVersion Include="Microsoft.SourceLink.GitHub" Version="1.1.1" />
-    <PackageVersion Include="Microsoft.SqlServer.DacFx" Version="160.6296.0" />
+    <PackageVersion Include="Microsoft.SqlServer.DacFx" Version="161.6374.0" />
     <PackageVersion Include="Microsoft.SqlServer.SqlManagementObjects" Version="170.8.0" />
     <PackageVersion Include="Mseng.Sql.Dac" Version="13.0.4" />
     <PackageVersion Include="Newtonsoft.Json" Version="13.0.1" />
@@ -74,12 +74,12 @@
     <PackageVersion Include="System.CommandLine.DragonFruit" Version="0.2.0-alpha.19174.3" />
     <PackageVersion Include="System.CommandLine.Experimental" Version="0.2.0-alpha.19174.3" />
     <PackageVersion Include="System.CommandLine.Rendering" Version="0.2.0-alpha.19174.3" />
+    <PackageVersion Include="System.Drawing.Common" Version="$(SdkPackageVersion)" />
     <PackageVersion Include="System.Text.Encodings.Web" Version="5.0.1" />
-    <PackageVersion Include="System.Text.Json" Version="6.0.6" />
+    <PackageVersion Include="System.Text.Json" Version="$(SdkPackageVersion)" />
     <PackageVersion Include="xunit" Version="2.4.2" />
     <PackageVersion Include="Xunit.DependencyInjection" Version="8.6.1" />
     <PackageVersion Include="xunit.runner.visualstudio" Version="2.4.5" />
-    <PackageVersion Include="System.Drawing.Common" Version="6.0.0" PrivateAssets="All" />
   </ItemGroup>
 
 </Project>
