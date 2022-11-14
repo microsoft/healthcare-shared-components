@@ -1,15 +1,14 @@
-﻿<Project Sdk="Microsoft.NET.Sdk.Web">
+<Project Sdk="Microsoft.NET.Sdk.Web">
 
   <Import Project="..\..\tools\Microsoft.Health.Extensions.BuildTimeCodeGenerator\Microsoft.Health.Extensions.BuildTimeCodeGenerator.targets" />
 
   <PropertyGroup>
-    <TargetFrameworks>$(SupportedFrameworks)</TargetFrameworks>
+    <TargetFrameworks>$(StsVersion)</TargetFrameworks>
     <IsPackable>false</IsPackable>
   </PropertyGroup>
 
   <ItemGroup>
     <PackageReference Include="MediatR.Extensions.Microsoft.DependencyInjection" />
-    <PackageReference Include="Microsoft.AspNetCore.Mvc.NewtonsoftJson" />
     <PackageReference Include="Microsoft.Data.SqlClient" />
     <PackageReference Include="System.Drawing.Common" PrivateAssets="All" />
   </ItemGroup>

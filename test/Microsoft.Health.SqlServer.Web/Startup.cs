@@ -30,8 +30,7 @@ public class Startup
     public virtual void ConfigureServices(IServiceCollection services)
     {
         services
-            .AddMvc(options => { options.EnableEndpointRouting = false; })
-            .AddNewtonsoftJson();
+            .AddMvc(options => { options.EnableEndpointRouting = false; });
 
         services
             .AddSqlServerConnection(c => Configuration.GetSection(SqlServerDataStoreConfiguration.SectionName).Bind(c))

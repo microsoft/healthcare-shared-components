@@ -1,9 +1,9 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <Description>Common test utilities for Microsoft Health.</Description>
     <IsPackable>true</IsPackable>
-    <TargetFrameworks>$(SupportedFrameworks)</TargetFrameworks>
+    <TargetFrameworks>$(StsVersion)</TargetFrameworks>
   </PropertyGroup>
 
   <ItemGroup>

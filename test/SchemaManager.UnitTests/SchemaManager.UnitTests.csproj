@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>$(SupportedFrameworks)</TargetFrameworks>
+    <TargetFrameworks>$(StsVersion)</TargetFrameworks>
     <IsPackable>false</IsPackable>
     <AssemblyName>Microsoft.Health.SchemaManager.Core.UnitTests</AssemblyName>
   </PropertyGroup>

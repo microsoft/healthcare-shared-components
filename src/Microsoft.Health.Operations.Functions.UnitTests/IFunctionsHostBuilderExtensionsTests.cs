@@ -28,7 +28,7 @@ public class IFunctionsHostBuilderExtensionsTests
                 KeyValuePair.Create($"{AzureFunctionsJobHost.RootSectionName}:{nameof(TestOptions.Word)}", "bar"),
                 KeyValuePair.Create($"{AzureFunctionsJobHost.RootSectionName}:{SectionName}:{nameof(TestOptions.Word)}", "baz"),
                 KeyValuePair.Create($"{AzureFunctionsJobHost.RootSectionName}:{SectionName}:{nameof(TestOptions.Number)}", "42"),
-            })
+            }!)
             .Build();
 
         IConfigurationSection? hostConfig = CreateBuilder(config).GetHostConfiguration() as IConfigurationSection;

@@ -1,7 +1,7 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>$(SupportedFrameworks)</TargetFrameworks>
+    <TargetFrameworks>$(StsVersion)</TargetFrameworks>
     <NoWarn>$(NoWarn);NU1603</NoWarn>
   </PropertyGroup>
 
