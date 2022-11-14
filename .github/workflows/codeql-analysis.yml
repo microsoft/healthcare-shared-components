@@ -23,6 +23,11 @@ jobs:
     - name: Install .NET SDK
       uses: actions/setup-dotnet@v3
 
+    - name: Install .NET 6.0 SDK
+      uses: actions/setup-dotnet@v2
+      with:
+        dotnet-version: '6.x'
+
     # Initializes the CodeQL tools for scanning.
     - name: Initialize CodeQL
       uses: github/codeql-action/init@v2
