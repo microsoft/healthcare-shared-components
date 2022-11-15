@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <Import Project="..\..\tools\Microsoft.Health.Extensions.BuildTimeCodeGenerator\Microsoft.Health.Extensions.BuildTimeCodeGenerator.targets" />
 
@@ -49,7 +49,7 @@
 
   <ItemGroup>
     <GenerateFilesInputs Include="Features\Schema\Migrations\BaseSchema.sql" />
-    <Generated Include="Features\Schema\Model\SchemaShared.Generated.cs">
+    <Generated Include="Features\Schema\Model\SchemaShared.Generated.$(TargetFramework).cs">
       <Generator>MutableSqlModelGenerator</Generator>
       <Namespace>Microsoft.Health.SqlServer.Features.Schema.Model</Namespace>
       <Args>"$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)\Features\Schema\Migrations\BaseSchema.sql'))"</Args>

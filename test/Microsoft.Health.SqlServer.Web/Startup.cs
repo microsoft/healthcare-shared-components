@@ -29,9 +29,7 @@ public class Startup
     // This method gets called by the runtime. Use this method to add services to the container.
     public virtual void ConfigureServices(IServiceCollection services)
     {
-        services
-            .AddMvc(options => { options.EnableEndpointRouting = false; })
-            .AddNewtonsoftJson();
+        services.AddMvc(options => options.EnableEndpointRouting = false);
 
         services
             .AddSqlServerConnection(c => Configuration.GetSection(SqlServerDataStoreConfiguration.SectionName).Bind(c))
@@ -40,7 +38,8 @@ public class Startup
 
         services.AddMediatR(typeof(CompatibilityVersionHandler).Assembly);
 
-        services.Add(provider => new SchemaInformation((int)SchemaVersion.Version1, (int)SchemaVersion.Version2))
+        services
+            .Add(provider => new SchemaInformation((int)SchemaVersion.Version1, (int)SchemaVersion.Version2))
             .Singleton()
             .AsSelf()
             .AsImplementedInterfaces();

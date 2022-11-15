@@ -253,7 +253,7 @@ namespace Microsoft.Health.SqlServer
         }
 
         [System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverageAttribute]
-        public IndentedStringBuilder AppendFormat(System.IFormatProvider provider, System.String format, System.Object arg0)
+        public IndentedStringBuilder AppendFormat(System.IFormatProvider provider, [System.Diagnostics.CodeAnalysis.StringSyntaxAttribute("CompositeFormat")] System.String format, System.Object arg0)
         {
             AppendIndent();
             _inner.AppendFormat(provider, format, arg0);
@@ -261,7 +261,7 @@ namespace Microsoft.Health.SqlServer
         }
 
         [System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverageAttribute]
-        public IndentedStringBuilder AppendFormat(System.IFormatProvider provider, System.String format, System.Object arg0, System.Object arg1)
+        public IndentedStringBuilder AppendFormat(System.IFormatProvider provider, [System.Diagnostics.CodeAnalysis.StringSyntaxAttribute("CompositeFormat")] System.String format, System.Object arg0, System.Object arg1)
         {
             AppendIndent();
             _inner.AppendFormat(provider, format, arg0, arg1);
@@ -269,7 +269,7 @@ namespace Microsoft.Health.SqlServer
         }
 
         [System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverageAttribute]
-        public IndentedStringBuilder AppendFormat(System.IFormatProvider provider, System.String format, System.Object arg0, System.Object arg1, System.Object arg2)
+        public IndentedStringBuilder AppendFormat(System.IFormatProvider provider, [System.Diagnostics.CodeAnalysis.StringSyntaxAttribute("CompositeFormat")] System.String format, System.Object arg0, System.Object arg1, System.Object arg2)
         {
             AppendIndent();
             _inner.AppendFormat(provider, format, arg0, arg1, arg2);
@@ -277,7 +277,7 @@ namespace Microsoft.Health.SqlServer
         }
 
         [System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverageAttribute]
-        public IndentedStringBuilder AppendFormat(System.IFormatProvider provider, System.String format, params System.Object[] args)
+        public IndentedStringBuilder AppendFormat(System.IFormatProvider provider, [System.Diagnostics.CodeAnalysis.StringSyntaxAttribute("CompositeFormat")] System.String format, params System.Object[] args)
         {
             AppendIndent();
             _inner.AppendFormat(provider, format, args);
@@ -285,7 +285,7 @@ namespace Microsoft.Health.SqlServer
         }
 
         [System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverageAttribute]
-        public IndentedStringBuilder AppendFormat(System.String format, System.Object arg0)
+        public IndentedStringBuilder AppendFormat([System.Diagnostics.CodeAnalysis.StringSyntaxAttribute("CompositeFormat")] System.String format, System.Object arg0)
         {
             AppendIndent();
             _inner.AppendFormat(format, arg0);
@@ -293,7 +293,7 @@ namespace Microsoft.Health.SqlServer
         }
 
         [System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverageAttribute]
-        public IndentedStringBuilder AppendFormat(System.String format, System.Object arg0, System.Object arg1)
+        public IndentedStringBuilder AppendFormat([System.Diagnostics.CodeAnalysis.StringSyntaxAttribute("CompositeFormat")] System.String format, System.Object arg0, System.Object arg1)
         {
             AppendIndent();
             _inner.AppendFormat(format, arg0, arg1);
@@ -301,7 +301,7 @@ namespace Microsoft.Health.SqlServer
         }
 
         [System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverageAttribute]
-        public IndentedStringBuilder AppendFormat(System.String format, System.Object arg0, System.Object arg1, System.Object arg2)
+        public IndentedStringBuilder AppendFormat([System.Diagnostics.CodeAnalysis.StringSyntaxAttribute("CompositeFormat")] System.String format, System.Object arg0, System.Object arg1, System.Object arg2)
         {
             AppendIndent();
             _inner.AppendFormat(format, arg0, arg1, arg2);
@@ -309,7 +309,7 @@ namespace Microsoft.Health.SqlServer
         }
 
         [System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverageAttribute]
-        public IndentedStringBuilder AppendFormat(System.String format, params System.Object[] args)
+        public IndentedStringBuilder AppendFormat([System.Diagnostics.CodeAnalysis.StringSyntaxAttribute("CompositeFormat")] System.String format, params System.Object[] args)
         {
             AppendIndent();
             _inner.AppendFormat(format, args);

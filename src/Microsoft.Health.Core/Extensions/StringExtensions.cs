@@ -1,4 +1,4 @@
-﻿// -------------------------------------------------------------------------------------------------
+// -------------------------------------------------------------------------------------------------
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License (MIT). See LICENSE in the repo root for license information.
 // -------------------------------------------------------------------------------------------------
@@ -21,8 +21,7 @@ public static class StringExtensions
     {
         EnsureArg.IsNotNull(data, nameof(data));
 
-        using var sha256 = HashAlgorithm.Create(nameof(SHA256));
-        var hashed = sha256.ComputeHash(Encoding.UTF8.GetBytes(data));
-        return BitConverter.ToString(hashed).Replace("-", string.Empty, StringComparison.Ordinal);
+        byte[] hash = SHA256.HashData(Encoding.UTF8.GetBytes(data));
+        return BitConverter.ToString(hash).Replace("-", string.Empty, StringComparison.Ordinal);
     }
 }

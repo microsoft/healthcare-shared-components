@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <Description>Identity primitives used by Microsoft Health for local development.</Description>
@@ -21,14 +21,6 @@
     <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" />
     <PackageReference Include="Microsoft.Extensions.Options" />
   </ItemGroup>
-
-  <Choose>
-    <When Condition="'$(TargetFramework)' == 'net5.0'">
-      <ItemGroup>
-        <PackageReference Include="System.Text.Encodings.Web" PrivateAssets="All" />
-      </ItemGroup>
-    </When>
-  </Choose>
 
   <ItemGroup>
     <ProjectReference Include="..\Microsoft.Health.Core\Microsoft.Health.Core.csproj" />

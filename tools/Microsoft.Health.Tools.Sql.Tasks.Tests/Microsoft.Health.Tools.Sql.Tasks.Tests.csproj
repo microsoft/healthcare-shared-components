@@ -1,4 +1,5 @@
 <Project Sdk="Microsoft.NET.Sdk">
+
   <PropertyGroup>
     <TargetFrameworks>$(SupportedFrameworks)</TargetFrameworks>
     <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
@@ -21,7 +22,7 @@
     <SqlScript Include="Sql\sprc_output.sql" />
     <SqlScript Include="Sql\sprc.sql" />
   </ItemGroup>
-  
+
   <PropertyGroup>
     <LatestSchemaVersion>1</LatestSchemaVersion>
     <IntermediateOutputPath>$(MSBuildThisFileDirectory)obj\$(Configuration)</IntermediateOutputPath>
@@ -31,9 +32,11 @@
   <Target Name="PublishSqlTasksCoreOrMono" BeforeTargets="CoreCompile" Condition=" '$(MSBuildRuntimeType)' == 'Core' Or '$(MSBuildRuntimeType)' == 'Mono'">
     <MSBuild Projects="..\Microsoft.Health.Tools.Sql.Tasks\Microsoft.Health.Tools.Sql.Tasks.csproj" Targets="Publish" Properties="TargetFramework=netstandard2.1" />
   </Target>
+
   <Target Name="PublishSqlTasksFull" BeforeTargets="CoreCompile" Condition=" '$(MSBuildRuntimeType)' == 'Full' ">
     <MSBuild Projects="..\Microsoft.Health.Tools.Sql.Tasks\Microsoft.Health.Tools.Sql.Tasks.csproj" Targets="Publish" Properties="TargetFramework=net462" />
   </Target>
- 
-  <Import Project="..\Microsoft.Health.Tools.Sql.Tasks\Sql.test.targets" />  
+
+  <Import Project="..\Microsoft.Health.Tools.Sql.Tasks\Sql.test.targets" />
+
 </Project>

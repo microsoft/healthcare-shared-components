@@ -20,7 +20,12 @@ jobs:
     - name: Checkout repository
       uses: actions/checkout@v3
 
-    - name: Install .NET SDK
+    - name: Install .NET 6.0 SDK
+      uses: actions/setup-dotnet@v3
+      with:
+        dotnet-version: '6.x'
+
+    - name: Install .NET 7.0 SDK
       uses: actions/setup-dotnet@v3
 
     # Initializes the CodeQL tools for scanning.
