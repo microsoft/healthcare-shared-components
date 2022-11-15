@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <Description>Abstractions used by Microsoft Health.</Description>
-    <TargetFrameworks>$(SupportedFrameworks)</TargetFrameworks>
+    <TargetFrameworks>$(SupportedFrameworks);netstandard2.0</TargetFrameworks>
   </PropertyGroup>
 
   <ItemGroup>
