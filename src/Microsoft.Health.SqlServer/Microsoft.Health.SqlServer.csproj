@@ -80,9 +80,6 @@
 
   <PropertyGroup>
     <GeneratorProjectPath>$(MSBuildThisFileDirectory)..\..\tools\Microsoft.Health.Extensions.BuildTimeCodeGenerator\Microsoft.Health.Extensions.BuildTimeCodeGenerator.csproj</GeneratorProjectPath>
-    <PackageId>Microsoft.Health.SqlServer</PackageId>
-    <Version>6.1.143-abc</Version>
-    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
   </PropertyGroup>
 
   <Target Name="BuildGenerator" BeforeTargets="CollectGenerateFilesInputs">

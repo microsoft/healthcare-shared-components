@@ -4,7 +4,6 @@
 // -------------------------------------------------------------------------------------------------
 
 using System;
-using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -40,7 +39,7 @@ public static class SqlScriptParser
                 StringBuilder sb = new StringBuilder();
                 foreach (var error in errors)
                 {
-                    sb.AppendLine(new CultureInfo("en-US"), $"Line: {error.Line}, Number: {error.Number}, Message: {error.Message}");
+                    sb.AppendLine($"Line: {error.Line}, Number: {error.Number}, Message: {error.Message}");
                 }
 
                 taskLoggingHelper.LogError("Failed to parse the Sql file: {0}, Error: {1}", sqlFile, sb.ToString());
