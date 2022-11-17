@@ -26,6 +26,16 @@ public class SqlClientRetryOptions
         DeltaTime = TimeSpan.FromSeconds(1),
         MaxTimeInterval = TimeSpan.FromSeconds(20),
 
+        // TODO: The following setting of the TransientErrors is temporary until the transient error retry functionality in Microsoft.Data.SqlClient is complete.
+        // From https://github.com/dotnet/SqlClient/blob/c6821c35c2c4038f4ab74c8da615434c81d682a4/src/Microsoft.Data.SqlClient/src/Microsoft/Data/SqlClient/Reliability/SqlConfigurableRetryFactory.cs
+        // it is clear that in the future Microsoft.Data.SqlClient will allow the user to examine the exception thrown by the SQL server, in order to decide if the sql statement that caused
+        // the exception should be retried. This is in addition to the list of default errors that always cause the retry. The current implementation of the Microsoft.Data.SqlClient does not allow
+        // us to add more errors to the list of the existing errors, we can only replace the list of default errors with our own list.
+        // So, as a temporary solution we copy in here the list of default retriable errors from Microsoft.Data.SqlClient and add our own retriable errors, and then supply the entire list to the
+        // SqlRetryLogicOption. In the meantime, until Microsoft.Data.SqlClient retry functionality is finished we periodicaly check Microsoft.Data.SqlClient to see if the default list of errors
+        // has changed in order to update the list in here. And once Microsoft.Data.SqlClient is finished we remove this temporary solution and modify our code to properly handle additional
+        // retriable transient errors.
+
         // Default errors copied from src/Microsoft.Data.SqlClient/src/Microsoft/Data/SqlClient/Reliability/SqlConfigurableRetryFactory.cs .
         TransientErrors = new HashSet<int>
                 {
