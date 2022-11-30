@@ -18,13 +18,21 @@ public class SqlClientRetryOptions
 
     public SqlRetryMode Mode { get; set; } = SqlRetryMode.Exponential;
 
-    // Default from https://docs.microsoft.com/en-us/sql/connect/ado-net/configurable-retry-logic-sqlclient-introduction?view=sql-server-ver15
-    // Default transient error codes here https://github.com/dotnet/SqlClient/blob/main/src/Microsoft.Data.SqlClient/src/Microsoft/Data/SqlClient/Reliability/SqlConfigurableRetryFactory.cs
+    /// <summary>
+    /// Default configuration are as per Microsoft recommendation stated as:
+    /// It is strongly recommended that your client program has retry logic so that it could reestablish a connection after giving the transient fault time to correct itself.
+    /// We recommend that you delay for 5 seconds before your first retry. Retrying after a delay shorter than 5-seconds risks overwhelming the cloud service.
+    /// For each subsequent retry the delay should grow exponentially, up to a maximum of 60 seconds. More detail is found in the links below
+    /// https://learn.microsoft.com/en-us/azure/azure-sql/database/troubleshoot-common-errors-issues?view=azuresql#implementing-retry-logic
+    /// https://github.com/Huachao/azure-content/blob/master/articles/sql-database/sql-database-connect-central-recommendations.md
+    ///  Default transient error codes here
+    ///  https://github.com/dotnet/SqlClient/blob/main/src/Microsoft.Data.SqlClient/src/Microsoft/Data/SqlClient/Reliability/SqlConfigurableRetryFactory.cs
+    /// </summary>
     public SqlRetryLogicOption Settings { get; set; } = new SqlRetryLogicOption
     {
         NumberOfTries = 5,
-        DeltaTime = TimeSpan.FromSeconds(1),
-        MaxTimeInterval = TimeSpan.FromSeconds(20),
+        DeltaTime = TimeSpan.FromSeconds(5),
+        MaxTimeInterval = TimeSpan.FromSeconds(60),
 
         // TODO: The following setting of the TransientErrors is temporary until the transient error retry functionality in Microsoft.Data.SqlClient is complete.
         // From https://github.com/dotnet/SqlClient/blob/c6821c35c2c4038f4ab74c8da615434c81d682a4/src/Microsoft.Data.SqlClient/src/Microsoft/Data/SqlClient/Reliability/SqlConfigurableRetryFactory.cs
