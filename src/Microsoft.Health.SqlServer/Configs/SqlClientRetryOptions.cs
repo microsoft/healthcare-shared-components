@@ -36,7 +36,7 @@ public class SqlClientRetryOptions
         // has changed in order to update the list in here. And once Microsoft.Data.SqlClient is finished we remove this temporary solution and modify our code to properly handle additional
         // retriable transient errors.
 
-        // Default errors copied from src/Microsoft.Data.SqlClient/src/Microsoft/Data/SqlClient/Reliability/SqlConfigurableRetryFactory.cs .
+        // Default errors copied from src/Microsoft.Data.SqlClient/src/Microsoft/Data/SqlClient/Reliability/SqlConfigurableRetryFactory.cs.
         TransientErrors = new HashSet<int>
                 {
                     // Default .NET errors:
@@ -60,6 +60,8 @@ public class SqlClientRetryOptions
                     10060,  // An error has occurred while establishing a connection to the server. When connecting to SQL Server, this failure may be caused by the fact that under the default settings SQL Server does not allow remote connections. (provider: TCP Provider, error: 0 - A connection attempt failed because the connected party did not properly respond after a period of time, or established connection failed because connected host has failed to respond.) (Microsoft SQL Server, Error: 10060)
                     997,    // A connection was successfully established with the server, but then an error occurred during the login process. (provider: Named Pipes Provider, error: 0 - Overlapped I/O operation is in progress)
                     233,    // A connection was successfully established with the server, but then an error occurred during the login process. (provider: Shared Memory Provider, error: 0 - No process is on the other end of the pipe.) (Microsoft SQL Server, Error: 233)
+
+                    // Additional .NET errors:
                     35,     // A connection was successfully established with the server, but then an error occurred during the login process. (provider: TCP Provider, error: 35 - An internal exception was caught)
 
                     // Additional Fhir Server errors:
