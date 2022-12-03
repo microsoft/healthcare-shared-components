@@ -55,6 +55,7 @@ public class SqlConnectionWrapper : IDisposable
         else
         {
             SqlConnection = await _sqlConnectionBuilder.GetSqlConnectionAsync(initialCatalog, cancellationToken: cancellationToken).ConfigureAwait(false);
+            SqlConnection.RetryLogicProvider = _sqlRetryLogicBaseProvider;
         }
 
         if (_enlistInTransactionIfPresent && _sqlTransactionHandler.SqlTransactionScope != null && _sqlTransactionHandler.SqlTransactionScope.SqlConnection == null)

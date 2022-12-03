@@ -36,12 +36,12 @@ public class SqlClientRetryOptions
         // has changed in order to update the list in here. And once Microsoft.Data.SqlClient is finished we remove this temporary solution and modify our code to properly handle additional
         // retriable transient errors.
 
-        // Default errors copied from src/Microsoft.Data.SqlClient/src/Microsoft/Data/SqlClient/Reliability/SqlConfigurableRetryFactory.cs .
+        // Default errors copied from src/Microsoft.Data.SqlClient/src/Microsoft/Data/SqlClient/Reliability/SqlConfigurableRetryFactory.cs.
         TransientErrors = new HashSet<int>
                 {
                     // Default .NET errors:
                     1204,   // The instance of the SQL Server Database Engine cannot obtain a LOCK resource at this time. Rerun your statement when there are fewer active users. Ask the database administrator to check the lock and memory configuration for this instance, or to check for long-running transactions.
-                    1205,   // Transaction (Process ID) was deadlocked on resources with another process and has been chosen as the deadlock victim. Rerun the transaction
+                    1205,   // Transaction (Process ID) was deadlocked on resources with another process and has been chosen as the deadlock victim. Rerun the transaction.
                     1222,   // Lock request time out period exceeded.
                     49918,  // Cannot process request. Not enough resources to process request.
                     49919,  // Cannot process create or update request. Too many create or update operations in progress for subscription "%ld".
@@ -60,6 +60,9 @@ public class SqlClientRetryOptions
                     10060,  // An error has occurred while establishing a connection to the server. When connecting to SQL Server, this failure may be caused by the fact that under the default settings SQL Server does not allow remote connections. (provider: TCP Provider, error: 0 - A connection attempt failed because the connected party did not properly respond after a period of time, or established connection failed because connected host has failed to respond.) (Microsoft SQL Server, Error: 10060)
                     997,    // A connection was successfully established with the server, but then an error occurred during the login process. (provider: Named Pipes Provider, error: 0 - Overlapped I/O operation is in progress)
                     233,    // A connection was successfully established with the server, but then an error occurred during the login process. (provider: Shared Memory Provider, error: 0 - No process is on the other end of the pipe.) (Microsoft SQL Server, Error: 233)
+
+                    // Additional .NET errors:
+                    35,     // A connection was successfully established with the server, but then an error occurred during the login process. (provider: TCP Provider, error: 35 - An internal exception was caught)
 
                     // Additional Fhir Server errors:
                     8623    // The query processor ran out of internal resources and could not produce a query plan.
