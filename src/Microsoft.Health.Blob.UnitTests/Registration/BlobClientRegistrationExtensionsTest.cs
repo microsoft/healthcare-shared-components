@@ -31,7 +31,7 @@ public class BlobClientRegistrationExtensionsTest
 
         Assert.True(services.ContainsSingleton<IHostedService, BlobHostedService>());
         Assert.True(services.ContainsSingleton<BlobServiceClient, BlobServiceClient>());
-        Assert.True(services.ContainsSingleton<IBlobClientTestProvider, BlobClientReadWriteTestProvider>());
+        Assert.True(services.ContainsSingleton<IBlobClientTestProvider, BlobClientContainerGetTestProvider>());
         Assert.True(services.ContainsSingleton<IBlobInitializer, BlobInitializer>());
         Assert.True(services.ContainsSingleton<RecyclableMemoryStreamManager>());
 

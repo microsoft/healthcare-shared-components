@@ -177,7 +177,7 @@ public static class BlobClientRegistrationExtensions
 
         services.TryAddSingleton<IBlobInitializer, BlobInitializer>();
         services.AddHostedService<BlobHostedService>();
-        services.TryAddSingleton<IBlobClientTestProvider, BlobClientReadWriteTestProvider>();
+        services.TryAddSingleton<IBlobClientTestProvider, BlobClientContainerGetTestProvider>();
         services.TryAddSingleton<RecyclableMemoryStreamManager>();
 
         services.AddOptions();
