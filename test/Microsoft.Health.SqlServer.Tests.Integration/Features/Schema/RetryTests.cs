@@ -33,16 +33,20 @@ public class RetryTests : SqlIntegrationTestBase
 
             // For non query retries are handled by command retry
             await CreateTestStoredProcedureWithErrorBeforeSelect();
+            Assert.False(await ErrorIsLogged());
             await ExecuteNonQuery();
             Assert.True(await ErrorIsLogged());
 
             // if error happens before select it is handled by command retry
             // same stored procedure as above just reader added
+            await ResetError();
+            Assert.False(await ErrorIsLogged());
             var results = await ExecuteQuery();
             Assert.True(await ErrorIsLogged());
             Assert.Equal(10, results.Count);
 
             await ResetError();
+            Assert.False(await ErrorIsLogged());
             // if error happens in select it is not handled
             await CreateTestStoredProcedureWithErrorInSelect();
             try
@@ -57,6 +61,7 @@ public class RetryTests : SqlIntegrationTestBase
             Assert.True(await ErrorIsLogged());
 
             await ResetError();
+            Assert.False(await ErrorIsLogged());
             // if error happens after select it is not handled
             await CreateTestStoredProcedureWithErrorAfterSelect();
             try
