@@ -65,7 +65,9 @@ public class SqlClientRetryOptions
                     35,     // A connection was successfully established with the server, but then an error occurred during the login process. (provider: TCP Provider, error: 35 - An internal exception was caught)
 
                     // Additional Fhir Server errors:
-                    8623    // The query processor ran out of internal resources and could not produce a query plan.
+                    8623,   // The query processor ran out of internal resources and could not produce a query plan.
+
+                    8134    // divide by zero
                 },
     };
 }
