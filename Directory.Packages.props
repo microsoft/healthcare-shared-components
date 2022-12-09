@@ -1,5 +1,4 @@
 <Project>
-
   <ItemGroup>
     <PackageVersion Include="Azure.Core" Version="1.26.0" />
     <PackageVersion Include="Azure.Identity" Version="1.8.0" />
@@ -16,6 +15,7 @@
     <PackageVersion Include="MediatR" Version="11.1.0" />
     <PackageVersion Include="MediatR.Extensions.Microsoft.DependencyInjection" Version="11.0.0" />
     <PackageVersion Include="Microsoft.ApplicationInsights" Version="2.21.0" />
+    <PackageVersion Include="Microsoft.ApplicationInsights.AspNetCore" Version="2.21.0" />
     <PackageVersion Include="Microsoft.AspNetCore.Mvc.Testing" Version="$(SdkPackageVersion)" />
     <PackageVersion Include="Microsoft.AspNetCore.TestHost" Version="$(SdkPackageVersion)" />
     <PackageVersion Include="Microsoft.Azure.DurableTask.Core" Version="2.12.1" />
@@ -78,5 +78,4 @@
     <PackageVersion Include="Xunit.DependencyInjection" Version="8.6.1" />
     <PackageVersion Include="xunit.runner.visualstudio" Version="2.4.5" />
   </ItemGroup>
-
 </Project>

@@ -12,6 +12,7 @@ using Microsoft.Azure.Functions.Extensions.DependencyInjection;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Configuration.Memory;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Health.Functions.Extensions.Configuration;
@@ -78,6 +79,10 @@ public sealed class AzureFunctionsJobHostBuilder
                         .AddEnvironmentVariables();
                 })
             .ConfigureLogging((c, b) => _configureLogger(c, b))
+            .ConfigureServices(services =>
+            {
+                services.AddApplicationInsightsTelemetry();
+            })
             .Build();
 
     /// <summary>
