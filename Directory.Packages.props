@@ -1,4 +1,5 @@
 <Project>
+  
   <ItemGroup>
     <PackageVersion Include="Azure.Core" Version="1.26.0" />
     <PackageVersion Include="Azure.Identity" Version="1.8.0" />
@@ -78,4 +79,5 @@
     <PackageVersion Include="Xunit.DependencyInjection" Version="8.6.1" />
     <PackageVersion Include="xunit.runner.visualstudio" Version="2.4.5" />
   </ItemGroup>
+  
 </Project>
