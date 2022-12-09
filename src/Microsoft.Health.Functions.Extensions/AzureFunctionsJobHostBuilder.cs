@@ -86,8 +86,7 @@ public sealed class AzureFunctionsJobHostBuilder
                 services
                     .AddSingleton<ITelemetryChannel, NullTelemetryChannel>()
                     .AddSingleton(sp => new TelemetryConfiguration { TelemetryChannel = sp.GetRequiredService<ITelemetryChannel>() })
-                    .AddSingleton(sp => new TelemetryClient(sp.GetRequiredService<TelemetryConfiguration>()))
-            )
+                    .AddSingleton(sp => new TelemetryClient(sp.GetRequiredService<TelemetryConfiguration>())))
             .Build();
 
     /// <summary>
@@ -143,11 +142,14 @@ public sealed class AzureFunctionsJobHostBuilder
     private sealed class NullTelemetryChannel : ITelemetryChannel
     {
         public bool? DeveloperMode { get; set; }
+
         public string? EndpointAddress { get; set; }
         public void Dispose()
         { }
+
         public void Flush()
         { }
+
         public void Send(ITelemetry item)
         { }
     }
