@@ -21,8 +21,6 @@
     <PackageReference Include="Microsoft.Extensions.Logging" />
     <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" />
     <PackageReference Include="Newtonsoft.Json" />
-    <PackageReference Include="NSubstitute" />
-    <PackageReference Include="System.Drawing.Common" />
   </ItemGroup>
 
 </Project>
