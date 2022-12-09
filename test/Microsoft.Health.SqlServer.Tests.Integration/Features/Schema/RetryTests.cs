@@ -3,6 +3,7 @@
 // Licensed under the MIT License (MIT). See LICENSE in the repo root for license information.
 // -------------------------------------------------------------------------------------------------
 
+using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Threading;
@@ -23,6 +24,29 @@ public class RetryTests : SqlIntegrationTestBase
     }
 
     private const int RetryError = 8134; // divide by zero
+
+    [Fact]
+    public async Task RetriesOnFatalErrorBehavior()
+    {
+        try
+        {
+            await CreateTestTable();
+            await CreateTestStoredProcedureWithFatalError();
+            try
+            {
+                await ExecuteNonQuery();
+                Assert.Fail("This point should not be reached.");
+            }
+            catch (InvalidOperationException ex)
+            {
+                Assert.Equal("BeginExecuteNonQuery requires an open and available Connection. The connection's current state is closed.", ex.Message);
+            }
+        }
+        finally
+        {
+            await DropTestObjecs();
+        }
+    }
 
     [Fact]
     public async Task RetriesBehavior()
@@ -115,6 +139,21 @@ public class RetryTests : SqlIntegrationTestBase
     private async Task ResetError()
     {
         await ExecuteSql("TRUNCATE TABLE dbo.TestTable");
+    }
+
+    private async Task CreateTestStoredProcedureWithFatalError()
+    {
+        await ExecuteSql(@$"
+CREATE OR ALTER PROCEDURE dbo.TestStoredProcedure
+AS
+set nocount on
+DECLARE @RaiseError bit = 0
+IF NOT EXISTS (SELECT * FROM dbo.TestTable)
+BEGIN
+  INSERT INTO dbo.TestTable (Id) SELECT 'TestError' 
+  RAISERROR('TestError', 20, 127) WITH LOG
+END
+             ");
     }
 
     private async Task CreateTestStoredProcedureWithErrorBeforeSelect()

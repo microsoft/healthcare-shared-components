@@ -67,7 +67,9 @@ public class SqlClientRetryOptions
                     // Additional Fhir Server errors:
                     8623,   // The query processor ran out of internal resources and could not produce a query plan.
 
-                    8134    // divide by zero
+                    8134,   // divide by zero
+
+                    50000
                 },
     };
 }
