@@ -101,7 +101,7 @@ public sealed class AzureFunctionsJobHostBuilder
                 services
                     .AddSingleton<ITelemetryChannel, NullTelemetryChannel>()
                     .AddSingleton(sp => new TelemetryConfiguration { TelemetryChannel = sp.GetRequiredService<ITelemetryChannel>() })
-                    .AddSingleton<TelemetryClient>();
+                    .AddSingleton(sp => new TelemetryClient(sp.GetRequiredService<TelemetryConfiguration>()));
             })
                 .Build();
 
