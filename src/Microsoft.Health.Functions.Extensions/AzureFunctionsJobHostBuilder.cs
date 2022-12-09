@@ -144,6 +144,7 @@ public sealed class AzureFunctionsJobHostBuilder
         public bool? DeveloperMode { get; set; }
 
         public string? EndpointAddress { get; set; }
+        
         public void Dispose()
         { }
 
@@ -153,5 +154,4 @@ public sealed class AzureFunctionsJobHostBuilder
         public void Send(ITelemetry item)
         { }
     }
-
 }
