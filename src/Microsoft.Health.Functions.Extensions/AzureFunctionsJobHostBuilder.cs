@@ -8,6 +8,9 @@ using System.Collections.Generic;
 using System.IO;
 using System.Reflection;
 using EnsureThat;
+using Microsoft.ApplicationInsights;
+using Microsoft.ApplicationInsights.Channel;
+using Microsoft.ApplicationInsights.Extensibility;
 using Microsoft.Azure.Functions.Extensions.DependencyInjection;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Extensions.Configuration;
@@ -16,6 +19,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Health.Functions.Extensions.Configuration;
+using NSubstitute;
 
 namespace Microsoft.Health.Functions.Extensions;
 
@@ -81,7 +85,10 @@ public sealed class AzureFunctionsJobHostBuilder
             .ConfigureLogging((c, b) => _configureLogger(c, b))
             .ConfigureServices(services =>
             {
-                services.AddApplicationInsightsTelemetry();
+                services.AddSingleton<TelemetryClient>(new TelemetryClient(new TelemetryConfiguration()
+                {
+                    TelemetryChannel = Substitute.For<ITelemetryChannel>(),
+                }));
             })
             .Build();
 
