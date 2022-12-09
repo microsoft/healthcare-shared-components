@@ -16,7 +16,6 @@
     <PackageVersion Include="MediatR" Version="11.1.0" />
     <PackageVersion Include="MediatR.Extensions.Microsoft.DependencyInjection" Version="11.0.0" />
     <PackageVersion Include="Microsoft.ApplicationInsights" Version="2.21.0" />
-    <PackageVersion Include="Microsoft.ApplicationInsights.AspNetCore" Version="2.21.0" />
     <PackageVersion Include="Microsoft.AspNetCore.Mvc.Testing" Version="$(SdkPackageVersion)" />
     <PackageVersion Include="Microsoft.AspNetCore.TestHost" Version="$(SdkPackageVersion)" />
     <PackageVersion Include="Microsoft.Azure.DurableTask.Core" Version="2.12.1" />

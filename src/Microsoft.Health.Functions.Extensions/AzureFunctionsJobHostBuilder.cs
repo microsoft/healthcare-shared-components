@@ -19,7 +19,6 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Health.Functions.Extensions.Configuration;
-using NSubstitute;
 
 namespace Microsoft.Health.Functions.Extensions;
 
@@ -61,6 +60,20 @@ public sealed class AzureFunctionsJobHostBuilder
         _configureWebJobs += (c, b, l) => configure(b);
         return this;
     }
+    internal class NullTelemetryChannel : ITelemetryChannel
+    {
+        public bool? DeveloperMode { get; set; }
+        public string? EndpointAddress { get; set; }
+        public void Dispose()
+        {
+        }
+        public void Flush()
+        {
+        }
+        public void Send(ITelemetry item)
+        {
+        }
+    }
 
     /// <summary>
     /// Builds the <see cref="IHost"/> for Azure Functions.
@@ -85,12 +98,12 @@ public sealed class AzureFunctionsJobHostBuilder
             .ConfigureLogging((c, b) => _configureLogger(c, b))
             .ConfigureServices(services =>
             {
-                services.AddSingleton<TelemetryClient>(new TelemetryClient(new TelemetryConfiguration()
-                {
-                    TelemetryChannel = Substitute.For<ITelemetryChannel>(),
-                }));
+                services
+                    .AddSingleton<ITelemetryChannel, NullTelemetryChannel>()
+                    .AddSingleton(sp => new TelemetryConfiguration { TelemetryChannel = sp.GetRequiredService<ITelemetryChannel>() })
+                    .AddSingleton<TelemetryClient>();
             })
-            .Build();
+                .Build();
 
     /// <summary>
     /// Creates a new builder that may be used to configure the <see cref="IHost"/>.
