@@ -60,20 +60,6 @@ public sealed class AzureFunctionsJobHostBuilder
         _configureWebJobs += (c, b, l) => configure(b);
         return this;
     }
-    internal class NullTelemetryChannel : ITelemetryChannel
-    {
-        public bool? DeveloperMode { get; set; }
-        public string? EndpointAddress { get; set; }
-        public void Dispose()
-        {
-        }
-        public void Flush()
-        {
-        }
-        public void Send(ITelemetry item)
-        {
-        }
-    }
 
     /// <summary>
     /// Builds the <see cref="IHost"/> for Azure Functions.
@@ -97,13 +83,12 @@ public sealed class AzureFunctionsJobHostBuilder
                 })
             .ConfigureLogging((c, b) => _configureLogger(c, b))
             .ConfigureServices(services =>
-            {
                 services
                     .AddSingleton<ITelemetryChannel, NullTelemetryChannel>()
                     .AddSingleton(sp => new TelemetryConfiguration { TelemetryChannel = sp.GetRequiredService<ITelemetryChannel>() })
-                    .AddSingleton(sp => new TelemetryClient(sp.GetRequiredService<TelemetryConfiguration>()));
-            })
-                .Build();
+                    .AddSingleton(sp => new TelemetryClient(sp.GetRequiredService<TelemetryConfiguration>()))
+            )
+            .Build();
 
     /// <summary>
     /// Creates a new builder that may be used to configure the <see cref="IHost"/>.
@@ -153,6 +138,18 @@ public sealed class AzureFunctionsJobHostBuilder
             .Configuration
             .GetSection(AzureFunctionsJobHost.RootSectionName)
             .GetSection("Logging"));
+    }
+
+    private sealed class NullTelemetryChannel : ITelemetryChannel
+    {
+        public bool? DeveloperMode { get; set; }
+        public string? EndpointAddress { get; set; }
+        public void Dispose()
+        { }
+        public void Flush()
+        { }
+        public void Send(ITelemetry item)
+        { }
     }
 
 }
