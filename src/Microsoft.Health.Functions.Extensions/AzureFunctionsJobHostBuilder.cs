@@ -8,10 +8,14 @@ using System.Collections.Generic;
 using System.IO;
 using System.Reflection;
 using EnsureThat;
+using Microsoft.ApplicationInsights;
+using Microsoft.ApplicationInsights.Channel;
+using Microsoft.ApplicationInsights.Extensibility;
 using Microsoft.Azure.Functions.Extensions.DependencyInjection;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Configuration.Memory;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Health.Functions.Extensions.Configuration;
@@ -78,6 +82,11 @@ public sealed class AzureFunctionsJobHostBuilder
                         .AddEnvironmentVariables();
                 })
             .ConfigureLogging((c, b) => _configureLogger(c, b))
+            .ConfigureServices(services =>
+                services
+                    .AddSingleton<ITelemetryChannel, NullTelemetryChannel>()
+                    .AddSingleton(sp => new TelemetryConfiguration { TelemetryChannel = sp.GetRequiredService<ITelemetryChannel>() })
+                    .AddSingleton(sp => new TelemetryClient(sp.GetRequiredService<TelemetryConfiguration>())))
             .Build();
 
     /// <summary>
@@ -130,4 +139,19 @@ public sealed class AzureFunctionsJobHostBuilder
             .GetSection("Logging"));
     }
 
+    private sealed class NullTelemetryChannel : ITelemetryChannel
+    {
+        public bool? DeveloperMode { get; set; }
+
+        public string? EndpointAddress { get; set; }
+
+        public void Dispose()
+        { }
+
+        public void Flush()
+        { }
+
+        public void Send(ITelemetry item)
+        { }
+    }
 }
