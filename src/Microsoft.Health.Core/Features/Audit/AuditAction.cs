@@ -3,7 +3,7 @@
 // Licensed under the MIT License (MIT). See LICENSE in the repo root for license information.
 // -------------------------------------------------------------------------------------------------
 
-namespace Microsoft.Health.Api.Features.Audit;
+namespace Microsoft.Health.Core.Features.Audit;
 
 public enum AuditAction
 {
