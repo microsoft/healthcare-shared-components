@@ -25,29 +25,3 @@ CREATE TABLE dbo.Table2
 )
 
 GO
-
-CREATE VIEW dbo.MyView
-	WITH SCHEMABINDING
-	AS
-
-	SELECT 
-        t1.Id, 
-        t1.Name, 
-        t2.City AS TheCity
-	FROM dbo.Table1 t1
-	INNER JOIN dbo.Table2 t2 ON t1.Id = t2.Id
-GO
-
-CREATE UNIQUE CLUSTERED INDEX IXC_View12 ON dbo.MyView
-(
-    Id,
-    Name,
-    TheCity
-)
-WITH (DATA_COMPRESSION = PAGE)
-
-CREATE NONCLUSTERED INDEX IX_View12_City ON dbo.MyView
-(	
-    TheCity
-)
-WITH (DATA_COMPRESSION = PAGE)
