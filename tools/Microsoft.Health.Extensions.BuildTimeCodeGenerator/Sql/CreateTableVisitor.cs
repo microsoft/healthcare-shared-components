@@ -1,4 +1,4 @@
-﻿// -------------------------------------------------------------------------------------------------
+// -------------------------------------------------------------------------------------------------
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License (MIT). See LICENSE in the repo root for license information.
 // -------------------------------------------------------------------------------------------------
@@ -68,41 +68,7 @@ internal class CreateTableVisitor : SqlVisitor
 
     public override void Visit(CreateViewStatement node)
     {
-        // Determining the column types of a view is a bit more involved.
-        // We need to determine which tables are being queried and look up the
-        // columns that the query references.
-
-        // This is a basic implementation that can be enhanced as needed to accomodate more scenarios.
-        // It assumes that any table referenced in the view are declared before the view.
-
-        string viewName = node.SchemaObjectName.BaseIdentifier.Value;
-        string schemaQualifiedViewName = $"{node.SchemaObjectName.SchemaIdentifier.Value}.{viewName}";
-        string className = GetClassNameForView(viewName);
-
-        var querySpecification = (QuerySpecification)node.SelectStatement.QueryExpression;
-        IList<SelectElement> selectElements = querySpecification.SelectElements;
-
-        List<(string name, string alias)> tables =
-            querySpecification.FromClause.TableReferences
-                .SelectMany(tr => tr switch
-                {
-                    JoinTableReference @join => new[] { @join.FirstTableReference, @join.SecondTableReference },
-                    _ => new[] { tr },
-                })
-                .Select(tr => tr switch
-                {
-                    NamedTableReference ntr => (ntr.SchemaObject.BaseIdentifier.Value, ntr.Alias.Value),
-                    _ => throw new NotSupportedException($"Unrecognized table type '{tr.GetType().Name}' in view.")
-                }).ToList();
-
-        ClassDeclarationSyntax classDeclarationSyntax =
-            CreateSkeletalClass(className, schemaQualifiedViewName)
-                .AddMembers(selectElements.Select(selectElement => CreatePropertyForViewColumn(selectElement, tables)).ToArray());
-
-        FieldDeclarationSyntax field = CreateStaticFieldForClass(className, viewName);
-
-        MembersToAdd.Add(field.AddSortingKey(this, viewName));
-        MembersToAdd.Add(classDeclarationSyntax.AddSortingKey(this, viewName));
+        // skip type creation for view. Views can have complicated columns like selects and c# types are not needed.
 
         base.Visit(node);
     }
