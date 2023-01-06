@@ -182,7 +182,7 @@ public class NullableDateTimeColumn : Column<DateTime?>
 
     public override DateTime? Read(SqlDataReader reader, int ordinal)
     {
-        return reader.GetDateTime(Metadata.Name, ordinal);
+        return reader.IsDBNull(Metadata.Name, ordinal) ? default(DateTime?) : reader.GetDateTime(Metadata.Name, ordinal);
     }
 
     public override void Set(SqlDataRecord record, int ordinal, DateTime? value)
@@ -228,7 +228,7 @@ public class NullableDateColumn : Column<DateTime?>
 
     public override DateTime? Read(SqlDataReader reader, int ordinal)
     {
-        return reader.GetDateTime(Metadata.Name, ordinal);
+        return reader.IsDBNull(Metadata.Name, ordinal) ? default(DateTime?) : reader.GetDateTime(Metadata.Name, ordinal);
     }
 
     public override void Set(SqlDataRecord record, int ordinal, DateTime? value)
