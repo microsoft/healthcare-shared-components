@@ -26,7 +26,7 @@
     <PackageVersion Include="Microsoft.Azure.WebJobs.Extensions" Version="4.0.1" />
     <PackageVersion Include="Microsoft.Azure.WebJobs.Extensions.DurableTask" Version="2.9.1" />
     <PackageVersion Include="Microsoft.Azure.WebJobs.Host.Storage" Version="4.1.0" />
-    <PackageVersion Include="Microsoft.Build.Framework" Version="17.4.0" />
+    <PackageVersion Include="Microsoft.Build.Framework" Version="17.5.0" />
     <PackageVersion Include="Microsoft.Build.Utilities.Core" Version="17.4.0" />
     <PackageVersion Include="Microsoft.CodeAnalysis.Common" Version="$(CodeAnalysisPackageVersion)" />
     <PackageVersion Include="Microsoft.CodeAnalysis.CSharp" Version="$(CodeAnalysisPackageVersion)" />
