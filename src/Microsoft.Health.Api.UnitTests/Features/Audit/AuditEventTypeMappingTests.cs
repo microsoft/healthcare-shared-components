@@ -157,7 +157,7 @@ public class AuditEventTypeMappingTests : IAsyncLifetime
 
     [SuppressMessage("Performance", "CA1812:Avoid uninstantiated internal classes", Justification = "Class metadata is used.")]
     [SuppressMessage("Performance", "CA1822:Mark members as static", Justification = "Controller actions should be instance members.")]
-    private class MockController : Controller
+    private sealed class MockController : Controller
     {
         [AllowAnonymous]
         public IActionResult Anonymous() => new OkResult();

@@ -162,7 +162,7 @@ public class HttpIntegrationTestFixture<TStartup> : IDisposable
     /// <summary>
     /// An <see cref="HttpMessageHandler"/> that maintains session consistency between requests.
     /// </summary>
-    private class SessionMessageHandler : DelegatingHandler
+    private sealed class SessionMessageHandler : DelegatingHandler
     {
         public SessionMessageHandler(HttpMessageHandler innerHandler)
             : base(innerHandler)
