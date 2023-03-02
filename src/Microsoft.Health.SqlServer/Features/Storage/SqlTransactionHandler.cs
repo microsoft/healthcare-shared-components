@@ -18,8 +18,9 @@ public class SqlTransactionHandler : ITransactionHandler
     {
         if (SqlTransactionScope != null)
         {
-            Debug.Fail("The existing SQL transaction scope should be completed before starting a new transaction.");
-            throw new TransactionFailedException();
+            const string message = "The existing SQL transaction scope should be completed before starting a new transaction.";
+            Debug.Fail(message);
+            throw new TransactionFailedException(message);
         }
 
         SqlTransactionScope = new SqlTransactionScope(this);
