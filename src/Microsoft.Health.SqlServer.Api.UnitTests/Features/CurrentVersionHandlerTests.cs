@@ -33,8 +33,7 @@ public class CurrentVersionHandlerTests
         var collection = new ServiceCollection();
         collection.Add(sp => new CurrentVersionHandler(_schemaDataStore)).Singleton().AsSelf().AsImplementedInterfaces();
 
-        ServiceProvider provider = collection.BuildServiceProvider();
-        _mediator = new Mediator(type => provider.GetService(type));
+        _mediator = new Mediator(collection.BuildServiceProvider());
         _cancellationToken = new CancellationTokenSource().Token;
     }
 

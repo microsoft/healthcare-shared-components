@@ -189,6 +189,7 @@ dotnet_code_quality.enum_values_prefix_trigger            = AllEnumValues
 dotnet_code_quality.exclude_indirect_base_types           = false
 
 dotnet_code_quality.CA1002.api_surface = public # Do not expose generic lists
+dotnet_code_quality.CA1062.api_surface = public # Validate arguments of public methods
 dotnet_code_quality.CA1802             = static # Use Literals Where Appropriate
 
 dotnet_diagnostic.CA1031.severity = error      # Do not catch general exception types

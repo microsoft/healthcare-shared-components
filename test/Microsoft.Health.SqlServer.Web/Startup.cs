@@ -3,7 +3,6 @@
 // Licensed under the MIT License (MIT). See LICENSE in the repo root for license information.
 // -------------------------------------------------------------------------------------------------
 
-using MediatR;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -36,7 +35,7 @@ public class Startup
             .AddSqlServerManagement<SchemaVersion>()
             .AddSqlServerApi();
 
-        services.AddMediatR(typeof(CompatibilityVersionHandler).Assembly);
+        services.AddMediatR(c => c.RegisterServicesFromAssembly(typeof(CompatibilityVersionHandler).Assembly));
 
         services
             .Add(provider => new SchemaInformation((int)SchemaVersion.Version1, (int)SchemaVersion.Version2))

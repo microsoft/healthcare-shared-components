@@ -1,4 +1,4 @@
-﻿// -------------------------------------------------------------------------------------------------
+// -------------------------------------------------------------------------------------------------
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License (MIT). See LICENSE in the repo root for license information.
 // -------------------------------------------------------------------------------------------------
@@ -16,11 +16,11 @@ public class SqlTransactionHandler : ITransactionHandler
 
     public ITransactionScope BeginTransaction()
     {
-        Debug.Assert(SqlTransactionScope == null, "The existing SQL transaction scope should be completed before starting a new transaction.");
-
         if (SqlTransactionScope != null)
         {
-            throw new TransactionFailedException();
+            const string message = "The existing SQL transaction scope should be completed before starting a new transaction.";
+            Debug.Fail(message);
+            throw new TransactionFailedException(message);
         }
 
         SqlTransactionScope = new SqlTransactionScope(this);

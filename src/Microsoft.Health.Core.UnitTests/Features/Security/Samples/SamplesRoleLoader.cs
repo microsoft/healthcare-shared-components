@@ -13,7 +13,7 @@ using Microsoft.Health.Core.Features.Security;
 
 namespace Microsoft.Health.Core.UnitTests.Features.Security.Samples;
 
-internal class SamplesRoleLoader : RoleLoader<DataActions>
+internal sealed class SamplesRoleLoader : RoleLoader<DataActions>
 {
     private readonly Dictionary<string, DataActions> _dataActionsMap = new Dictionary<string, DataActions>();
 

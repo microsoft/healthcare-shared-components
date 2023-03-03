@@ -3,7 +3,6 @@
 // Licensed under the MIT License (MIT). See LICENSE in the repo root for license information.
 // -------------------------------------------------------------------------------------------------
 
-using MediatR;
 using System;
 using System.CommandLine;
 using System.CommandLine.Builder;
@@ -89,7 +88,7 @@ public static class Program
         services.AddScoped<SqlTransactionHandler>();
         services.AddScoped<ISchemaManagerDataStore, SchemaManagerDataStore>();
         services.AddSingleton<ISchemaManager, SqlSchemaManager>();
-        services.AddMediatR(typeof(SchemaUpgradedNotification).Assembly);
+        services.AddMediatR(c => c.RegisterServicesFromAssembly(typeof(SchemaUpgradedNotification).Assembly));
         services.AddLogging(configure => configure.AddConsole());
         return services.BuildServiceProvider();
     }
