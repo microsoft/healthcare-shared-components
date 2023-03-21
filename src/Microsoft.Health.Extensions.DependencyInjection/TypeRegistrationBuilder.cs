@@ -212,14 +212,7 @@ public class TypeRegistrationBuilder
 
         serviceDescriptor = serviceDescriptor.WithMetadata(_type);
 
-        if (replace)
-        {
-            _serviceCollection.Replace(serviceDescriptor);
-        }
-        else
-        {
-            _serviceCollection.Add(serviceDescriptor);
-        }
+        AddToServiceCollection(serviceDescriptor, replace);
     }
 
     private void SetupRootRegistration(Type serviceType, bool replace)
@@ -255,16 +248,28 @@ public class TypeRegistrationBuilder
         {
             serviceDescriptor = serviceDescriptor.WithMetadata(_type);
 
-            if (replace)
-            {
-                _serviceCollection.Replace(serviceDescriptor);
-            }
-            else
-            {
-                _serviceCollection.Add(serviceDescriptor);
-            }
+            AddToServiceCollection(serviceDescriptor, replace);
         }
 
         _cachedResolver = provider => provider.GetService(_firstRegisteredType);
+    }
+
+    private void AddToServiceCollection(ServiceDescriptor serviceDescriptor, bool replace)
+    {
+        if (replace)
+        {
+            _serviceCollection.RemoveAll(serviceDescriptor.ServiceType);
+        }
+
+        if (serviceDescriptor.ServiceType == serviceDescriptor.ImplementationType || serviceDescriptor.ImplementationFactory != null)
+        {
+            // Concrete type registration
+            _serviceCollection.TryAdd(serviceDescriptor);
+        }
+        else
+        {
+            // Register services as enumerable
+            _serviceCollection.TryAddEnumerable(serviceDescriptor);
+        }
     }
 }
