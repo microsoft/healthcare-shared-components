@@ -1,4 +1,4 @@
-﻿// -------------------------------------------------------------------------------------------------
+// -------------------------------------------------------------------------------------------------
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License (MIT). See LICENSE in the repo root for license information.
 // -------------------------------------------------------------------------------------------------
@@ -40,7 +40,13 @@ public class EventPublisherTests
         Assert.Throws<ArgumentNullException>(() =>
         {
             var testTopicEndPoint = new Uri("https://microsoft-healthcareapis-workspaces.westus2-1.eventgrid-int.azure.net/eventGrid/api/events");
-            var eventGridPublisher = new EventGridPublisher(testTopicEndPoint, null);
+            var eventGridPublisher = new EventGridPublisher(testTopicEndPoint, key: null);
+        });
+
+        Assert.Throws<ArgumentNullException>(() =>
+        {
+            var testTopicEndPoint = new Uri("https://microsoft-healthcareapis-workspaces.westus2-1.eventgrid-int.azure.net/eventGrid/api/events");
+            var eventGridPublisher = new EventGridPublisher(testTopicEndPoint, credential: null);
         });
 
         Assert.Throws<ArgumentNullException>(() =>
