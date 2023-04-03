@@ -20,7 +20,7 @@ public class ManagedIdentityAccessTokenHandler : IAccessTokenHandler
 
         DefaultAzureCredential credential = new DefaultAzureCredential();
 
-        var token = await credential.GetTokenAsync(new TokenRequestContext(new[] { "https://database.windows.net/.default" }), CancellationToken.None).ConfigureAwait(false);
+        var token = await credential.GetTokenAsync(new TokenRequestContext(new[] { resource }), CancellationToken.None).ConfigureAwait(false);
 
         return token.Token;
     }
