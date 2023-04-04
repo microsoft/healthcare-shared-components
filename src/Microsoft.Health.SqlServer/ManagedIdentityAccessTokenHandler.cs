@@ -20,7 +20,7 @@ public class ManagedIdentityAccessTokenHandler : IAccessTokenHandler
 
         ManagedIdentityCredential credential = new ManagedIdentityCredential();
 
-        var token = await credential.GetTokenAsync(new TokenRequestContext(new[] { resource }), CancellationToken.None).ConfigureAwait(false);
+        var token = await credential.GetTokenAsync(new TokenRequestContext(new[] { resource }), cancellationToken).ConfigureAwait(false);
 
         return token.Token;
     }
