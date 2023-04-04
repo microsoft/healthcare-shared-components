@@ -16,7 +16,7 @@ public class ManagedIdentitySqlConnectionBuilder : ISqlConnectionBuilder
     private readonly ISqlConnectionStringProvider _sqlConnectionStringProvider;
     private readonly IAccessTokenHandler _accessTokenHandler;
     private readonly SqlRetryLogicBaseProvider _sqlRetryLogicBaseProvider;
-    private readonly string _azureResourceScope = "https://database.windows.net/.default";
+    private const string AzureResourceScope = "https://database.windows.net/.default";
 
     public ManagedIdentitySqlConnectionBuilder(
         ISqlConnectionStringProvider sqlConnectionStringProvider,
@@ -44,7 +44,7 @@ public class ManagedIdentitySqlConnectionBuilder : ISqlConnectionBuilder
             cancellationToken).ConfigureAwait(false);
 
         // set managed identity access token
-        sqlConnection.AccessToken = await _accessTokenHandler.GetAccessTokenAsync(_azureResourceScope, cancellationToken).ConfigureAwait(false);
+        sqlConnection.AccessToken = await _accessTokenHandler.GetAccessTokenAsync(AzureResourceScope, cancellationToken).ConfigureAwait(false);
         return sqlConnection;
     }
 }

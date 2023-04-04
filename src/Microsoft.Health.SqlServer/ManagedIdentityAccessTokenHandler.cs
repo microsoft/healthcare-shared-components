@@ -18,7 +18,7 @@ public class ManagedIdentityAccessTokenHandler : IAccessTokenHandler
     {
         EnsureArg.IsNotNullOrEmpty(resource, nameof(resource));
 
-        DefaultAzureCredential credential = new DefaultAzureCredential();
+        ManagedIdentityCredential credential = new ManagedIdentityCredential();
 
         var token = await credential.GetTokenAsync(new TokenRequestContext(new[] { resource }), CancellationToken.None).ConfigureAwait(false);
 
