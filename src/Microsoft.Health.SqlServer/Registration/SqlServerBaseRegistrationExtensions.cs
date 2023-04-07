@@ -85,7 +85,14 @@ public static class SqlServerBaseRegistrationExtensions
         {
             SqlServerDataStoreConfiguration config = p.GetRequiredService<IOptions<SqlServerDataStoreConfiguration>>().Value;
 
-            return new ManagedIdentityAccessTokenHandler(config.ManagedIdentityClientId);
+            string managedIdentityClientId = null;
+
+            if (!string.IsNullOrEmpty(config.ManagedIdentityClientId))
+            {
+                managedIdentityClientId = config.ManagedIdentityClientId;
+            }
+
+            return new ManagedIdentityAccessTokenHandler(managedIdentityClientId);
         });
 
         // Services to facilitate SQL connections
