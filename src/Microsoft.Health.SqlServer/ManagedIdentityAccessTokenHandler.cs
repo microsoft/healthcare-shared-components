@@ -13,14 +13,22 @@ namespace Microsoft.Health.SqlServer;
 
 public class ManagedIdentityAccessTokenHandler : IAccessTokenHandler
 {
-    /// <inheritdoc />
+    private readonly string _managedIdentityClientId;
+
+    public ManagedIdentityAccessTokenHandler(string managedIdentityClientId)
+    {
+        EnsureArg.IsNotNull(managedIdentityClientId, nameof(managedIdentityClientId));
+
+        _managedIdentityClientId = managedIdentityClientId;
+    }
+
     public async Task<string> GetAccessTokenAsync(string resource, CancellationToken cancellationToken)
     {
         EnsureArg.IsNotNullOrEmpty(resource, nameof(resource));
 
-        ManagedIdentityCredential credential = new ManagedIdentityCredential();
+        ManagedIdentityCredential credential = new ManagedIdentityCredential(_managedIdentityClientId);
 
-        var token = await credential.GetTokenAsync(new TokenRequestContext(new[] { resource }), cancellationToken).ConfigureAwait(false);
+        var token = await credential.GetTokenAsync(new TokenRequestContext(new[] { resource }), CancellationToken.None).ConfigureAwait(false);
 
         return token.Token;
     }
