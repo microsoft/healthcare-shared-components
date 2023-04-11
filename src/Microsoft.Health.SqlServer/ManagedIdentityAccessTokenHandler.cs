@@ -8,6 +8,8 @@ using System.Threading.Tasks;
 using Azure.Core;
 using Azure.Identity;
 using EnsureThat;
+using Microsoft.Extensions.Options;
+using Microsoft.Health.SqlServer.Configs;
 
 namespace Microsoft.Health.SqlServer;
 
@@ -15,11 +17,9 @@ public class ManagedIdentityAccessTokenHandler : IAccessTokenHandler
 {
     private readonly string _managedIdentityClientId;
 
-    public ManagedIdentityAccessTokenHandler(string managedIdentityClientId)
+    public ManagedIdentityAccessTokenHandler(IOptions<SqlServerDataStoreConfiguration> options)
     {
-        EnsureArg.IsNotNull(managedIdentityClientId, nameof(managedIdentityClientId));
-
-        _managedIdentityClientId = managedIdentityClientId;
+        _managedIdentityClientId = options?.Value.ManagedIdentityClientId;
     }
 
     public async Task<string> GetAccessTokenAsync(string resource, CancellationToken cancellationToken)

@@ -81,19 +81,7 @@ public static class SqlServerBaseRegistrationExtensions
              });
 
         // The following are only used in case of managed identity
-        services.AddSingleton<IAccessTokenHandler, ManagedIdentityAccessTokenHandler>(p =>
-        {
-            SqlServerDataStoreConfiguration config = p.GetRequiredService<IOptions<SqlServerDataStoreConfiguration>>().Value;
-
-            string managedIdentityClientId = null;
-
-            if (!string.IsNullOrEmpty(config.ManagedIdentityClientId))
-            {
-                managedIdentityClientId = config.ManagedIdentityClientId;
-            }
-
-            return new ManagedIdentityAccessTokenHandler(managedIdentityClientId);
-        });
+        services.AddSingleton<IAccessTokenHandler, ManagedIdentityAccessTokenHandler>();
 
         // Services to facilitate SQL connections
         // TODO: Does SqlTransactionHandler need to be registered directly? Should usage change to ITransactionHandler?
