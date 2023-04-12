@@ -23,7 +23,6 @@
   <ItemGroup>
     <PackageReference Include="Ensure.That" />
     <PackageReference Include="MediatR" />
-    <PackageReference Include="Microsoft.Azure.Services.AppAuthentication" />
     <PackageReference Include="Microsoft.Data.SqlClient" />
     <PackageReference Include="Microsoft.Extensions.Configuration.Abstractions" />
     <PackageReference Include="Microsoft.Extensions.Configuration.Binder" />
