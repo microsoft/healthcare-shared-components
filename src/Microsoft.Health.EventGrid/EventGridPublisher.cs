@@ -1,4 +1,4 @@
-﻿// -------------------------------------------------------------------------------------------------
+// -------------------------------------------------------------------------------------------------
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License (MIT). See LICENSE in the repo root for license information.
 // -------------------------------------------------------------------------------------------------
@@ -9,6 +9,7 @@ using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using Azure;
+using Azure.Core;
 using Azure.Core.Pipeline;
 using Azure.Messaging.EventGrid;
 using EnsureThat;
@@ -53,6 +54,19 @@ public class EventGridPublisher : IEventGridPublisher
         };
 
         _client = new EventGridPublisherClient(endpoint, new AzureKeyCredential(keyCredentialName), options);
+    }
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="EventGridPublisher"/> class.
+    /// </summary>
+    /// <param name="endpoint">Uri of topic</param>
+    /// <param name="credential">credential with permission to write to event grid endpoint</param>
+    public EventGridPublisher(Uri endpoint, TokenCredential credential)
+    {
+        EnsureArg.IsNotNull(endpoint, nameof(endpoint));
+        EnsureArg.IsNotNull(credential, nameof(credential));
+
+        _client = new EventGridPublisherClient(endpoint, credential);
     }
 
     /// <summary>
