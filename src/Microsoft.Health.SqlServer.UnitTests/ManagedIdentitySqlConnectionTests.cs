@@ -18,7 +18,7 @@ public class ManagedIdentitySqlConnectionTests
     private const string ServerName = "(local)";
     private const string MasterDatabase = "master";
     private const string TestAccessToken = "test token";
-    private const string AzureResource = "https://database.windows.net/.default";
+    private const string AzureResource = "https://database.windows.net/";
 
     private readonly ManagedIdentitySqlConnectionBuilder _sqlConnectionFactory;
 

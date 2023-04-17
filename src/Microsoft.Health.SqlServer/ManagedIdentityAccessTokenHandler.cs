@@ -1,35 +1,29 @@
-// -------------------------------------------------------------------------------------------------
+﻿// -------------------------------------------------------------------------------------------------
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License (MIT). See LICENSE in the repo root for license information.
 // -------------------------------------------------------------------------------------------------
 
 using System.Threading;
 using System.Threading.Tasks;
-using Azure.Core;
-using Azure.Identity;
 using EnsureThat;
-using Microsoft.Extensions.Options;
-using Microsoft.Health.SqlServer.Configs;
+using Microsoft.Azure.Services.AppAuthentication;
 
 namespace Microsoft.Health.SqlServer;
 
 public class ManagedIdentityAccessTokenHandler : IAccessTokenHandler
 {
-    private readonly string _managedIdentityClientId;
+    private readonly AzureServiceTokenProvider _azureServiceTokenProvider;
 
-    public ManagedIdentityAccessTokenHandler(IOptions<SqlServerDataStoreConfiguration> options)
+    public ManagedIdentityAccessTokenHandler(AzureServiceTokenProvider azureServiceTokenProvider)
     {
-        _managedIdentityClientId = options?.Value.ManagedIdentityClientId;
+        EnsureArg.IsNotNull(azureServiceTokenProvider, nameof(azureServiceTokenProvider));
+
+        _azureServiceTokenProvider = azureServiceTokenProvider;
     }
 
-    public async Task<string> GetAccessTokenAsync(string resource, CancellationToken cancellationToken)
+    /// <inheritdoc />
+    public Task<string> GetAccessTokenAsync(string resource, CancellationToken cancellationToken)
     {
-        EnsureArg.IsNotNullOrEmpty(resource, nameof(resource));
-
-        ManagedIdentityCredential credential = new ManagedIdentityCredential(_managedIdentityClientId);
-
-        var token = await credential.GetTokenAsync(new TokenRequestContext(new[] { resource }), CancellationToken.None).ConfigureAwait(false);
-
-        return token.Token;
+        return _azureServiceTokenProvider.GetAccessTokenAsync(resource, cancellationToken: cancellationToken);
     }
 }

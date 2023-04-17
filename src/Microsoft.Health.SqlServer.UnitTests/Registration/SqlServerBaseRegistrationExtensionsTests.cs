@@ -1,9 +1,10 @@
-// -------------------------------------------------------------------------------------------------
+﻿// -------------------------------------------------------------------------------------------------
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License (MIT). See LICENSE in the repo root for license information.
 // -------------------------------------------------------------------------------------------------
 
 using System;
+using Microsoft.Azure.Services.AppAuthentication;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Health.Abstractions.Features.Transactions;
@@ -37,6 +38,8 @@ public class SqlServerBaseRegistrationExtensionsTests
         Assert.True(services.ContainsScoped<SqlConnectionWrapperFactory>());
         Assert.True(services.ContainsScoped<SqlServerSchemaDataStore>());
         Assert.True(services.ContainsScoped<SqlTransactionHandler>());
+
+        Assert.True(services.ContainsSingleton<AzureServiceTokenProvider>());
         Assert.True(services.ContainsSingleton<BaseScriptProvider>());
         Assert.True(services.ContainsSingleton<IAccessTokenHandler, ManagedIdentityAccessTokenHandler>());
         Assert.True(services.ContainsSingleton<IBaseScriptProvider, BaseScriptProvider>());
@@ -62,6 +65,8 @@ public class SqlServerBaseRegistrationExtensionsTests
         Assert.True(services.ContainsScoped<SqlConnectionWrapperFactory>());
         Assert.True(services.ContainsScoped<SqlTransactionHandler>());
         Assert.True(services.ContainsScoped<ITransactionHandler, SqlTransactionHandler>());
+
+        Assert.True(services.ContainsSingleton<AzureServiceTokenProvider>());
         Assert.True(services.ContainsSingleton<IAccessTokenHandler, ManagedIdentityAccessTokenHandler>());
         Assert.True(services.ContainsSingleton<ISqlConnectionBuilder>());
         Assert.True(services.ContainsSingleton<ISqlConnectionStringProvider, DefaultSqlConnectionStringProvider>());
