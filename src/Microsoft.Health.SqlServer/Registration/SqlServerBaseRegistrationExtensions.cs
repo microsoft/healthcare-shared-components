@@ -1,4 +1,4 @@
-// -------------------------------------------------------------------------------------------------
+﻿// -------------------------------------------------------------------------------------------------
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License (MIT). See LICENSE in the repo root for license information.
 // -------------------------------------------------------------------------------------------------
@@ -6,6 +6,7 @@
 using System;
 using System.Linq;
 using EnsureThat;
+using Microsoft.Azure.Services.AppAuthentication;
 using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -82,6 +83,19 @@ public static class SqlServerBaseRegistrationExtensions
 
         // The following are only used in case of managed identity
         services.AddSingleton<IAccessTokenHandler, ManagedIdentityAccessTokenHandler>();
+        services.AddSingleton<AzureServiceTokenProvider>(p =>
+        {
+            SqlServerDataStoreConfiguration config = p.GetRequiredService<IOptions<SqlServerDataStoreConfiguration>>().Value;
+
+            string tokenProviderConnectionString = null;
+
+            if (!string.IsNullOrEmpty(config.ManagedIdentityClientId))
+            {
+                tokenProviderConnectionString = $"RunAs=App;AppId={config.ManagedIdentityClientId}";
+            }
+
+            return new AzureServiceTokenProvider(connectionString: tokenProviderConnectionString);
+        });
 
         // Services to facilitate SQL connections
         // TODO: Does SqlTransactionHandler need to be registered directly? Should usage change to ITransactionHandler?
