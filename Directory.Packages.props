@@ -3,7 +3,7 @@
   <ItemGroup>
     <PackageVersion Include="Azure.Core" Version="1.32.0" />
     <PackageVersion Include="Azure.Identity" Version="1.9.0" />
-    <PackageVersion Include="Azure.Messaging.EventGrid" Version="4.15.0" />
+    <PackageVersion Include="Azure.Messaging.EventGrid" Version="4.16.0" />
     <PackageVersion Include="Azure.Storage.Blobs" Version="12.16.0" />
     <PackageVersion Include="Azure.Storage.Common" Version="12.15.0" />
     <PackageVersion Include="coverlet.collector" Version="3.2.0" />
@@ -61,7 +61,7 @@
     <PackageVersion Include="Microsoft.NET.Sdk.Functions" Version="4.2.0" />
     <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="17.5.0" />
     <PackageVersion Include="Microsoft.SourceLink.GitHub" Version="1.1.1" />
-    <PackageVersion Include="Microsoft.SqlServer.DacFx" Version="161.8089.0" />
+    <PackageVersion Include="Microsoft.SqlServer.DacFx" Version="162.0.52" />
     <PackageVersion Include="Microsoft.SqlServer.SqlManagementObjects" Version="170.13.0" />
     <PackageVersion Include="Newtonsoft.Json" Version="13.0.3" />
     <PackageVersion Include="Newtonsoft.Json.Schema" Version="3.0.15" />
