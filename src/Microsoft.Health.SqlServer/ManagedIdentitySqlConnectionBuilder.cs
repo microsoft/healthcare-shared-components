@@ -16,7 +16,6 @@ public class ManagedIdentitySqlConnectionBuilder : ISqlConnectionBuilder
     private readonly ISqlConnectionStringProvider _sqlConnectionStringProvider;
     private readonly IAccessTokenHandler _accessTokenHandler;
     private readonly SqlRetryLogicBaseProvider _sqlRetryLogicBaseProvider;
-    private readonly string _azureResource = "https://database.windows.net/";
 
     public ManagedIdentitySqlConnectionBuilder(
         ISqlConnectionStringProvider sqlConnectionStringProvider,
@@ -32,7 +31,6 @@ public class ManagedIdentitySqlConnectionBuilder : ISqlConnectionBuilder
         _sqlRetryLogicBaseProvider = sqlRetryLogicBaseProvider;
     }
 
-
     /// <inheritdoc />
     [SuppressMessage("Reliability", "CA2000:Dispose objects before losing scope", Justification = "Callers are responsible for disposal.")]
     public async Task<SqlConnection> GetSqlConnectionAsync(string initialCatalog = null, CancellationToken cancellationToken = default)
@@ -44,7 +42,7 @@ public class ManagedIdentitySqlConnectionBuilder : ISqlConnectionBuilder
             cancellationToken).ConfigureAwait(false);
 
         // set managed identity access token
-        sqlConnection.AccessToken = await _accessTokenHandler.GetAccessTokenAsync(_azureResource, cancellationToken).ConfigureAwait(false);
+        sqlConnection.AccessToken = await _accessTokenHandler.GetAccessTokenAsync(cancellationToken).ConfigureAwait(false);
         return sqlConnection;
     }
 }

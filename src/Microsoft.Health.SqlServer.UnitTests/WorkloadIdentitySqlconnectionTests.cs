@@ -11,8 +11,7 @@ using NSubstitute;
 using Xunit;
 
 namespace Microsoft.Health.SqlServer.UnitTests;
-
-public class ManagedIdentitySqlConnectionTests
+public class WorkloadIdentitySqlconnectionTests
 {
     private const string DatabaseName = "Dicom";
     private const string ServerName = "(local)";
@@ -21,15 +20,18 @@ public class ManagedIdentitySqlConnectionTests
 
     private readonly ManagedIdentitySqlConnectionBuilder _sqlConnectionFactory;
 
-    public ManagedIdentitySqlConnectionTests()
+    public WorkloadIdentitySqlconnectionTests()
     {
         var accessTokenHandler = Substitute.For<IAccessTokenHandler>();
+
+        accessTokenHandler.AuthenticationType.Returns(SqlServerAuthenticationType.WorkloadIdentity);
         accessTokenHandler.GetAccessTokenAsync().Returns(Task.FromResult(TestAccessToken));
+
 
         SqlServerDataStoreConfiguration sqlServerDataStoreConfiguration = new SqlServerDataStoreConfiguration
         {
             ConnectionString = $"Server={ServerName};Database={DatabaseName};",
-            AuthenticationType = SqlServerAuthenticationType.ManagedIdentity,
+            AuthenticationType = SqlServerAuthenticationType.WorkloadIdentity,
         };
 
         var sqlConfigOptions = Options.Create(sqlServerDataStoreConfiguration);
