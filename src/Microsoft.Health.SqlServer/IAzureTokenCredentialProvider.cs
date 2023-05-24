@@ -3,16 +3,12 @@
 // Licensed under the MIT License (MIT). See LICENSE in the repo root for license information.
 // -------------------------------------------------------------------------------------------------
 
-using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.Health.SqlServer.Configs;
+using System.Threading;
 
 namespace Microsoft.Health.SqlServer;
-
-public interface IAccessTokenHandler
+public interface IAzureTokenCredentialProvider
 {
-
-    SqlServerAuthenticationType AuthenticationType { get; }
     /// <summary>
     /// Get access token for the resource.
     /// </summary>

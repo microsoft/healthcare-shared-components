@@ -19,45 +19,57 @@ public class ManagedIdentitySqlConnectionTests
     private const string MasterDatabase = "master";
     private const string TestAccessToken = "test token";
 
-    private readonly ManagedIdentitySqlConnectionBuilder _sqlConnectionFactory;
+    private ManagedIdentitySqlConnectionBuilder _sqlConnectionFactory;
 
-    public ManagedIdentitySqlConnectionTests()
+
+
+    [Theory]
+    [InlineData(SqlServerAuthenticationType.ManagedIdentity)]
+    [InlineData(SqlServerAuthenticationType.WorkloadIdentity)]
+    public async Task GivenManagedIdentityConnectionType_WhenSqlConnectionRequested_AccessTokenIsSet(SqlServerAuthenticationType sqlServerAuthenticationType)
     {
-        var accessTokenHandler = Substitute.For<IAccessTokenHandler>();
-        accessTokenHandler.GetAccessTokenAsync().Returns(Task.FromResult(TestAccessToken));
+        InitializeTest(sqlServerAuthenticationType);
 
-        SqlServerDataStoreConfiguration sqlServerDataStoreConfiguration = new SqlServerDataStoreConfiguration
-        {
-            ConnectionString = $"Server={ServerName};Database={DatabaseName};",
-            AuthenticationType = SqlServerAuthenticationType.ManagedIdentity,
-        };
-
-        var sqlConfigOptions = Options.Create(sqlServerDataStoreConfiguration);
-        _sqlConnectionFactory = new ManagedIdentitySqlConnectionBuilder(
-            new DefaultSqlConnectionStringProvider(sqlConfigOptions), accessTokenHandler, SqlConfigurableRetryFactory.CreateNoneRetryProvider());
-    }
-
-    [Fact]
-    public async Task GivenManagedIdentityConnectionType_WhenSqlConnectionRequested_AccessTokenIsSet()
-    {
         SqlConnection sqlConnection = await _sqlConnectionFactory.GetSqlConnectionAsync().ConfigureAwait(false);
 
         Assert.Equal(TestAccessToken, sqlConnection.AccessToken);
     }
 
-    [Fact]
-    public async Task GivenDefaultConnectionType_WhenSqlConnectionRequested_DatabaseIsSet()
+    [Theory]
+    [InlineData(SqlServerAuthenticationType.ManagedIdentity)]
+    [InlineData(SqlServerAuthenticationType.WorkloadIdentity)]
+    public async Task GivenDefaultConnectionType_WhenSqlConnectionRequested_DatabaseIsSet(SqlServerAuthenticationType sqlServerAuthenticationType)
     {
+        InitializeTest(sqlServerAuthenticationType);
         SqlConnection sqlConnection = await _sqlConnectionFactory.GetSqlConnectionAsync().ConfigureAwait(false);
 
         Assert.Equal(DatabaseName, sqlConnection.Database);
     }
 
-    [Fact]
-    public async Task GivenDefaultConnectionType_WhenSqlConnectionToMasterRequested_MasterDatabaseIsSet()
+    [Theory]
+    [InlineData(SqlServerAuthenticationType.ManagedIdentity)]
+    [InlineData(SqlServerAuthenticationType.WorkloadIdentity)]
+    public async Task GivenDefaultConnectionType_WhenSqlConnectionToMasterRequested_MasterDatabaseIsSet(SqlServerAuthenticationType sqlServerAuthenticationType)
     {
+        InitializeTest(sqlServerAuthenticationType);
         SqlConnection sqlConnection = await _sqlConnectionFactory.GetSqlConnectionAsync(MasterDatabase).ConfigureAwait(false);
 
         Assert.Equal(MasterDatabase, sqlConnection.Database);
+    }
+
+    private void InitializeTest(SqlServerAuthenticationType sqlServerAutehnticationType)
+    {
+        var azureTokenCredentialProvider = Substitute.For<IAzureTokenCredentialProvider>();
+        azureTokenCredentialProvider.GetAccessTokenAsync().Returns(Task.FromResult(TestAccessToken));
+
+        SqlServerDataStoreConfiguration sqlServerDataStoreConfiguration = new SqlServerDataStoreConfiguration
+        {
+            ConnectionString = $"Server={ServerName};Database={DatabaseName};",
+            AuthenticationType = sqlServerAutehnticationType,
+        };
+
+        var sqlConfigOptions = Options.Create(sqlServerDataStoreConfiguration);
+        _sqlConnectionFactory = new ManagedIdentitySqlConnectionBuilder(azureTokenCredentialProvider,
+            new DefaultSqlConnectionStringProvider(sqlConfigOptions), SqlConfigurableRetryFactory.CreateNoneRetryProvider());
     }
 }

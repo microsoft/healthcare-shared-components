@@ -6,7 +6,6 @@
 using System;
 using System.Linq;
 using EnsureThat;
-using Microsoft.Azure.Services.AppAuthentication;
 using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -68,6 +67,7 @@ public static class SqlServerBaseRegistrationExtensions
 
         services.AddOptions();
         services.TryAddSingleton<ISqlConnectionStringProvider, DefaultSqlConnectionStringProvider>();
+        services.TryAddSingleton<IAzureTokenCredentialProvider, AzureTokenCredentialProvider>();
         services.AddSqlRetryLogicProvider();
         services.TryAddSingleton<ISqlConnectionBuilder>(
              p =>
@@ -76,38 +76,10 @@ public static class SqlServerBaseRegistrationExtensions
                  SqlServerDataStoreConfiguration config = sqlServerDataStoreConfigOption.Value;
                  ISqlConnectionStringProvider sqlConnectionStringProvider = p.GetRequiredService<ISqlConnectionStringProvider>();
                  SqlRetryLogicBaseProvider sqlRetryLogic = p.GetRequiredService<SqlRetryLogicBaseProvider>();
-                 var accessTokenHandlers = p.GetServices<IAccessTokenHandler>();
 
-                 if (config.AuthenticationType == SqlServerAuthenticationType.ManagedIdentity)
-                 {
-                     return new ManagedIdentitySqlConnectionBuilder(sqlConnectionStringProvider, accessTokenHandlers.FirstOrDefault(dpp => dpp.AuthenticationType == SqlServerAuthenticationType.ManagedIdentity), sqlRetryLogic);
-                 }
-                 else if (config.AuthenticationType == SqlServerAuthenticationType.WorkloadIdentity)
-                 {
-                     return new ManagedIdentitySqlConnectionBuilder(sqlConnectionStringProvider, accessTokenHandlers.FirstOrDefault(dpp => dpp.AuthenticationType == SqlServerAuthenticationType.WorkloadIdentity), sqlRetryLogic);
-                 }
-                 else
-                 {
-                     return new DefaultSqlConnectionBuilder(sqlConnectionStringProvider, sqlRetryLogic);
-                 }
+                 return ((config.AuthenticationType == SqlServerAuthenticationType.ManagedIdentity) || (config.AuthenticationType == SqlServerAuthenticationType.WorkloadIdentity)) ?
+                 new ManagedIdentitySqlConnectionBuilder(p.GetRequiredService<IAzureTokenCredentialProvider>(), sqlConnectionStringProvider, sqlRetryLogic) : new DefaultSqlConnectionBuilder(sqlConnectionStringProvider, sqlRetryLogic);
              });
-
-        // The following are only used in case of managed identity
-        services.AddSingleton<IAccessTokenHandler, ManagedIdentityAccessTokenHandler>();
-        services.AddSingleton<IAccessTokenHandler, WorkloadIdentityAcessTokenHandler>();
-        services.AddSingleton<AzureServiceTokenProvider>(p =>
-        {
-            SqlServerDataStoreConfiguration config = p.GetRequiredService<IOptions<SqlServerDataStoreConfiguration>>().Value;
-
-            string tokenProviderConnectionString = null;
-
-            if (!string.IsNullOrEmpty(config.ManagedIdentityClientId))
-            {
-                tokenProviderConnectionString = $"RunAs=App;AppId={config.ManagedIdentityClientId}";
-            }
-
-            return new AzureServiceTokenProvider(connectionString: tokenProviderConnectionString);
-        });
 
         // Services to facilitate SQL connections
         // TODO: Does SqlTransactionHandler need to be registered directly? Should usage change to ITransactionHandler?

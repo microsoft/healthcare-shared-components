@@ -14,21 +14,21 @@ namespace Microsoft.Health.SqlServer;
 public class ManagedIdentitySqlConnectionBuilder : ISqlConnectionBuilder
 {
     private readonly ISqlConnectionStringProvider _sqlConnectionStringProvider;
-    private readonly IAccessTokenHandler _accessTokenHandler;
     private readonly SqlRetryLogicBaseProvider _sqlRetryLogicBaseProvider;
+    private readonly IAzureTokenCredentialProvider _azureTokenCredentialProvider;
 
     public ManagedIdentitySqlConnectionBuilder(
+        IAzureTokenCredentialProvider azureTokenCredentialProvider,
         ISqlConnectionStringProvider sqlConnectionStringProvider,
-        IAccessTokenHandler accessTokenHandler,
         SqlRetryLogicBaseProvider sqlRetryLogicBaseProvider)
     {
         EnsureArg.IsNotNull(sqlConnectionStringProvider, nameof(sqlConnectionStringProvider));
-        EnsureArg.IsNotNull(accessTokenHandler, nameof(accessTokenHandler));
         EnsureArg.IsNotNull(sqlRetryLogicBaseProvider, nameof(sqlRetryLogicBaseProvider));
+        EnsureArg.IsNotNull(azureTokenCredentialProvider, nameof(azureTokenCredentialProvider));
 
         _sqlConnectionStringProvider = sqlConnectionStringProvider;
-        _accessTokenHandler = accessTokenHandler;
         _sqlRetryLogicBaseProvider = sqlRetryLogicBaseProvider;
+        _azureTokenCredentialProvider = azureTokenCredentialProvider;
     }
 
     /// <inheritdoc />
@@ -42,7 +42,12 @@ public class ManagedIdentitySqlConnectionBuilder : ISqlConnectionBuilder
             cancellationToken).ConfigureAwait(false);
 
         // set managed identity access token
-        sqlConnection.AccessToken = await _accessTokenHandler.GetAccessTokenAsync(cancellationToken).ConfigureAwait(false);
+        sqlConnection.AccessToken = await GetAccessTokenAsync(cancellationToken).ConfigureAwait(false);
         return sqlConnection;
+    }
+
+    private async Task<string> GetAccessTokenAsync(CancellationToken cancellationToken = default)
+    {
+        return await _azureTokenCredentialProvider.GetAccessTokenAsync(cancellationToken).ConfigureAwait(false);
     }
 }
