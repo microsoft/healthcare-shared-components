@@ -82,7 +82,6 @@ public static class SqlServerBaseRegistrationExtensions
                 {
                     string managedIdentityClientId = sqlServerDataStoreConfigOption.Value.ManagedIdentityClientId;
                     TokenCredential tokenCredential = new ManagedIdentityCredential(managedIdentityClientId);
-
                     return new ManagedIdentitySqlConnectionBuilder(sqlConnectionStringProvider, sqlRetryLogic, tokenCredential);
                 }
                 else if (config.AuthenticationType == SqlServerAuthenticationType.WorkloadIdentity)
