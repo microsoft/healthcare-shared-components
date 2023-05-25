@@ -6,6 +6,7 @@
 using System.Diagnostics.CodeAnalysis;
 using System.Threading;
 using System.Threading.Tasks;
+using Azure.Core;
 using EnsureThat;
 using Microsoft.Data.SqlClient;
 
@@ -15,20 +16,21 @@ public class ManagedIdentitySqlConnectionBuilder : ISqlConnectionBuilder
 {
     private readonly ISqlConnectionStringProvider _sqlConnectionStringProvider;
     private readonly SqlRetryLogicBaseProvider _sqlRetryLogicBaseProvider;
-    private readonly IAzureTokenCredentialProvider _azureTokenCredentialProvider;
+    private readonly TokenCredential _tokenCredential;
+    private readonly string _azureResource = "https://database.windows.net/.default";
 
     public ManagedIdentitySqlConnectionBuilder(
-        IAzureTokenCredentialProvider azureTokenCredentialProvider,
         ISqlConnectionStringProvider sqlConnectionStringProvider,
-        SqlRetryLogicBaseProvider sqlRetryLogicBaseProvider)
+        SqlRetryLogicBaseProvider sqlRetryLogicBaseProvider,
+        TokenCredential tokenCredential)
     {
         EnsureArg.IsNotNull(sqlConnectionStringProvider, nameof(sqlConnectionStringProvider));
         EnsureArg.IsNotNull(sqlRetryLogicBaseProvider, nameof(sqlRetryLogicBaseProvider));
-        EnsureArg.IsNotNull(azureTokenCredentialProvider, nameof(azureTokenCredentialProvider));
+        EnsureArg.IsNotNull(tokenCredential, nameof(tokenCredential));
 
         _sqlConnectionStringProvider = sqlConnectionStringProvider;
         _sqlRetryLogicBaseProvider = sqlRetryLogicBaseProvider;
-        _azureTokenCredentialProvider = azureTokenCredentialProvider;
+        _tokenCredential = tokenCredential;
     }
 
     /// <inheritdoc />
@@ -48,6 +50,7 @@ public class ManagedIdentitySqlConnectionBuilder : ISqlConnectionBuilder
 
     private async Task<string> GetAccessTokenAsync(CancellationToken cancellationToken = default)
     {
-        return await _azureTokenCredentialProvider.GetAccessTokenAsync(cancellationToken).ConfigureAwait(false);
+        var token = await _tokenCredential.GetTokenAsync(new TokenRequestContext(new[] { _azureResource }), cancellationToken).ConfigureAwait(false);
+        return token.Token;
     }
 }

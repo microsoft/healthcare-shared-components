@@ -3,7 +3,10 @@
 // Licensed under the MIT License (MIT). See LICENSE in the repo root for license information.
 // -------------------------------------------------------------------------------------------------
 
+using System;
+using System.Threading;
 using System.Threading.Tasks;
+using Azure.Core;
 using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.Options;
 using Microsoft.Health.SqlServer.Configs;
@@ -18,6 +21,7 @@ public class ManagedIdentitySqlConnectionTests
     private const string ServerName = "(local)";
     private const string MasterDatabase = "master";
     private const string TestAccessToken = "test token";
+    private readonly string _azureResource = "https://database.windows.net/.default";
 
     private ManagedIdentitySqlConnectionBuilder _sqlConnectionFactory;
 
@@ -57,19 +61,22 @@ public class ManagedIdentitySqlConnectionTests
         Assert.Equal(MasterDatabase, sqlConnection.Database);
     }
 
-    private void InitializeTest(SqlServerAuthenticationType sqlServerAutehnticationType)
+    private void InitializeTest(SqlServerAuthenticationType sqlServerAuthenticationType)
     {
-        var azureTokenCredentialProvider = Substitute.For<IAzureTokenCredentialProvider>();
-        azureTokenCredentialProvider.GetAccessTokenAsync().Returns(Task.FromResult(TestAccessToken));
-
         SqlServerDataStoreConfiguration sqlServerDataStoreConfiguration = new SqlServerDataStoreConfiguration
         {
             ConnectionString = $"Server={ServerName};Database={DatabaseName};",
-            AuthenticationType = sqlServerAutehnticationType,
+            AuthenticationType = sqlServerAuthenticationType,
         };
 
+        TokenCredential tokenCredential = Substitute.For<TokenCredential>();
+
+        AccessToken token = new AccessToken(TestAccessToken, DateTime.Now.AddHours(5));
+
+        tokenCredential.GetToken(new TokenRequestContext(new[] { _azureResource }), CancellationToken.None).Returns(token);
+
         var sqlConfigOptions = Options.Create(sqlServerDataStoreConfiguration);
-        _sqlConnectionFactory = new ManagedIdentitySqlConnectionBuilder(azureTokenCredentialProvider,
-            new DefaultSqlConnectionStringProvider(sqlConfigOptions), SqlConfigurableRetryFactory.CreateNoneRetryProvider());
+        _sqlConnectionFactory = new ManagedIdentitySqlConnectionBuilder(
+            new DefaultSqlConnectionStringProvider(sqlConfigOptions), SqlConfigurableRetryFactory.CreateNoneRetryProvider(), tokenCredential);
     }
 }
