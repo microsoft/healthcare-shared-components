@@ -5,7 +5,6 @@
 
 using System;
 using System.Linq;
-using Azure.Core;
 using Azure.Identity;
 using EnsureThat;
 using Microsoft.Data.SqlClient;
@@ -73,21 +72,18 @@ public static class SqlServerBaseRegistrationExtensions
         services.TryAddSingleton<ISqlConnectionBuilder>(
             p =>
             {
-                var sqlServerDataStoreConfigOption = p.GetRequiredService<IOptions<SqlServerDataStoreConfiguration>>();
-                SqlServerDataStoreConfiguration config = sqlServerDataStoreConfigOption.Value;
+                SqlServerDataStoreConfiguration config = p.GetRequiredService<IOptions<SqlServerDataStoreConfiguration>>().Value;
                 ISqlConnectionStringProvider sqlConnectionStringProvider = p.GetRequiredService<ISqlConnectionStringProvider>();
                 SqlRetryLogicBaseProvider sqlRetryLogic = p.GetRequiredService<SqlRetryLogicBaseProvider>();
 
                 if (config.AuthenticationType == SqlServerAuthenticationType.ManagedIdentity)
                 {
-                    string managedIdentityClientId = sqlServerDataStoreConfigOption.Value.ManagedIdentityClientId;
-                    TokenCredential tokenCredential = new ManagedIdentityCredential(managedIdentityClientId);
-                    return new ManagedIdentitySqlConnectionBuilder(sqlConnectionStringProvider, sqlRetryLogic, tokenCredential);
+                    string managedIdentityClientId = p.GetRequiredService<IOptions<SqlServerDataStoreConfiguration>>().Value.ManagedIdentityClientId;
+                    return new CredentialSqlConnectionBuilder(sqlConnectionStringProvider, sqlRetryLogic, new ManagedIdentityCredential(managedIdentityClientId));
                 }
                 else if (config.AuthenticationType == SqlServerAuthenticationType.WorkloadIdentity)
                 {
-                    TokenCredential tokenCredential = new WorkloadIdentityCredential();
-                    return new ManagedIdentitySqlConnectionBuilder(sqlConnectionStringProvider, sqlRetryLogic, tokenCredential);
+                    return new CredentialSqlConnectionBuilder(sqlConnectionStringProvider, sqlRetryLogic, new WorkloadIdentityCredential());
                 }
                 else
                 {

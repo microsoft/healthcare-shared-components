@@ -12,14 +12,14 @@ using Microsoft.Data.SqlClient;
 
 namespace Microsoft.Health.SqlServer;
 
-public class ManagedIdentitySqlConnectionBuilder : ISqlConnectionBuilder
+public class CredentialSqlConnectionBuilder : ISqlConnectionBuilder
 {
     private readonly ISqlConnectionStringProvider _sqlConnectionStringProvider;
     private readonly SqlRetryLogicBaseProvider _sqlRetryLogicBaseProvider;
     private readonly TokenCredential _tokenCredential;
     private readonly string _azureResource = "https://database.windows.net/.default";
 
-    public ManagedIdentitySqlConnectionBuilder(
+    public CredentialSqlConnectionBuilder(
         ISqlConnectionStringProvider sqlConnectionStringProvider,
         SqlRetryLogicBaseProvider sqlRetryLogicBaseProvider,
         TokenCredential tokenCredential)
@@ -48,7 +48,7 @@ public class ManagedIdentitySqlConnectionBuilder : ISqlConnectionBuilder
         return sqlConnection;
     }
 
-    private async Task<string> GetAccessTokenAsync(CancellationToken cancellationToken = default)
+    private async Task<string> GetAccessTokenAsync(CancellationToken cancellationToken)
     {
         var token = await _tokenCredential.GetTokenAsync(new TokenRequestContext(new[] { _azureResource }), cancellationToken).ConfigureAwait(false);
         return token.Token;
