@@ -29,7 +29,6 @@ public class CredentialSqlConnectionTests
         SqlServerDataStoreConfiguration sqlServerDataStoreConfiguration = new SqlServerDataStoreConfiguration
         {
             ConnectionString = $"Server={ServerName};Database={DatabaseName};",
-            AuthenticationType = SqlServerAuthenticationType.ManagedIdentity,
         };
 
         TokenCredential tokenCredential = Substitute.For<TokenCredential>();
