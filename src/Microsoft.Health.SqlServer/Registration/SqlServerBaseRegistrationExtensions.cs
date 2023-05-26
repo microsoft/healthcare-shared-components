@@ -1,12 +1,12 @@
-﻿// -------------------------------------------------------------------------------------------------
+// -------------------------------------------------------------------------------------------------
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License (MIT). See LICENSE in the repo root for license information.
 // -------------------------------------------------------------------------------------------------
 
 using System;
 using System.Linq;
+using Azure.Identity;
 using EnsureThat;
-using Microsoft.Azure.Services.AppAuthentication;
 using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -70,32 +70,26 @@ public static class SqlServerBaseRegistrationExtensions
         services.TryAddSingleton<ISqlConnectionStringProvider, DefaultSqlConnectionStringProvider>();
         services.AddSqlRetryLogicProvider();
         services.TryAddSingleton<ISqlConnectionBuilder>(
-             p =>
-             {
-                 var sqlServerDataStoreConfigOption = p.GetRequiredService<IOptions<SqlServerDataStoreConfiguration>>();
-                 SqlServerDataStoreConfiguration config = sqlServerDataStoreConfigOption.Value;
-                 ISqlConnectionStringProvider sqlConnectionStringProvider = p.GetRequiredService<ISqlConnectionStringProvider>();
-                 SqlRetryLogicBaseProvider sqlRetryLogic = p.GetRequiredService<SqlRetryLogicBaseProvider>();
-                 return config.AuthenticationType == SqlServerAuthenticationType.ManagedIdentity
-                     ? new ManagedIdentitySqlConnectionBuilder(sqlConnectionStringProvider, p.GetRequiredService<IAccessTokenHandler>(), sqlRetryLogic)
-                     : new DefaultSqlConnectionBuilder(sqlConnectionStringProvider, sqlRetryLogic);
-             });
-
-        // The following are only used in case of managed identity
-        services.AddSingleton<IAccessTokenHandler, ManagedIdentityAccessTokenHandler>();
-        services.AddSingleton<AzureServiceTokenProvider>(p =>
-        {
-            SqlServerDataStoreConfiguration config = p.GetRequiredService<IOptions<SqlServerDataStoreConfiguration>>().Value;
-
-            string tokenProviderConnectionString = null;
-
-            if (!string.IsNullOrEmpty(config.ManagedIdentityClientId))
+            p =>
             {
-                tokenProviderConnectionString = $"RunAs=App;AppId={config.ManagedIdentityClientId}";
-            }
+                SqlServerDataStoreConfiguration config = p.GetRequiredService<IOptions<SqlServerDataStoreConfiguration>>().Value;
+                ISqlConnectionStringProvider sqlConnectionStringProvider = p.GetRequiredService<ISqlConnectionStringProvider>();
+                SqlRetryLogicBaseProvider sqlRetryLogic = p.GetRequiredService<SqlRetryLogicBaseProvider>();
 
-            return new AzureServiceTokenProvider(connectionString: tokenProviderConnectionString);
-        });
+                if (config.AuthenticationType == SqlServerAuthenticationType.ManagedIdentity)
+                {
+                    string managedIdentityClientId = p.GetRequiredService<IOptions<SqlServerDataStoreConfiguration>>().Value.ManagedIdentityClientId;
+                    return new CredentialSqlConnectionBuilder(sqlConnectionStringProvider, sqlRetryLogic, new ManagedIdentityCredential(managedIdentityClientId));
+                }
+                else if (config.AuthenticationType == SqlServerAuthenticationType.WorkloadIdentity)
+                {
+                    return new CredentialSqlConnectionBuilder(sqlConnectionStringProvider, sqlRetryLogic, new WorkloadIdentityCredential());
+                }
+                else
+                {
+                    return new DefaultSqlConnectionBuilder(sqlConnectionStringProvider, sqlRetryLogic);
+                }
+            });
 
         // Services to facilitate SQL connections
         // TODO: Does SqlTransactionHandler need to be registered directly? Should usage change to ITransactionHandler?

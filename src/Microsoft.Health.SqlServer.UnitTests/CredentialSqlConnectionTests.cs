@@ -3,7 +3,10 @@
 // Licensed under the MIT License (MIT). See LICENSE in the repo root for license information.
 // -------------------------------------------------------------------------------------------------
 
+using System;
+using System.Threading;
 using System.Threading.Tasks;
+using Azure.Core;
 using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.Options;
 using Microsoft.Health.SqlServer.Configs;
@@ -12,31 +15,33 @@ using Xunit;
 
 namespace Microsoft.Health.SqlServer.UnitTests;
 
-public class ManagedIdentitySqlConnectionTests
+public class CredentialSqlConnectionTests
 {
     private const string DatabaseName = "Dicom";
     private const string ServerName = "(local)";
     private const string MasterDatabase = "master";
     private const string TestAccessToken = "test token";
-    private const string AzureResource = "https://database.windows.net/";
 
-    private readonly ManagedIdentitySqlConnectionBuilder _sqlConnectionFactory;
+    private readonly CredentialSqlConnectionBuilder _sqlConnectionFactory;
 
-    public ManagedIdentitySqlConnectionTests()
+    public CredentialSqlConnectionTests()
     {
-        var accessTokenHandler = Substitute.For<IAccessTokenHandler>();
-        accessTokenHandler.GetAccessTokenAsync(AzureResource).Returns(Task.FromResult(TestAccessToken));
-
         SqlServerDataStoreConfiguration sqlServerDataStoreConfiguration = new SqlServerDataStoreConfiguration
         {
             ConnectionString = $"Server={ServerName};Database={DatabaseName};",
-            AuthenticationType = SqlServerAuthenticationType.ManagedIdentity,
         };
 
+        TokenCredential tokenCredential = Substitute.For<TokenCredential>();
+
+        AccessToken token = new AccessToken(TestAccessToken, DateTime.Now.AddHours(5));
+
+        tokenCredential.GetTokenAsync(Arg.Any<TokenRequestContext>(), Arg.Any<CancellationToken>()).Returns(token);
+
         var sqlConfigOptions = Options.Create(sqlServerDataStoreConfiguration);
-        _sqlConnectionFactory = new ManagedIdentitySqlConnectionBuilder(
-            new DefaultSqlConnectionStringProvider(sqlConfigOptions), accessTokenHandler, SqlConfigurableRetryFactory.CreateNoneRetryProvider());
+        _sqlConnectionFactory = new CredentialSqlConnectionBuilder(
+            new DefaultSqlConnectionStringProvider(sqlConfigOptions), SqlConfigurableRetryFactory.CreateNoneRetryProvider(), tokenCredential);
     }
+
 
     [Fact]
     public async Task GivenManagedIdentityConnectionType_WhenSqlConnectionRequested_AccessTokenIsSet()

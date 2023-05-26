@@ -6,32 +6,32 @@
 using System.Diagnostics.CodeAnalysis;
 using System.Threading;
 using System.Threading.Tasks;
+using Azure.Core;
 using EnsureThat;
 using Microsoft.Data.SqlClient;
 
 namespace Microsoft.Health.SqlServer;
 
-public class ManagedIdentitySqlConnectionBuilder : ISqlConnectionBuilder
+public class CredentialSqlConnectionBuilder : ISqlConnectionBuilder
 {
     private readonly ISqlConnectionStringProvider _sqlConnectionStringProvider;
-    private readonly IAccessTokenHandler _accessTokenHandler;
     private readonly SqlRetryLogicBaseProvider _sqlRetryLogicBaseProvider;
-    private readonly string _azureResource = "https://database.windows.net/";
+    private readonly TokenCredential _tokenCredential;
+    private readonly string _azureResource = "https://database.windows.net/.default";
 
-    public ManagedIdentitySqlConnectionBuilder(
+    public CredentialSqlConnectionBuilder(
         ISqlConnectionStringProvider sqlConnectionStringProvider,
-        IAccessTokenHandler accessTokenHandler,
-        SqlRetryLogicBaseProvider sqlRetryLogicBaseProvider)
+        SqlRetryLogicBaseProvider sqlRetryLogicBaseProvider,
+        TokenCredential tokenCredential)
     {
         EnsureArg.IsNotNull(sqlConnectionStringProvider, nameof(sqlConnectionStringProvider));
-        EnsureArg.IsNotNull(accessTokenHandler, nameof(accessTokenHandler));
         EnsureArg.IsNotNull(sqlRetryLogicBaseProvider, nameof(sqlRetryLogicBaseProvider));
+        EnsureArg.IsNotNull(tokenCredential, nameof(tokenCredential));
 
         _sqlConnectionStringProvider = sqlConnectionStringProvider;
-        _accessTokenHandler = accessTokenHandler;
         _sqlRetryLogicBaseProvider = sqlRetryLogicBaseProvider;
+        _tokenCredential = tokenCredential;
     }
-
 
     /// <inheritdoc />
     [SuppressMessage("Reliability", "CA2000:Dispose objects before losing scope", Justification = "Callers are responsible for disposal.")]
@@ -44,7 +44,13 @@ public class ManagedIdentitySqlConnectionBuilder : ISqlConnectionBuilder
             cancellationToken).ConfigureAwait(false);
 
         // set managed identity access token
-        sqlConnection.AccessToken = await _accessTokenHandler.GetAccessTokenAsync(_azureResource, cancellationToken).ConfigureAwait(false);
+        sqlConnection.AccessToken = await GetAccessTokenAsync(cancellationToken).ConfigureAwait(false);
         return sqlConnection;
+    }
+
+    private async Task<string> GetAccessTokenAsync(CancellationToken cancellationToken)
+    {
+        var token = await _tokenCredential.GetTokenAsync(new TokenRequestContext(new[] { _azureResource }), cancellationToken).ConfigureAwait(false);
+        return token.Token;
     }
 }
