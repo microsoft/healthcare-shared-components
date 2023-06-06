@@ -119,7 +119,18 @@ public class SqlSchemaManager : ISchemaManager
                 throw new SchemaManagerException(string.Format(CultureInfo.CurrentCulture, Resources.SpecifiedVersionNotAvailable, targetVersion));
             }
 
-            await ValidateVersionCompatibility(availableVersions[^1].Id, token).ConfigureAwait(false);
+            // TTL in instance schema table can cause this call to fail on first attempt so allow for retries
+            attemptCount = 1;
+            await Policy.Handle<SchemaManagerException>()
+            .WaitAndRetryAsync(
+                retryCount: RetryAttempts,
+                sleepDurationProvider: (retryCount) => TimeSpan.FromSeconds(60),
+                onRetry: (exception, retryCount) =>
+                {
+                    _logger.LogError(exception, "Attempt {Attempt} of {MaxAttempts} of validating version compatiblity", attemptCount++, RetryAttempts);
+                })
+            .ExecuteAsync(token => ValidateVersionCompatibility(availableVersions[^1].Id, token), token)
+            .ConfigureAwait(false);
 
             if (availableVersions[0].Id == 1)
             {
