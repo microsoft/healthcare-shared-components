@@ -66,21 +66,15 @@ public class BaseSchemaRunner : IBaseSchemaRunner
     public async Task EnsureInstanceSchemaRecordExistsAsync(CancellationToken cancellationToken)
     {
         // Ensure that the current version record is inserted into InstanceSchema table
-        int attempts = 1;
 
         await Policy.Handle<SchemaManagerException>()
-        .WaitAndRetryAsync(
-            retryCount: RetryAttempts,
-            sleepDurationProvider: (retryCount) => RetrySleepDuration,
-            onRetry: (exception, retryCount) =>
-            {
-                _logger.LogWarning(
-                    exception,
-                    "Attempt {Attempt} of {MaxAttempts} to verify if the base schema is synced up with the service.",
-                    attempts++,
-                    RetryAttempts);
-            })
-        .ExecuteAsync(token => InstanceSchemaRecordCreatedAsync(token), cancellationToken).ConfigureAwait(false);
+            .WaitAndRetryAsync(
+                retryCount: RetryAttempts,
+                sleepDurationProvider: retryCount => RetrySleepDuration,
+                onRetry: (exception, sleepDuration, retryCount, context) =>
+                    _logger.LogWarning(exception, "Attempt {Attempt} of {MaxAttempts} to verify if the base schema is synced up with the service.", retryCount, RetryAttempts))
+            .ExecuteAsync(t => InstanceSchemaRecordCreatedAsync(t), cancellationToken)
+            .ConfigureAwait(false);
     }
 
     private async Task InstanceSchemaRecordCreatedAsync(CancellationToken cancellationToken)
