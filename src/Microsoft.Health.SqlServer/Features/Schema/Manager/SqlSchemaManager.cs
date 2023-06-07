@@ -63,34 +63,28 @@ public class SqlSchemaManager : ISchemaManager
             // since the Schema job polls and upserts at the specified interval in the service.
             await _baseSchemaRunner.EnsureInstanceSchemaRecordExistsAsync(token).ConfigureAwait(false);
 
-            int attemptCount = 1;
             int retryCountForHttpRequestException = 18;
 
             var availableVersions = await Policy.Handle<HttpRequestException>()
-            .WaitAndRetryAsync(
-                retryCount: retryCountForHttpRequestException,   // approx. 3 mins wait time for the service to responds to requests
-                sleepDurationProvider: (retryCount) => TimeSpan.FromSeconds(10),
-                onRetry: (exception, retryCount) =>
-                {
-                    _logger.LogError(exception, "Attempt {Attempt} of {MaxAttempts} to wait for the server to get started.", attemptCount++, retryCountForHttpRequestException);
-                })
-            .ExecuteAsync(token => GetAvailableSchema(token), token)
-            .ConfigureAwait(false);
+                .WaitAndRetryAsync(
+                    retryCount: retryCountForHttpRequestException,   // approx. 3 mins wait time for the service to responds to requests
+                    sleepDurationProvider: retryCount => TimeSpan.FromSeconds(10),
+                    onRetry: (exception, sleepDuration, retryCount, context) =>
+                        _logger.LogWarning(exception, "Attempt {Attempt} of {MaxAttempts} to wait for the server to get started.", retryCount, retryCountForHttpRequestException))
+                .ExecuteAsync(GetAvailableSchema, token)
+                .ConfigureAwait(false);
 
             // If the user hits apply command multiple times in a row, then the service schema job might not poll the updated available versions
             // so there are retries to give it a fair amount of time.
-            attemptCount = 1;
 
             availableVersions = await Policy.Handle<SchemaManagerException>()
-            .WaitAndRetryAsync(
-                retryCount: RetryAttempts,
-                sleepDurationProvider: (retryCount) => RetrySleepDuration,
-                onRetry: (exception, retryCount) =>
-                {
-                    _logger.LogError(exception, "Attempt {Attempt} of {MaxAttempts} to wait for the current version to be updated on the server.", attemptCount++, RetryAttempts);
-                })
-            .ExecuteAsync(token => FetchUpdatedAvailableVersionsAsync(token), token)
-            .ConfigureAwait(false);
+                .WaitAndRetryAsync(
+                    retryCount: RetryAttempts,
+                    sleepDurationProvider: retryCount => RetrySleepDuration,
+                    onRetry: (exception, sleepDuration, retryCount, context) =>
+                        _logger.LogWarning(exception, "Attempt {Attempt} of {MaxAttempts} to wait for the current version to be updated on the server.", retryCount, RetryAttempts))
+                .ExecuteAsync(FetchUpdatedAvailableVersionsAsync, token)
+                .ConfigureAwait(false);
 
             if (availableVersions.Count == 1)
             {
@@ -119,7 +113,16 @@ public class SqlSchemaManager : ISchemaManager
                 throw new SchemaManagerException(string.Format(CultureInfo.CurrentCulture, Resources.SpecifiedVersionNotAvailable, targetVersion));
             }
 
-            await ValidateVersionCompatibility(availableVersions[^1].Id, token).ConfigureAwait(false);
+
+            // TTL in instance schema table can cause this call to fail on first attempt so allow for retries
+            await Policy.Handle<SchemaManagerException>()
+                .WaitAndRetryAsync(
+                    retryCount: RetryAttempts,
+                    sleepDurationProvider: retryCount => TimeSpan.FromSeconds(60),
+                    onRetry: (exception, sleepDuration, retryCount, context) =>
+                        _logger.LogWarning(exception, "Attempt {Attempt} of {MaxAttempts} of validating version compatiblity", retryCount, RetryAttempts))
+                .ExecuteAsync(t => ValidateVersionCompatibility(availableVersions[^1].Id, t), token)
+                .ConfigureAwait(false);
 
             if (availableVersions[0].Id == 1)
             {
@@ -139,21 +142,19 @@ public class SqlSchemaManager : ISchemaManager
 
                 _logger.LogInformation("Schema migration is started for the version : {Version}.", executingVersion);
 
-                attemptCount = 1;
-
                 // Given that the service is not running (meaning SchemaJobWorker is also not running which is responsible to update CurrentVersion in InstanceSchema table)
                 // If the current schemaVersion is set to x and we want to upgrade it to version x+5 then after applying first version x+1 we will start getting an error to verify if all the instances are running the previous version
                 // This could happen for services that are in Warned or Suspended state. Forcing the apply schema by skipping the ValidateInstancesVersionAsync
                 if (!force)
                 {
                     await Policy.Handle<SchemaManagerException>()
-                    .WaitAndRetryAsync(
-                        retryCount: RetryAttempts,
-                        sleepDurationProvider: (retryCount) => RetrySleepDuration,
-                        onRetry: (exception, delay) =>
-                            _logger.LogError(exception, "Attempt {Attempt} of {MaxAttempts} to verify if all the instances are running the previous version.", attemptCount++, RetryAttempts))
-                    .ExecuteAsync(token => ValidateInstancesVersionAsync(executingVersion, token), token)
-                    .ConfigureAwait(false);
+                        .WaitAndRetryAsync(
+                            retryCount: RetryAttempts,
+                            sleepDurationProvider: retryCount => RetrySleepDuration,
+                            onRetry: (exception, sleepDuration, retryCount, context) =>
+                                _logger.LogWarning(exception, "Attempt {Attempt} of {MaxAttempts} to verify if all the instances are running the previous version.", retryCount, RetryAttempts))
+                        .ExecuteAsync(t => ValidateInstancesVersionAsync(executingVersion, t), token)
+                        .ConfigureAwait(false);
                 }
 
                 string script = await _schemaClient.GetDiffScriptAsync(executingVersion, token).ConfigureAwait(false);
