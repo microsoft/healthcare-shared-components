@@ -73,7 +73,7 @@ public class BaseSchemaRunner : IBaseSchemaRunner
                 sleepDurationProvider: retryCount => RetrySleepDuration,
                 onRetry: (exception, sleepDuration, retryCount, context) =>
                     _logger.LogWarning(exception, "Attempt {Attempt} of {MaxAttempts} to verify if the base schema is synced up with the service.", retryCount, RetryAttempts))
-            .ExecuteAsync(t => InstanceSchemaRecordCreatedAsync(t), cancellationToken)
+            .ExecuteAsync(InstanceSchemaRecordCreatedAsync, cancellationToken)
             .ConfigureAwait(false);
     }
 

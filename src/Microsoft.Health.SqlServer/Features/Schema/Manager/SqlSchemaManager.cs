@@ -71,7 +71,7 @@ public class SqlSchemaManager : ISchemaManager
                     sleepDurationProvider: retryCount => TimeSpan.FromSeconds(10),
                     onRetry: (exception, sleepDuration, retryCount, context) =>
                         _logger.LogWarning(exception, "Attempt {Attempt} of {MaxAttempts} to wait for the server to get started.", retryCount, retryCountForHttpRequestException))
-                .ExecuteAsync(t => GetAvailableSchema(t), token)
+                .ExecuteAsync(GetAvailableSchema, token)
                 .ConfigureAwait(false);
 
             // If the user hits apply command multiple times in a row, then the service schema job might not poll the updated available versions
@@ -83,7 +83,7 @@ public class SqlSchemaManager : ISchemaManager
                     sleepDurationProvider: retryCount => RetrySleepDuration,
                     onRetry: (exception, sleepDuration, retryCount, context) =>
                         _logger.LogWarning(exception, "Attempt {Attempt} of {MaxAttempts} to wait for the current version to be updated on the server.", retryCount, RetryAttempts))
-                .ExecuteAsync(t => FetchUpdatedAvailableVersionsAsync(t), token)
+                .ExecuteAsync(FetchUpdatedAvailableVersionsAsync, token)
                 .ConfigureAwait(false);
 
             if (availableVersions.Count == 1)
