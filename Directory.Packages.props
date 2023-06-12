@@ -3,7 +3,7 @@
   <ItemGroup>
     <PackageVersion Include="Azure.Core" Version="1.32.0" />
     <PackageVersion Include="Azure.Identity" Version="1.9.0" />
-    <PackageVersion Include="Azure.Messaging.EventGrid" Version="4.16.0" />
+    <PackageVersion Include="Azure.Messaging.EventGrid" Version="4.17.0" />
     <PackageVersion Include="Azure.Storage.Blobs" Version="12.16.0" />
     <PackageVersion Include="Azure.Storage.Common" Version="12.15.0" />
     <PackageVersion Include="coverlet.collector" Version="6.0.0" />
