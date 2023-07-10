@@ -34,13 +34,13 @@ public class OperationIdJsonConverterTests
         {
             // Note: the by-ref parameter prevents the test from leveraging Assert.Throws
             new OperationIdJsonConverter().Read(ref jsonReader, typeof(Guid), DefaultOptions);
-            throw new ThrowsException(typeof(JsonException));
+            throw ThrowsException.ForNoException(typeof(JsonException));
         }
         catch (Exception e)
         {
             if (e.GetType() != typeof(JsonException))
             {
-                throw new ThrowsException(typeof(JsonException), e);
+                throw ThrowsException.ForNoException(typeof(JsonException));
             }
         }
     }

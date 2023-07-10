@@ -103,7 +103,7 @@ public class SchemaTests : IClassFixture<HttpIntegrationTestFixture<Startup>>
         string responseBodyAsString = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
         var jsonList = JsonConvert.DeserializeObject<IList<CurrentVersionInformation>>(responseBodyAsString);
         Assert.Equal(2, jsonList[0].Id);
-        Assert.Equal(1, jsonList[0].Servers.Count);
+        Assert.Single(jsonList[0].Servers);
         Assert.Equal((SchemaVersionStatus)Enum.Parse(typeof(SchemaVersionStatus), "completed", true), jsonList[0].Status);
     }
 
