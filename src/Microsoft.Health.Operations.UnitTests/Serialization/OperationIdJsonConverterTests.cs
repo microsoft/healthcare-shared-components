@@ -40,6 +40,7 @@ public class OperationIdJsonConverterTests
         {
             if (e.GetType() != typeof(JsonException))
             {
+                // TODO: Update with new method on next version of xUnit - https://github.com/xunit/xunit/issues/2741
                 throw ThrowsException.ForNoException(typeof(JsonException));
             }
         }
