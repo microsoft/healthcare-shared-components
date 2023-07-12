@@ -58,7 +58,7 @@ public class ColumnsTests
 
         nVarCharColumn.Set(record, 0, "text");
 
-        Assert.True(record.GetSqlString(0).Value.Equals("text", System.StringComparison.Ordinal));
+        Assert.Equal("text", record.GetSqlString(0).Value);
     }
 
 

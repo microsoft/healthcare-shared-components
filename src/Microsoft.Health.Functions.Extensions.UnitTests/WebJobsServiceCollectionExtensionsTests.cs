@@ -18,7 +18,7 @@ public class WebJobsServiceCollectionExtensionsTests
         IServiceCollection services = new ServiceCollection();
         services.AddWebJobsHealthChecks();
 
-        Assert.Equal(1, services.Count);
+        Assert.Single(services);
         Assert.Equal(typeof(HealthCheckService), services.Single().ServiceType);
     }
 }

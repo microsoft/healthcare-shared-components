@@ -69,6 +69,6 @@ public class CurrentVersionHandlerTests
 
         GetCurrentVersionResponse response = await _mediator.GetCurrentVersionAsync(_cancellationToken).ConfigureAwait(false);
 
-        Assert.Equal(0, response.CurrentVersions.Count);
+        Assert.Empty(response.CurrentVersions);
     }
 }
