@@ -180,7 +180,7 @@ public class CredentialProviderTests
 
             X509Certificate2 certificate = request.CreateSelfSigned(new DateTimeOffset(DateTime.UtcNow.AddDays(-1)), new DateTimeOffset(DateTime.UtcNow.AddDays(1)));
 
-            return new X509Certificate2(certificate.Export(X509ContentType.Pfx, "exampleString"), "exampleString", X509KeyStorageFlags.MachineKeySet);
+            return new X509Certificate2(certificate.Export(X509ContentType.Pfx, "exampleString"), "exampleString", X509KeyStorageFlags.Exportable);
         }
     }
 
