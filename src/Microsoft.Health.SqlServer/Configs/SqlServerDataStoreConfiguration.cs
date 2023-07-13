@@ -1,4 +1,4 @@
-﻿// -------------------------------------------------------------------------------------------------
+// -------------------------------------------------------------------------------------------------
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License (MIT). See LICENSE in the repo root for license information.
 // -------------------------------------------------------------------------------------------------
@@ -13,6 +13,16 @@ public class SqlServerDataStoreConfiguration
     /// The default section name used in configurations.
     /// </summary>
     public const string SectionName = "SqlServer";
+
+    /// <summary>
+    /// The max pool size name used in connection string.
+    /// </summary>
+    public const string MaxPoolSizeName = "Max Pool Size";
+
+    /// <summary>
+    /// The maximum max pool size limit.
+    /// </summary>
+    public const int MaxPoolSizeLimit = 30000;
 
     /// <summary>
     /// The SQL Server connection string.
@@ -63,4 +73,9 @@ public class SqlServerDataStoreConfiguration
     /// Specifies the SqlCommand.CommandTimeout
     /// </summary>
     public TimeSpan CommandTimeout { get; set; } = TimeSpan.FromSeconds(30);
+
+    /// <summary>
+    /// If set, the maximum number of connections allowed in the pool to use when connecting to SQL.
+    /// </summary>
+    public int? MaxPoolSize { get; set; }
 }
