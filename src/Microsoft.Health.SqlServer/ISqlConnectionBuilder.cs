@@ -1,4 +1,4 @@
-﻿// -------------------------------------------------------------------------------------------------
+// -------------------------------------------------------------------------------------------------
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License (MIT). See LICENSE in the repo root for license information.
 // -------------------------------------------------------------------------------------------------
@@ -16,7 +16,8 @@ public interface ISqlConnectionBuilder
     /// If initial catalog is not provided, it is determined from the connection string.
     /// </summary>
     /// <param name="initialCatalog">Initial catalog to connect to.</param>
+    /// <param name="maxPoolSize">Max Sql connection pool size</param>
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>SqlConnection object.</returns>
-    Task<SqlConnection> GetSqlConnectionAsync(string initialCatalog = null, CancellationToken cancellationToken = default);
+    Task<SqlConnection> GetSqlConnectionAsync(string initialCatalog = null, int? maxPoolSize = null, CancellationToken cancellationToken = default);
 }

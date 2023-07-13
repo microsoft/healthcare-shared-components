@@ -36,6 +36,12 @@ public class SqlConnectionWrapper : IDisposable
 
         _sqlServerDataStoreConfiguration = EnsureArg.IsNotNull(sqlServerDataStoreConfiguration, nameof(sqlServerDataStoreConfiguration));
 
+        if (_sqlServerDataStoreConfiguration.MaxPoolSize.HasValue)
+        {
+            EnsureArg.IsGt(_sqlServerDataStoreConfiguration.MaxPoolSize.Value, 0, nameof(_sqlServerDataStoreConfiguration.MaxPoolSize));
+            EnsureArg.IsLt(_sqlServerDataStoreConfiguration.MaxPoolSize.Value, SqlConstants.MaxPoolSizeLimit, nameof(_sqlServerDataStoreConfiguration.MaxPoolSize));
+        }
+
         _sqlTransactionHandler = sqlTransactionHandler;
         _enlistInTransactionIfPresent = enlistInTransactionIfPresent;
         _sqlConnectionBuilder = connectionBuilder;
@@ -54,7 +60,7 @@ public class SqlConnectionWrapper : IDisposable
         }
         else
         {
-            SqlConnection = await _sqlConnectionBuilder.GetSqlConnectionAsync(initialCatalog, cancellationToken: cancellationToken).ConfigureAwait(false);
+            SqlConnection = await _sqlConnectionBuilder.GetSqlConnectionAsync(initialCatalog, _sqlServerDataStoreConfiguration.MaxPoolSize, cancellationToken: cancellationToken).ConfigureAwait(false);
             SqlConnection.RetryLogicProvider = _sqlRetryLogicBaseProvider;
         }
 

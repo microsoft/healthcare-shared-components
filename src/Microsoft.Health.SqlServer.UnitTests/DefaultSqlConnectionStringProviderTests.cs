@@ -31,16 +31,4 @@ public class DefaultSqlConnectionStringProviderTests
 
         Assert.Equal(sqlConnectionString, await sqlConnectionStringProvider.GetSqlConnectionString(CancellationToken.None).ConfigureAwait(false));
     }
-
-    [Theory]
-    [InlineData("server=(local);Initial Catalog=Dicom;Integrated Security=true;Max Pool Size=1000;", 1000)]
-    [InlineData("server=(local);Initial Catalog=Dicom;Integrated Security=true;Max Pool Size=500;", 500)]
-    [InlineData("server=(local);Initial Catalog=Dicom;Integrated Security=true;", null)]
-    public async Task GivenValidSqlServerDataStoreConfigurationWithMaxPoolSize_GetSqlConnectionString_ReturnsConnectionString(string sqlConnectionString, int? maxPoolSize)
-    {
-        var sqlServerDataStoreConfiguration = new SqlServerDataStoreConfiguration() { ConnectionString = sqlConnectionString, MaxPoolSize = maxPoolSize };
-        ISqlConnectionStringProvider sqlConnectionStringProvider = new DefaultSqlConnectionStringProvider(Options.Create(sqlServerDataStoreConfiguration));
-
-        Assert.Equal(sqlConnectionString, await sqlConnectionStringProvider.GetSqlConnectionString(CancellationToken.None).ConfigureAwait(false));
-    }
 }

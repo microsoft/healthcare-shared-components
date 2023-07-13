@@ -61,4 +61,13 @@ public class ManagedIdentitySqlConnectionTests
 
         Assert.Equal(MasterDatabase, sqlConnection.Database);
     }
+
+    [Theory]
+    [InlineData(10)]
+    [InlineData(1000)]
+    public async Task GivenDefaultConnectionTypeWithMaxPoolSize_WhenSqlConnectionRequested_MaxPoolSizeIsSet(int maxPoolSize)
+    {
+        SqlConnection sqlConnection = await _sqlConnectionFactory.GetSqlConnectionAsync(maxPoolSize: maxPoolSize).ConfigureAwait(false);
+        Assert.Equal($"Data Source={ServerName};Initial Catalog={DatabaseName};Max Pool Size={maxPoolSize}", sqlConnection.ConnectionString);
+    }
 }

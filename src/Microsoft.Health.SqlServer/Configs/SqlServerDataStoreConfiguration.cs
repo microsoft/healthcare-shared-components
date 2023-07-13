@@ -15,16 +15,6 @@ public class SqlServerDataStoreConfiguration
     public const string SectionName = "SqlServer";
 
     /// <summary>
-    /// The max pool size name used in connection string.
-    /// </summary>
-    public const string MaxPoolSizeName = "Max Pool Size";
-
-    /// <summary>
-    /// The maximum max pool size limit.
-    /// </summary>
-    public const int MaxPoolSizeLimit = 30000;
-
-    /// <summary>
     /// The SQL Server connection string.
     /// </summary>
     public string ConnectionString { get; set; }
