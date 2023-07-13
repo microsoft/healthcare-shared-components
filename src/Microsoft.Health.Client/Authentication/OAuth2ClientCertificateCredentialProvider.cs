@@ -64,8 +64,8 @@ public class OAuth2ClientCertificateCredentialProvider : CredentialProvider
             expires: DateTime.Now.AddMinutes(10),
             signingCredentials: signingCredentials);
 
-        string exportedCertificate = Convert.ToBase64String(oAuth2ClientCertificateCredentialOptions.Certificate.Export(X509ContentType.Cert));
-        jwtSecurityToken.Header.Add(JwtHeaderParameterNames.X5c, exportedCertificate);
+        string publicCertificateChain = Convert.ToBase64String(oAuth2ClientCertificateCredentialOptions.Certificate.Export(X509ContentType.Cert));
+        jwtSecurityToken.Header.Add(JwtHeaderParameterNames.X5c, publicCertificateChain);
 
         var handler = new JwtSecurityTokenHandler();
         var encodedCert = handler.WriteToken(jwtSecurityToken);
