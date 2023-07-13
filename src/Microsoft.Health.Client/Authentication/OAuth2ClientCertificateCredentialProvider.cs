@@ -8,6 +8,7 @@ using System.Collections.Generic;
 using System.IdentityModel.Tokens.Jwt;
 using System.Net.Http;
 using System.Security.Claims;
+using System.Security.Cryptography.X509Certificates;
 using System.Threading;
 using System.Threading.Tasks;
 using EnsureThat;
@@ -62,6 +63,9 @@ public class OAuth2ClientCertificateCredentialProvider : CredentialProvider
             notBefore: DateTime.Now,
             expires: DateTime.Now.AddMinutes(10),
             signingCredentials: signingCredentials);
+
+        string exportedCertificate = Convert.ToBase64String(oAuth2ClientCertificateCredentialOptions.Certificate.Export(X509ContentType.Cert));
+        jwtSecurityToken.Header.Add(JwtHeaderParameterNames.X5c, exportedCertificate);
 
         var handler = new JwtSecurityTokenHandler();
         var encodedCert = handler.WriteToken(jwtSecurityToken);
