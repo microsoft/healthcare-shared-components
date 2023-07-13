@@ -57,9 +57,16 @@ public class DefaultSqlConnectionTests
     [Theory]
     [InlineData(10)]
     [InlineData(1000)]
-    public async Task GivenDefaultConnectionTypeWithMaxPoolSize_WhenSqlConnectionRequested_MaxPoolSizeIsSet(int maxPoolSize)
+    [InlineData(null)]
+    public async Task GivenDefaultConnectionTypeWithMaxPoolSize_WhenSqlConnectionRequested_MaxPoolSizeIsSet(int? maxPoolSize)
     {
         SqlConnection sqlConnection = await _sqlConnectionFactory.GetSqlConnectionAsync(maxPoolSize: maxPoolSize).ConfigureAwait(false);
-        Assert.Equal($"Data Source={ServerName};Initial Catalog={DatabaseName};Integrated Security=True;Max Pool Size={maxPoolSize}", sqlConnection.ConnectionString);
+        var connectionString = $"Data Source={ServerName};Initial Catalog={DatabaseName};Integrated Security=True";
+        if (maxPoolSize.HasValue)
+        {
+            connectionString += $";Max Pool Size={maxPoolSize}";
+        }
+
+        Assert.Equal(connectionString, sqlConnection.ConnectionString);
     }
 }
