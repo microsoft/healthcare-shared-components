@@ -1,7 +1,7 @@
 <Project>
 
   <ItemGroup>
-    <PackageVersion Include="Azure.Core" Version="1.33.0" />
+    <PackageVersion Include="Azure.Core" Version="1.34.0" />
     <PackageVersion Include="Azure.Identity" Version="1.9.0" />
     <PackageVersion Include="Azure.Messaging.EventGrid" Version="4.17.0" />
     <PackageVersion Include="Azure.Storage.Blobs" Version="12.17.0" />
