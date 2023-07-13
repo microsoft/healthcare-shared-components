@@ -4,9 +4,12 @@
 // -------------------------------------------------------------------------------------------------
 
 using System;
+using System.IdentityModel.Tokens.Jwt;
 using System.Net;
 using System.Net.Http;
 using System.Reflection;
+using System.Security.Cryptography;
+using System.Security.Cryptography.X509Certificates;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Options;
@@ -135,6 +138,50 @@ public class CredentialProviderTests
 
         Assert.Equal(secondToken, secondResult);
         Assert.NotEqual(initialResult, secondResult);
+    }
+
+    [Fact]
+    public void GivenACertificateWithAPrivateKey_WhenGeneratingClientAssertion_ThenPrivateKeyNotIncludedInX5c()
+    {
+        string clientId = Guid.NewGuid().ToString();
+        using var certificate = BuildSelfSignedServerCertificate(clientId);
+
+        Assert.True(certificate.HasPrivateKey);
+
+        var assertion = OAuth2ClientCertificateCredentialProvider.GenerateClientAssertion(clientId, certificate, new Uri("https://example.com/token"));
+
+        var handler = new JwtSecurityTokenHandler();
+        var token = handler.ReadToken(assertion) as JwtSecurityToken;
+
+        Assert.NotNull(token?.Header.X5c);
+
+        byte[] x5CBytes = Convert.FromBase64String(token.Header.X5c);
+        using var x5CCertificate = new X509Certificate2(x5CBytes);
+
+        Assert.Equal($"CN={clientId}", x5CCertificate.SubjectName.Name);
+        Assert.False(x5CCertificate.HasPrivateKey);
+
+        static X509Certificate2 BuildSelfSignedServerCertificate(string certificateName)
+        {
+            var sanBuilder = new SubjectAlternativeNameBuilder();
+            sanBuilder.AddIpAddress(IPAddress.Loopback);
+            sanBuilder.AddIpAddress(IPAddress.IPv6Loopback);
+            sanBuilder.AddDnsName("example.com");
+            sanBuilder.AddDnsName(Environment.MachineName);
+
+            var distinguishedName = new X500DistinguishedName($"CN={certificateName}");
+
+            using var rsa = RSA.Create(2048);
+            var request = new CertificateRequest(distinguishedName, rsa, HashAlgorithmName.SHA256, RSASignaturePadding.Pkcs1);
+
+            request.CertificateExtensions.Add(new X509KeyUsageExtension(X509KeyUsageFlags.DataEncipherment | X509KeyUsageFlags.KeyEncipherment | X509KeyUsageFlags.DigitalSignature, false));
+            request.CertificateExtensions.Add(new X509EnhancedKeyUsageExtension(new OidCollection { new Oid("1.3.6.1.5.5.7.3.1") }, false));
+            request.CertificateExtensions.Add(sanBuilder.Build());
+
+            X509Certificate2 certificate = request.CreateSelfSigned(new DateTimeOffset(DateTime.UtcNow.AddDays(-1)), new DateTimeOffset(DateTime.UtcNow.AddDays(1)));
+
+            return new X509Certificate2(certificate.Export(X509ContentType.Pfx, "exampleString"), "exampleString", X509KeyStorageFlags.MachineKeySet);
+        }
     }
 
     private static HttpMessageHandler GetMockMessageHandler(HttpRequestMessage requestMessage, HttpResponseMessage responseMessage, CancellationToken cancellationToken)

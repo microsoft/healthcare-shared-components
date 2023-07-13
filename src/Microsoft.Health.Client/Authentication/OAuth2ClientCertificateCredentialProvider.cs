@@ -49,26 +49,7 @@ public class OAuth2ClientCertificateCredentialProvider : CredentialProvider
     {
         OAuth2ClientCertificateCredentialOptions oAuth2ClientCertificateCredentialOptions = _oAuth2ClientCertificateCredentialOptionsMonitor.Get(_optionsName);
 
-        // Values specified for the assertion JWT specified here: https://docs.microsoft.com/azure/active-directory/develop/active-directory-certificate-credentials
-        var additionalClaims = new List<Claim>
-        {
-            new (JwtRegisteredClaimNames.Sub,  oAuth2ClientCertificateCredentialOptions.ClientId),
-            new (JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
-        };
-        var signingCredentials = new X509SigningCredentials(oAuth2ClientCertificateCredentialOptions.Certificate, Rs256Algorithm);
-        var jwtSecurityToken = new JwtSecurityToken(
-            issuer: oAuth2ClientCertificateCredentialOptions.ClientId,
-            audience: oAuth2ClientCertificateCredentialOptions.TokenUri.AbsoluteUri,
-            claims: additionalClaims,
-            notBefore: DateTime.Now,
-            expires: DateTime.Now.AddMinutes(10),
-            signingCredentials: signingCredentials);
-
-        string publicCertificateChain = Convert.ToBase64String(oAuth2ClientCertificateCredentialOptions.Certificate.Export(X509ContentType.Cert));
-        jwtSecurityToken.Header.Add(JwtHeaderParameterNames.X5c, publicCertificateChain);
-
-        var handler = new JwtSecurityTokenHandler();
-        var encodedCert = handler.WriteToken(jwtSecurityToken);
+        string encodedCert = GenerateClientAssertion(oAuth2ClientCertificateCredentialOptions.ClientId, oAuth2ClientCertificateCredentialOptions.Certificate, oAuth2ClientCertificateCredentialOptions.TokenUri);
 
         var formData = new List<KeyValuePair<string, string>>
         {
@@ -91,5 +72,29 @@ public class OAuth2ClientCertificateCredentialProvider : CredentialProvider
         }
 
         return openIdConnectMessage.AccessToken;
+    }
+
+    internal static string GenerateClientAssertion(string clientId, X509Certificate2 x509Certificate2, Uri tokenUri)
+    {
+        // Values specified for the assertion JWT specified here: https://docs.microsoft.com/azure/active-directory/develop/active-directory-certificate-credentials
+        var additionalClaims = new List<Claim>
+        {
+            new(JwtRegisteredClaimNames.Sub, clientId),
+            new(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
+        };
+        var signingCredentials = new X509SigningCredentials(x509Certificate2, Rs256Algorithm);
+        var jwtSecurityToken = new JwtSecurityToken(
+            issuer: clientId,
+            audience: tokenUri.AbsoluteUri,
+            claims: additionalClaims,
+            notBefore: DateTime.Now,
+            expires: DateTime.Now.AddMinutes(10),
+            signingCredentials: signingCredentials);
+
+        string publicCertificateChain = Convert.ToBase64String(x509Certificate2.Export(X509ContentType.Cert));
+        jwtSecurityToken.Header.Add(JwtHeaderParameterNames.X5c, publicCertificateChain);
+
+        var handler = new JwtSecurityTokenHandler();
+        return handler.WriteToken(jwtSecurityToken);
     }
 }
