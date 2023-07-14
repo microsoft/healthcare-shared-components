@@ -22,6 +22,7 @@ internal static class SqlConnectionHelper
     /// <param name="sqlConnectionStringProvider">sqlConnectionStringProvider</param>
     /// <param name="sqlRetryLogic"><see cref="SqlRetryLogicBaseProvider"/>.</param>
     /// <param name="initialCatalog">initialCatalog</param>
+    /// <param name="maxPoolSize">Max SQL connection pool size</param>
     /// <param name="cancellationToken">cancellationToken</param>
     /// <returns>SqlConnection</returns>
     /// <exception cref="InvalidOperationException">Empty sql connection string</exception>
@@ -29,6 +30,7 @@ internal static class SqlConnectionHelper
         ISqlConnectionStringProvider sqlConnectionStringProvider,
         SqlRetryLogicBaseProvider sqlRetryLogic,
         string initialCatalog = null,
+        int? maxPoolSize = null,
         CancellationToken cancellationToken = default)
     {
         string sqlConnectionString = await sqlConnectionStringProvider.GetSqlConnectionString(cancellationToken).ConfigureAwait(false);
@@ -42,6 +44,11 @@ internal static class SqlConnectionHelper
         if (initialCatalog != null)
         {
             connectionStringBuilder.InitialCatalog = initialCatalog;
+        }
+
+        if (maxPoolSize.HasValue)
+        {
+            connectionStringBuilder.MaxPoolSize = maxPoolSize.Value;
         }
 
         return new SqlConnection(connectionStringBuilder.ToString()) { RetryLogicProvider = sqlRetryLogic };

@@ -1,4 +1,4 @@
-﻿// -------------------------------------------------------------------------------------------------
+// -------------------------------------------------------------------------------------------------
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License (MIT). See LICENSE in the repo root for license information.
 // -------------------------------------------------------------------------------------------------
@@ -63,4 +63,9 @@ public class SqlServerDataStoreConfiguration
     /// Specifies the SqlCommand.CommandTimeout
     /// </summary>
     public TimeSpan CommandTimeout { get; set; } = TimeSpan.FromSeconds(30);
+
+    /// <summary>
+    /// If set, the maximum number of connections allowed in the pool to use when connecting to SQL.
+    /// </summary>
+    public int? MaxPoolSize { get; set; }
 }

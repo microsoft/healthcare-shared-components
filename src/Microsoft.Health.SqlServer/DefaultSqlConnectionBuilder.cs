@@ -31,12 +31,13 @@ public class DefaultSqlConnectionBuilder : ISqlConnectionBuilder
     }
 
     /// <inheritdoc />
-    public Task<SqlConnection> GetSqlConnectionAsync(string initialCatalog = null, CancellationToken cancellationToken = default)
+    public Task<SqlConnection> GetSqlConnectionAsync(string initialCatalog = null, int? maxPoolSize = null, CancellationToken cancellationToken = default)
     {
         return SqlConnectionHelper.GetBaseSqlConnectionAsync(
             _sqlConnectionStringProvider,
             _sqlRetryLogicBaseProvider,
             initialCatalog,
+            maxPoolSize,
             cancellationToken);
     }
 }

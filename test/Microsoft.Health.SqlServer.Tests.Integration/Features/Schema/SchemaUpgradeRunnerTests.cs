@@ -37,7 +37,7 @@ public sealed class SchemaUpgradeRunnerTests : SqlIntegrationTestBase, IDisposab
         await base.InitializeAsync().ConfigureAwait(false);
 
         var sqlConnection = Substitute.For<ISqlConnectionBuilder>();
-        sqlConnection.GetSqlConnectionAsync(Arg.Any<string>(), Arg.Any<CancellationToken>()).ReturnsForAnyArgs((x) => GetSqlConnection());
+        sqlConnection.GetSqlConnectionAsync(Arg.Any<string>(), Arg.Any<int?>(), Arg.Any<CancellationToken>()).ReturnsForAnyArgs((x) => GetSqlConnection());
         var config = Options.Create(new SqlServerDataStoreConfiguration());
 
         SqlRetryLogicBaseProvider sqlRetryLogicBaseProvider = SqlConfigurableRetryFactory.CreateFixedRetryProvider(new SqlClientRetryOptions().Settings);
