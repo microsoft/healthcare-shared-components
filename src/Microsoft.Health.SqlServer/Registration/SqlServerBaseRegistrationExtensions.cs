@@ -1,4 +1,4 @@
-﻿// -------------------------------------------------------------------------------------------------
+// -------------------------------------------------------------------------------------------------
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License (MIT). See LICENSE in the repo root for license information.
 // -------------------------------------------------------------------------------------------------
@@ -76,13 +76,26 @@ public static class SqlServerBaseRegistrationExtensions
                  SqlServerDataStoreConfiguration config = sqlServerDataStoreConfigOption.Value;
                  ISqlConnectionStringProvider sqlConnectionStringProvider = p.GetRequiredService<ISqlConnectionStringProvider>();
                  SqlRetryLogicBaseProvider sqlRetryLogic = p.GetRequiredService<SqlRetryLogicBaseProvider>();
-                 return config.AuthenticationType == SqlServerAuthenticationType.ManagedIdentity
-                     ? new ManagedIdentitySqlConnectionBuilder(sqlConnectionStringProvider, p.GetRequiredService<IAccessTokenHandler>(), sqlRetryLogic)
-                     : new DefaultSqlConnectionBuilder(sqlConnectionStringProvider, sqlRetryLogic);
+                 var accessTokenHandlers = p.GetServices<IAccessTokenHandler>();
+
+                 if (config.AuthenticationType == SqlServerAuthenticationType.ManagedIdentity)
+                 {
+                     return new ManagedIdentitySqlConnectionBuilder(sqlConnectionStringProvider, accessTokenHandlers.FirstOrDefault(dpp => dpp.AuthenticationType == SqlServerAuthenticationType.ManagedIdentity), sqlRetryLogic);
+                 }
+                 else if (config.AuthenticationType == SqlServerAuthenticationType.WorkloadIdentity)
+                 {
+                     return new ManagedIdentitySqlConnectionBuilder(sqlConnectionStringProvider, accessTokenHandlers.FirstOrDefault(dpp => dpp.AuthenticationType == SqlServerAuthenticationType.WorkloadIdentity), sqlRetryLogic);
+                 }
+                 else
+                 {
+                     return new DefaultSqlConnectionBuilder(sqlConnectionStringProvider, sqlRetryLogic);
+                 }
              });
 
         // The following are only used in case of managed identity
         services.AddSingleton<IAccessTokenHandler, ManagedIdentityAccessTokenHandler>();
+        services.AddSingleton<IAccessTokenHandler, WorkloadIdentityAccessTokenHandler>();
+
         services.AddSingleton<AzureServiceTokenProvider>(p =>
         {
             SqlServerDataStoreConfiguration config = p.GetRequiredService<IOptions<SqlServerDataStoreConfiguration>>().Value;
