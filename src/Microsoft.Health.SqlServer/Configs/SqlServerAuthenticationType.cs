@@ -17,5 +17,8 @@ public enum SqlServerAuthenticationType
     /// </summary>
     ConnectionString,
 
+    /// <summary>
+    ///  Works for Workloadidentitycredential. It needs AZURE_TENANT_ID, AZURE_CLIENT_ID and AZURE_FEDERATED_TOKEN_FILE to be specified in the environment.
+    /// </summary>
     WorkloadIdentity,
 }
