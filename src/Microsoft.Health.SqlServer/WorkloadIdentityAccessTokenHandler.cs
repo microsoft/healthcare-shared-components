@@ -14,9 +14,9 @@ using Microsoft.Health.SqlServer.Configs;
 namespace Microsoft.Health.SqlServer;
 public class WorkloadIdentityAccessTokenHandler : IAccessTokenHandler
 {
-    private const string AzureResource = "https://database.windows.net/.default";
-
     public SqlServerAuthenticationType AuthenticationType => SqlServerAuthenticationType.WorkloadIdentity;
+
+    public string AzureScope => "https://database.windows.net/.default";
 
     public async Task<string> GetAccessTokenAsync(CancellationToken cancellationToken = default)
     {
@@ -24,7 +24,7 @@ public class WorkloadIdentityAccessTokenHandler : IAccessTokenHandler
         // When no options are specified AZURE_TENANT_ID, AZURE_CLIENT_ID and AZURE_FEDERATED_TOKEN_FILE must be specified in the environment.
         WorkloadIdentityCredential credential = new WorkloadIdentityCredential();
 
-        var token = await credential.GetTokenAsync(new TokenRequestContext(new[] { AzureResource }), CancellationToken.None).ConfigureAwait(false);
+        var token = await credential.GetTokenAsync(new TokenRequestContext(new[] { AzureScope }), CancellationToken.None).ConfigureAwait(false);
 
         return token.Token;
     }

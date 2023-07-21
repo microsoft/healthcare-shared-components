@@ -11,7 +11,15 @@ namespace Microsoft.Health.SqlServer;
 
 public interface IAccessTokenHandler
 {
+    /// <summary>
+    /// Determines the type of SqlServiceAuthenticationType. This correlates with the type of token credential that will be used by the implementation.
+    /// </summary>
     SqlServerAuthenticationType AuthenticationType { get; }
+
+    /// <summary>
+    /// Deletermines the scope that is needed by the type of tokencredential used in the given implementation
+    /// </summary>
+    string AzureScope { get; }
 
     /// <summary>
     /// Get access token for the resource.

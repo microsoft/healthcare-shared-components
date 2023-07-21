@@ -13,10 +13,11 @@ namespace Microsoft.Health.SqlServer;
 
 public class ManagedIdentityAccessTokenHandler : IAccessTokenHandler
 {
-    private readonly string _resource = "https://database.windows.net/";
     private readonly AzureServiceTokenProvider _azureServiceTokenProvider;
 
     public SqlServerAuthenticationType AuthenticationType => SqlServerAuthenticationType.ManagedIdentity;
+
+    public string AzureScope => "https://database.windows.net/";
 
     public ManagedIdentityAccessTokenHandler(AzureServiceTokenProvider azureServiceTokenProvider)
     {
@@ -28,6 +29,6 @@ public class ManagedIdentityAccessTokenHandler : IAccessTokenHandler
     /// <inheritdoc />
     public Task<string> GetAccessTokenAsync(CancellationToken cancellationToken)
     {
-        return _azureServiceTokenProvider.GetAccessTokenAsync(_resource, cancellationToken: cancellationToken);
+        return _azureServiceTokenProvider.GetAccessTokenAsync(AzureScope, cancellationToken: cancellationToken);
     }
 }
