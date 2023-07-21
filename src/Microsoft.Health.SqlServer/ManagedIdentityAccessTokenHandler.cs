@@ -1,4 +1,4 @@
-﻿// -------------------------------------------------------------------------------------------------
+// -------------------------------------------------------------------------------------------------
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License (MIT). See LICENSE in the repo root for license information.
 // -------------------------------------------------------------------------------------------------
@@ -7,12 +7,17 @@ using System.Threading;
 using System.Threading.Tasks;
 using EnsureThat;
 using Microsoft.Azure.Services.AppAuthentication;
+using Microsoft.Health.SqlServer.Configs;
 
 namespace Microsoft.Health.SqlServer;
 
 public class ManagedIdentityAccessTokenHandler : IAccessTokenHandler
 {
     private readonly AzureServiceTokenProvider _azureServiceTokenProvider;
+
+    public SqlServerAuthenticationType AuthenticationType => SqlServerAuthenticationType.ManagedIdentity;
+
+    public string AzureScope => "https://database.windows.net/";
 
     public ManagedIdentityAccessTokenHandler(AzureServiceTokenProvider azureServiceTokenProvider)
     {
@@ -22,8 +27,8 @@ public class ManagedIdentityAccessTokenHandler : IAccessTokenHandler
     }
 
     /// <inheritdoc />
-    public Task<string> GetAccessTokenAsync(string resource, CancellationToken cancellationToken)
+    public Task<string> GetAccessTokenAsync(CancellationToken cancellationToken)
     {
-        return _azureServiceTokenProvider.GetAccessTokenAsync(resource, cancellationToken: cancellationToken);
+        return _azureServiceTokenProvider.GetAccessTokenAsync(AzureScope, cancellationToken: cancellationToken);
     }
 }

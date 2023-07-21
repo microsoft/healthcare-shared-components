@@ -1,4 +1,4 @@
-﻿// -------------------------------------------------------------------------------------------------
+// -------------------------------------------------------------------------------------------------
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License (MIT). See LICENSE in the repo root for license information.
 // -------------------------------------------------------------------------------------------------
@@ -42,6 +42,7 @@ public class SqlServerBaseRegistrationExtensionsTests
         Assert.True(services.ContainsSingleton<AzureServiceTokenProvider>());
         Assert.True(services.ContainsSingleton<BaseScriptProvider>());
         Assert.True(services.ContainsSingleton<IAccessTokenHandler, ManagedIdentityAccessTokenHandler>());
+        Assert.True(services.ContainsSingleton<IAccessTokenHandler, WorkloadIdentityAccessTokenHandler>());
         Assert.True(services.ContainsSingleton<IBaseScriptProvider, BaseScriptProvider>());
         Assert.True(services.ContainsSingleton<IHostedService, SchemaInitializer>());
         Assert.True(services.ContainsScoped<ISchemaManagerDataStore>());
@@ -68,6 +69,7 @@ public class SqlServerBaseRegistrationExtensionsTests
 
         Assert.True(services.ContainsSingleton<AzureServiceTokenProvider>());
         Assert.True(services.ContainsSingleton<IAccessTokenHandler, ManagedIdentityAccessTokenHandler>());
+        Assert.True(services.ContainsSingleton<IAccessTokenHandler, WorkloadIdentityAccessTokenHandler>());
         Assert.True(services.ContainsSingleton<ISqlConnectionBuilder>());
         Assert.True(services.ContainsSingleton<ISqlConnectionStringProvider, DefaultSqlConnectionStringProvider>());
         Assert.True(services.ContainsScoped<IReadOnlySchemaManagerDataStore, SchemaManagerDataStore>());
