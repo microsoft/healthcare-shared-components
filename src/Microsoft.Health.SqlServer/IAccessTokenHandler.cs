@@ -17,7 +17,7 @@ public interface IAccessTokenHandler
     SqlServerAuthenticationType AuthenticationType { get; }
 
     /// <summary>
-    /// Deletermines the scope that is needed by the type of tokencredential used in the given implementation
+    /// Determines the scope that is needed by the type of tokencredential used in the given implementation
     /// </summary>
     string AzureScope { get; }
 
