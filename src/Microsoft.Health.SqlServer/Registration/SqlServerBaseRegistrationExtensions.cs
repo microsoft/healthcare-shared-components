@@ -78,13 +78,9 @@ public static class SqlServerBaseRegistrationExtensions
                  SqlRetryLogicBaseProvider sqlRetryLogic = p.GetRequiredService<SqlRetryLogicBaseProvider>();
                  var accessTokenHandlers = p.GetServices<IAccessTokenHandler>();
 
-                 if (config.AuthenticationType == SqlServerAuthenticationType.ManagedIdentity)
+                 if (config.AuthenticationType == SqlServerAuthenticationType.ManagedIdentity || config.AuthenticationType == SqlServerAuthenticationType.WorkloadIdentity)
                  {
-                     return new ManagedIdentitySqlConnectionBuilder(sqlConnectionStringProvider, accessTokenHandlers.FirstOrDefault(dpp => dpp.AuthenticationType == SqlServerAuthenticationType.ManagedIdentity), sqlRetryLogic);
-                 }
-                 else if (config.AuthenticationType == SqlServerAuthenticationType.WorkloadIdentity)
-                 {
-                     return new ManagedIdentitySqlConnectionBuilder(sqlConnectionStringProvider, accessTokenHandlers.FirstOrDefault(dpp => dpp.AuthenticationType == SqlServerAuthenticationType.WorkloadIdentity), sqlRetryLogic);
+                     return new ManagedIdentitySqlConnectionBuilder(sqlConnectionStringProvider, accessTokenHandlers.FirstOrDefault(dpp => dpp.AuthenticationType == config.AuthenticationType), sqlRetryLogic);
                  }
                  else
                  {
