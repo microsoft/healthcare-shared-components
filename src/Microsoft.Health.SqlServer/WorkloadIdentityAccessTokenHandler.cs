@@ -5,13 +5,10 @@
 
 // -------------------------------------------------------------------------------------------------
 
-using System.Threading;
-using System.Threading.Tasks;
-using Azure.Core;
-using Azure.Identity;
 using Microsoft.Health.SqlServer.Configs;
 
 namespace Microsoft.Health.SqlServer;
+
 public class WorkloadIdentityAccessTokenHandler : IAccessTokenHandler
 {
     public SqlServerAuthenticationType AuthenticationType => SqlServerAuthenticationType.WorkloadIdentity;
@@ -24,7 +21,7 @@ public class WorkloadIdentityAccessTokenHandler : IAccessTokenHandler
         // When no options are specified AZURE_TENANT_ID, AZURE_CLIENT_ID and AZURE_FEDERATED_TOKEN_FILE must be specified in the environment.
         WorkloadIdentityCredential credential = new WorkloadIdentityCredential();
 
-        var token = await credential.GetTokenAsync(new TokenRequestContext(new[] { AzureScope }), CancellationToken.None).ConfigureAwait(false);
+        var token = await credential.GetTokenAsync(new TokenRequestContext(new[] { AzureScope }), cancellationToken).ConfigureAwait(false);
 
         return token.Token;
     }
