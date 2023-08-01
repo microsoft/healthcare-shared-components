@@ -55,6 +55,11 @@ public class SqlServerDataStoreConfiguration
     public string ManagedIdentityClientId { get; set; }
 
     /// <summary>
+    /// If set, represents the tenantId.
+    /// </summary>
+    public string TenantId { get; set; }
+
+    /// <summary>
     /// Specifies the statement timeout to set on ServerConnection.
     /// </summary>
     public TimeSpan StatementTimeout { get; set; } = TimeSpan.FromSeconds(14400);

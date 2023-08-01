@@ -11,6 +11,7 @@ using NSubstitute;
 using Xunit;
 
 namespace Microsoft.Health.SqlServer.UnitTests;
+
 public class WorkloadIdentitySqlconnectionTests
 {
     private const string DatabaseName = "Dicom";
@@ -23,7 +24,6 @@ public class WorkloadIdentitySqlconnectionTests
     public WorkloadIdentitySqlconnectionTests()
     {
         var accessTokenHandler = Substitute.For<IAccessTokenHandler>();
-
         accessTokenHandler.AuthenticationType.Returns(SqlServerAuthenticationType.WorkloadIdentity);
         accessTokenHandler.GetAccessTokenAsync().Returns(Task.FromResult(TestAccessToken));
 
