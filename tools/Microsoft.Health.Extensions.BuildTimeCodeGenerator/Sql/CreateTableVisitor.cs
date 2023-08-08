@@ -24,6 +24,13 @@ internal class CreateTableVisitor : SqlVisitor
     public override void Visit(CreateTableStatement node)
     {
         string tableName = node.SchemaObjectName.BaseIdentifier.Value;
+
+        if (tableName.StartsWith('#'))
+        {
+            // If its a temp table, ignore creating a object for it.
+            return;
+        }
+
         string schemaQualifiedTableName = $"{node.SchemaObjectName.SchemaIdentifier.Value}.{tableName}";
         string className = GetClassNameForTable(tableName);
 
