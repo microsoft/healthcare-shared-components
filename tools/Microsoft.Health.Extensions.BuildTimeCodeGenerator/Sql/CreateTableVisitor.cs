@@ -25,23 +25,21 @@ internal class CreateTableVisitor : SqlVisitor
     {
         string tableName = node.SchemaObjectName.BaseIdentifier.Value;
 
-        if (tableName.StartsWith('#'))
+        // If its a temp table, ignore creating an object for it.
+        if (!tableName.StartsWith('#'))
         {
-            // If its a temp table, ignore creating an object for it.
-            return;
+            string schemaQualifiedTableName = $"{node.SchemaObjectName.SchemaIdentifier.Value}.{tableName}";
+            string className = GetClassNameForTable(tableName);
+
+            ClassDeclarationSyntax classDeclarationSyntax =
+                CreateSkeletalClass(className, schemaQualifiedTableName)
+                    .AddMembers(node.Definition.ColumnDefinitions.Select(CreatePropertyForTableColumn).ToArray());
+
+            FieldDeclarationSyntax field = CreateStaticFieldForClass(className, tableName);
+
+            MembersToAdd.Add(field.AddSortingKey(this, tableName));
+            MembersToAdd.Add(classDeclarationSyntax.AddSortingKey(this, tableName));
         }
-
-        string schemaQualifiedTableName = $"{node.SchemaObjectName.SchemaIdentifier.Value}.{tableName}";
-        string className = GetClassNameForTable(tableName);
-
-        ClassDeclarationSyntax classDeclarationSyntax =
-            CreateSkeletalClass(className, schemaQualifiedTableName)
-                .AddMembers(node.Definition.ColumnDefinitions.Select(CreatePropertyForTableColumn).ToArray());
-
-        FieldDeclarationSyntax field = CreateStaticFieldForClass(className, tableName);
-
-        MembersToAdd.Add(field.AddSortingKey(this, tableName));
-        MembersToAdd.Add(classDeclarationSyntax.AddSortingKey(this, tableName));
 
         base.Visit(node);
     }
