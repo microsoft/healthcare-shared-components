@@ -133,32 +133,36 @@ internal class CreateTableVisitor : SqlVisitor
     {
         string indexName = node.Name.Value;
 
-        var indexClassName = IdentifierName("Index");
-        FieldDeclarationSyntax indexNameField =
-            FieldDeclaration(
-                    VariableDeclaration(indexClassName)
-                        .AddVariables(
-                            VariableDeclarator(Identifier(indexName))
-                                .WithInitializer(
-                                    EqualsValueClause(
-                                        ObjectCreationExpression(indexClassName).AddArgumentListArguments(
-                                            Argument(
-                                                LiteralExpression(
-                                                    SyntaxKind.StringLiteralExpression,
-                                                    Literal(indexName))))))))
-                .AddModifiers(Token(SyntaxKind.InternalKeyword), Token(SyntaxKind.ReadOnlyKeyword));
-
-        string tableClassName = GetClassNameForTable(node.OnName.BaseIdentifier.Value);
-        string viewClassName = GetClassNameForView(node.OnName.BaseIdentifier.Value);
-
-        var memberIndex = MembersToAdd.FindIndex(m => m is ClassDeclarationSyntax c && (c.Identifier.ValueText == tableClassName || c.Identifier.ValueText == viewClassName));
-
-        if (memberIndex < 0)
+        // If its a temp table, ignore creating an object for it.
+        if (!node.OnName.BaseIdentifier.Value.StartsWith('#'))
         {
-            throw new InvalidOperationException($"Index '{node.Name.Value}' is declared on an unrecognized type '{node.OnName.BaseIdentifier.Value}'");
-        }
+            var indexClassName = IdentifierName("Index");
+            FieldDeclarationSyntax indexNameField =
+                FieldDeclaration(
+                        VariableDeclaration(indexClassName)
+                            .AddVariables(
+                                VariableDeclarator(Identifier(indexName))
+                                    .WithInitializer(
+                                        EqualsValueClause(
+                                            ObjectCreationExpression(indexClassName).AddArgumentListArguments(
+                                                Argument(
+                                                    LiteralExpression(
+                                                        SyntaxKind.StringLiteralExpression,
+                                                        Literal(indexName))))))))
+                    .AddModifiers(Token(SyntaxKind.InternalKeyword), Token(SyntaxKind.ReadOnlyKeyword));
 
-        MembersToAdd[memberIndex] = ((ClassDeclarationSyntax)MembersToAdd[memberIndex]).AddMembers(indexNameField);
+            string tableClassName = GetClassNameForTable(node.OnName.BaseIdentifier.Value);
+            string viewClassName = GetClassNameForView(node.OnName.BaseIdentifier.Value);
+
+            var memberIndex = MembersToAdd.FindIndex(m => m is ClassDeclarationSyntax c && (c.Identifier.ValueText == tableClassName || c.Identifier.ValueText == viewClassName));
+
+            if (memberIndex < 0)
+            {
+                throw new InvalidOperationException($"Index '{node.Name.Value}' is declared on an unrecognized type '{node.OnName.BaseIdentifier.Value}'");
+            }
+
+            MembersToAdd[memberIndex] = ((ClassDeclarationSyntax)MembersToAdd[memberIndex]).AddMembers(indexNameField);
+        }
 
         base.Visit(node);
     }
