@@ -27,7 +27,7 @@ internal class CreateTableVisitor : SqlVisitor
 
         if (tableName.StartsWith('#'))
         {
-            // If its a temp table, ignore creating a object for it.
+            // If its a temp table, ignore creating an object for it.
             return;
         }
 
