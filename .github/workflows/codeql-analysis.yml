@@ -20,23 +20,19 @@ jobs:
     - name: Checkout repository
       uses: actions/checkout@v3
 
-    - name: Install .NET 6.0 SDK
+    - name: Install .NET SDK
       uses: actions/setup-dotnet@v3
       with:
+        global-json-file: '.global.json'
         dotnet-version: '6.x'
 
-    - name: Install .NET 7.0 SDK
-      uses: actions/setup-dotnet@v3
-
-    # Initializes the CodeQL tools for scanning.
     - name: Initialize CodeQL
       uses: github/codeql-action/init@v2
       with:
         languages: 'csharp'
 
-    # Build solution
     - name: dotnet build
-      run: dotnet build Microsoft.Health.sln -c Release -p:ContinuousIntegrationBuild=true
+      run: dotnet build Microsoft.Health.sln -c Release -p:ContinuousIntegrationBuild=true -v normal
 
     - name: Perform CodeQL Analysis
       uses: github/codeql-action/analyze@v2
