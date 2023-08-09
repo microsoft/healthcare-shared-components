@@ -36,7 +36,7 @@ jobs:
 
     # Build solution
     - name: dotnet build
-      run: dotnet build Microsoft.Health.sln -c Release -p:ContinuousIntegrationBuild=true /v:normal
+      run: dotnet build Microsoft.Health.sln -c Release -p:ContinuousIntegrationBuild=true
 
     - name: Perform CodeQL Analysis
       uses: github/codeql-action/analyze@v2
