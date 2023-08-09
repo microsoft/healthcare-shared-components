@@ -13,9 +13,6 @@ jobs:
     name: Analyze
     runs-on: ubuntu-latest
 
-    strategy:
-      fail-fast: false
-
     steps:
     - name: Checkout repository
       uses: actions/checkout@v3
@@ -31,8 +28,13 @@ jobs:
       with:
         languages: 'csharp'
 
+    - name: dotnet restore
+      shell: bash
+      run: dotnet restore
+
     - name: dotnet build
-      run: dotnet build Microsoft.Health.sln -c Release -p:ContinuousIntegrationBuild=true -v normal
+      shell: bash
+      run: dotnet build -c Release -p:ContinuousIntegrationBuild=true
 
     - name: Perform CodeQL Analysis
       uses: github/codeql-action/analyze@v2
