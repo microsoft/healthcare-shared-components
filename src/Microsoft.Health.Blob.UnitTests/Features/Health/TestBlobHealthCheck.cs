@@ -27,7 +27,7 @@ internal sealed class TestBlobHealthCheck : BlobHealthCheck
         string containerConfigurationName,
         IKeyTestProvider keyTestProvider,
         IBlobClientTestProvider testProvider,
-        ILogger<BlobHealthCheck> logger)
+        ILogger<TestBlobHealthCheck> logger)
         : base(
               keyClient,
               client,

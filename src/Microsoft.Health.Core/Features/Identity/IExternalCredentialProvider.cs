@@ -10,10 +10,10 @@ namespace Microsoft.Health.Core.Features.Identity;
 public interface IExternalCredentialProvider
 {
     /// <summary>
-    /// Retrieves the token credential used for external operations.
+    /// Retrieves the token credential for external resources
     /// </summary>
     /// <returns>
-    /// The credential for the operation, if found; otherwise <see langword="null"/>.
+    /// The credential for external resources, if found; otherwise <see langword="null"/>.
     /// </returns>
     TokenCredential GetTokenCredential();
 }

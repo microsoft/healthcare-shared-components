@@ -6,6 +6,7 @@
 using System;
 
 namespace Microsoft.Health.CustomerManagedKey.Configs;
+
 public class CustomerManagedKeyOptions
 {
     public Uri KeyVaultUri { get; set; }

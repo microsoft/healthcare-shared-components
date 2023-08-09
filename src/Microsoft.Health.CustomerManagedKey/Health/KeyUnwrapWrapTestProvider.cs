@@ -6,6 +6,7 @@
 using System.Threading;
 using System.Threading.Tasks;
 using Azure.Security.KeyVault.Keys;
+using Azure.Security.KeyVault.Keys.Cryptography;
 using EnsureThat;
 using Microsoft.Health.CustomerManagedKey.Configs;
 
@@ -23,6 +24,10 @@ public class KeyWrapUnwrapTestProvider : IKeyTestProvider
             return;
         }
 
-        await keyClient.GetKeyAsync(customerManagedKeyOptions.KeyName, customerManagedKeyOptions.KeyVersion, cancellationToken).ConfigureAwait(false);
+        KeyVaultKey key = await keyClient.GetKeyAsync(customerManagedKeyOptions.KeyName, customerManagedKeyOptions.KeyVersion, cancellationToken).ConfigureAwait(false);
+        CryptographyClient cryptClient = keyClient.GetCryptographyClient(customerManagedKeyOptions.KeyName, customerManagedKeyOptions.KeyVersion);
+
+        UnwrapResult unwrappedKey = await cryptClient.UnwrapKeyAsync(KeyWrapAlgorithm.Rsa15, key.Key.T, cancellationToken).ConfigureAwait(false);
+        await cryptClient.WrapKeyAsync(KeyWrapAlgorithm.Rsa15, unwrappedKey.Key, cancellationToken).ConfigureAwait(false);
     }
 }

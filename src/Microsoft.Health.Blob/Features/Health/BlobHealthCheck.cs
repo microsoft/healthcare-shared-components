@@ -3,7 +3,9 @@
 // Licensed under the MIT License (MIT). See LICENSE in the repo root for license information.
 // -------------------------------------------------------------------------------------------------
 
+using System;
 using System.Collections.Generic;
+using System.Security.Cryptography;
 using System.Threading;
 using System.Threading.Tasks;
 using Azure;
@@ -83,13 +85,13 @@ public class BlobHealthCheck : IHealthCheck
         {
             await _keyTestProvider.PerformTestAsync(_keyClient, _customerManagedKeyOptions, cancellationToken).ConfigureAwait(false);
         }
-        catch (RequestFailedException requestFailedException)
+        catch (Exception ex) when (ex is RequestFailedException || ex is CryptographicException || ex is InvalidOperationException)
         {
-            _logger.LogInformation(requestFailedException, AccessLostMessage);
+            _logger.LogInformation(ex, AccessLostMessage);
 
             return HealthCheckResult.Degraded(
                 AccessLostMessage,
-                exception: requestFailedException,
+                exception: ex,
                 new Dictionary<string, object> { { DegradedHealthStatusData.CustomerManagedKeyAccessLost.ToString(), true } });
         }
 

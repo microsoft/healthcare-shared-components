@@ -10,6 +10,7 @@ using Microsoft.Health.Core.Features.Identity;
 using Microsoft.Health.CustomerManagedKey.Configs;
 
 namespace Microsoft.Health.CustomerManagedKey.Client;
+
 internal static class CustomerKeyClientFactory
 {
     /// <summary>

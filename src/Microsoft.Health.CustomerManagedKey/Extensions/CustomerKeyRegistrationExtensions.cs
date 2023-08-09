@@ -10,10 +10,22 @@ using Microsoft.Extensions.Options;
 using Microsoft.Health.Core.Features.Identity;
 using Microsoft.Health.CustomerManagedKey.Client;
 using Microsoft.Health.CustomerManagedKey.Configs;
+using Microsoft.Health.CustomerManagedKey.Health;
 
 namespace Microsoft.Health.CustomerManagedKey.Extensions;
+
 public static class CustomerKeyRegistrationExtensions
 {
+    public static IServiceCollection AddCustomerKeyHealthTest(this IServiceCollection services)
+    {
+        EnsureArg.IsNotNull(services, nameof(services));
+
+        services.TryAddSingleton<IKeyTestProvider, KeyWrapUnwrapTestProvider>();
+        services.AddKeyClient();
+
+        return services;
+    }
+
     public static IServiceCollection AddKeyClient(this IServiceCollection services)
     {
         EnsureArg.IsNotNull(services, nameof(services));
