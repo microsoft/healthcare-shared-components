@@ -24,7 +24,6 @@ public static class CustomerKeyRegistrationExtensions
         EnsureArg.IsNotNull(services, nameof(services));
 
         services.AddCustomerKeyHealthTest();
-
         services
             .AddHealthChecks()
             .AddCheck<EncryptionHealthCheck>(
