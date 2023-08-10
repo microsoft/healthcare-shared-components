@@ -3,13 +3,8 @@
 // Licensed under the MIT License (MIT). See LICENSE in the repo root for license information.
 // -------------------------------------------------------------------------------------------------
 
-using System;
-using System.Collections.Generic;
-using System.Security.Cryptography;
 using System.Threading;
 using System.Threading.Tasks;
-using Azure;
-using Azure.Security.KeyVault.Keys;
 using Azure.Storage.Blobs;
 using EnsureThat;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
@@ -17,9 +12,8 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.Health.Blob.Configs;
 using Microsoft.Health.Blob.Features.Storage;
+using Microsoft.Health.Core.Extensions;
 using Microsoft.Health.Core.Features.Health;
-using Microsoft.Health.CustomerManagedKey.Configs;
-using Microsoft.Health.CustomerManagedKey.Health;
 
 namespace Microsoft.Health.Blob.Features.Health;
 
@@ -28,11 +22,7 @@ namespace Microsoft.Health.Blob.Features.Health;
 /// </summary>
 public class BlobHealthCheck : IHealthCheck
 {
-    private const string AccessLostMessage = "Access to the customer-managed key has been lost";
-
-    private readonly KeyClient _keyClient;
-    private readonly CustomerManagedKeyOptions _customerManagedKeyOptions;
-    private readonly IKeyTestProvider _keyTestProvider;
+    private readonly IStoragePrerequisiteHealthCheckPublisher _storagePrerequisiteHealthCheckPublisher;
 
     private readonly BlobServiceClient _client;
     private readonly BlobContainerConfiguration _blobContainerConfiguration;
@@ -42,38 +32,31 @@ public class BlobHealthCheck : IHealthCheck
     /// <summary>
     /// Initializes a new instance of the <see cref="BlobHealthCheck"/> class.
     /// </summary>
-    /// <param name="keyClient">The key vault client</param>
     /// <param name="client">The cloud blob client factory.</param>
     /// <param name="namedBlobContainerConfigurationAccessor">The IOptions accessor to get a named container configuration version.</param>
-    /// <param name="cmkOptions">The IOptions for customer managed keys configuration</param>
     /// <param name="containerConfigurationName">Name to get corresponding container configuration.</param>
-    /// <param name="keyTestProvider">The key test provider</param>
     /// <param name="testProvider">The blob test provider.</param>
+    /// <param name="storagePrerequisiteHealthCheckPublisher">storage prereq health check publisher</param>
     /// <param name="logger">The logger.</param>
     public BlobHealthCheck(
-        KeyClient keyClient,
         BlobServiceClient client,
-        IOptions<CustomerManagedKeyOptions> cmkOptions,
         IOptionsSnapshot<BlobContainerConfiguration> namedBlobContainerConfigurationAccessor,
         string containerConfigurationName,
-        IKeyTestProvider keyTestProvider,
         IBlobClientTestProvider testProvider,
+        IStoragePrerequisiteHealthCheckPublisher storagePrerequisiteHealthCheckPublisher,
         ILogger<BlobHealthCheck> logger)
     {
         EnsureArg.IsNotNull(client, nameof(client));
-        EnsureArg.IsNotNull(cmkOptions, nameof(cmkOptions));
         EnsureArg.IsNotNull(namedBlobContainerConfigurationAccessor, nameof(namedBlobContainerConfigurationAccessor));
         EnsureArg.IsNotNullOrWhiteSpace(containerConfigurationName, nameof(containerConfigurationName));
-        EnsureArg.IsNotNull(keyTestProvider, nameof(keyTestProvider));
         EnsureArg.IsNotNull(testProvider, nameof(testProvider));
+        EnsureArg.IsNotNull(storagePrerequisiteHealthCheckPublisher, nameof(storagePrerequisiteHealthCheckPublisher));
         EnsureArg.IsNotNull(logger, nameof(logger));
 
-        _keyClient = keyClient;
         _client = client;
-        _customerManagedKeyOptions = cmkOptions.Value;
         _blobContainerConfiguration = namedBlobContainerConfigurationAccessor.Get(containerConfigurationName);
-        _keyTestProvider = keyTestProvider;
         _testProvider = testProvider;
+        _storagePrerequisiteHealthCheckPublisher = storagePrerequisiteHealthCheckPublisher;
         _logger = logger;
     }
 
@@ -81,18 +64,16 @@ public class BlobHealthCheck : IHealthCheck
     {
         _logger.LogInformation("Performing health check.");
 
-        try
+        if (_storagePrerequisiteHealthCheckPublisher.HealthReport.Status != HealthStatus.Healthy)
         {
-            await _keyTestProvider.PerformTestAsync(_keyClient, _customerManagedKeyOptions, cancellationToken).ConfigureAwait(false);
-        }
-        catch (Exception ex) when (ex is RequestFailedException || ex is CryptographicException || ex is InvalidOperationException)
-        {
-            _logger.LogInformation(ex, AccessLostMessage);
+            // If the prerequisite checks are unhealthy, do not check storage and return the lowest status
+            HealthReportEntry reportEntryWithLowestStatus = _storagePrerequisiteHealthCheckPublisher.HealthReport.FindLowestHealthReportEntry();
 
-            return HealthCheckResult.Degraded(
-                AccessLostMessage,
-                exception: ex,
-                new Dictionary<string, object> { { DegradedHealthStatusData.CustomerManagedKeyAccessLost.ToString(), true } });
+            return new HealthCheckResult(
+                _storagePrerequisiteHealthCheckPublisher.HealthReport.Status,
+                reportEntryWithLowestStatus.Description,
+                reportEntryWithLowestStatus.Exception,
+                reportEntryWithLowestStatus.Data);
         }
 
         await _testProvider.PerformTestAsync(_client, _blobContainerConfiguration, cancellationToken).ConfigureAwait(false);

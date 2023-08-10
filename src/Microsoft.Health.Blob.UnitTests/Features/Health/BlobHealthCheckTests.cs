@@ -4,18 +4,17 @@
 // -------------------------------------------------------------------------------------------------
 
 using System;
+using System.Collections.Generic;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
-using Azure.Security.KeyVault.Keys;
 using Azure.Storage.Blobs;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 using Microsoft.Health.Blob.Configs;
 using Microsoft.Health.Blob.Features.Storage;
-using Microsoft.Health.CustomerManagedKey.Configs;
-using Microsoft.Health.CustomerManagedKey.Health;
+using Microsoft.Health.Core.Features.Health;
 using NSubstitute;
 using NSubstitute.ExceptionExtensions;
 using Xunit;
@@ -24,19 +23,16 @@ namespace Microsoft.Health.Blob.UnitTests.Features.Health;
 
 public class BlobHealthCheckTests
 {
-    private readonly KeyClient _keyClient = Substitute.For<KeyClient>(new Uri("https://keyvault.com"), null);
+    private readonly IStoragePrerequisiteHealthCheckPublisher _storagePrerequisiteHealthCheckPublisher = Substitute.For<IStoragePrerequisiteHealthCheckPublisher>();
     private readonly BlobServiceClient _client = Substitute.For<BlobServiceClient>(new Uri("https://www.microsoft.com/"), null);
     private readonly IBlobClientTestProvider _testProvider = Substitute.For<IBlobClientTestProvider>();
-    private readonly IKeyTestProvider _keyTestProvider = Substitute.For<IKeyTestProvider>();
     private readonly BlobContainerConfiguration _containerConfiguration = new BlobContainerConfiguration { ContainerName = "mycont" };
-    private readonly CustomerManagedKeyOptions _customerManagedKeyOptions = new CustomerManagedKeyOptions { KeyName = "test" };
 
     private readonly TestBlobHealthCheck _healthCheck;
 
     public BlobHealthCheckTests()
     {
         IOptionsSnapshot<BlobContainerConfiguration> optionsSnapshot = Substitute.For<IOptionsSnapshot<BlobContainerConfiguration>>();
-        IOptions<CustomerManagedKeyOptions> cmkOptions = Substitute.For<IOptions<CustomerManagedKeyOptions>>(_customerManagedKeyOptions);
         optionsSnapshot.Get(TestBlobHealthCheck.TestBlobHealthCheckName).Returns(_containerConfiguration);
 
         _testProvider.PerformTestAsync(Arg.Any<BlobServiceClient>(), Arg.Any<BlobContainerConfiguration>(), Arg.Any<CancellationToken>())
@@ -46,19 +42,23 @@ public class BlobHealthCheckTests
                 return Task.CompletedTask;
             });
 
+        var entries = new Dictionary<string, HealthReportEntry>()
+        {
+            { "report1", new HealthReportEntry(HealthStatus.Healthy, string.Empty, TimeSpan.FromSeconds(1), null, null) }
+        };
+        _storagePrerequisiteHealthCheckPublisher.HealthReport.Returns(new HealthReport(entries, TimeSpan.FromSeconds(1)));
+
         _healthCheck = new TestBlobHealthCheck(
-            _keyClient,
             _client,
-            cmkOptions,
             optionsSnapshot,
             TestBlobHealthCheck.TestBlobHealthCheckName,
-            _keyTestProvider,
             _testProvider,
+            _storagePrerequisiteHealthCheckPublisher,
             NullLogger<TestBlobHealthCheck>.Instance);
     }
 
     [Fact]
-    public async Task GivenBlobDataStoreIsAvailable_WhenHealthIsChecked_ThenHealthyStateShouldBeReturned()
+    public async Task GivenBlobDataStoreIsAvailableAndKeyIsAccessible_WhenHealthIsChecked_ThenHealthyStateShouldBeReturned()
     {
         HealthCheckResult result = await _healthCheck.CheckHealthAsync(new HealthCheckContext()).ConfigureAwait(false);
 
@@ -71,6 +71,21 @@ public class BlobHealthCheckTests
         _testProvider.PerformTestAsync(default, _containerConfiguration).ThrowsForAnyArgs<HttpRequestException>();
 
         await Assert.ThrowsAsync<HttpRequestException>(() => _healthCheck.CheckHealthAsync(new HealthCheckContext())).ConfigureAwait(false);
+    }
+
+    [Theory]
+    [InlineData(HealthStatus.Degraded)]
+    [InlineData(HealthStatus.Unhealthy)]
+    public async Task GivenPrerequisiteIsNotHealthy_WhenHealthIsChecked_ThenNotHealthyStatusReturned(HealthStatus healthStatus)
+    {
+        var entries = new Dictionary<string, HealthReportEntry>()
+        {
+            { "report1", new HealthReportEntry(healthStatus, "Prereq unhealthy", TimeSpan.FromSeconds(1), null, null) }
+        };
+        _storagePrerequisiteHealthCheckPublisher.HealthReport.Returns(new HealthReport(entries, TimeSpan.FromSeconds(1)));
+
+        HealthCheckResult result = await _healthCheck.CheckHealthAsync(new HealthCheckContext()).ConfigureAwait(false);
+        Assert.Equal(healthStatus, result.Status);
     }
 
     [Fact]

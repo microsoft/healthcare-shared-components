@@ -12,5 +12,5 @@ namespace Microsoft.Health.CustomerManagedKey.Health;
 
 public interface IKeyTestProvider
 {
-    Task PerformTestAsync(KeyClient keyClient, CustomerManagedKeyOptions customerManagedKeyOptions, CancellationToken cancellationToken);
+    Task PerformTestAsync(KeyClient keyClient, CustomerManagedKeyOptions customerManagedKeyOptions, CancellationToken cancellationToken = default);
 }
