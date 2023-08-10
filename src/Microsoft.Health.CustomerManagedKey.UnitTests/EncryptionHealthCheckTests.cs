@@ -50,7 +50,7 @@ public class EncryptionHealthCheckTests
     }
 
     [Fact]
-    public async Task GivenBlobDataStoreIsAvailableAndKeyIsAccessible_WhenHealthIsChecked_ThenHealthyStateShouldBeReturned()
+    public async Task GivenKeyIsAccessible_WhenHealthIsChecked_ThenHealthyStateShouldBeReturned()
     {
         HealthCheckResult result = await _healthCheck.CheckHealthAsync(new HealthCheckContext()).ConfigureAwait(false);
 

@@ -20,7 +20,6 @@ internal sealed class TestBlobHealthCheck : BlobHealthCheck
     public TestBlobHealthCheck(
         BlobServiceClient client,
         IOptionsSnapshot<BlobContainerConfiguration> namedBlobContainerConfigurationAccessor,
-        string containerConfigurationName,
         IBlobClientTestProvider testProvider,
         IStoragePrerequisiteHealthCheckPublisher publisher,
         ILogger<TestBlobHealthCheck> logger)

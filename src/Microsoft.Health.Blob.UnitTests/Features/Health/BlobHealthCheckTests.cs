@@ -51,14 +51,13 @@ public class BlobHealthCheckTests
         _healthCheck = new TestBlobHealthCheck(
             _client,
             optionsSnapshot,
-            TestBlobHealthCheck.TestBlobHealthCheckName,
             _testProvider,
             _storagePrerequisiteHealthCheckPublisher,
             NullLogger<TestBlobHealthCheck>.Instance);
     }
 
     [Fact]
-    public async Task GivenBlobDataStoreIsAvailableAndKeyIsAccessible_WhenHealthIsChecked_ThenHealthyStateShouldBeReturned()
+    public async Task GivenBlobDataStoreIsAvailable_WhenHealthIsChecked_ThenHealthyStateShouldBeReturned()
     {
         HealthCheckResult result = await _healthCheck.CheckHealthAsync(new HealthCheckContext()).ConfigureAwait(false);
 

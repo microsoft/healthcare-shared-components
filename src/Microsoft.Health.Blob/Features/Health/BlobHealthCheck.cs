@@ -36,7 +36,7 @@ public class BlobHealthCheck : IHealthCheck
     /// <param name="namedBlobContainerConfigurationAccessor">The IOptions accessor to get a named container configuration version.</param>
     /// <param name="containerConfigurationName">Name to get corresponding container configuration.</param>
     /// <param name="testProvider">The blob test provider.</param>
-    /// <param name="storagePrerequisiteHealthCheckPublisher">storage prereq health check publisher</param>
+    /// <param name="storagePrerequisiteHealthCheckPublisher">Publisher of health checks that storage is dependent on</param>
     /// <param name="logger">The logger.</param>
     public BlobHealthCheck(
         BlobServiceClient client,

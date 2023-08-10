@@ -9,5 +9,4 @@ public enum DegradedHealthStatusData
 
 {
     CustomerManagedKeyAccessLost,
-    ExternalStorageAccessLost
 }
