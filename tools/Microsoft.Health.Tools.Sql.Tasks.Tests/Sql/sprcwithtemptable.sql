@@ -1,0 +1,9 @@
+CREATE OR ALTER PROCEDURE dbo.GetTempTable
+    @Uid   BIGINT
+AS
+SET NOCOUNT ON
+BEGIN
+    CREATE TABLE #TempTable (
+        Key1  BIGINT  NOT NULL
+    )
+END

@@ -18,6 +18,7 @@
     <TInitSqlScript Include="Sql\transaction-cond.sql" />
     <TSqlScript Include="Sql\table1.sql" />
     <TSqlScript Include="Sql\table2.sql" />
+    <TSqlScript Include="Sql\sprcwithtemptable.sql" />
     <SqlScript Include="Sql\sprc_string_agg.sql" />
     <SqlScript Include="Sql\sprc_output.sql" />
     <SqlScript Include="Sql\sprc.sql" />
