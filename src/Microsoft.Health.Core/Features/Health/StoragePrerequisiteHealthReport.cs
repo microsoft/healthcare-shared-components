@@ -7,7 +7,7 @@ using Microsoft.Extensions.Diagnostics.HealthChecks;
 
 namespace Microsoft.Health.Core.Features.Health;
 
-public interface IStoragePrerequisiteHealthCheckPublisher : IHealthCheckPublisher
+public class StoragePrerequisiteHealthReport : IStoragePrerequisiteHealthReport
 {
-    public HealthReport HealthReport { get; }
+    public HealthReport HealthReport { get; set; }
 }

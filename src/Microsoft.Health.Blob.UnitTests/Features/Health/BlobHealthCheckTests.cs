@@ -23,7 +23,7 @@ namespace Microsoft.Health.Blob.UnitTests.Features.Health;
 
 public class BlobHealthCheckTests
 {
-    private readonly IStoragePrerequisiteHealthCheckPublisher _storagePrerequisiteHealthCheckPublisher = Substitute.For<IStoragePrerequisiteHealthCheckPublisher>();
+    private readonly IStoragePrerequisiteHealthReport _storagePrerequisisteHealthReport = Substitute.For<IStoragePrerequisiteHealthReport>();
     private readonly BlobServiceClient _client = Substitute.For<BlobServiceClient>(new Uri("https://www.microsoft.com/"), null);
     private readonly IBlobClientTestProvider _testProvider = Substitute.For<IBlobClientTestProvider>();
     private readonly BlobContainerConfiguration _containerConfiguration = new BlobContainerConfiguration { ContainerName = "mycont" };
@@ -46,13 +46,13 @@ public class BlobHealthCheckTests
         {
             { "report1", new HealthReportEntry(HealthStatus.Healthy, string.Empty, TimeSpan.FromSeconds(1), null, null) }
         };
-        _storagePrerequisiteHealthCheckPublisher.HealthReport.Returns(new HealthReport(entries, TimeSpan.FromSeconds(1)));
+        _storagePrerequisisteHealthReport.HealthReport.Returns(new HealthReport(entries, TimeSpan.FromSeconds(1)));
 
         _healthCheck = new TestBlobHealthCheck(
             _client,
             optionsSnapshot,
             _testProvider,
-            _storagePrerequisiteHealthCheckPublisher,
+            _storagePrerequisisteHealthReport,
             NullLogger<TestBlobHealthCheck>.Instance);
     }
 
@@ -81,7 +81,7 @@ public class BlobHealthCheckTests
         {
             { "report1", new HealthReportEntry(healthStatus, "Prereq unhealthy", TimeSpan.FromSeconds(1), null, null) }
         };
-        _storagePrerequisiteHealthCheckPublisher.HealthReport.Returns(new HealthReport(entries, TimeSpan.FromSeconds(1)));
+        _storagePrerequisisteHealthReport.HealthReport.Returns(new HealthReport(entries, TimeSpan.FromSeconds(1)));
 
         HealthCheckResult result = await _healthCheck.CheckHealthAsync(new HealthCheckContext()).ConfigureAwait(false);
         Assert.Equal(healthStatus, result.Status);

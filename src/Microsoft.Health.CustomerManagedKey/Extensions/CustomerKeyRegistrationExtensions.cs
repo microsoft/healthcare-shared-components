@@ -4,7 +4,6 @@
 // -------------------------------------------------------------------------------------------------
 
 using System.Collections.Generic;
-using System.Security.Cryptography;
 using EnsureThat;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
@@ -37,7 +36,6 @@ public static class CustomerKeyRegistrationExtensions
     {
         EnsureArg.IsNotNull(services, nameof(services));
 
-        services.TryAddSingleton<RandomNumberGenerator>();
         services.TryAddSingleton<IKeyTestProvider, KeyWrapUnwrapTestProvider>();
         services.AddKeyClient();
 

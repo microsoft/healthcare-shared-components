@@ -11,8 +11,14 @@ using Microsoft.Extensions.Diagnostics.HealthChecks;
 
 namespace Microsoft.Health.Core.Features.Health;
 
-public class StoragePrerequisiteHealthCheckPublisher : IStoragePrerequisiteHealthCheckPublisher
+public class HealthCheckPublisher : IHealthCheckPublisher
 {
+    private readonly IStoragePrerequisiteHealthReport _storagePrerequisiteHealthReport;
+
+    public HealthCheckPublisher(IStoragePrerequisiteHealthReport healthReport)
+    {
+        _storagePrerequisiteHealthReport = EnsureArg.IsNotNull(healthReport, nameof(healthReport));
+    }
     public HealthReport HealthReport { get; private set; }
 
     public Task PublishAsync(HealthReport report, CancellationToken cancellationToken)
@@ -20,7 +26,7 @@ public class StoragePrerequisiteHealthCheckPublisher : IStoragePrerequisiteHealt
         EnsureArg.IsNotNull(report, nameof(report));
 
         var storagePrereqs = report.Entries.Where(e => e.Value.Tags.Contains(HealthCheckTags.StoragePrerequisite.ToString())).ToDictionary(k => k.Key, v => v.Value);
-        HealthReport = new HealthReport(storagePrereqs, report.TotalDuration);
+        _storagePrerequisiteHealthReport.HealthReport = new HealthReport(storagePrereqs, report.TotalDuration);
 
         return Task.CompletedTask;
     }

@@ -9,24 +9,19 @@ using System.Threading.Tasks;
 using Azure.Security.KeyVault.Keys;
 using Azure.Security.KeyVault.Keys.Cryptography;
 using EnsureThat;
+using Microsoft.Health.CustomerManagedKey.Client;
 using Microsoft.Health.CustomerManagedKey.Configs;
 
 namespace Microsoft.Health.CustomerManagedKey.Health;
 
 public class KeyWrapUnwrapTestProvider : IKeyTestProvider
 {
-    private readonly RandomNumberGenerator _randomNumberGenerator;
-
-    public KeyWrapUnwrapTestProvider(RandomNumberGenerator randomNumberGenerator)
-    {
-        _randomNumberGenerator = EnsureArg.IsNotNull(randomNumberGenerator, nameof(randomNumberGenerator));
-    }
-
     public async Task PerformTestAsync(KeyClient keyClient, CustomerManagedKeyOptions customerManagedKeyOptions, CancellationToken cancellationToken = default)
     {
+        EnsureArg.IsNotNull(keyClient, nameof(keyClient));
         EnsureArg.IsNotNull(customerManagedKeyOptions, nameof(customerManagedKeyOptions));
 
-        if (keyClient == null || string.IsNullOrEmpty(customerManagedKeyOptions.KeyName))
+        if (keyClient is EmptyKeyClient || string.IsNullOrEmpty(customerManagedKeyOptions.KeyName))
         {
             // customer-managed key is not enabled
             return;
@@ -36,8 +31,7 @@ public class KeyWrapUnwrapTestProvider : IKeyTestProvider
         await keyClient.GetKeyAsync(customerManagedKeyOptions.KeyName, customerManagedKeyOptions.KeyVersion, cancellationToken).ConfigureAwait(false);
 
         // Create key for encryption
-        byte[] encryptionKey = new byte[32];
-        _randomNumberGenerator.GetBytes(encryptionKey);
+        byte[] encryptionKey = RandomNumberGenerator.GetBytes(32);
 
         // Wrap and Unwrap customer key
         CryptographyClient cryptClient = keyClient.GetCryptographyClient(customerManagedKeyOptions.KeyName, customerManagedKeyOptions.KeyVersion);

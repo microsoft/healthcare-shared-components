@@ -30,6 +30,6 @@ internal static class CustomerKeyClientFactory
             return new KeyClient(cmkOptions.KeyVaultUri, externalCredential);
         }
 
-        return null;
+        return new EmptyKeyClient();
     }
 }

@@ -10,6 +10,7 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
+using Microsoft.Health.Core.Features.Health;
 using Newtonsoft.Json;
 
 namespace Microsoft.Health.Api.Registration;
@@ -24,6 +25,16 @@ public static class ApplicationBuilderExtensions
     public static void UseHealthChecksExtension(this IApplicationBuilder app, string healthCheckPathString)
     {
         app.UseHealthChecksExtension(healthCheckPathString, null);
+    }
+
+    /// <summary>
+    /// Use health checks (extension method). Register the response as json.
+    /// </summary>
+    /// <param name="app">Application builder instance.</param>
+    /// <param name="healthCheckPathString">Health check path string.</param>
+    public static void UseHealthChecksExtensionWithoutPrerequisiteChecks(this IApplicationBuilder app, string healthCheckPathString)
+    {
+        app.UseHealthChecksExtension(healthCheckPathString, new Func<HealthCheckRegistration, bool>(x => !x.Tags.Contains(HealthCheckTags.StoragePrerequisite.ToString())));
     }
 
     /// <summary>

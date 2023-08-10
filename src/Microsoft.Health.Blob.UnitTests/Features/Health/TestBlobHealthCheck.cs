@@ -21,14 +21,14 @@ internal sealed class TestBlobHealthCheck : BlobHealthCheck
         BlobServiceClient client,
         IOptionsSnapshot<BlobContainerConfiguration> namedBlobContainerConfigurationAccessor,
         IBlobClientTestProvider testProvider,
-        IStoragePrerequisiteHealthCheckPublisher publisher,
+        IStoragePrerequisiteHealthReport healthReport,
         ILogger<TestBlobHealthCheck> logger)
         : base(
               client,
               namedBlobContainerConfigurationAccessor,
               TestBlobHealthCheckName,
               testProvider,
-              publisher,
+              healthReport,
               logger)
     {
     }
