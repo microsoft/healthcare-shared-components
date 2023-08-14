@@ -52,7 +52,7 @@ public class CustomerKeyValidationBackgroundServiceTests : IDisposable
     }
 
     [Fact]
-    public async Task GivenKeyIsAccessible_WhenHealthIsChecked_ThenHealthyStateShouldBeReturned()
+    public async Task GivenKeyIsAccessible_WhenHealthIsChecked_ThenHealthyStateShouldBeSaved()
     {
         await _validationService.CheckHealth(CancellationToken.None).ConfigureAwait(false);
 
@@ -63,7 +63,7 @@ public class CustomerKeyValidationBackgroundServiceTests : IDisposable
     }
 
     [Fact]
-    public async Task GivenKeyAccessFails_WhenHealthIsChecked_ThenDegradedHealthIsReturned()
+    public async Task GivenKeyAccessFails_WhenHealthIsChecked_ThenNotHealthStateIsSaved()
     {
         RequestFailedException requestFailedException = new RequestFailedException("Key is not accessible");
         _keyTestProvider.PerformTestAsync(default, _customerManagedKeyOptions).ThrowsForAnyArgs(requestFailedException);
@@ -77,7 +77,7 @@ public class CustomerKeyValidationBackgroundServiceTests : IDisposable
     }
 
     [Fact]
-    public async Task GivenKeyOperationIsInvalid_WhenHealthIsChecked_ThenDegradedHealthIsReturned()
+    public async Task GivenKeyOperationIsInvalid_WhenHealthIsChecked_ThenNotHealthyStateIsSaved()
     {
         InvalidOperationException invalidOperationException = new InvalidOperationException();
         _keyTestProvider.PerformTestAsync(default, _customerManagedKeyOptions).ThrowsForAnyArgs(invalidOperationException);
@@ -91,7 +91,7 @@ public class CustomerKeyValidationBackgroundServiceTests : IDisposable
     }
 
     [Fact]
-    public async Task GivenKeyOperationIsNotSupported_WhenHealthIsChecked_ThenDegradedHealthIsReturned()
+    public async Task GivenKeyOperationIsNotSupported_WhenHealthIsChecked_ThenNotHealthyStateIsSaved()
     {
         NotSupportedException notSupportedException = new NotSupportedException();
         _keyTestProvider.PerformTestAsync(default, _customerManagedKeyOptions).ThrowsForAnyArgs(notSupportedException);
@@ -105,7 +105,7 @@ public class CustomerKeyValidationBackgroundServiceTests : IDisposable
     }
 
     [Fact]
-    public async Task GivenKeyWrapUnwrapFails_WhenHealthIsChecked_ThenDegradedHealthIsReturned()
+    public async Task GivenKeyWrapUnwrapFails_WhenHealthIsChecked_ThenNotHealthyStateIsSaved()
     {
         CryptographicException cryptoException = new CryptographicException();
         _keyTestProvider.PerformTestAsync(default, _customerManagedKeyOptions).ThrowsForAnyArgs(cryptoException);
