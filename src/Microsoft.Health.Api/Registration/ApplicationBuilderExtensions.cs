@@ -32,29 +32,20 @@ public static class ApplicationBuilderExtensions
     /// </summary>
     /// <param name="app">Application builder instance.</param>
     /// <param name="healthCheckPathString">Health check path string.</param>
-    public static void UseHealthChecksExtensionWithoutPrerequisiteChecks(this IApplicationBuilder app, string healthCheckPathString)
-    {
-        app.UseHealthChecksExtension(healthCheckPathString, new Func<HealthCheckRegistration, bool>(x => !x.Tags.Contains(HealthCheckTags.StoragePrerequisite.ToString())));
-    }
-
-    /// <summary>
-    /// Use health checks (extension method). Register the response as json.
-    /// </summary>
-    /// <param name="app">Application builder instance.</param>
-    /// <param name="healthCheckPathString">Health check path string.</param>
     /// <param name="predicate">A predicate that is used to filter the set of health checks executed.</param>
     public static void UseHealthChecksExtension(this IApplicationBuilder app, string healthCheckPathString, Func<HealthCheckRegistration, bool> predicate)
     {
         app.UseHealthChecks(new PathString(healthCheckPathString), new HealthCheckOptions
         {
             Predicate = predicate,
-            ResponseWriter = async (httpContext, healthReport) =>
+            ResponseWriter = async (httpContext, _) =>
             {
+                HealthReport healthReport = HealthCheckPublisher.Latest;
                 var response = JsonConvert.SerializeObject(
                     new
                     {
-                        overallStatus = healthReport.Status.ToString(),
-                        details = healthReport.Entries.Select(entry => new
+                        overallStatus = healthReport == null ? HealthStatus.Unhealthy.ToString() : healthReport?.Status.ToString(),
+                        details = healthReport?.Entries?.Select(entry => new
                         {
                             name = entry.Key,
                             status = Enum.GetName(typeof(HealthStatus), entry.Value.Status),

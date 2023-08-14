@@ -18,10 +18,11 @@ public static class HealthCheckPublisherExtensions
 
         services.Configure<HealthCheckPublisherOptions>(options =>
         {
-            options.Delay = TimeSpan.FromSeconds(60);
+            // 20 second start-up delay to give prerequisite health checks (ex: customer-managed keys) time to initialize
+            options.Delay = TimeSpan.FromSeconds(20);
+            options.Period = TimeSpan.FromSeconds(15);
         });
         services.AddSingleton<IHealthCheckPublisher, HealthCheckPublisher>();
-        services.AddSingleton<IStoragePrerequisiteHealthReport, StoragePrerequisiteHealthReport>();
 
         return services;
     }

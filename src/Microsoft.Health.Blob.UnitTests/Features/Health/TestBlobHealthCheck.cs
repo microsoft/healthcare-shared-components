@@ -9,7 +9,7 @@ using Microsoft.Extensions.Options;
 using Microsoft.Health.Blob.Configs;
 using Microsoft.Health.Blob.Features.Health;
 using Microsoft.Health.Blob.Features.Storage;
-using Microsoft.Health.Core.Features.Health;
+using Microsoft.Health.CustomerManagedKey.Health;
 
 namespace Microsoft.Health.Blob.UnitTests.Features.Health;
 
@@ -21,14 +21,14 @@ internal sealed class TestBlobHealthCheck : BlobHealthCheck
         BlobServiceClient client,
         IOptionsSnapshot<BlobContainerConfiguration> namedBlobContainerConfigurationAccessor,
         IBlobClientTestProvider testProvider,
-        IStoragePrerequisiteHealthReport healthReport,
+        ICustomerManagedKeyStatus customerManagedKeyStatus,
         ILogger<TestBlobHealthCheck> logger)
         : base(
               client,
               namedBlobContainerConfigurationAccessor,
               TestBlobHealthCheckName,
               testProvider,
-              healthReport,
+              customerManagedKeyStatus,
               logger)
     {
     }

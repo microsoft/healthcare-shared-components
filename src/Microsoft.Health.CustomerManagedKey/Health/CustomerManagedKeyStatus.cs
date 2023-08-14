@@ -3,11 +3,11 @@
 // Licensed under the MIT License (MIT). See LICENSE in the repo root for license information.
 // -------------------------------------------------------------------------------------------------
 
-using Microsoft.Extensions.Diagnostics.HealthChecks;
+using Microsoft.Health.Core.Features.Health;
 
-namespace Microsoft.Health.Core.Features.Health;
+namespace Microsoft.Health.CustomerManagedKey.Health;
 
-public class StoragePrerequisiteHealthReport : IStoragePrerequisiteHealthReport
+public class CustomerManagedKeyStatus : ICustomerManagedKeyStatus
 {
-    public HealthReport HealthReport { get; set; }
+    public IExternalResourceHealth ExternalResourceHealth { get; set; }
 }

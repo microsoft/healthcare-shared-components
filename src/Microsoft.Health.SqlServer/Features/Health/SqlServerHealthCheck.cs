@@ -3,13 +3,14 @@
 // Licensed under the MIT License (MIT). See LICENSE in the repo root for license information.
 // -------------------------------------------------------------------------------------------------
 
+using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using EnsureThat;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Logging;
-using Microsoft.Health.Core.Extensions;
 using Microsoft.Health.Core.Features.Health;
+using Microsoft.Health.CustomerManagedKey.Health;
 using Microsoft.Health.SqlServer.Features.Client;
 
 namespace Microsoft.Health.SqlServer.Features.Health;
@@ -21,12 +22,12 @@ public class SqlServerHealthCheck : IHealthCheck
 {
     private readonly ILogger<SqlServerHealthCheck> _logger;
     private readonly SqlConnectionWrapperFactory _sqlConnectionWrapperFactory;
-    private readonly IStoragePrerequisiteHealthReport _storagePrerequisiteHealthReport;
+    private readonly ICustomerManagedKeyStatus _customerManagedKeyStatus;
 
-    public SqlServerHealthCheck(SqlConnectionWrapperFactory sqlConnectionWrapperFactory, IStoragePrerequisiteHealthReport storagePrerequisiteHealthReport, ILogger<SqlServerHealthCheck> logger)
+    public SqlServerHealthCheck(SqlConnectionWrapperFactory sqlConnectionWrapperFactory, ICustomerManagedKeyStatus customerManagedKeyStatus, ILogger<SqlServerHealthCheck> logger)
     {
         _sqlConnectionWrapperFactory = EnsureArg.IsNotNull(sqlConnectionWrapperFactory, nameof(sqlConnectionWrapperFactory));
-        _storagePrerequisiteHealthReport = EnsureArg.IsNotNull(storagePrerequisiteHealthReport, nameof(storagePrerequisiteHealthReport));
+        _customerManagedKeyStatus = EnsureArg.IsNotNull(customerManagedKeyStatus, nameof(customerManagedKeyStatus));
         _logger = EnsureArg.IsNotNull(logger, nameof(logger));
     }
 
@@ -34,16 +35,15 @@ public class SqlServerHealthCheck : IHealthCheck
     {
         _logger.LogInformation($"Starting {nameof(SqlServerHealthCheck)}.");
 
-        if (_storagePrerequisiteHealthReport.HealthReport != null && _storagePrerequisiteHealthReport.HealthReport.Status != HealthStatus.Healthy)
+        IExternalResourceHealth cmkStatus = _customerManagedKeyStatus.ExternalResourceHealth;
+        if (cmkStatus != null && !cmkStatus.IsHealthy)
         {
-            // If the prerequisite checks are unhealthy, do not check storage and return the lowest status
-            HealthReportEntry reportEntryWithLowestStatus = _storagePrerequisiteHealthReport.HealthReport.FindLowestHealthReportEntry();
-
+            // if the customer-managed key is inaccessible, storage will also be inaccessible
             return new HealthCheckResult(
-                _storagePrerequisiteHealthReport.HealthReport.Status,
-                reportEntryWithLowestStatus.Description,
-                reportEntryWithLowestStatus.Exception,
-                reportEntryWithLowestStatus.Data);
+                HealthStatus.Degraded,
+                cmkStatus.Description,
+                cmkStatus.Exception,
+                new Dictionary<string, object> { { cmkStatus.Reason.ToString(), true } });
         }
 
         using SqlConnectionWrapper sqlConnectionWrapper = await _sqlConnectionWrapperFactory.ObtainSqlConnectionWrapperAsync(cancellationToken).ConfigureAwait(false);
