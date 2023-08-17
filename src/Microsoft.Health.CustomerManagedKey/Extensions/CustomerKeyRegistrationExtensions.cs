@@ -21,7 +21,7 @@ public static class CustomerKeyRegistrationExtensions
         EnsureArg.IsNotNull(services, nameof(services));
 
         services.AddCustomerKeyHealthTest();
-        services.AddSingleton<ICustomerManagedKeyStatus, CustomerManagedKeyStatus>();
+        services.AddSingleton<ICustomerManagedKeyStatusCache, CustomerManagedKeyStatusCache>();
         services.AddHostedService<CustomerKeyValidationBackgroundService>();
 
         return services;

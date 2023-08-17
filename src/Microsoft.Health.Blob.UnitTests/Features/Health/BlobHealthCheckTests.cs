@@ -23,7 +23,7 @@ namespace Microsoft.Health.Blob.UnitTests.Features.Health;
 
 public class BlobHealthCheckTests
 {
-    private readonly ICustomerManagedKeyStatus _customerManagedKeyStatus = Substitute.For<ICustomerManagedKeyStatus>();
+    private readonly ICustomerManagedKeyStatusCache _customerManagedKeyStatus = Substitute.For<ICustomerManagedKeyStatusCache>();
     private readonly BlobServiceClient _client = Substitute.For<BlobServiceClient>(new Uri("https://www.microsoft.com/"), null);
     private readonly IBlobClientTestProvider _testProvider = Substitute.For<IBlobClientTestProvider>();
     private readonly BlobContainerConfiguration _containerConfiguration = new BlobContainerConfiguration { ContainerName = "mycont" };
@@ -34,7 +34,7 @@ public class BlobHealthCheckTests
     {
         IOptionsSnapshot<BlobContainerConfiguration> optionsSnapshot = Substitute.For<IOptionsSnapshot<BlobContainerConfiguration>>();
         optionsSnapshot.Get(TestBlobHealthCheck.TestBlobHealthCheckName).Returns(_containerConfiguration);
-        _customerManagedKeyStatus.ExternalResourceHealth.Returns(new ExternalResourceHealth
+        _customerManagedKeyStatus.GetCachedData().Returns(new ExternalResourceHealth
         {
             IsHealthy = true,
         });
@@ -73,7 +73,7 @@ public class BlobHealthCheckTests
     [Fact]
     public async Task GivenPrerequisiteIsNotHealthy_WhenHealthIsChecked_ThenDegradedStatusReturned()
     {
-        _customerManagedKeyStatus.ExternalResourceHealth.Returns(new ExternalResourceHealth
+        _customerManagedKeyStatus.GetCachedData().Returns(new ExternalResourceHealth
         {
             IsHealthy = false,
             Reason = ExternalHealthReason.CustomerManagedKeyAccessLost,

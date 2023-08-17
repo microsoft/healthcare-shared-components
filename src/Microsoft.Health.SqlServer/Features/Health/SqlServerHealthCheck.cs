@@ -22,9 +22,9 @@ public class SqlServerHealthCheck : IHealthCheck
 {
     private readonly ILogger<SqlServerHealthCheck> _logger;
     private readonly SqlConnectionWrapperFactory _sqlConnectionWrapperFactory;
-    private readonly ICustomerManagedKeyStatus _customerManagedKeyStatus;
+    private readonly ICustomerManagedKeyStatusCache _customerManagedKeyStatus;
 
-    public SqlServerHealthCheck(SqlConnectionWrapperFactory sqlConnectionWrapperFactory, ICustomerManagedKeyStatus customerManagedKeyStatus, ILogger<SqlServerHealthCheck> logger)
+    public SqlServerHealthCheck(SqlConnectionWrapperFactory sqlConnectionWrapperFactory, ICustomerManagedKeyStatusCache customerManagedKeyStatus, ILogger<SqlServerHealthCheck> logger)
     {
         _sqlConnectionWrapperFactory = EnsureArg.IsNotNull(sqlConnectionWrapperFactory, nameof(sqlConnectionWrapperFactory));
         _customerManagedKeyStatus = EnsureArg.IsNotNull(customerManagedKeyStatus, nameof(customerManagedKeyStatus));
@@ -35,8 +35,8 @@ public class SqlServerHealthCheck : IHealthCheck
     {
         _logger.LogInformation($"Starting {nameof(SqlServerHealthCheck)}.");
 
-        IExternalResourceHealth cmkStatus = _customerManagedKeyStatus.ExternalResourceHealth;
-        if (cmkStatus != null && !cmkStatus.IsHealthy)
+        IExternalResourceHealth cmkStatus = await _customerManagedKeyStatus.GetCachedData().ConfigureAwait(false);
+        if (!cmkStatus.IsHealthy)
         {
             // if the customer-managed key is inaccessible, storage will also be inaccessible
             return new HealthCheckResult(

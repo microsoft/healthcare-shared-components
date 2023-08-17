@@ -21,7 +21,7 @@ public class CustomerKeyValidationBackgroundService : BackgroundService
 {
     private const string AccessLostMessage = "Access to the customer-managed key has been lost";
 
-    private readonly ICustomerManagedKeyStatus _customerManagedKeyStatus;
+    private readonly ICustomerManagedKeyStatusCache _customerManagedKeyStatus;
 
     private readonly KeyClient _keyClient;
     private readonly CustomerManagedKeyOptions _customerManagedKeyOptions;
@@ -32,7 +32,7 @@ public class CustomerKeyValidationBackgroundService : BackgroundService
         KeyClient keyClient,
         IOptions<CustomerManagedKeyOptions> customerManagedKeyOptions,
         IKeyTestProvider keyTestProvider,
-        ICustomerManagedKeyStatus customerManagedKeyStatus,
+        ICustomerManagedKeyStatusCache customerManagedKeyStatus,
         ILogger<CustomerKeyValidationBackgroundService> logger)
     {
         EnsureArg.IsNotNull(customerManagedKeyOptions, nameof(customerManagedKeyOptions));
@@ -66,25 +66,25 @@ public class CustomerKeyValidationBackgroundService : BackgroundService
         {
             await _keyTestProvider.PerformTestAsync(_keyClient, _customerManagedKeyOptions, cancellationToken).ConfigureAwait(false);
 
-            _customerManagedKeyStatus.ExternalResourceHealth = new ExternalResourceHealth
+            _customerManagedKeyStatus.SetCachedData(new ExternalResourceHealth
             {
                 IsHealthy = true,
                 Description = null,
                 Reason = ExternalHealthReason.None,
                 Exception = null,
-            };
+            });
         }
         catch (Exception ex) when (ex is RequestFailedException || ex is CryptographicException || ex is InvalidOperationException || ex is NotSupportedException)
         {
             _logger.LogInformation(ex, AccessLostMessage);
 
-            _customerManagedKeyStatus.ExternalResourceHealth = new ExternalResourceHealth
+            _customerManagedKeyStatus.SetCachedData(new ExternalResourceHealth
             {
                 IsHealthy = false,
                 Description = AccessLostMessage,
                 Reason = ExternalHealthReason.CustomerManagedKeyAccessLost,
                 Exception = ex,
-            };
+            });
         }
     }
 }

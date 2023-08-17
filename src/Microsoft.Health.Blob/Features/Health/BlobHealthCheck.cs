@@ -23,7 +23,7 @@ namespace Microsoft.Health.Blob.Features.Health;
 /// </summary>
 public class BlobHealthCheck : IHealthCheck
 {
-    private readonly ICustomerManagedKeyStatus _customerManagedKeyStatus;
+    private readonly ICustomerManagedKeyStatusCache _customerManagedKeyStatus;
 
     private readonly BlobServiceClient _client;
     private readonly BlobContainerConfiguration _blobContainerConfiguration;
@@ -44,7 +44,7 @@ public class BlobHealthCheck : IHealthCheck
         IOptionsSnapshot<BlobContainerConfiguration> namedBlobContainerConfigurationAccessor,
         string containerConfigurationName,
         IBlobClientTestProvider testProvider,
-        ICustomerManagedKeyStatus customerManagedKeyStatus,
+        ICustomerManagedKeyStatusCache customerManagedKeyStatus,
         ILogger<BlobHealthCheck> logger)
     {
         EnsureArg.IsNotNull(client, nameof(client));
@@ -65,8 +65,8 @@ public class BlobHealthCheck : IHealthCheck
     {
         _logger.LogInformation("Performing health check.");
 
-        IExternalResourceHealth cmkStatus = _customerManagedKeyStatus.ExternalResourceHealth;
-        if (cmkStatus != null && !cmkStatus.IsHealthy)
+        IExternalResourceHealth cmkStatus = await _customerManagedKeyStatus.GetCachedData().ConfigureAwait(false);
+        if (!cmkStatus.IsHealthy)
         {
             // if the customer-managed key is inaccessible, storage will also be inaccessible
             return new HealthCheckResult(

@@ -7,7 +7,6 @@ using Microsoft.Health.Core.Features.Health;
 
 namespace Microsoft.Health.CustomerManagedKey.Health;
 
-public interface ICustomerManagedKeyStatus
+public class CustomerManagedKeyStatusCache : AsyncCache<IExternalResourceHealth>, ICustomerManagedKeyStatusCache
 {
-    public IExternalResourceHealth ExternalResourceHealth { get; set; }
 }

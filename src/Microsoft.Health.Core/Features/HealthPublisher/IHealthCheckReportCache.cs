@@ -3,23 +3,13 @@
 // Licensed under the MIT License (MIT). See LICENSE in the repo root for license information.
 // -------------------------------------------------------------------------------------------------
 
-using System.Threading;
 using System.Threading.Tasks;
-using EnsureThat;
-using Microsoft.Extensions.Diagnostics.HealthChecks;
 
 namespace Microsoft.Health.Core.Features.Health;
 
-public class HealthCheckPublisher : IHealthCheckPublisher
+public interface IHealthCheckReportCache
 {
-    public static HealthReport Latest { get; set; }
+    Task<HealthCheckReport> GetCachedData();
 
-    public Task PublishAsync(HealthReport report, CancellationToken cancellationToken)
-    {
-        EnsureArg.IsNotNull(report, nameof(report));
-
-        Latest = report;
-
-        return Task.CompletedTask;
-    }
+    void SetCachedData(HealthCheckReport healthCheckReport);
 }

@@ -21,7 +21,7 @@ internal sealed class TestBlobHealthCheck : BlobHealthCheck
         BlobServiceClient client,
         IOptionsSnapshot<BlobContainerConfiguration> namedBlobContainerConfigurationAccessor,
         IBlobClientTestProvider testProvider,
-        ICustomerManagedKeyStatus customerManagedKeyStatus,
+        ICustomerManagedKeyStatusCache customerManagedKeyStatus,
         ILogger<TestBlobHealthCheck> logger)
         : base(
               client,

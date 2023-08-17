@@ -3,11 +3,13 @@
 // Licensed under the MIT License (MIT). See LICENSE in the repo root for license information.
 // -------------------------------------------------------------------------------------------------
 
-using Microsoft.Health.Core.Features.Health;
+using System.Collections.Generic;
 
-namespace Microsoft.Health.CustomerManagedKey.Health;
+namespace Microsoft.Health.Core.Features.Health;
 
-public class CustomerManagedKeyStatus : ICustomerManagedKeyStatus
+public class HealthCheckReport
 {
-    public IExternalResourceHealth ExternalResourceHealth { get; set; }
+    public string OverallStatus { get; set; }
+
+    public IEnumerable<HealthCheckReportEntry> Details { get; set; }
 }

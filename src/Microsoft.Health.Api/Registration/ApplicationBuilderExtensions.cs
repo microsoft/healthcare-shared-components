@@ -4,13 +4,14 @@
 // -------------------------------------------------------------------------------------------------
 
 using System;
+using System.IO;
 using System.Linq;
 using System.Net.Mime;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
-using Microsoft.Health.Core.Features.Health;
+using Microsoft.Health.Api.Features.HealthChecks;
 using Newtonsoft.Json;
 
 namespace Microsoft.Health.Api.Registration;
@@ -38,14 +39,13 @@ public static class ApplicationBuilderExtensions
         app.UseHealthChecks(new PathString(healthCheckPathString), new HealthCheckOptions
         {
             Predicate = predicate,
-            ResponseWriter = async (httpContext, _) =>
+            ResponseWriter = async (httpContext, healthReport) =>
             {
-                HealthReport healthReport = HealthCheckPublisher.Latest;
                 var response = JsonConvert.SerializeObject(
                     new
                     {
-                        overallStatus = healthReport == null ? HealthStatus.Unhealthy.ToString() : healthReport?.Status.ToString(),
-                        details = healthReport?.Entries?.Select(entry => new
+                        overallStatus = healthReport.Status.ToString(),
+                        details = healthReport.Entries.Select(entry => new
                         {
                             name = entry.Key,
                             status = Enum.GetName(typeof(HealthStatus), entry.Value.Status),
@@ -58,5 +58,21 @@ public static class ApplicationBuilderExtensions
                 await httpContext.Response.WriteAsync(response).ConfigureAwait(false);
             },
         });
+    }
+
+    /// <summary>
+    /// Use health checks (extension method). Register the response as json.
+    /// </summary>
+    /// <param name="app">Application builder instance.</param>
+    /// <param name="healthCheckPathString">Health check path string.</param>
+    public static void UseCachedHealthChecks(this IApplicationBuilder app, string healthCheckPathString)
+    {
+        // only match on exact healthCheckPathString
+        Func<HttpContext, bool> predicate = c =>
+        {
+            return (c.Request.Path.StartsWithSegments(healthCheckPathString, out var remaining) && string.IsNullOrEmpty(remaining));
+        };
+
+        app.MapWhen(predicate, b => b.UseMiddleware<CachedHealthCheckMiddleware>());
     }
 }
