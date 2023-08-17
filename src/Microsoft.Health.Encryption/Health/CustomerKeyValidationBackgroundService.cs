@@ -14,6 +14,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Health.Core.Features.Health;
 
 namespace Microsoft.Health.Encryption.Health;
+
 internal class CustomerKeyValidationBackgroundService : BackgroundService
 {
     private const string AccessLostMessage = "Access to the customer-managed key has been lost";
