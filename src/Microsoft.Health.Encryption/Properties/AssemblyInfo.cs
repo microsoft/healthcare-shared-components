@@ -3,13 +3,10 @@
 // Licensed under the MIT License (MIT). See LICENSE in the repo root for license information.
 // -------------------------------------------------------------------------------------------------
 
-using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 
-namespace Microsoft.Health.Core.Features.Health;
-
-public class HealthCheckReport
-{
-    public string OverallStatus { get; set; }
-
-    public IEnumerable<HealthCheckReportEntry> Details { get; set; }
-}
+[assembly: InternalsVisibleTo("DynamicProxyGenAssembly2")]
+[assembly: InternalsVisibleTo("Microsoft.Health.Api")]
+[assembly: InternalsVisibleTo("Microsoft.Health.Blob")]
+[assembly: InternalsVisibleTo("Microsoft.Health.Encryption.UnitTests")]
+[assembly: InternalsVisibleTo("Microsoft.Health.SqlServer")]

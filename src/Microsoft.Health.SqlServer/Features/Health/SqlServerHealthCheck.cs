@@ -10,7 +10,7 @@ using EnsureThat;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Logging;
 using Microsoft.Health.Core.Features.Health;
-using Microsoft.Health.CustomerManagedKey.Health;
+using Microsoft.Health.Encryption.Health;
 using Microsoft.Health.SqlServer.Features.Client;
 
 namespace Microsoft.Health.SqlServer.Features.Health;
@@ -22,12 +22,12 @@ public class SqlServerHealthCheck : IHealthCheck
 {
     private readonly ILogger<SqlServerHealthCheck> _logger;
     private readonly SqlConnectionWrapperFactory _sqlConnectionWrapperFactory;
-    private readonly ICustomerManagedKeyStatusCache _customerManagedKeyStatus;
+    private readonly AsyncData<CustomerKeyHealth> _customerKeyHealthCache;
 
-    public SqlServerHealthCheck(SqlConnectionWrapperFactory sqlConnectionWrapperFactory, ICustomerManagedKeyStatusCache customerManagedKeyStatus, ILogger<SqlServerHealthCheck> logger)
+    public SqlServerHealthCheck(SqlConnectionWrapperFactory sqlConnectionWrapperFactory, AsyncData<CustomerKeyHealth> customerKeyHealthCache, ILogger<SqlServerHealthCheck> logger)
     {
         _sqlConnectionWrapperFactory = EnsureArg.IsNotNull(sqlConnectionWrapperFactory, nameof(sqlConnectionWrapperFactory));
-        _customerManagedKeyStatus = EnsureArg.IsNotNull(customerManagedKeyStatus, nameof(customerManagedKeyStatus));
+        _customerKeyHealthCache = EnsureArg.IsNotNull(customerKeyHealthCache, nameof(customerKeyHealthCache));
         _logger = EnsureArg.IsNotNull(logger, nameof(logger));
     }
 
@@ -35,7 +35,7 @@ public class SqlServerHealthCheck : IHealthCheck
     {
         _logger.LogInformation($"Starting {nameof(SqlServerHealthCheck)}.");
 
-        IExternalResourceHealth cmkStatus = await _customerManagedKeyStatus.GetCachedData().ConfigureAwait(false);
+        CustomerKeyHealth cmkStatus = await _customerKeyHealthCache.GetCachedData(cancellationToken).ConfigureAwait(false);
         if (!cmkStatus.IsHealthy)
         {
             // if the customer-managed key is inaccessible, storage will also be inaccessible

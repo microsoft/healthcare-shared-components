@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <Import Project="..\..\tools\Microsoft.Health.Extensions.BuildTimeCodeGenerator\Microsoft.Health.Extensions.BuildTimeCodeGenerator.targets" />
 
@@ -45,7 +45,7 @@
   <ItemGroup>
     <ProjectReference Include="..\Microsoft.Health.Abstractions\Microsoft.Health.Abstractions.csproj" />
     <ProjectReference Include="..\Microsoft.Health.Core\Microsoft.Health.Core.csproj" />
-    <ProjectReference Include="..\Microsoft.Health.CustomerManagedKey\Microsoft.Health.CustomerManagedKey.csproj" />
+    <ProjectReference Include="..\Microsoft.Health.Encryption\Microsoft.Health.Encryption.csproj" />
     <ProjectReference Include="..\Microsoft.Health.Extensions.DependencyInjection\Microsoft.Health.Extensions.DependencyInjection.csproj" />
   </ItemGroup>
 

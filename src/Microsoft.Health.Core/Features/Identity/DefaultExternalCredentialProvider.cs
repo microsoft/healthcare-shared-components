@@ -7,8 +7,9 @@ using Azure.Core;
 using Azure.Identity;
 
 namespace Microsoft.Health.Core.Features.Identity;
-public sealed class DefaultExternalCredentialProvider : IExternalCredentialProvider
+
+internal sealed class DefaultExternalCredentialProvider : IExternalCredentialProvider
 {
     public TokenCredential GetTokenCredential()
-    => new DefaultAzureCredential(includeInteractiveCredentials: false);
+        => new DefaultAzureCredential(includeInteractiveCredentials: false);
 }

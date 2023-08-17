@@ -8,39 +8,28 @@ using System.Security.Cryptography;
 using System.Threading;
 using System.Threading.Tasks;
 using Azure;
-using Azure.Security.KeyVault.Keys;
 using EnsureThat;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
 using Microsoft.Health.Core.Features.Health;
-using Microsoft.Health.CustomerManagedKey.Configs;
 
-namespace Microsoft.Health.CustomerManagedKey.Health;
-public class CustomerKeyValidationBackgroundService : BackgroundService
+namespace Microsoft.Health.Encryption.Health;
+internal class CustomerKeyValidationBackgroundService : BackgroundService
 {
     private const string AccessLostMessage = "Access to the customer-managed key has been lost";
 
-    private readonly ICustomerManagedKeyStatusCache _customerManagedKeyStatus;
+    private readonly AsyncData<CustomerKeyHealth> _customerManagedKeyHealth;
 
-    private readonly KeyClient _keyClient;
-    private readonly CustomerManagedKeyOptions _customerManagedKeyOptions;
     private readonly IKeyTestProvider _keyTestProvider;
     private readonly ILogger<CustomerKeyValidationBackgroundService> _logger;
 
     public CustomerKeyValidationBackgroundService(
-        KeyClient keyClient,
-        IOptions<CustomerManagedKeyOptions> customerManagedKeyOptions,
         IKeyTestProvider keyTestProvider,
-        ICustomerManagedKeyStatusCache customerManagedKeyStatus,
+        AsyncData<CustomerKeyHealth> customerManagedKeyHealth,
         ILogger<CustomerKeyValidationBackgroundService> logger)
     {
-        EnsureArg.IsNotNull(customerManagedKeyOptions, nameof(customerManagedKeyOptions));
-
-        _keyClient = EnsureArg.IsNotNull(keyClient, nameof(keyClient));
-        _customerManagedKeyOptions = customerManagedKeyOptions.Value;
         _keyTestProvider = EnsureArg.IsNotNull(keyTestProvider, nameof(keyTestProvider));
-        _customerManagedKeyStatus = EnsureArg.IsNotNull(customerManagedKeyStatus, nameof(customerManagedKeyStatus));
+        _customerManagedKeyHealth = EnsureArg.IsNotNull(customerManagedKeyHealth, nameof(customerManagedKeyHealth));
         _logger = EnsureArg.IsNotNull(logger, nameof(logger));
     }
 
@@ -64,9 +53,9 @@ public class CustomerKeyValidationBackgroundService : BackgroundService
     {
         try
         {
-            await _keyTestProvider.PerformTestAsync(_keyClient, _customerManagedKeyOptions, cancellationToken).ConfigureAwait(false);
+            await _keyTestProvider.PerformTestAsync(cancellationToken).ConfigureAwait(false);
 
-            _customerManagedKeyStatus.SetCachedData(new ExternalResourceHealth
+            _customerManagedKeyHealth.SetCachedData(new CustomerKeyHealth
             {
                 IsHealthy = true,
                 Description = null,
@@ -78,7 +67,7 @@ public class CustomerKeyValidationBackgroundService : BackgroundService
         {
             _logger.LogInformation(ex, AccessLostMessage);
 
-            _customerManagedKeyStatus.SetCachedData(new ExternalResourceHealth
+            _customerManagedKeyHealth.SetCachedData(new CustomerKeyHealth
             {
                 IsHealthy = false,
                 Description = AccessLostMessage,

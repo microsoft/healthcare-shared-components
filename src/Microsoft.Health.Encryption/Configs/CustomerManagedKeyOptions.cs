@@ -3,13 +3,15 @@
 // Licensed under the MIT License (MIT). See LICENSE in the repo root for license information.
 // -------------------------------------------------------------------------------------------------
 
-using System.Threading.Tasks;
+using System;
 
-namespace Microsoft.Health.Core.Features.Health;
+namespace Microsoft.Health.Encryption.Configs;
 
-public interface IHealthCheckReportCache
+public class CustomerManagedKeyOptions
 {
-    Task<HealthCheckReport> GetCachedData();
+    public Uri KeyVaultUri { get; set; }
 
-    void SetCachedData(HealthCheckReport healthCheckReport);
+    public string KeyVersion { get; set; }
+
+    public string KeyName { get; set; }
 }

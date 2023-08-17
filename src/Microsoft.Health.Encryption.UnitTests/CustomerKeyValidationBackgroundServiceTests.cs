@@ -8,26 +8,23 @@ using System.Security.Cryptography;
 using System.Threading;
 using System.Threading.Tasks;
 using Azure;
-using Azure.Identity;
-using Azure.Security.KeyVault.Keys;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 using Microsoft.Health.Core.Features.Health;
-using Microsoft.Health.CustomerManagedKey.Configs;
-using Microsoft.Health.CustomerManagedKey.Health;
+using Microsoft.Health.Encryption.Configs;
+using Microsoft.Health.Encryption.Health;
 using NSubstitute;
 using NSubstitute.ExceptionExtensions;
 using Xunit;
 
-namespace Microsoft.Health.CustomerManagedKey.UnitTests;
+namespace Microsoft.Health.Encryption.UnitTests;
 
 public class CustomerKeyValidationBackgroundServiceTests : IDisposable
 {
-    private readonly KeyClient _keyClient = Substitute.For<KeyClient>(new Uri("https://keyvault.com"), new DefaultAzureCredential());
     private readonly IKeyTestProvider _keyTestProvider = Substitute.For<IKeyTestProvider>();
     private readonly CustomerManagedKeyOptions _customerManagedKeyOptions = new CustomerManagedKeyOptions { KeyName = "test" };
 
-    private readonly ICustomerManagedKeyStatusCache _customerManagedKeyStatus = new CustomerManagedKeyStatusCache();
+    private readonly AsyncData<CustomerKeyHealth> _customerKeyHealthCache = new AsyncData<CustomerKeyHealth>();
     private readonly CustomerKeyValidationBackgroundService _validationService;
     private bool _disposedValue;
 
@@ -36,7 +33,7 @@ public class CustomerKeyValidationBackgroundServiceTests : IDisposable
         IOptions<CustomerManagedKeyOptions> cmkOptions = Substitute.For<IOptions<CustomerManagedKeyOptions>>();
         cmkOptions.Value.Returns(_customerManagedKeyOptions);
 
-        _keyTestProvider.PerformTestAsync(Arg.Any<KeyClient>(), Arg.Any<CustomerManagedKeyOptions>(), Arg.Any<CancellationToken>())
+        _keyTestProvider.PerformTestAsync(Arg.Any<CancellationToken>())
             .Returns(x =>
             {
                 x.Arg<CancellationToken>().ThrowIfCancellationRequested();
@@ -44,10 +41,8 @@ public class CustomerKeyValidationBackgroundServiceTests : IDisposable
             });
 
         _validationService = new CustomerKeyValidationBackgroundService(
-            _keyClient,
-            cmkOptions,
             _keyTestProvider,
-            _customerManagedKeyStatus,
+            _customerKeyHealthCache,
             NullLogger<CustomerKeyValidationBackgroundService>.Instance);
     }
 
@@ -56,7 +51,7 @@ public class CustomerKeyValidationBackgroundServiceTests : IDisposable
     {
         await _validationService.CheckHealth(CancellationToken.None).ConfigureAwait(false);
 
-        IExternalResourceHealth cmkHealth = await _customerManagedKeyStatus.GetCachedData().ConfigureAwait(false);
+        CustomerKeyHealth cmkHealth = await _customerKeyHealthCache.GetCachedData().ConfigureAwait(false);
         Assert.True(cmkHealth.IsHealthy);
         Assert.Null(cmkHealth.Description);
         Assert.Null(cmkHealth.Exception);
@@ -67,11 +62,11 @@ public class CustomerKeyValidationBackgroundServiceTests : IDisposable
     public async Task GivenKeyAccessFails_WhenHealthIsChecked_ThenNotHealthStateIsSaved()
     {
         RequestFailedException requestFailedException = new RequestFailedException("Key is not accessible");
-        _keyTestProvider.PerformTestAsync(default, _customerManagedKeyOptions).ThrowsForAnyArgs(requestFailedException);
+        _keyTestProvider.PerformTestAsync().ThrowsForAnyArgs(requestFailedException);
 
         await _validationService.CheckHealth(CancellationToken.None).ConfigureAwait(false);
 
-        IExternalResourceHealth cmkHealth = await _customerManagedKeyStatus.GetCachedData().ConfigureAwait(false);
+        CustomerKeyHealth cmkHealth = await _customerKeyHealthCache.GetCachedData().ConfigureAwait(false);
         Assert.False(cmkHealth.IsHealthy);
         Assert.NotNull(cmkHealth.Description);
         Assert.Equal(requestFailedException, cmkHealth.Exception);
@@ -82,11 +77,11 @@ public class CustomerKeyValidationBackgroundServiceTests : IDisposable
     public async Task GivenKeyOperationIsInvalid_WhenHealthIsChecked_ThenNotHealthyStateIsSaved()
     {
         InvalidOperationException invalidOperationException = new InvalidOperationException();
-        _keyTestProvider.PerformTestAsync(default, _customerManagedKeyOptions).ThrowsForAnyArgs(invalidOperationException);
+        _keyTestProvider.PerformTestAsync().ThrowsForAnyArgs(invalidOperationException);
 
         await _validationService.CheckHealth(CancellationToken.None).ConfigureAwait(false);
 
-        IExternalResourceHealth cmkHealth = await _customerManagedKeyStatus.GetCachedData().ConfigureAwait(false);
+        CustomerKeyHealth cmkHealth = await _customerKeyHealthCache.GetCachedData().ConfigureAwait(false);
         Assert.False(cmkHealth.IsHealthy);
         Assert.NotNull(cmkHealth.Description);
         Assert.Equal(invalidOperationException, cmkHealth.Exception);
@@ -97,11 +92,11 @@ public class CustomerKeyValidationBackgroundServiceTests : IDisposable
     public async Task GivenKeyOperationIsNotSupported_WhenHealthIsChecked_ThenNotHealthyStateIsSaved()
     {
         NotSupportedException notSupportedException = new NotSupportedException();
-        _keyTestProvider.PerformTestAsync(default, _customerManagedKeyOptions).ThrowsForAnyArgs(notSupportedException);
+        _keyTestProvider.PerformTestAsync().ThrowsForAnyArgs(notSupportedException);
 
         await _validationService.CheckHealth(CancellationToken.None).ConfigureAwait(false);
 
-        IExternalResourceHealth cmkHealth = await _customerManagedKeyStatus.GetCachedData().ConfigureAwait(false);
+        CustomerKeyHealth cmkHealth = await _customerKeyHealthCache.GetCachedData().ConfigureAwait(false);
         Assert.False(cmkHealth.IsHealthy);
         Assert.NotNull(cmkHealth.Description);
         Assert.Equal(notSupportedException, cmkHealth.Exception);
@@ -112,11 +107,11 @@ public class CustomerKeyValidationBackgroundServiceTests : IDisposable
     public async Task GivenKeyWrapUnwrapFails_WhenHealthIsChecked_ThenNotHealthyStateIsSaved()
     {
         CryptographicException cryptoException = new CryptographicException();
-        _keyTestProvider.PerformTestAsync(default, _customerManagedKeyOptions).ThrowsForAnyArgs(cryptoException);
+        _keyTestProvider.PerformTestAsync().ThrowsForAnyArgs(cryptoException);
 
         await _validationService.CheckHealth(CancellationToken.None).ConfigureAwait(false);
 
-        IExternalResourceHealth cmkHealth = await _customerManagedKeyStatus.GetCachedData().ConfigureAwait(false);
+        CustomerKeyHealth cmkHealth = await _customerKeyHealthCache.GetCachedData().ConfigureAwait(false);
         Assert.False(cmkHealth.IsHealthy);
         Assert.NotNull(cmkHealth.Description);
         Assert.Equal(cryptoException, cmkHealth.Exception);
@@ -127,14 +122,14 @@ public class CustomerKeyValidationBackgroundServiceTests : IDisposable
     public async Task GivenUninitializedHealthStatus_WhenHealthIsChecked_ThenNotHealthyStateIsSaved()
     {
         // health is not initialized
-        Task<IExternalResourceHealth> cmkHealthTask = _customerManagedKeyStatus.GetCachedData();
+        Task<CustomerKeyHealth> cmkHealthTask = _customerKeyHealthCache.GetCachedData();
         Assert.True(!cmkHealthTask.IsCompleted);
 
         // check health
         await _validationService.CheckHealth(CancellationToken.None).ConfigureAwait(false);
 
         // health has been set, result is returned
-        IExternalResourceHealth cmkHealth = await cmkHealthTask.ConfigureAwait(false);
+        CustomerKeyHealth cmkHealth = await cmkHealthTask.ConfigureAwait(false);
         Assert.True(cmkHealth.IsHealthy);
         Assert.Null(cmkHealth.Description);
         Assert.Null(cmkHealth.Exception);

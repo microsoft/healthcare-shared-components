@@ -3,14 +3,12 @@
 // Licensed under the MIT License (MIT). See LICENSE in the repo root for license information.
 // -------------------------------------------------------------------------------------------------
 
+using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.Health.Core.Features.Health;
 
-namespace Microsoft.Health.CustomerManagedKey.Health;
+namespace Microsoft.Health.Encryption.Health;
 
-public interface ICustomerManagedKeyStatusCache
+internal interface IKeyTestProvider
 {
-    Task<IExternalResourceHealth> GetCachedData();
-
-    void SetCachedData(IExternalResourceHealth externalResourceHealth);
+    Task PerformTestAsync(CancellationToken cancellationToken = default);
 }

@@ -3,27 +3,24 @@
 // Licensed under the MIT License (MIT). See LICENSE in the repo root for license information.
 // -------------------------------------------------------------------------------------------------
 
+using System.Threading;
 using System.Threading.Tasks;
 using EnsureThat;
 
 namespace Microsoft.Health.Core.Features.Health;
 
 /// <summary>
-/// Asynchronously waits for the cached data to be set before the data can be retrieved
+/// Asynchronously waits for the data to be set before the data can be retrieved
 /// </summary>
-/// <typeparam name="T">The cached data type</typeparam>
-public class AsyncCache<T> where T : class
+/// <typeparam name="T">The data type</typeparam>
+public class AsyncData<T> where T : class
 {
     private T _cachedData;
-    private readonly TaskCompletionSource<bool> _initializationTask = new TaskCompletionSource<bool>();
+    private readonly TaskCompletionSource _init = new TaskCompletionSource();
 
-    public async Task<T> GetCachedData()
+    public async Task<T> GetCachedData(CancellationToken cancellationToken = default)
     {
-        if (_cachedData == null)
-        {
-            await _initializationTask.Task.ConfigureAwait(false);
-        }
-
+        await _init.Task.WaitAsync(cancellationToken).ConfigureAwait(false);
         return _cachedData;
     }
 
@@ -33,6 +30,9 @@ public class AsyncCache<T> where T : class
 
         _cachedData = cachedData;
 
-        _initializationTask.TrySetResult(true);
+        if (!_init.Task.IsCompleted)
+        {
+            _init.SetResult();
+        }
     }
 }

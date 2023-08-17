@@ -21,7 +21,7 @@ public static class HealthCheckPublisherExtensions
             options.Period = TimeSpan.FromSeconds(10);
         });
         services.AddSingleton<IHealthCheckPublisher, HealthCheckPublisher>();
-        services.AddSingleton<IHealthCheckReportCache, HealthCheckReportCache>();
+        services.AddSingleton<AsyncData<HealthReport>>();
 
         return services;
     }

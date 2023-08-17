@@ -3,8 +3,6 @@
 // Licensed under the MIT License (MIT). See LICENSE in the repo root for license information.
 // -------------------------------------------------------------------------------------------------
 
-using System;
-using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using EnsureThat;
@@ -12,11 +10,11 @@ using Microsoft.Extensions.Diagnostics.HealthChecks;
 
 namespace Microsoft.Health.Core.Features.Health;
 
-public class HealthCheckPublisher : IHealthCheckPublisher
+internal class HealthCheckPublisher : IHealthCheckPublisher
 {
-    private readonly IHealthCheckReportCache _healthCheckReportCache;
+    private readonly AsyncData<HealthReport> _healthCheckReportCache;
 
-    public HealthCheckPublisher(IHealthCheckReportCache healthCheckReportCache)
+    public HealthCheckPublisher(AsyncData<HealthReport> healthCheckReportCache)
     {
         _healthCheckReportCache = EnsureArg.IsNotNull(healthCheckReportCache, nameof(healthCheckReportCache));
     }
@@ -25,23 +23,8 @@ public class HealthCheckPublisher : IHealthCheckPublisher
     {
         EnsureArg.IsNotNull(report, nameof(report));
 
-        _healthCheckReportCache.SetCachedData(ToHealthCheckReport(report));
+        _healthCheckReportCache.SetCachedData(report);
 
         return Task.CompletedTask;
-    }
-
-    private static HealthCheckReport ToHealthCheckReport(HealthReport healthReport)
-    {
-        return new HealthCheckReport
-        {
-            OverallStatus = healthReport.Status.ToString(),
-            Details = healthReport.Entries.Select(entry => new HealthCheckReportEntry
-            {
-                Name = entry.Key,
-                Status = Enum.GetName(typeof(HealthStatus), entry.Value.Status),
-                Description = entry.Value.Description,
-                Data = entry.Value.Data,
-            }),
-        };
     }
 }

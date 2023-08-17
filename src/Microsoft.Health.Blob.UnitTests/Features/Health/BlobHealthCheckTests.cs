@@ -14,7 +14,7 @@ using Microsoft.Extensions.Options;
 using Microsoft.Health.Blob.Configs;
 using Microsoft.Health.Blob.Features.Storage;
 using Microsoft.Health.Core.Features.Health;
-using Microsoft.Health.CustomerManagedKey.Health;
+using Microsoft.Health.Encryption.Health;
 using NSubstitute;
 using NSubstitute.ExceptionExtensions;
 using Xunit;
@@ -23,7 +23,7 @@ namespace Microsoft.Health.Blob.UnitTests.Features.Health;
 
 public class BlobHealthCheckTests
 {
-    private readonly ICustomerManagedKeyStatusCache _customerManagedKeyStatus = Substitute.For<ICustomerManagedKeyStatusCache>();
+    private readonly AsyncData<CustomerKeyHealth> _customerKeyHealthCache = new AsyncData<CustomerKeyHealth>();
     private readonly BlobServiceClient _client = Substitute.For<BlobServiceClient>(new Uri("https://www.microsoft.com/"), null);
     private readonly IBlobClientTestProvider _testProvider = Substitute.For<IBlobClientTestProvider>();
     private readonly BlobContainerConfiguration _containerConfiguration = new BlobContainerConfiguration { ContainerName = "mycont" };
@@ -34,7 +34,7 @@ public class BlobHealthCheckTests
     {
         IOptionsSnapshot<BlobContainerConfiguration> optionsSnapshot = Substitute.For<IOptionsSnapshot<BlobContainerConfiguration>>();
         optionsSnapshot.Get(TestBlobHealthCheck.TestBlobHealthCheckName).Returns(_containerConfiguration);
-        _customerManagedKeyStatus.GetCachedData().Returns(new ExternalResourceHealth
+        _customerKeyHealthCache.SetCachedData(new CustomerKeyHealth
         {
             IsHealthy = true,
         });
@@ -50,7 +50,7 @@ public class BlobHealthCheckTests
             _client,
             optionsSnapshot,
             _testProvider,
-            _customerManagedKeyStatus,
+            _customerKeyHealthCache,
             NullLogger<TestBlobHealthCheck>.Instance);
     }
 
@@ -73,7 +73,7 @@ public class BlobHealthCheckTests
     [Fact]
     public async Task GivenPrerequisiteIsNotHealthy_WhenHealthIsChecked_ThenDegradedStatusReturned()
     {
-        _customerManagedKeyStatus.GetCachedData().Returns(new ExternalResourceHealth
+        _customerKeyHealthCache.SetCachedData(new CustomerKeyHealth
         {
             IsHealthy = false,
             Reason = ExternalHealthReason.CustomerManagedKeyAccessLost,

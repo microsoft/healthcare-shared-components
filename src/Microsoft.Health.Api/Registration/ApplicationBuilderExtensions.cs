@@ -7,9 +7,11 @@ using System;
 using System.IO;
 using System.Linq;
 using System.Net.Mime;
+using EnsureThat;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.Health.Api.Features.HealthChecks;
 using Newtonsoft.Json;
@@ -65,8 +67,13 @@ public static class ApplicationBuilderExtensions
     /// </summary>
     /// <param name="app">Application builder instance.</param>
     /// <param name="healthCheckPathString">Health check path string.</param>
-    public static void UseCachedHealthChecks(this IApplicationBuilder app, string healthCheckPathString)
+    public static void UseCachedHealthChecks(this IApplicationBuilder app, PathString healthCheckPathString)
     {
+        EnsureArg.IsNotNull(app, nameof(app));
+
+        // ensure IHealthCheckPublisher has been registered
+        app.ApplicationServices.GetRequiredService(typeof(IHealthCheckPublisher));
+
         // only match on exact healthCheckPathString
         Func<HttpContext, bool> predicate = c =>
         {
