@@ -5,7 +5,7 @@
 
 using System;
 
-namespace Microsoft.Health.Encryption.Configs;
+namespace Microsoft.Health.Encryption.Customer.Configs;
 
 public class CustomerManagedKeyOptions
 {

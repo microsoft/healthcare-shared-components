@@ -14,6 +14,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.Health.Api.Features.HealthChecks;
+using Microsoft.Health.Core.Features.Health;
 using Newtonsoft.Json;
 
 namespace Microsoft.Health.Api.Registration;
@@ -63,21 +64,21 @@ public static class ApplicationBuilderExtensions
     }
 
     /// <summary>
-    /// Use health checks (extension method). Register the response as json.
+    /// Maps the path to the cached health check middleware
     /// </summary>
     /// <param name="app">Application builder instance.</param>
-    /// <param name="healthCheckPathString">Health check path string.</param>
-    public static void UseCachedHealthChecks(this IApplicationBuilder app, PathString healthCheckPathString)
+    /// <param name="path">Health check path string.</param>
+    public static void UseCachedHealthChecks(this IApplicationBuilder app, PathString path)
     {
         EnsureArg.IsNotNull(app, nameof(app));
 
-        // ensure IHealthCheckPublisher has been registered
-        app.ApplicationServices.GetRequiredService(typeof(IHealthCheckPublisher));
+        // ensure HealthCheckPublisher has been registered
+        app.ApplicationServices.GetRequiredService(typeof(HealthCheckPublisher));
 
         // only match on exact healthCheckPathString
         Func<HttpContext, bool> predicate = c =>
         {
-            return (c.Request.Path.StartsWithSegments(healthCheckPathString, out var remaining) && string.IsNullOrEmpty(remaining));
+            return (c.Request.Path.StartsWithSegments(path, out var remaining) && string.IsNullOrEmpty(remaining));
         };
 
         app.MapWhen(predicate, b => b.UseMiddleware<CachedHealthCheckMiddleware>());

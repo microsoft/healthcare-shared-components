@@ -3,36 +3,30 @@
 // Licensed under the MIT License (MIT). See LICENSE in the repo root for license information.
 // -------------------------------------------------------------------------------------------------
 
+using System;
 using EnsureThat;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using Microsoft.Extensions.Options;
 using Microsoft.Health.Core.Features.Health;
 using Microsoft.Health.Core.Features.Identity;
-using Microsoft.Health.Encryption.Configs;
-using Microsoft.Health.Encryption.Health;
+using Microsoft.Health.Encryption.Customer.Configs;
+using Microsoft.Health.Encryption.Customer.Health;
 
-namespace Microsoft.Health.Encryption.Extensions;
+namespace Microsoft.Health.Encryption.Customer.Extensions;
 
 public static class CustomerKeyRegistrationExtensions
 {
-    public static IServiceCollection AddCustomerKeyValidationBackgroundService(this IServiceCollection services)
+    public static IServiceCollection AddCustomerKeyValidationBackgroundService(this IServiceCollection services, Action<IOptions<CustomerManagedKeyOptions>> configure = null)
     {
         EnsureArg.IsNotNull(services, nameof(services));
 
-        services.AddCustomerKeyHealthTest();
         services.AddSingleton<AsyncData<CustomerKeyHealth>>();
         services.AddHostedService<CustomerKeyValidationBackgroundService>();
 
-        return services;
-    }
-
-    public static IServiceCollection AddCustomerKeyHealthTest(this IServiceCollection services)
-    {
-        EnsureArg.IsNotNull(services, nameof(services));
-
-        services.AddOptions<CustomerManagedKeyOptions>();
+        services.Configure(configure);
         services.TryAddSingleton<IExternalCredentialProvider, DefaultExternalCredentialProvider>();
-        services.TryAddSingleton<IKeyTestProvider, KeyWrapUnwrapTestProvider>();
+        services.AddSingleton<IKeyTestProvider, KeyWrapUnwrapTestProvider>();
 
         return services;
     }

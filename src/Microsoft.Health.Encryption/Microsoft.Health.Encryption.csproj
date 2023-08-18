@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <Description>Customer-managed key utilities for Microsoft Health.</Description>
+    <Description>Encryption utilities, including those for customer-managed keys, used by Microsoft Health.</Description>
     <TargetFrameworks>$(SupportedFrameworks)</TargetFrameworks>
   </PropertyGroup>
 

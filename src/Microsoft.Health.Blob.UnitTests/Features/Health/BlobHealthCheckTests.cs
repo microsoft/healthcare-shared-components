@@ -14,7 +14,7 @@ using Microsoft.Extensions.Options;
 using Microsoft.Health.Blob.Configs;
 using Microsoft.Health.Blob.Features.Storage;
 using Microsoft.Health.Core.Features.Health;
-using Microsoft.Health.Encryption.Health;
+using Microsoft.Health.Encryption.Customer.Health;
 using NSubstitute;
 using NSubstitute.ExceptionExtensions;
 using Xunit;

@@ -13,7 +13,7 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Health.Core.Features.Health;
 
-namespace Microsoft.Health.Encryption.Health;
+namespace Microsoft.Health.Encryption.Customer.Health;
 
 internal class CustomerKeyValidationBackgroundService : BackgroundService
 {

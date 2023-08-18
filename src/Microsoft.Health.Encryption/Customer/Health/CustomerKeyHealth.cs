@@ -6,7 +6,7 @@
 using System;
 using Microsoft.Health.Core.Features.Health;
 
-namespace Microsoft.Health.Encryption.Health;
+namespace Microsoft.Health.Encryption.Customer.Health;
 
 public class CustomerKeyHealth
 {

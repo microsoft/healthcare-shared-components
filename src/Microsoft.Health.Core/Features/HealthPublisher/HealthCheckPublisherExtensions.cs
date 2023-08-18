@@ -7,21 +7,20 @@ using System;
 using EnsureThat;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
+using Microsoft.Extensions.Options;
 
 namespace Microsoft.Health.Core.Features.Health;
 
 public static class HealthCheckPublisherExtensions
 {
-    public static IServiceCollection AddHealthCheckPublisher(this IServiceCollection services)
+    public static IServiceCollection AddHealthCheckPublisher(this IServiceCollection services, Action<IOptions<HealthCheckPublisherOptions>> configure = null)
     {
-        EnsureArg.IsNotNull(services, nameof(services));
+        EnsureArg.IsNotNull(configure, nameof(configure));
 
-        services.Configure<HealthCheckPublisherOptions>(options =>
-        {
-            options.Period = TimeSpan.FromSeconds(10);
-        });
         services.AddSingleton<IHealthCheckPublisher, HealthCheckPublisher>();
         services.AddSingleton<AsyncData<HealthReport>>();
+
+        services.Configure(configure);
 
         return services;
     }

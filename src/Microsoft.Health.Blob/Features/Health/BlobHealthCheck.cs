@@ -14,7 +14,7 @@ using Microsoft.Extensions.Options;
 using Microsoft.Health.Blob.Configs;
 using Microsoft.Health.Blob.Features.Storage;
 using Microsoft.Health.Core.Features.Health;
-using Microsoft.Health.Encryption.Health;
+using Microsoft.Health.Encryption.Customer.Health;
 
 namespace Microsoft.Health.Blob.Features.Health;
 
@@ -23,11 +23,10 @@ namespace Microsoft.Health.Blob.Features.Health;
 /// </summary>
 public class BlobHealthCheck : IHealthCheck
 {
-    private readonly AsyncData<CustomerKeyHealth> _customerKeyHealthCache;
-
     private readonly BlobServiceClient _client;
     private readonly BlobContainerConfiguration _blobContainerConfiguration;
     private readonly IBlobClientTestProvider _testProvider;
+    private readonly AsyncData<CustomerKeyHealth> _customerKeyHealthCache;
     private readonly ILogger<BlobHealthCheck> _logger;
 
     /// <summary>
@@ -73,7 +72,7 @@ public class BlobHealthCheck : IHealthCheck
                 HealthStatus.Degraded,
                 cmkStatus.Description,
                 cmkStatus.Exception,
-                new Dictionary<string, object> { { cmkStatus.Reason.ToString(), true } });
+                new Dictionary<string, object> { { "Reason", cmkStatus.Reason } });
         }
 
         await _testProvider.PerformTestAsync(_client, _blobContainerConfiguration, cancellationToken).ConfigureAwait(false);

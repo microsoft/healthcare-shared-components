@@ -6,7 +6,7 @@
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Microsoft.Health.Encryption.Health;
+namespace Microsoft.Health.Encryption.Customer.Health;
 
 internal interface IKeyTestProvider
 {

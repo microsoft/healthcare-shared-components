@@ -10,7 +10,7 @@ using EnsureThat;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Logging;
 using Microsoft.Health.Core.Features.Health;
-using Microsoft.Health.Encryption.Health;
+using Microsoft.Health.Encryption.Customer.Health;
 using Microsoft.Health.SqlServer.Features.Client;
 
 namespace Microsoft.Health.SqlServer.Features.Health;

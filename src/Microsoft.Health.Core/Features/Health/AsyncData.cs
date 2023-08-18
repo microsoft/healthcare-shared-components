@@ -15,7 +15,7 @@ namespace Microsoft.Health.Core.Features.Health;
 /// <typeparam name="T">The data type</typeparam>
 public class AsyncData<T> where T : class
 {
-    private T _cachedData;
+    private volatile T _cachedData;
     private readonly TaskCompletionSource _init = new TaskCompletionSource();
 
     public async Task<T> GetCachedData(CancellationToken cancellationToken = default)
@@ -32,7 +32,7 @@ public class AsyncData<T> where T : class
 
         if (!_init.Task.IsCompleted)
         {
-            _init.SetResult();
+            _init.TrySetResult();
         }
     }
 }

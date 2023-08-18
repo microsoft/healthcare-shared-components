@@ -12,14 +12,13 @@ using Azure.Security.KeyVault.Keys.Cryptography;
 using EnsureThat;
 using Microsoft.Extensions.Options;
 using Microsoft.Health.Core.Features.Identity;
-using Microsoft.Health.Encryption.Configs;
+using Microsoft.Health.Encryption.Customer.Configs;
 
-namespace Microsoft.Health.Encryption.Health;
+namespace Microsoft.Health.Encryption.Customer.Health;
 
 internal class KeyWrapUnwrapTestProvider : IKeyTestProvider
 {
     private readonly KeyClient _keyClient;
-
     private readonly CustomerManagedKeyOptions _customerManagedKeyOptions;
 
     public KeyWrapUnwrapTestProvider(
@@ -29,7 +28,7 @@ internal class KeyWrapUnwrapTestProvider : IKeyTestProvider
         EnsureArg.IsNotNull(credentialProvider, nameof(credentialProvider));
         EnsureArg.IsNotNull(cmkOptions, nameof(cmkOptions));
 
-        _customerManagedKeyOptions = cmkOptions.Value;
+        _customerManagedKeyOptions = EnsureArg.IsNotNull(cmkOptions?.Value, nameof(cmkOptions));
 
         if (!string.IsNullOrEmpty(_customerManagedKeyOptions.KeyName) && _customerManagedKeyOptions.KeyVaultUri != null)
         {
@@ -41,10 +40,8 @@ internal class KeyWrapUnwrapTestProvider : IKeyTestProvider
     public async Task PerformTestAsync(CancellationToken cancellationToken = default)
     {
         if (_keyClient == null)
-        {
             // customer-managed key is not enabled
             return;
-        }
 
         // Get Key
         await _keyClient.GetKeyAsync(_customerManagedKeyOptions.KeyName, _customerManagedKeyOptions.KeyVersion, cancellationToken).ConfigureAwait(false);
