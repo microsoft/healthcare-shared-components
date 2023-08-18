@@ -19,9 +19,8 @@ internal class CustomerKeyValidationBackgroundService : BackgroundService
 {
     private const string AccessLostMessage = "Access to the customer-managed key has been lost";
 
-    private readonly AsyncData<CustomerKeyHealth> _customerManagedKeyHealth;
-
     private readonly IKeyTestProvider _keyTestProvider;
+    private readonly AsyncData<CustomerKeyHealth> _customerManagedKeyHealth;
     private readonly ILogger<CustomerKeyValidationBackgroundService> _logger;
 
     public CustomerKeyValidationBackgroundService(
@@ -59,7 +58,6 @@ internal class CustomerKeyValidationBackgroundService : BackgroundService
             _customerManagedKeyHealth.SetCachedData(new CustomerKeyHealth
             {
                 IsHealthy = true,
-                Description = null,
                 Reason = ExternalHealthReason.None,
                 Exception = null,
             });
@@ -71,7 +69,6 @@ internal class CustomerKeyValidationBackgroundService : BackgroundService
             _customerManagedKeyHealth.SetCachedData(new CustomerKeyHealth
             {
                 IsHealthy = false,
-                Description = AccessLostMessage,
                 Reason = ExternalHealthReason.CustomerManagedKeyAccessLost,
                 Exception = ex,
             });

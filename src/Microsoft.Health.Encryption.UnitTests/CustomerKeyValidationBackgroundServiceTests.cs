@@ -53,7 +53,6 @@ public class CustomerKeyValidationBackgroundServiceTests : IDisposable
 
         CustomerKeyHealth cmkHealth = await _customerKeyHealthCache.GetCachedData().ConfigureAwait(false);
         Assert.True(cmkHealth.IsHealthy);
-        Assert.Null(cmkHealth.Description);
         Assert.Null(cmkHealth.Exception);
         Assert.Equal(ExternalHealthReason.None, cmkHealth.Reason);
     }
@@ -68,7 +67,6 @@ public class CustomerKeyValidationBackgroundServiceTests : IDisposable
 
         CustomerKeyHealth cmkHealth = await _customerKeyHealthCache.GetCachedData().ConfigureAwait(false);
         Assert.False(cmkHealth.IsHealthy);
-        Assert.NotNull(cmkHealth.Description);
         Assert.Equal(requestFailedException, cmkHealth.Exception);
         Assert.Equal(ExternalHealthReason.CustomerManagedKeyAccessLost, cmkHealth.Reason);
     }
@@ -83,7 +81,6 @@ public class CustomerKeyValidationBackgroundServiceTests : IDisposable
 
         CustomerKeyHealth cmkHealth = await _customerKeyHealthCache.GetCachedData().ConfigureAwait(false);
         Assert.False(cmkHealth.IsHealthy);
-        Assert.NotNull(cmkHealth.Description);
         Assert.Equal(invalidOperationException, cmkHealth.Exception);
         Assert.Equal(ExternalHealthReason.CustomerManagedKeyAccessLost, cmkHealth.Reason);
     }
@@ -98,7 +95,6 @@ public class CustomerKeyValidationBackgroundServiceTests : IDisposable
 
         CustomerKeyHealth cmkHealth = await _customerKeyHealthCache.GetCachedData().ConfigureAwait(false);
         Assert.False(cmkHealth.IsHealthy);
-        Assert.NotNull(cmkHealth.Description);
         Assert.Equal(notSupportedException, cmkHealth.Exception);
         Assert.Equal(ExternalHealthReason.CustomerManagedKeyAccessLost, cmkHealth.Reason);
     }
@@ -113,7 +109,6 @@ public class CustomerKeyValidationBackgroundServiceTests : IDisposable
 
         CustomerKeyHealth cmkHealth = await _customerKeyHealthCache.GetCachedData().ConfigureAwait(false);
         Assert.False(cmkHealth.IsHealthy);
-        Assert.NotNull(cmkHealth.Description);
         Assert.Equal(cryptoException, cmkHealth.Exception);
         Assert.Equal(ExternalHealthReason.CustomerManagedKeyAccessLost, cmkHealth.Reason);
     }
@@ -131,7 +126,6 @@ public class CustomerKeyValidationBackgroundServiceTests : IDisposable
         // health has been set, result is returned
         CustomerKeyHealth cmkHealth = await cmkHealthTask.ConfigureAwait(false);
         Assert.True(cmkHealth.IsHealthy);
-        Assert.Null(cmkHealth.Description);
         Assert.Null(cmkHealth.Exception);
         Assert.Equal(ExternalHealthReason.None, cmkHealth.Reason);
     }

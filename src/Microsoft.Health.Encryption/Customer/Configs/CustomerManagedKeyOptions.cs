@@ -9,6 +9,8 @@ namespace Microsoft.Health.Encryption.Customer.Configs;
 
 public class CustomerManagedKeyOptions
 {
+    public const string CustomerManagedKey = "CustomerManagedKey";
+
     public Uri KeyVaultUri { get; set; }
 
     public string KeyVersion { get; set; }

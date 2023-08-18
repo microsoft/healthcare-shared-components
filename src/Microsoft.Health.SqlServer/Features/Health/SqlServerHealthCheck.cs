@@ -20,6 +20,8 @@ namespace Microsoft.Health.SqlServer.Features.Health;
 /// </summary>
 public class SqlServerHealthCheck : IHealthCheck
 {
+    private const string DegradedDescription = "The health of the store has degraded.";
+
     private readonly ILogger<SqlServerHealthCheck> _logger;
     private readonly SqlConnectionWrapperFactory _sqlConnectionWrapperFactory;
     private readonly AsyncData<CustomerKeyHealth> _customerKeyHealthCache;
@@ -34,30 +36,19 @@ public class SqlServerHealthCheck : IHealthCheck
         _logger = EnsureArg.IsNotNull(logger, nameof(logger));
     }
 
-    public SqlServerHealthCheck(
-        SqlConnectionWrapperFactory sqlConnectionWrapperFactory,
-        ILogger<SqlServerHealthCheck> logger)
-    {
-        _sqlConnectionWrapperFactory = EnsureArg.IsNotNull(sqlConnectionWrapperFactory, nameof(sqlConnectionWrapperFactory));
-        _logger = EnsureArg.IsNotNull(logger, nameof(logger));
-    }
-
     public async Task<HealthCheckResult> CheckHealthAsync(HealthCheckContext context, CancellationToken cancellationToken)
     {
         _logger.LogInformation($"Starting {nameof(SqlServerHealthCheck)}.");
 
-        if (_customerKeyHealthCache != null)
+        CustomerKeyHealth cmkStatus = await _customerKeyHealthCache.GetCachedData(cancellationToken).ConfigureAwait(false);
+        if (!cmkStatus.IsHealthy)
         {
-            CustomerKeyHealth cmkStatus = await _customerKeyHealthCache.GetCachedData(cancellationToken).ConfigureAwait(false);
-            if (!cmkStatus.IsHealthy)
-            {
-                // if the customer-managed key is inaccessible, storage will also be inaccessible
-                return new HealthCheckResult(
-                    HealthStatus.Degraded,
-                    cmkStatus.Description,
-                    cmkStatus.Exception,
-                    new Dictionary<string, object> { { cmkStatus.Reason.ToString(), true } });
-            }
+            // if the customer-managed key is inaccessible, storage will also be inaccessible
+            return new HealthCheckResult(
+                HealthStatus.Degraded,
+                DegradedDescription,
+                cmkStatus.Exception,
+                new Dictionary<string, object> { { cmkStatus.Reason.ToString(), true } });
         }
 
         using SqlConnectionWrapper sqlConnectionWrapper = await _sqlConnectionWrapperFactory.ObtainSqlConnectionWrapperAsync(cancellationToken).ConfigureAwait(false);

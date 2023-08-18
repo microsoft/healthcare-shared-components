@@ -12,8 +12,6 @@ public class CustomerKeyHealth
 {
     public bool IsHealthy { get; set; }
 
-    public string Description { get; set; }
-
     public ExternalHealthReason Reason { get; set; }
 
     public Exception Exception { get; set; }

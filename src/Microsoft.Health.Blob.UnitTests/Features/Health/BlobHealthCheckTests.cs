@@ -77,7 +77,6 @@ public class BlobHealthCheckTests
         {
             IsHealthy = false,
             Reason = ExternalHealthReason.CustomerManagedKeyAccessLost,
-            Description = "CMK",
         });
 
         HealthCheckResult result = await _healthCheck.CheckHealthAsync(new HealthCheckContext()).ConfigureAwait(false);

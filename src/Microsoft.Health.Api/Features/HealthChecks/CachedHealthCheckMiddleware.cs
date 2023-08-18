@@ -64,7 +64,6 @@ internal class CachedHealthCheckMiddleware
                 Name = entry.Key,
                 Status = Enum.GetName(typeof(HealthStatus), entry.Value.Status),
                 Description = entry.Value.Description,
-                Data = entry.Value.Data,
             }),
         };
     }

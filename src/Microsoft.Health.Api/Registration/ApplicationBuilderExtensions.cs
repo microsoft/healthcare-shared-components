@@ -72,8 +72,8 @@ public static class ApplicationBuilderExtensions
     {
         EnsureArg.IsNotNull(app, nameof(app));
 
-        // ensure HealthCheckPublisher has been registered
-        app.ApplicationServices.GetRequiredService(typeof(HealthCheckPublisher));
+        // ensure AsyncData<HealthReport> has been registered
+        app.ApplicationServices.GetRequiredService<AsyncData<HealthReport>>();
 
         // only match on exact healthCheckPathString
         Func<HttpContext, bool> predicate = c =>
