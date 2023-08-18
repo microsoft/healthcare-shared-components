@@ -24,10 +24,21 @@ public class SqlServerHealthCheck : IHealthCheck
     private readonly SqlConnectionWrapperFactory _sqlConnectionWrapperFactory;
     private readonly AsyncData<CustomerKeyHealth> _customerKeyHealthCache;
 
-    public SqlServerHealthCheck(SqlConnectionWrapperFactory sqlConnectionWrapperFactory, AsyncData<CustomerKeyHealth> customerKeyHealthCache, ILogger<SqlServerHealthCheck> logger)
+    public SqlServerHealthCheck(
+        SqlConnectionWrapperFactory sqlConnectionWrapperFactory,
+        AsyncData<CustomerKeyHealth> customerKeyHealthCache,
+        ILogger<SqlServerHealthCheck> logger)
     {
         _sqlConnectionWrapperFactory = EnsureArg.IsNotNull(sqlConnectionWrapperFactory, nameof(sqlConnectionWrapperFactory));
         _customerKeyHealthCache = EnsureArg.IsNotNull(customerKeyHealthCache, nameof(customerKeyHealthCache));
+        _logger = EnsureArg.IsNotNull(logger, nameof(logger));
+    }
+
+    public SqlServerHealthCheck(
+        SqlConnectionWrapperFactory sqlConnectionWrapperFactory,
+        ILogger<SqlServerHealthCheck> logger)
+    {
+        _sqlConnectionWrapperFactory = EnsureArg.IsNotNull(sqlConnectionWrapperFactory, nameof(sqlConnectionWrapperFactory));
         _logger = EnsureArg.IsNotNull(logger, nameof(logger));
     }
 
@@ -35,15 +46,18 @@ public class SqlServerHealthCheck : IHealthCheck
     {
         _logger.LogInformation($"Starting {nameof(SqlServerHealthCheck)}.");
 
-        CustomerKeyHealth cmkStatus = await _customerKeyHealthCache.GetCachedData(cancellationToken).ConfigureAwait(false);
-        if (!cmkStatus.IsHealthy)
+        if (_customerKeyHealthCache != null)
         {
-            // if the customer-managed key is inaccessible, storage will also be inaccessible
-            return new HealthCheckResult(
-                HealthStatus.Degraded,
-                cmkStatus.Description,
-                cmkStatus.Exception,
-                new Dictionary<string, object> { { cmkStatus.Reason.ToString(), true } });
+            CustomerKeyHealth cmkStatus = await _customerKeyHealthCache.GetCachedData(cancellationToken).ConfigureAwait(false);
+            if (!cmkStatus.IsHealthy)
+            {
+                // if the customer-managed key is inaccessible, storage will also be inaccessible
+                return new HealthCheckResult(
+                    HealthStatus.Degraded,
+                    cmkStatus.Description,
+                    cmkStatus.Exception,
+                    new Dictionary<string, object> { { cmkStatus.Reason.ToString(), true } });
+            }
         }
 
         using SqlConnectionWrapper sqlConnectionWrapper = await _sqlConnectionWrapperFactory.ObtainSqlConnectionWrapperAsync(cancellationToken).ConfigureAwait(false);
