@@ -16,4 +16,6 @@ public class CustomerManagedKeyOptions
     public string KeyVersion { get; set; }
 
     public string KeyName { get; set; }
+
+    public int KeyValidationPeriodInSeconds { get; set; }
 }

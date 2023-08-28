@@ -11,22 +11,24 @@ using Microsoft.Extensions.Diagnostics.HealthChecks;
 using System.Collections.Generic;
 using Microsoft.Health.Core.Features.Health;
 using System.Linq;
+using System.Collections.Immutable;
 
 namespace Microsoft.Health.Api.Features.HealthChecks;
 
 internal class CachedHealthCheckMiddleware
 {
     private readonly RequestDelegate _next;
-    private readonly AsyncData<HealthReport> _healthCheckReportCache;
+    private readonly ValueCache<HealthReport> _healthCheckReportCache;
 
-    private static readonly IReadOnlyDictionary<HealthStatus, int> DefaultStatusCodesMapping = new Dictionary<HealthStatus, int>
+    private static readonly IImmutableDictionary<HealthStatus, int> DefaultStatusCodesMapping = ImmutableDictionary.CreateRange(
+        new KeyValuePair<HealthStatus, int>[]
         {
-            {HealthStatus.Healthy, StatusCodes.Status200OK},
-            {HealthStatus.Degraded, StatusCodes.Status200OK},
-            {HealthStatus.Unhealthy, StatusCodes.Status503ServiceUnavailable},
-        };
+            KeyValuePair.Create(HealthStatus.Healthy, StatusCodes.Status200OK),
+            KeyValuePair.Create(HealthStatus.Degraded, StatusCodes.Status200OK),
+            KeyValuePair.Create(HealthStatus.Unhealthy, StatusCodes.Status503ServiceUnavailable),
+        });
 
-    public CachedHealthCheckMiddleware(RequestDelegate next, AsyncData<HealthReport> healthCheckReportCache)
+    public CachedHealthCheckMiddleware(RequestDelegate next, ValueCache<HealthReport> healthCheckReportCache)
     {
         _next = EnsureArg.IsNotNull(next, nameof(next));
         _healthCheckReportCache = EnsureArg.IsNotNull(healthCheckReportCache, nameof(healthCheckReportCache));
@@ -42,7 +44,7 @@ internal class CachedHealthCheckMiddleware
         EnsureArg.IsNotNull(httpContext, nameof(httpContext));
 
         // Get results
-        HealthReport latestReport = await _healthCheckReportCache.GetCachedData().ConfigureAwait(false);
+        HealthReport latestReport = await _healthCheckReportCache.GetCachedData(httpContext.RequestAborted).ConfigureAwait(false);
 
         if (!DefaultStatusCodesMapping.TryGetValue(latestReport.Status, out var statusCode))
         {
@@ -62,8 +64,8 @@ internal class CachedHealthCheckMiddleware
             Details = healthReport.Entries.Select(entry => new
             {
                 Name = entry.Key,
-                Status = Enum.GetName(typeof(HealthStatus), entry.Value.Status),
-                Description = entry.Value.Description,
+                Status = Enum.GetName(entry.Value.Status),
+                entry.Value.Description,
             }),
         };
     }

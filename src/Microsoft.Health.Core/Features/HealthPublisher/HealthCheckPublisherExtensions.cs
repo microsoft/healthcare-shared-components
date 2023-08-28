@@ -17,7 +17,7 @@ public static class HealthCheckPublisherExtensions
         EnsureArg.IsNotNull(configure, nameof(configure));
 
         services.AddSingleton<IHealthCheckPublisher, HealthCheckPublisher>();
-        services.AddSingleton<AsyncData<HealthReport>>();
+        services.AddSingleton<ValueCache<HealthReport>>();
 
         if (configure != null)
         {

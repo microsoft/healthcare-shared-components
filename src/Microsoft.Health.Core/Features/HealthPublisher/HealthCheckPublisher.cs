@@ -12,9 +12,9 @@ namespace Microsoft.Health.Core.Features.Health;
 
 internal class HealthCheckPublisher : IHealthCheckPublisher
 {
-    private readonly AsyncData<HealthReport> _healthCheckReportCache;
+    private readonly ValueCache<HealthReport> _healthCheckReportCache;
 
-    public HealthCheckPublisher(AsyncData<HealthReport> healthCheckReportCache)
+    public HealthCheckPublisher(ValueCache<HealthReport> healthCheckReportCache)
     {
         _healthCheckReportCache = EnsureArg.IsNotNull(healthCheckReportCache, nameof(healthCheckReportCache));
     }

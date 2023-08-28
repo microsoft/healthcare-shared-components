@@ -24,11 +24,11 @@ public class SqlServerHealthCheck : IHealthCheck
 
     private readonly ILogger<SqlServerHealthCheck> _logger;
     private readonly SqlConnectionWrapperFactory _sqlConnectionWrapperFactory;
-    private readonly AsyncData<CustomerKeyHealth> _customerKeyHealthCache;
+    private readonly ValueCache<CustomerKeyHealth> _customerKeyHealthCache;
 
     public SqlServerHealthCheck(
         SqlConnectionWrapperFactory sqlConnectionWrapperFactory,
-        AsyncData<CustomerKeyHealth> customerKeyHealthCache,
+        ValueCache<CustomerKeyHealth> customerKeyHealthCache,
         ILogger<SqlServerHealthCheck> logger)
     {
         _sqlConnectionWrapperFactory = EnsureArg.IsNotNull(sqlConnectionWrapperFactory, nameof(sqlConnectionWrapperFactory));

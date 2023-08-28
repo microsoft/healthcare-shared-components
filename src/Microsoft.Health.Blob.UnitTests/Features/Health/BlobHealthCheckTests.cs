@@ -23,7 +23,7 @@ namespace Microsoft.Health.Blob.UnitTests.Features.Health;
 
 public class BlobHealthCheckTests
 {
-    private readonly AsyncData<CustomerKeyHealth> _customerKeyHealthCache = new AsyncData<CustomerKeyHealth>();
+    private readonly ValueCache<CustomerKeyHealth> _customerKeyHealthCache = new ValueCache<CustomerKeyHealth>();
     private readonly BlobServiceClient _client = Substitute.For<BlobServiceClient>(new Uri("https://www.microsoft.com/"), null);
     private readonly IBlobClientTestProvider _testProvider = Substitute.For<IBlobClientTestProvider>();
     private readonly BlobContainerConfiguration _containerConfiguration = new BlobContainerConfiguration { ContainerName = "mycont" };

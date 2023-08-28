@@ -2,8 +2,6 @@
 
   <PropertyGroup>
     <TargetFrameworks>$(SupportedFrameworks)</TargetFrameworks>
-    <IsPackable>false</IsPackable>
-    <IsTestProject>true</IsTestProject>
   </PropertyGroup>
 
   <ItemGroup>

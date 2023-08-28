@@ -73,7 +73,7 @@ public static class ApplicationBuilderExtensions
         EnsureArg.IsNotNull(app, nameof(app));
 
         // ensure AsyncData<HealthReport> has been registered
-        app.ApplicationServices.GetRequiredService<AsyncData<HealthReport>>();
+        app.ApplicationServices.GetRequiredService<ValueCache<HealthReport>>();
 
         // only match on exact healthCheckPathString
         Func<HttpContext, bool> predicate = c =>

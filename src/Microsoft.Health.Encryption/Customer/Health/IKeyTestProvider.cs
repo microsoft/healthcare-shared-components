@@ -10,5 +10,5 @@ namespace Microsoft.Health.Encryption.Customer.Health;
 
 internal interface IKeyTestProvider
 {
-    Task PerformTestAsync(CancellationToken cancellationToken = default);
+    Task AssertHealthAsync(CancellationToken cancellationToken = default);
 }

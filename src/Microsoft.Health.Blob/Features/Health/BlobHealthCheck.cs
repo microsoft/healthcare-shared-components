@@ -28,7 +28,7 @@ public class BlobHealthCheck : IHealthCheck
     private readonly BlobServiceClient _client;
     private readonly BlobContainerConfiguration _blobContainerConfiguration;
     private readonly IBlobClientTestProvider _testProvider;
-    private readonly AsyncData<CustomerKeyHealth> _customerKeyHealthCache;
+    private readonly ValueCache<CustomerKeyHealth> _customerKeyHealthCache;
     private readonly ILogger<BlobHealthCheck> _logger;
 
     /// <summary>
@@ -45,7 +45,7 @@ public class BlobHealthCheck : IHealthCheck
         IOptionsSnapshot<BlobContainerConfiguration> namedBlobContainerConfigurationAccessor,
         string containerConfigurationName,
         IBlobClientTestProvider testProvider,
-        AsyncData<CustomerKeyHealth> customerKeyHealthCache,
+        ValueCache<CustomerKeyHealth> customerKeyHealthCache,
         ILogger<BlobHealthCheck> logger)
     {
         EnsureArg.IsNotNull(client, nameof(client));

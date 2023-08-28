@@ -20,7 +20,7 @@ public static class CustomerKeyRegistrationExtensions
     {
         EnsureArg.IsNotNull(services, nameof(services));
 
-        services.AddSingleton<AsyncData<CustomerKeyHealth>>();
+        services.AddSingleton<ValueCache<CustomerKeyHealth>>();
         services.AddHostedService<CustomerKeyValidationBackgroundService>();
 
         services.TryAddSingleton<IExternalCredentialProvider, DefaultExternalCredentialProvider>();
@@ -29,11 +29,6 @@ public static class CustomerKeyRegistrationExtensions
         if (configure != null)
         {
             services.Configure(configure);
-        }
-        else
-        {
-            // allows enabling the background service when CustomerManagedKeyOptions has not been provided
-            services.Configure<CustomerManagedKeyOptions>(c => c = new CustomerManagedKeyOptions());
         }
 
         return services;

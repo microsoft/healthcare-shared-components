@@ -28,18 +28,21 @@ internal class KeyWrapUnwrapTestProvider : IKeyTestProvider
         EnsureArg.IsNotNull(credentialProvider, nameof(credentialProvider));
         EnsureArg.IsNotNull(cmkOptions, nameof(cmkOptions));
 
-        _customerManagedKeyOptions = EnsureArg.IsNotNull(cmkOptions?.Value, nameof(cmkOptions));
-
-        if (!string.IsNullOrEmpty(_customerManagedKeyOptions.KeyName) && _customerManagedKeyOptions.KeyVaultUri != null)
+        if (cmkOptions.Value != null)
         {
-            TokenCredential externalCredential = credentialProvider.GetTokenCredential();
-            _keyClient = new KeyClient(_customerManagedKeyOptions.KeyVaultUri, externalCredential);
+            _customerManagedKeyOptions = cmkOptions.Value;
+
+            if (!string.IsNullOrEmpty(_customerManagedKeyOptions.KeyName) && _customerManagedKeyOptions.KeyVaultUri != null)
+            {
+                TokenCredential externalCredential = credentialProvider.GetTokenCredential();
+                _keyClient = new KeyClient(_customerManagedKeyOptions.KeyVaultUri, externalCredential);
+            }
         }
     }
 
-    public async Task PerformTestAsync(CancellationToken cancellationToken = default)
+    public async Task AssertHealthAsync(CancellationToken cancellationToken = default)
     {
-        if (_keyClient == null)
+        if (_customerManagedKeyOptions == null || _keyClient == null)
             // customer-managed key is not enabled
             return;
 

@@ -10,10 +10,11 @@ using EnsureThat;
 namespace Microsoft.Health.Core.Features.Health;
 
 /// <summary>
-/// Asynchronously waits for the data to be set before the data can be retrieved
+/// Caches a single value of type <typeparamref name="T"/>.
+/// Asynchronously waits for the data to be set before the data can be retrieved.
 /// </summary>
 /// <typeparam name="T">The data type</typeparam>
-public class AsyncData<T> where T : class
+public class ValueCache<T> where T : class
 {
     private volatile T _cachedData;
     private readonly TaskCompletionSource _init = new TaskCompletionSource();

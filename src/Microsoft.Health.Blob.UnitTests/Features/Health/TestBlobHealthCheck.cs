@@ -22,7 +22,7 @@ internal sealed class TestBlobHealthCheck : BlobHealthCheck
         BlobServiceClient client,
         IOptionsSnapshot<BlobContainerConfiguration> namedBlobContainerConfigurationAccessor,
         IBlobClientTestProvider testProvider,
-        AsyncData<CustomerKeyHealth> customerKeyHealthCache,
+        ValueCache<CustomerKeyHealth> customerKeyHealthCache,
         ILogger<TestBlobHealthCheck> logger)
         : base(
               client,
