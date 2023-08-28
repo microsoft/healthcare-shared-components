@@ -48,7 +48,7 @@ public class SqlServerHealthCheck : IHealthCheck
                 HealthStatus.Degraded,
                 DegradedDescription,
                 cmkStatus.Exception,
-                new Dictionary<string, object> { { cmkStatus.Reason.ToString(), true } });
+                new Dictionary<string, object> { { "Reason", cmkStatus.Reason } });
         }
 
         using SqlConnectionWrapper sqlConnectionWrapper = await _sqlConnectionWrapperFactory.ObtainSqlConnectionWrapperAsync(cancellationToken).ConfigureAwait(false);
