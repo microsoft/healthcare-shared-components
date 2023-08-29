@@ -4,10 +4,8 @@
 // -------------------------------------------------------------------------------------------------
 
 using System;
-using System.Security.Cryptography;
 using System.Threading;
 using System.Threading.Tasks;
-using Azure;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 using Microsoft.Health.Core.Features.Health;
@@ -61,56 +59,14 @@ public class CustomerKeyValidationBackgroundServiceTests : IDisposable
     [Fact]
     public async Task GivenKeyAccessFails_WhenHealthIsChecked_ThenNotHealthStateIsSaved()
     {
-        RequestFailedException requestFailedException = new RequestFailedException("Key is not accessible");
-        _keyTestProvider.AssertHealthAsync().ThrowsForAnyArgs(requestFailedException);
+        CustomerKeyInaccessibleException customerKeyInaccessibleException = new CustomerKeyInaccessibleException("Key is not accessible");
+        _keyTestProvider.AssertHealthAsync().ThrowsForAnyArgs(customerKeyInaccessibleException);
 
         await _validationService.CheckHealth(CancellationToken.None).ConfigureAwait(false);
 
         CustomerKeyHealth cmkHealth = await _customerKeyHealthCache.GetAsync().ConfigureAwait(false);
         Assert.False(cmkHealth.IsHealthy);
-        Assert.Equal(requestFailedException, cmkHealth.Exception);
-        Assert.Equal(ExternalHealthReason.CustomerManagedKeyAccessLost, cmkHealth.Reason);
-    }
-
-    [Fact]
-    public async Task GivenKeyOperationIsInvalid_WhenHealthIsChecked_ThenNotHealthyStateIsSaved()
-    {
-        InvalidOperationException invalidOperationException = new InvalidOperationException();
-        _keyTestProvider.AssertHealthAsync().ThrowsForAnyArgs(invalidOperationException);
-
-        await _validationService.CheckHealth(CancellationToken.None).ConfigureAwait(false);
-
-        CustomerKeyHealth cmkHealth = await _customerKeyHealthCache.GetAsync().ConfigureAwait(false);
-        Assert.False(cmkHealth.IsHealthy);
-        Assert.Equal(invalidOperationException, cmkHealth.Exception);
-        Assert.Equal(ExternalHealthReason.CustomerManagedKeyAccessLost, cmkHealth.Reason);
-    }
-
-    [Fact]
-    public async Task GivenKeyOperationIsNotSupported_WhenHealthIsChecked_ThenNotHealthyStateIsSaved()
-    {
-        NotSupportedException notSupportedException = new NotSupportedException();
-        _keyTestProvider.AssertHealthAsync().ThrowsForAnyArgs(notSupportedException);
-
-        await _validationService.CheckHealth(CancellationToken.None).ConfigureAwait(false);
-
-        CustomerKeyHealth cmkHealth = await _customerKeyHealthCache.GetAsync().ConfigureAwait(false);
-        Assert.False(cmkHealth.IsHealthy);
-        Assert.Equal(notSupportedException, cmkHealth.Exception);
-        Assert.Equal(ExternalHealthReason.CustomerManagedKeyAccessLost, cmkHealth.Reason);
-    }
-
-    [Fact]
-    public async Task GivenKeyWrapUnwrapFails_WhenHealthIsChecked_ThenNotHealthyStateIsSaved()
-    {
-        CryptographicException cryptoException = new CryptographicException();
-        _keyTestProvider.AssertHealthAsync().ThrowsForAnyArgs(cryptoException);
-
-        await _validationService.CheckHealth(CancellationToken.None).ConfigureAwait(false);
-
-        CustomerKeyHealth cmkHealth = await _customerKeyHealthCache.GetAsync().ConfigureAwait(false);
-        Assert.False(cmkHealth.IsHealthy);
-        Assert.Equal(cryptoException, cmkHealth.Exception);
+        Assert.Equal(customerKeyInaccessibleException, cmkHealth.Exception);
         Assert.Equal(ExternalHealthReason.CustomerManagedKeyAccessLost, cmkHealth.Reason);
     }
 
