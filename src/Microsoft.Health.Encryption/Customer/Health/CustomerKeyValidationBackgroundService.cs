@@ -60,7 +60,7 @@ internal class CustomerKeyValidationBackgroundService : BackgroundService
             await _keyTestProvider.AssertHealthAsync(cancellationToken).ConfigureAwait(false);
             SetHealthy();
         }
-        catch (Exception ex) when (ex is CustomerKeyInaccessibleException)
+        catch (CustomerKeyInaccessibleException ex)
         {
             SetUnhealthy(ex);
         }
