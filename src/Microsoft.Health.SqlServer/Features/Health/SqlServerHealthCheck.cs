@@ -40,7 +40,7 @@ public class SqlServerHealthCheck : IHealthCheck
     {
         _logger.LogInformation($"Starting {nameof(SqlServerHealthCheck)}.");
 
-        CustomerKeyHealth cmkStatus = await _customerKeyHealthCache.GetCachedData(cancellationToken).ConfigureAwait(false);
+        CustomerKeyHealth cmkStatus = await _customerKeyHealthCache.GetAsync(cancellationToken).ConfigureAwait(false);
         if (!cmkStatus.IsHealthy)
         {
             // if the customer-managed key is inaccessible, storage will also be inaccessible

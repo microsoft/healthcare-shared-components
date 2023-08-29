@@ -19,13 +19,13 @@ public class ValueCache<T> where T : class
     private volatile T _cachedData;
     private readonly TaskCompletionSource _init = new TaskCompletionSource();
 
-    public async Task<T> GetCachedData(CancellationToken cancellationToken = default)
+    public async Task<T> GetAsync(CancellationToken cancellationToken = default)
     {
         await _init.Task.WaitAsync(cancellationToken).ConfigureAwait(false);
         return _cachedData;
     }
 
-    public void SetCachedData(T cachedData)
+    public void Set(T cachedData)
     {
         EnsureArg.IsNotNull(cachedData, nameof(cachedData));
 

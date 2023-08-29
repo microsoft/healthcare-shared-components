@@ -10,11 +10,11 @@ using Microsoft.Extensions.Diagnostics.HealthChecks;
 
 namespace Microsoft.Health.Core.Features.Health;
 
-internal class HealthCheckPublisher : IHealthCheckPublisher
+internal class HealthCheckCachePublisher : IHealthCheckPublisher
 {
     private readonly ValueCache<HealthReport> _healthCheckReportCache;
 
-    public HealthCheckPublisher(ValueCache<HealthReport> healthCheckReportCache)
+    public HealthCheckCachePublisher(ValueCache<HealthReport> healthCheckReportCache)
     {
         _healthCheckReportCache = EnsureArg.IsNotNull(healthCheckReportCache, nameof(healthCheckReportCache));
     }
@@ -23,7 +23,7 @@ internal class HealthCheckPublisher : IHealthCheckPublisher
     {
         EnsureArg.IsNotNull(report, nameof(report));
 
-        _healthCheckReportCache.SetCachedData(report);
+        _healthCheckReportCache.Set(report);
 
         return Task.CompletedTask;
     }

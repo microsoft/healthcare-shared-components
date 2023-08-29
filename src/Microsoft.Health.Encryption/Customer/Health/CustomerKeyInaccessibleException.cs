@@ -5,17 +5,15 @@
 
 using System;
 
-namespace Microsoft.Health.Encryption.Customer.Configs;
+namespace Microsoft.Health.Encryption.Customer.Health;
 
-public class CustomerManagedKeyOptions
+public class CustomerKeyInaccessibleException : Exception
 {
-    public const string CustomerManagedKey = "CustomerManagedKey";
+    public CustomerKeyInaccessibleException(string message) : base(message)
+    {
+    }
 
-    public Uri KeyVaultUri { get; set; }
-
-    public string KeyVersion { get; set; }
-
-    public string KeyName { get; set; }
-
-    public TimeSpan KeyValidationPeriod { get; set; } = TimeSpan.FromMinutes(1);
+    public CustomerKeyInaccessibleException(string message, Exception innerException) : base(message, innerException)
+    {
+    }
 }

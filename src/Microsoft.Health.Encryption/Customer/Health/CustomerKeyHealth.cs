@@ -14,17 +14,17 @@ namespace Microsoft.Health.Encryption.Customer.Health;
 public class CustomerKeyHealth
 {
     /// <summary>
-    /// Specifies if the resource is healthy or not
+    /// Gets or sets a boolean representing if the resource is healthy or not
     /// </summary>
     public bool IsHealthy { get; set; }
 
     /// <summary>
-    /// Provides a reason for the health state
+    /// Gets or sets a reason for the health state
     /// </summary>
     public ExternalHealthReason Reason { get; set; }
 
     /// <summary>
-    /// The exception captured from an unhealthy state
+    /// Gets or sets the exception captured from an unhealthy state
     /// </summary>
     public Exception Exception { get; set; }
 }

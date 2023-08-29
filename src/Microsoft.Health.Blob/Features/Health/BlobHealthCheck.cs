@@ -66,7 +66,7 @@ public class BlobHealthCheck : IHealthCheck
     {
         _logger.LogInformation("Performing health check.");
 
-        CustomerKeyHealth cmkStatus = await _customerKeyHealthCache.GetCachedData(cancellationToken).ConfigureAwait(false);
+        CustomerKeyHealth cmkStatus = await _customerKeyHealthCache.GetAsync(cancellationToken).ConfigureAwait(false);
         if (!cmkStatus.IsHealthy)
         {
             // if the customer-managed key is inaccessible, storage will also be inaccessible

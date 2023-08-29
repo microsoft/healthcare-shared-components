@@ -6,6 +6,7 @@
 using System;
 using EnsureThat;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 
 namespace Microsoft.Health.Core.Features.Health;
@@ -16,7 +17,7 @@ public static class HealthCheckPublisherExtensions
     {
         EnsureArg.IsNotNull(configure, nameof(configure));
 
-        services.AddSingleton<IHealthCheckPublisher, HealthCheckPublisher>();
+        services.TryAddEnumerable(ServiceDescriptor.Singleton<IHealthCheckPublisher, HealthCheckCachePublisher>());
         services.AddSingleton<ValueCache<HealthReport>>();
 
         if (configure != null)

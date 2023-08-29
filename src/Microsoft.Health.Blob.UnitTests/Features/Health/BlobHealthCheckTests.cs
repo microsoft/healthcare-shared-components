@@ -34,7 +34,7 @@ public class BlobHealthCheckTests
     {
         IOptionsSnapshot<BlobContainerConfiguration> optionsSnapshot = Substitute.For<IOptionsSnapshot<BlobContainerConfiguration>>();
         optionsSnapshot.Get(TestBlobHealthCheck.TestBlobHealthCheckName).Returns(_containerConfiguration);
-        _customerKeyHealthCache.SetCachedData(new CustomerKeyHealth
+        _customerKeyHealthCache.Set(new CustomerKeyHealth
         {
             IsHealthy = true,
         });
@@ -73,7 +73,7 @@ public class BlobHealthCheckTests
     [Fact]
     public async Task GivenPrerequisiteIsNotHealthy_WhenHealthIsChecked_ThenDegradedStatusReturned()
     {
-        _customerKeyHealthCache.SetCachedData(new CustomerKeyHealth
+        _customerKeyHealthCache.Set(new CustomerKeyHealth
         {
             IsHealthy = false,
             Reason = ExternalHealthReason.CustomerManagedKeyAccessLost,
