@@ -92,6 +92,10 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Health.Operations
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Health.Functions.Extensions.UnitTests", "src\Microsoft.Health.Functions.Extensions.UnitTests\Microsoft.Health.Functions.Extensions.UnitTests.csproj", "{85EE87C1-D278-47FC-A296-633D1DBF0E87}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Health.Encryption", "src\Microsoft.Health.Encryption\Microsoft.Health.Encryption.csproj", "{C65A48AC-6832-4F5D-AEFA-D601EEE18B7C}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Health.Encryption.UnitTests", "src\Microsoft.Health.Encryption.UnitTests\Microsoft.Health.Encryption.UnitTests.csproj", "{E2D4F975-9F71-416B-96E5-F2A5101FCBCD}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -246,6 +250,14 @@ Global
 		{85EE87C1-D278-47FC-A296-633D1DBF0E87}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{85EE87C1-D278-47FC-A296-633D1DBF0E87}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{85EE87C1-D278-47FC-A296-633D1DBF0E87}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C65A48AC-6832-4F5D-AEFA-D601EEE18B7C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C65A48AC-6832-4F5D-AEFA-D601EEE18B7C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C65A48AC-6832-4F5D-AEFA-D601EEE18B7C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C65A48AC-6832-4F5D-AEFA-D601EEE18B7C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E2D4F975-9F71-416B-96E5-F2A5101FCBCD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E2D4F975-9F71-416B-96E5-F2A5101FCBCD}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E2D4F975-9F71-416B-96E5-F2A5101FCBCD}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E2D4F975-9F71-416B-96E5-F2A5101FCBCD}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -288,6 +300,8 @@ Global
 		{AE4F71D4-12D4-4A20-9520-FB75ADFD1C1A} = {8AD2A324-DAB5-4380-94A5-31F7D817C384}
 		{9163ACB0-DF25-4924-A721-72BFAD9C430E} = {8AD2A324-DAB5-4380-94A5-31F7D817C384}
 		{85EE87C1-D278-47FC-A296-633D1DBF0E87} = {8AD2A324-DAB5-4380-94A5-31F7D817C384}
+		{C65A48AC-6832-4F5D-AEFA-D601EEE18B7C} = {8AD2A324-DAB5-4380-94A5-31F7D817C384}
+		{E2D4F975-9F71-416B-96E5-F2A5101FCBCD} = {8AD2A324-DAB5-4380-94A5-31F7D817C384}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		RESX_SortFileContentOnSave = True

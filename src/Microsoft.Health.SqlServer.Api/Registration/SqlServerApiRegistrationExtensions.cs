@@ -1,10 +1,11 @@
-﻿// -------------------------------------------------------------------------------------------------
+// -------------------------------------------------------------------------------------------------
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License (MIT). See LICENSE in the repo root for license information.
 // -------------------------------------------------------------------------------------------------
 
 using EnsureThat;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Health.Encryption.Customer.Extensions;
 using Microsoft.Health.Extensions.DependencyInjection;
 using Microsoft.Health.SqlServer.Api.Controllers;
 using Microsoft.Health.SqlServer.Api.Features;
@@ -21,6 +22,8 @@ public static class SqlServerApiRegistrationExtensions
 
         services.AddMvc()
             .AddApplicationPart(typeof(SchemaController).Assembly);
+
+        services.AddCustomerKeyValidationBackgroundService();
 
         services
             .AddHealthChecks()

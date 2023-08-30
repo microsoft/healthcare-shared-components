@@ -4,12 +4,17 @@
 // -------------------------------------------------------------------------------------------------
 
 using System;
+using System.IO;
 using System.Linq;
 using System.Net.Mime;
+using EnsureThat;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
+using Microsoft.Health.Api.Features.HealthChecks;
+using Microsoft.Health.Core.Features.Health;
 using Newtonsoft.Json;
 
 namespace Microsoft.Health.Api.Registration;
@@ -56,5 +61,26 @@ public static class ApplicationBuilderExtensions
                 await httpContext.Response.WriteAsync(response).ConfigureAwait(false);
             },
         });
+    }
+
+    /// <summary>
+    /// Maps the path to the cached health check middleware
+    /// </summary>
+    /// <param name="app">Application builder instance.</param>
+    /// <param name="path">Health check path string.</param>
+    public static void UseCachedHealthChecks(this IApplicationBuilder app, PathString path)
+    {
+        EnsureArg.IsNotNull(app, nameof(app));
+
+        // ensure AsyncData<HealthReport> has been registered
+        app.ApplicationServices.GetRequiredService<ValueCache<HealthReport>>();
+
+        // only match on exact healthCheckPathString
+        Func<HttpContext, bool> predicate = c =>
+        {
+            return (c.Request.Path.StartsWithSegments(path, out var remaining) && string.IsNullOrEmpty(remaining));
+        };
+
+        app.MapWhen(predicate, b => b.UseMiddleware<CachedHealthCheckMiddleware>());
     }
 }

@@ -3,9 +3,17 @@
 // Licensed under the MIT License (MIT). See LICENSE in the repo root for license information.
 // -------------------------------------------------------------------------------------------------
 
-using System.Runtime.CompilerServices;
+using System;
 
-[assembly: InternalsVisibleTo("Microsoft.Health.Api")]
-[assembly: InternalsVisibleTo("Microsoft.Health.Api.UnitTests")]
-[assembly: InternalsVisibleTo("Microsoft.Health.Encryption")]
-[assembly: InternalsVisibleTo("Microsoft.Health.Encryption.UnitTests")]
+namespace Microsoft.Health.Encryption.Customer.Health;
+
+public class CustomerKeyInaccessibleException : Exception
+{
+    public CustomerKeyInaccessibleException(string message) : base(message)
+    {
+    }
+
+    public CustomerKeyInaccessibleException(string message, Exception innerException) : base(message, innerException)
+    {
+    }
+}

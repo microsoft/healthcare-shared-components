@@ -5,7 +5,8 @@
 
 using System.Runtime.CompilerServices;
 
+[assembly: InternalsVisibleTo("DynamicProxyGenAssembly2")]
 [assembly: InternalsVisibleTo("Microsoft.Health.Api")]
-[assembly: InternalsVisibleTo("Microsoft.Health.Api.UnitTests")]
-[assembly: InternalsVisibleTo("Microsoft.Health.Encryption")]
+[assembly: InternalsVisibleTo("Microsoft.Health.Blob")]
 [assembly: InternalsVisibleTo("Microsoft.Health.Encryption.UnitTests")]
+[assembly: InternalsVisibleTo("Microsoft.Health.SqlServer")]
