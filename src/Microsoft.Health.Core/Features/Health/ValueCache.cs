@@ -10,7 +10,7 @@ using EnsureThat;
 namespace Microsoft.Health.Core.Features.Health;
 
 /// <summary>
-/// Caches a single value of type <typeparamref name="T"/>.
+/// Caches a single value of type <typeparamref name="T"/>
 /// Asynchronously waits for the data to be set before the data can be retrieved.
 /// </summary>
 /// <typeparam name="T">The data type</typeparam>
