@@ -8,12 +8,14 @@ using EnsureThat;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
+using Microsoft.Health.Core.Features.HealthPublisher;
+using Microsoft.Health.Core.Features.Metric;
 
 namespace Microsoft.Health.Core.Features.Health;
 
 public static class HealthCheckPublisherExtensions
 {
-    public static IServiceCollection AddHealthCheckPublisher(this IServiceCollection services, Action<HealthCheckPublisherOptions> configure = null)
+    public static IServiceCollection AddHealthCheckCachePublisher(this IServiceCollection services, Action<HealthCheckPublisherOptions> configure = null)
     {
         EnsureArg.IsNotNull(configure, nameof(configure));
 
@@ -23,6 +25,23 @@ public static class HealthCheckPublisherExtensions
         if (configure != null)
         {
             services.Configure(configure);
+        }
+
+        return services;
+    }
+
+    public static IServiceCollection AddHealthCheckPublishers(this IServiceCollection services, Action<HealthCheckPublisherOptions> configure = null, Action<ResourceHealthDimensionOptions> configureDimensions = null)
+    {
+        EnsureArg.IsNotNull(configure, nameof(configure));
+
+        services.AddHealthCheckCachePublisher(configure);
+
+        services.TryAddEnumerable(ServiceDescriptor.Singleton<IHealthCheckPublisher, HealthCheckMetricPublisher>());
+        services.TryAddSingleton<IResourceHealthSignalProvider, DefaultResourceHealthSignalProvider>();
+
+        if (configureDimensions != null)
+        {
+            services.Configure(configureDimensions);
         }
 
         return services;

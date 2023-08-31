@@ -5,8 +5,13 @@
 
 namespace Microsoft.Health.Core.Features.Health;
 
-public enum ExternalHealthReason
+/// <summary>
+/// The reason why the service is in its current health state. In order of severity
+/// </summary>
+public enum HealthStatusReason
 {
     None,
+    ServiceDegraded,
     CustomerManagedKeyAccessLost,
+    ServiceUnavailable
 }
