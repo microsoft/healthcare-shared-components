@@ -32,6 +32,7 @@ public class SqlServerDataStoreConfiguration
     /// <summary>
     /// Authentication type.
     /// </summary>
+    [Obsolete("Update ConnectionString to use Managed Identity instead.")]
     public SqlServerAuthenticationType AuthenticationType { get; set; } = SqlServerAuthenticationType.ConnectionString;
 
     /// <summary>
@@ -52,6 +53,7 @@ public class SqlServerDataStoreConfiguration
     /// <summary>
     /// If set, the client id of the managed identity to use when connecting to SQL, if AuthenticationType == ManagedIdentity.
     /// </summary>
+    [Obsolete("Update ConnectionString to supply User ID instead.")]
     public string ManagedIdentityClientId { get; set; }
 
     /// <summary>

@@ -13,7 +13,6 @@ using Microsoft.Health.SqlServer.Configs;
 using Microsoft.Health.SqlServer.Features.Client;
 using Microsoft.Health.SqlServer.Features.Schema;
 using Microsoft.Health.SqlServer.Features.Storage;
-using NSubstitute;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -35,14 +34,9 @@ public abstract class SqlIntegrationTestBase : IAsyncLifetime
             ConnectionString = builder.ToString(),
             AllowDatabaseCreation = true,
         };
-
-        ConnectionStringProvider = Substitute.For<ISqlConnectionStringProvider>();
-        ConnectionStringProvider.GetSqlConnectionString(Arg.Any<CancellationToken>()).ReturnsForAnyArgs(Config.ConnectionString);
     }
 
     protected string DatabaseName { get; set; }
-
-    protected ISqlConnectionStringProvider ConnectionStringProvider { get; set; }
 
     protected ITestOutputHelper Output { get; set; }
 
@@ -61,7 +55,7 @@ public abstract class SqlIntegrationTestBase : IAsyncLifetime
         IOptions<SqlServerDataStoreConfiguration> options = Options.Create(Config);
         ConnectionFactory = new SqlConnectionWrapperFactory(
             TransactionHandler,
-            new DefaultSqlConnectionBuilder(ConnectionStringProvider, SqlConfigurableRetryFactory.CreateNoneRetryProvider()),
+            new DefaultSqlConnectionBuilder(Options.Create(Config), SqlConfigurableRetryFactory.CreateNoneRetryProvider()),
             SqlConfigurableRetryFactory.CreateFixedRetryProvider(new SqlClientRetryOptions().Settings),
             options);
 
@@ -115,11 +109,9 @@ public abstract class SqlIntegrationTestBase : IAsyncLifetime
     }
 
     [SuppressMessage("Reliability", "CA2000:Dispose objects before losing scope", Justification = "Callers are responsible for disposal.")]
-    protected async Task<SqlConnection> GetSqlConnection()
+    protected SqlConnection GetSqlConnection()
     {
         var connectionBuilder = new SqlConnectionStringBuilder(Config.ConnectionString);
-        var result = new SqlConnection(connectionBuilder.ToString());
-        await result.OpenAsync().ConfigureAwait(false);
-        return result;
+        return new SqlConnection(connectionBuilder.ToString());
     }
 }

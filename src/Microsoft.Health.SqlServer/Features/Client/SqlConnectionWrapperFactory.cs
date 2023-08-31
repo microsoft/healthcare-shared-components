@@ -37,6 +37,8 @@ public class SqlConnectionWrapperFactory
         _sqlRetryLogicBaseProvider = sqlRetryLogicBaseProvider;
     }
 
+    public string DefaultDatabase => _sqlConnectionBuilder.DefaultDatabase;
+
     [SuppressMessage("Reliability", "CA2000:Dispose objects before losing scope", Justification = "Callers are responsible for disposal.")]
     public async Task<SqlConnectionWrapper> ObtainSqlConnectionWrapperAsync(CancellationToken cancellationToken, bool enlistInTransaction = false)
     {
