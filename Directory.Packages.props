@@ -54,7 +54,6 @@
     <PackageVersion Include="Microsoft.Extensions.Options" Version="$(SdkPackageVersion)" />
     <PackageVersion Include="Microsoft.Extensions.Options.ConfigurationExtensions" Version="$(SdkPackageVersion)" />
     <PackageVersion Include="Microsoft.Extensions.Primitives" Version="$(SdkPackageVersion)" />
-    <PackageVersion Include="Microsoft.IdentityModel.Clients.ActiveDirectory" Version="5.3.0" />
     <PackageVersion Include="Microsoft.IdentityModel.JsonWebTokens" Version="$(IdentityModelTokenPackageVersion)" />
     <PackageVersion Include="Microsoft.IdentityModel.Protocols.OpenIdConnect" Version="$(IdentityModelTokenPackageVersion)" />
     <PackageVersion Include="Microsoft.IdentityModel.Tokens" Version="$(IdentityModelTokenPackageVersion)" />
