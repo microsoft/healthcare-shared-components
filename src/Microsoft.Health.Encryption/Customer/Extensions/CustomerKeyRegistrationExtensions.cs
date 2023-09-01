@@ -6,7 +6,6 @@
 using System;
 using EnsureThat;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Health.Core.Features.Health;
 using Microsoft.Health.Core.Features.Identity;
 using Microsoft.Health.Encryption.Customer.Configs;
@@ -23,7 +22,7 @@ public static class CustomerKeyRegistrationExtensions
         services.AddSingleton<ValueCache<CustomerKeyHealth>>();
         services.AddHostedService<CustomerKeyValidationBackgroundService>();
 
-        services.TryAddSingleton<IExternalCredentialProvider, DefaultExternalCredentialProvider>();
+        services.AddExternalCredentialProvider();
         services.AddSingleton<IKeyTestProvider, KeyWrapUnwrapTestProvider>();
 
         if (configure != null)
