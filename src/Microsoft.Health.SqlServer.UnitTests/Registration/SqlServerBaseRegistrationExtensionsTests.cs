@@ -4,7 +4,7 @@
 // -------------------------------------------------------------------------------------------------
 
 using System;
-using Microsoft.Azure.Services.AppAuthentication;
+using Azure.Identity;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Health.Abstractions.Features.Transactions;
@@ -39,7 +39,7 @@ public class SqlServerBaseRegistrationExtensionsTests
         Assert.True(services.ContainsScoped<SqlServerSchemaDataStore>());
         Assert.True(services.ContainsScoped<SqlTransactionHandler>());
 
-        Assert.True(services.ContainsSingleton<AzureServiceTokenProvider>());
+        Assert.True(services.ContainsSingleton<DefaultAzureCredential>());
         Assert.True(services.ContainsSingleton<BaseScriptProvider>());
         Assert.True(services.ContainsSingleton<IAccessTokenHandler, ManagedIdentityAccessTokenHandler>());
         Assert.True(services.ContainsSingleton<IAccessTokenHandler, WorkloadIdentityAccessTokenHandler>());
@@ -67,7 +67,7 @@ public class SqlServerBaseRegistrationExtensionsTests
         Assert.True(services.ContainsScoped<SqlTransactionHandler>());
         Assert.True(services.ContainsScoped<ITransactionHandler, SqlTransactionHandler>());
 
-        Assert.True(services.ContainsSingleton<AzureServiceTokenProvider>());
+        Assert.True(services.ContainsSingleton<DefaultAzureCredential>());
         Assert.True(services.ContainsSingleton<IAccessTokenHandler, ManagedIdentityAccessTokenHandler>());
         Assert.True(services.ContainsSingleton<IAccessTokenHandler, WorkloadIdentityAccessTokenHandler>());
         Assert.True(services.ContainsSingleton<ISqlConnectionBuilder>());
