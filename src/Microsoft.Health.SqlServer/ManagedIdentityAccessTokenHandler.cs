@@ -6,20 +6,21 @@
 using System.Threading;
 using System.Threading.Tasks;
 using EnsureThat;
-using Microsoft.Azure.Services.AppAuthentication;
+using Azure.Identity;
 using Microsoft.Health.SqlServer.Configs;
+using Azure.Core;
 
 namespace Microsoft.Health.SqlServer;
 
 public class ManagedIdentityAccessTokenHandler : IAccessTokenHandler
 {
-    private readonly AzureServiceTokenProvider _azureServiceTokenProvider;
+    private readonly DefaultAzureCredential _azureServiceTokenProvider;
 
     public SqlServerAuthenticationType AuthenticationType => SqlServerAuthenticationType.ManagedIdentity;
 
-    public string AzureScope => "https://database.windows.net/";
+    public string AzureScope => "https://database.windows.net/.default";
 
-    public ManagedIdentityAccessTokenHandler(AzureServiceTokenProvider azureServiceTokenProvider)
+    public ManagedIdentityAccessTokenHandler(DefaultAzureCredential azureServiceTokenProvider)
     {
         EnsureArg.IsNotNull(azureServiceTokenProvider, nameof(azureServiceTokenProvider));
 
@@ -27,8 +28,9 @@ public class ManagedIdentityAccessTokenHandler : IAccessTokenHandler
     }
 
     /// <inheritdoc />
-    public Task<string> GetAccessTokenAsync(CancellationToken cancellationToken)
+    public async Task<string> GetAccessTokenAsync(CancellationToken cancellationToken)
     {
-        return _azureServiceTokenProvider.GetAccessTokenAsync(AzureScope, cancellationToken: cancellationToken);
+        AccessToken token = await _azureServiceTokenProvider.GetTokenAsync(new TokenRequestContext(new string[] { AzureScope }, null), cancellationToken).ConfigureAwait(false);
+        return token.Token;
     }
 }

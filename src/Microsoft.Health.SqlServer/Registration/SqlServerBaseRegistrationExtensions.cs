@@ -5,8 +5,8 @@
 
 using System;
 using System.Linq;
+using Azure.Identity;
 using EnsureThat;
-using Microsoft.Azure.Services.AppAuthentication;
 using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -92,18 +92,21 @@ public static class SqlServerBaseRegistrationExtensions
         services.AddSingleton<IAccessTokenHandler, ManagedIdentityAccessTokenHandler>();
         services.AddSingleton<IAccessTokenHandler, WorkloadIdentityAccessTokenHandler>();
 
-        services.AddSingleton<AzureServiceTokenProvider>(p =>
+        services.AddSingleton<DefaultAzureCredential>(p =>
         {
             SqlServerDataStoreConfiguration config = p.GetRequiredService<IOptions<SqlServerDataStoreConfiguration>>().Value;
 
-            string tokenProviderConnectionString = null;
+            DefaultAzureCredentialOptions defaultCredentialOptions = null;
 
             if (!string.IsNullOrEmpty(config.ManagedIdentityClientId))
             {
-                tokenProviderConnectionString = $"RunAs=App;AppId={config.ManagedIdentityClientId}";
+                defaultCredentialOptions = new DefaultAzureCredentialOptions()
+                {
+                    ManagedIdentityClientId = config.ManagedIdentityClientId
+                };
             }
 
-            return new AzureServiceTokenProvider(connectionString: tokenProviderConnectionString);
+            return new DefaultAzureCredential(defaultCredentialOptions);
         });
 
         // Services to facilitate SQL connections
