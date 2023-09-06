@@ -30,14 +30,17 @@ public static class HealthCheckPublisherExtensions
         return services;
     }
 
-    public static IServiceCollection AddHealthCheckPublishers(this IServiceCollection services, Action<HealthCheckPublisherOptions> configure = null, Action<ResourceHealthDimensionOptions> configureDimensions = null)
+    public static IServiceCollection AddHealthCheckMetricPublisher(this IServiceCollection services, Action<HealthCheckPublisherOptions> configure = null, Action<ResourceHealthDimensionOptions> configureDimensions = null)
     {
         EnsureArg.IsNotNull(configure, nameof(configure));
 
-        services.AddHealthCheckCachePublisher(configure);
-
         services.TryAddEnumerable(ServiceDescriptor.Singleton<IHealthCheckPublisher, HealthCheckMetricPublisher>());
         services.TryAddSingleton<IResourceHealthSignalProvider, DefaultResourceHealthSignalProvider>();
+
+        if (configure != null)
+        {
+            services.Configure(configure);
+        }
 
         if (configureDimensions != null)
         {
