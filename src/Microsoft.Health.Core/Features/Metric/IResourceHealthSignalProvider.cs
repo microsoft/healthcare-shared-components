@@ -7,8 +7,7 @@ using Microsoft.Health.Core.Features.Health;
 
 namespace Microsoft.Health.Core.Features.Metric;
 
-internal interface IResourceHealthSignalProvider
-
+public interface IResourceHealthSignalProvider
 {
     void EmitHealthMetric(HealthStatusReason reason, ResourceHealthDimensionOptions resourceHealthDimension);
 }
