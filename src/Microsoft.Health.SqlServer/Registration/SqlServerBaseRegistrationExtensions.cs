@@ -71,11 +71,9 @@ public static class SqlServerBaseRegistrationExtensions
 
         // Services to facilitate SQL connections
         // TODO: Does SqlTransactionHandler need to be registered directly? Should usage change to ITransactionHandler?
-        Func<IServiceProvider, SqlTransactionHandler> handlerFactory = p => p.GetRequiredService<SqlTransactionHandler>();
-
         services.TryAddScoped<SqlConnectionWrapperFactory>();
         services.TryAddScoped<SqlTransactionHandler>();
-        services.TryAddScoped<ITransactionHandler>(handlerFactory);
+        services.TryAddScoped<ITransactionHandler>(p => p.GetRequiredService<SqlTransactionHandler>());
         services.TryAddScoped<IReadOnlySchemaManagerDataStore, SchemaManagerDataStore>();
 
         return services;
@@ -154,7 +152,7 @@ public static class SqlServerBaseRegistrationExtensions
     /// <exception cref="NotImplementedException">When the retry mode is unkown</exception>
     private static IServiceCollection AddSqlRetryLogicProvider(this IServiceCollection services)
     {
-        services.TryAddSingleton<SqlRetryLogicBaseProvider>(p =>
+        services.TryAddSingleton(p =>
         {
             SqlServerDataStoreConfiguration config = p.GetRequiredService<IOptions<SqlServerDataStoreConfiguration>>().Value;
 
@@ -167,6 +165,7 @@ public static class SqlServerBaseRegistrationExtensions
                 _ => throw new NotImplementedException(),
             };
         });
+
         return services;
     }
 }
