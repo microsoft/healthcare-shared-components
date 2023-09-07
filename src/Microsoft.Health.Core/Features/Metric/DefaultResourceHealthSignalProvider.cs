@@ -20,10 +20,9 @@ internal class DefaultResourceHealthSignalProvider : IResourceHealthSignalProvid
 
     public void EmitHealthMetric(HealthStatusReason reason, ResourceHealthDimensionOptions resourceHealthDimension)
     {
-        _logger.LogInformation("No signal provider has been configured to emit resource health metric with dimensions: {ArmResourceId}, {ArmGeoLocation}, {ResourceType}, {Reason}",
+        _logger.LogInformation("No signal provider has been configured to emit resource health metric with dimensions: {ArmResourceId}, {ArmGeoLocation}, {Reason}",
             resourceHealthDimension.ArmResourceId,
             resourceHealthDimension.ArmGeoLocation,
-            resourceHealthDimension.ResourceType,
             reason);
     }
 }
