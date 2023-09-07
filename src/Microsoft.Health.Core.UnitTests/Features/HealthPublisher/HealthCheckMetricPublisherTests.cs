@@ -31,8 +31,7 @@ public class HealthCheckMetricPublisherTests
         _resourceHealthDimensions = new ResourceHealthDimensionOptions()
         {
             ArmGeoLocation = "westus2",
-            ArmResourceId = "someResourceId",
-            ResourceType = "workspaces/dicomservices"
+            ArmResourceId = "someResourceId"
         };
 
         _resourceHealthDimensionOptions.Value.Returns(_resourceHealthDimensions);

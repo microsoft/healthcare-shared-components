@@ -12,8 +12,6 @@ public class ResourceHealthDimensionOptions
 {
     public const string SectionName = "ResourceHealthDimension";
 
-    public string ResourceType { get; set; }
-
     public string ArmGeoLocation { get; set; }
 
     public string ArmResourceId { get; set; }
