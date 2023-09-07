@@ -4,7 +4,6 @@
 // -------------------------------------------------------------------------------------------------
 
 using System;
-using Azure.Identity;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Health.Abstractions.Features.Transactions;
@@ -39,16 +38,12 @@ public class SqlServerBaseRegistrationExtensionsTests
         Assert.True(services.ContainsScoped<SqlServerSchemaDataStore>());
         Assert.True(services.ContainsScoped<SqlTransactionHandler>());
 
-        Assert.True(services.ContainsSingleton<DefaultAzureCredential>());
         Assert.True(services.ContainsSingleton<BaseScriptProvider>());
-        Assert.True(services.ContainsSingleton<IAccessTokenHandler, ManagedIdentityAccessTokenHandler>());
-        Assert.True(services.ContainsSingleton<IAccessTokenHandler, WorkloadIdentityAccessTokenHandler>());
         Assert.True(services.ContainsSingleton<IBaseScriptProvider, BaseScriptProvider>());
         Assert.True(services.ContainsSingleton<IHostedService, SchemaInitializer>());
         Assert.True(services.ContainsScoped<ISchemaManagerDataStore>());
         Assert.True(services.ContainsSingleton<IScriptProvider, ScriptProvider<ExampleVersion>>());
-        Assert.True(services.ContainsSingleton<ISqlConnectionBuilder>());
-        Assert.True(services.ContainsSingleton<ISqlConnectionStringProvider, DefaultSqlConnectionStringProvider>());
+        Assert.True(services.ContainsSingleton<ISqlConnectionBuilder, DefaultSqlConnectionBuilder>());
         Assert.True(services.ContainsSingleton<SchemaInitializer>());
         Assert.True(services.ContainsSingleton<SchemaJobWorker>());
         Assert.True(services.ContainsScoped<SchemaUpgradeRunner>());
@@ -67,11 +62,7 @@ public class SqlServerBaseRegistrationExtensionsTests
         Assert.True(services.ContainsScoped<SqlTransactionHandler>());
         Assert.True(services.ContainsScoped<ITransactionHandler, SqlTransactionHandler>());
 
-        Assert.True(services.ContainsSingleton<DefaultAzureCredential>());
-        Assert.True(services.ContainsSingleton<IAccessTokenHandler, ManagedIdentityAccessTokenHandler>());
-        Assert.True(services.ContainsSingleton<IAccessTokenHandler, WorkloadIdentityAccessTokenHandler>());
-        Assert.True(services.ContainsSingleton<ISqlConnectionBuilder>());
-        Assert.True(services.ContainsSingleton<ISqlConnectionStringProvider, DefaultSqlConnectionStringProvider>());
+        Assert.True(services.ContainsSingleton<ISqlConnectionBuilder, DefaultSqlConnectionBuilder>());
         Assert.True(services.ContainsScoped<IReadOnlySchemaManagerDataStore, SchemaManagerDataStore>());
     }
 

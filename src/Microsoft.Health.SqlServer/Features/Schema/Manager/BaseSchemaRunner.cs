@@ -19,26 +19,19 @@ public class BaseSchemaRunner : IBaseSchemaRunner
 {
     private static readonly TimeSpan RetrySleepDuration = TimeSpan.FromSeconds(20);
     private const int RetryAttempts = 3;
+
     private readonly SqlConnectionWrapperFactory _sqlConnectionFactory;
     private readonly ISchemaManagerDataStore _schemaManagerDataStore;
-    private readonly ISqlConnectionStringProvider _sqlConnectionStringProvider;
     private readonly ILogger<BaseSchemaRunner> _logger;
 
     public BaseSchemaRunner(
         SqlConnectionWrapperFactory sqlConnectionFactory,
         ISchemaManagerDataStore schemaManagerDataStore,
-        ISqlConnectionStringProvider sqlConnectionStringProvider,
         ILogger<BaseSchemaRunner> logger)
     {
-        EnsureArg.IsNotNull(sqlConnectionFactory);
-        EnsureArg.IsNotNull(schemaManagerDataStore);
-        EnsureArg.IsNotNull(sqlConnectionStringProvider);
-        EnsureArg.IsNotNull(logger, nameof(logger));
-
-        _sqlConnectionFactory = sqlConnectionFactory;
-        _schemaManagerDataStore = schemaManagerDataStore;
-        _sqlConnectionStringProvider = sqlConnectionStringProvider;
-        _logger = logger;
+        _sqlConnectionFactory = EnsureArg.IsNotNull(sqlConnectionFactory);
+        _schemaManagerDataStore = EnsureArg.IsNotNull(schemaManagerDataStore);
+        _logger = EnsureArg.IsNotNull(logger, nameof(logger));
     }
 
     public async Task EnsureBaseSchemaExistsAsync(CancellationToken cancellationToken)
@@ -95,11 +88,8 @@ public class BaseSchemaRunner : IBaseSchemaRunner
 
     private async Task InitializeAsync(CancellationToken cancellationToken)
     {
-        string sqlConnectionString = await _sqlConnectionStringProvider.GetSqlConnectionString(cancellationToken).ConfigureAwait(false);
-        var configuredConnectionBuilder = new SqlConnectionStringBuilder(sqlConnectionString);
-        string databaseName = configuredConnectionBuilder.InitialCatalog;
-
-        SchemaInitializer.ValidateDatabaseName(databaseName);
+        // The database to initialize is based off of the initial catalog
+        string databaseName = SchemaInitializer.ValidateDatabaseName(_sqlConnectionFactory.DefaultDatabase);
 
         await CreateDatabaseIfNotExists(databaseName, cancellationToken).ConfigureAwait(false);
 

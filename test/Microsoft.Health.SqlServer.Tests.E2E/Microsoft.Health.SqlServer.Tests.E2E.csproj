@@ -20,6 +20,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\src\Microsoft.Health.Encryption\Microsoft.Health.Encryption.csproj" />
     <ProjectReference Include="..\..\src\Microsoft.Health.SqlServer\Microsoft.Health.SqlServer.csproj" />
     <ProjectReference Include="..\Microsoft.Health.SqlServer.Web\Microsoft.Health.SqlServer.Web.csproj" />
   </ItemGroup>

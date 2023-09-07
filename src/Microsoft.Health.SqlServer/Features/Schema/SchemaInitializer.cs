@@ -32,7 +32,7 @@ public sealed class SchemaInitializer : IHostedService
 {
     private const string MasterDatabase = "master";
     private readonly IServiceProvider _serviceProvider;
-    private readonly SqlServerDataStoreConfiguration _sqlServerDataStoreConfiguration;
+    private readonly SqlServerDataStoreConfiguration _options;
     private readonly SchemaInformation _schemaInformation;
     private readonly ILogger<SchemaInitializer> _logger;
     private readonly IMediator _mediator;
@@ -41,13 +41,13 @@ public sealed class SchemaInitializer : IHostedService
 
     public SchemaInitializer(
         IServiceProvider services,
-        IOptions<SqlServerDataStoreConfiguration> sqlServerDataStoreConfiguration,
+        IOptions<SqlServerDataStoreConfiguration> options,
         SchemaInformation schemaInformation,
         IMediator mediator,
         ILogger<SchemaInitializer> logger)
     {
         _serviceProvider = EnsureArg.IsNotNull(services, nameof(services));
-        _sqlServerDataStoreConfiguration = EnsureArg.IsNotNull(sqlServerDataStoreConfiguration?.Value, nameof(sqlServerDataStoreConfiguration));
+        _options = EnsureArg.IsNotNull(options?.Value, nameof(options));
         _schemaInformation = EnsureArg.IsNotNull(schemaInformation, nameof(schemaInformation));
         _mediator = EnsureArg.IsNotNull(mediator, nameof(mediator));
         _logger = EnsureArg.IsNotNull(logger, nameof(logger));
@@ -56,9 +56,7 @@ public sealed class SchemaInitializer : IHostedService
     public async Task InitializeAsync(bool forceIncrementalSchemaUpgrade = false, CancellationToken cancellationToken = default)
     {
         using IServiceScope scope = _serviceProvider.CreateScope();
-        ISqlConnectionStringProvider connectionStringProvider = scope.ServiceProvider.GetRequiredService<ISqlConnectionStringProvider>();
-
-        if (!string.IsNullOrWhiteSpace(await connectionStringProvider.GetSqlConnectionString(cancellationToken).ConfigureAwait(false)))
+        if (!string.IsNullOrWhiteSpace(_options.ConnectionString))
         {
             await InitializeAsync(scope, forceIncrementalSchemaUpgrade, cancellationToken).ConfigureAwait(false);
         }
@@ -79,9 +77,7 @@ public sealed class SchemaInitializer : IHostedService
     {
         bool schemaUpgradedNotificationSent = false;
         SqlConnectionWrapperFactory connectionFactory = scope.ServiceProvider.GetRequiredService<SqlConnectionWrapperFactory>();
-
-        string databaseName = await GetDatabaseNameAsync(scope.ServiceProvider.GetRequiredService<ISqlConnectionStringProvider>(), cancellationToken).ConfigureAwait(false);
-        if (!await CanInitializeAsync(connectionFactory, databaseName, cancellationToken).ConfigureAwait(false))
+        if (!await CanInitializeAsync(connectionFactory, cancellationToken).ConfigureAwait(false))
         {
             return;
         }
@@ -90,7 +86,7 @@ public sealed class SchemaInitializer : IHostedService
 
         _logger.LogInformation("Initial check of schema version is {Version}", _schemaInformation.Current?.ToString(CultureInfo.InvariantCulture) ?? "NULL");
 
-        if (_sqlServerDataStoreConfiguration.SchemaOptions.AutomaticUpdatesEnabled)
+        if (_options.SchemaOptions.AutomaticUpdatesEnabled)
         {
             SchemaUpgradeRunner _schemaUpgradeRunner = scope.ServiceProvider.GetRequiredService<SchemaUpgradeRunner>();
 
@@ -206,16 +202,16 @@ public sealed class SchemaInitializer : IHostedService
         }
     }
 
-    private async Task<bool> CanInitializeAsync(SqlConnectionWrapperFactory factory, string databaseName, CancellationToken cancellationToken)
+    private async Task<bool> CanInitializeAsync(SqlConnectionWrapperFactory factory, CancellationToken cancellationToken)
     {
-        if (!_sqlServerDataStoreConfiguration.Initialize)
+        if (!_options.Initialize)
         {
             return false;
         }
 
-        ValidateDatabaseName(databaseName);
+        string databaseName = ValidateDatabaseName(factory.DefaultDatabase);
 
-        if (_sqlServerDataStoreConfiguration.AllowDatabaseCreation)
+        if (_options.AllowDatabaseCreation)
         {
             using SqlConnectionWrapper connection = await factory.ObtainSqlConnectionWrapperAsync(MasterDatabase, cancellationToken).ConfigureAwait(false);
             bool doesDatabaseExist = await DoesDatabaseExistAsync(connection, databaseName, cancellationToken).ConfigureAwait(false);
@@ -254,7 +250,7 @@ public sealed class SchemaInitializer : IHostedService
         return canInitialize;
     }
 
-    public static void ValidateDatabaseName(string databaseName)
+    public static string ValidateDatabaseName(string databaseName)
     {
         if (string.IsNullOrEmpty(databaseName))
         {
@@ -268,6 +264,8 @@ public sealed class SchemaInitializer : IHostedService
         {
             throw new InvalidOperationException("The initial catalog in the connection string cannot be a system database");
         }
+
+        return databaseName;
     }
 
     /// <summary>
@@ -327,7 +325,4 @@ public sealed class SchemaInitializer : IHostedService
         command.CommandText = "SELECT count(*) FROM fn_my_permissions (NULL, 'DATABASE') WHERE permission_name = 'CREATE TABLE'";
         return (int)await command.ExecuteScalarAsync(cancellationToken).ConfigureAwait(false) > 0;
     }
-
-    private static async ValueTask<string> GetDatabaseNameAsync(ISqlConnectionStringProvider connectionStringProvider, CancellationToken cancellationToken)
-        => new SqlConnectionStringBuilder(await connectionStringProvider.GetSqlConnectionString(cancellationToken).ConfigureAwait(false)).InitialCatalog;
 }

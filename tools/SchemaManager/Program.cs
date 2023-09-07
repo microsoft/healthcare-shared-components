@@ -63,7 +63,7 @@ public static class Program
         // TODO: this won't work in OSS if the AuthenticationType is set to ManagedIdentity
         services.AddSingleton<ISqlConnectionBuilder, DefaultSqlConnectionBuilder>();
 
-        services.TryAddSingleton<SqlRetryLogicBaseProvider>(p =>
+        services.TryAddSingleton(p =>
         {
             SqlServerDataStoreConfiguration config = p.GetRequiredService<IOptions<SqlServerDataStoreConfiguration>>().Value;
 
@@ -82,7 +82,6 @@ public static class Program
             s.ConnectionString = c.Value.ConnectionString;
         });
 
-        services.AddSingleton<ISqlConnectionStringProvider, DefaultSqlConnectionStringProvider>();
         services.AddScoped<IBaseSchemaRunner, BaseSchemaRunner>();
         services.AddScoped<SqlConnectionWrapperFactory>();
         services.AddScoped<SqlTransactionHandler>();
