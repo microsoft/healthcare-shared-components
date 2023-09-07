@@ -71,9 +71,11 @@ public static class SqlServerBaseRegistrationExtensions
 
         // Services to facilitate SQL connections
         // TODO: Does SqlTransactionHandler need to be registered directly? Should usage change to ITransactionHandler?
+        Func<IServiceProvider, SqlTransactionHandler> handlerFactory = p => p.GetRequiredService<SqlTransactionHandler>();
+
         services.TryAddScoped<SqlConnectionWrapperFactory>();
         services.TryAddScoped<SqlTransactionHandler>();
-        services.TryAddScoped<ITransactionHandler>(p => p.GetRequiredService<SqlTransactionHandler>());
+        services.TryAddScoped<ITransactionHandler>(handlerFactory);
         services.TryAddScoped<IReadOnlySchemaManagerDataStore, SchemaManagerDataStore>();
 
         return services;
