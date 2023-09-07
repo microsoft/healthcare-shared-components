@@ -3,10 +3,12 @@
 // Licensed under the MIT License (MIT). See LICENSE in the repo root for license information.
 // -------------------------------------------------------------------------------------------------
 
+using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using EnsureThat;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.Health.Core.Features.Health;
 using Microsoft.Health.Core.Features.Metric;
@@ -14,40 +16,58 @@ using Microsoft.Health.Core.Features.Metric;
 namespace Microsoft.Health.Core.Features.HealthPublisher;
 internal class HealthCheckMetricPublisher : IHealthCheckPublisher
 {
-    private readonly IResourceHealthSignalProvider _resourceHealthMeter;
-    private readonly ResourceHealthDimensionOptions _resourceHealthDimensionOptions;
+    public static IReadOnlyDictionary<HealthStatus, HealthStatusReason> DefaultStatusToReasonMapping = new Dictionary<HealthStatus, HealthStatusReason>()
+    {
+        { HealthStatus.Healthy, HealthStatusReason.None },
+        { HealthStatus.Degraded, HealthStatusReason.ServiceDegraded },
+        { HealthStatus.Unhealthy, HealthStatusReason.ServiceUnavailable },
+    };
 
-    public HealthCheckMetricPublisher(IResourceHealthSignalProvider resourceHealthMeter, IOptions<ResourceHealthDimensionOptions> resourceHealthDimensionOptions)
+    private readonly IResourceHealthSignalProvider _resourceHealthSignalProvider;
+    private readonly ResourceHealthDimensionOptions _resourceHealthDimensionOptions;
+    private readonly ILogger<HealthCheckMetricPublisher> _logger;
+
+    public HealthCheckMetricPublisher(IResourceHealthSignalProvider resourceHealthSignalProvider, IOptions<ResourceHealthDimensionOptions> resourceHealthDimensionOptions, ILogger<HealthCheckMetricPublisher> logger)
     {
         EnsureArg.IsNotNull(resourceHealthDimensionOptions, nameof(resourceHealthDimensionOptions));
 
         _resourceHealthDimensionOptions = EnsureArg.IsNotNull(resourceHealthDimensionOptions.Value, nameof(resourceHealthDimensionOptions.Value));
-        _resourceHealthMeter = EnsureArg.IsNotNull(resourceHealthMeter, nameof(resourceHealthMeter));
-
-        EnsureArg.IsNotNull(_resourceHealthDimensionOptions.ArmGeoLocation, nameof(_resourceHealthDimensionOptions.ArmGeoLocation));
-        EnsureArg.IsNotNull(_resourceHealthDimensionOptions.ResourceType, nameof(_resourceHealthDimensionOptions.ResourceType));
-        EnsureArg.IsNotNull(_resourceHealthDimensionOptions.ArmResourceId, nameof(_resourceHealthDimensionOptions.ArmResourceId));
+        _resourceHealthSignalProvider = EnsureArg.IsNotNull(resourceHealthSignalProvider, nameof(resourceHealthSignalProvider));
+        _logger = EnsureArg.IsNotNull(logger, nameof(logger));
     }
 
     public Task PublishAsync(HealthReport report, CancellationToken cancellationToken)
     {
         EnsureArg.IsNotNull(report, nameof(report));
 
+        HealthStatusReason defaultReason = GetDefaultReasonForStatus(report);
+
         switch (report.Status)
         {
             case HealthStatus.Healthy:
-                _resourceHealthMeter.EmitHealthMetric(HealthStatusReason.None, _resourceHealthDimensionOptions);
+                _resourceHealthSignalProvider.EmitHealthMetric(defaultReason, _resourceHealthDimensionOptions);
                 break;
             case HealthStatus.Degraded:
-                HealthStatusReason reason = report.GetHighestSeverityReason(defaultReason: HealthStatusReason.ServiceDegraded);
-                _resourceHealthMeter.EmitHealthMetric(reason, _resourceHealthDimensionOptions);
+                HealthStatusReason reason = report.GetHighestSeverityReason(defaultReason: defaultReason);
+                _resourceHealthSignalProvider.EmitHealthMetric(reason, _resourceHealthDimensionOptions);
                 break;
             case HealthStatus.Unhealthy:
             default:
-                _resourceHealthMeter.EmitHealthMetric(HealthStatusReason.ServiceUnavailable, _resourceHealthDimensionOptions);
+                _resourceHealthSignalProvider.EmitHealthMetric(defaultReason, _resourceHealthDimensionOptions);
                 break;
         }
 
         return Task.CompletedTask;
+    }
+
+    private HealthStatusReason GetDefaultReasonForStatus(HealthReport report)
+    {
+        if (DefaultStatusToReasonMapping.TryGetValue(report.Status, out HealthStatusReason defaultReason))
+        {
+            return defaultReason;
+        }
+
+        _logger.LogError("No default HealthStatusReason can be found for HealthStatus {HealthStatus}", report.Status);
+        return HealthStatusReason.None;
     }
 }

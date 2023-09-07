@@ -6,12 +6,24 @@
 namespace Microsoft.Health.Core.Features.Health;
 
 /// <summary>
-/// The reason why the service is in its current health state. In order of severity
+/// The reason why the service is in its current health state.
+/// The values of this enum are ordered from most healthy to least healthy
 /// </summary>
 public enum HealthStatusReason
 {
+    /// <summary>
+    /// Healthy status reasons, in order of most healthy to least healthy
+    /// </summary>
     None,
+
+    /// <summary>
+    /// Degraded status reasons, in order of most healthy to least healthy
+    /// </summary>
     ServiceDegraded,
     CustomerManagedKeyAccessLost,
+
+    /// <summary>
+    /// Unhealthy status reasons, in order of most healthy to least healthy
+    /// </summary>
     ServiceUnavailable
 }
