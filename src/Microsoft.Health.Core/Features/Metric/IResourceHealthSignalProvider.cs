@@ -3,10 +3,11 @@
 // Licensed under the MIT License (MIT). See LICENSE in the repo root for license information.
 // -------------------------------------------------------------------------------------------------
 
-namespace Microsoft.Health.Core.Features.Health;
+using Microsoft.Health.Core.Features.Health;
 
-public enum ExternalHealthReason
+namespace Microsoft.Health.Core.Features.Metric;
+
+public interface IResourceHealthSignalProvider
 {
-    None,
-    CustomerManagedKeyAccessLost,
+    void EmitHealthMetric(HealthStatusReason reason, ResourceHealthDimensionOptions resourceHealthDimension);
 }

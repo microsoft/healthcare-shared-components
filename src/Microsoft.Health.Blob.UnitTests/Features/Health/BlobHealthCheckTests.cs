@@ -76,7 +76,7 @@ public class BlobHealthCheckTests
         _customerKeyHealthCache.Set(new CustomerKeyHealth
         {
             IsHealthy = false,
-            Reason = ExternalHealthReason.CustomerManagedKeyAccessLost,
+            Reason = HealthStatusReason.CustomerManagedKeyAccessLost,
         });
 
         HealthCheckResult result = await _healthCheck.CheckHealthAsync(new HealthCheckContext()).ConfigureAwait(false);

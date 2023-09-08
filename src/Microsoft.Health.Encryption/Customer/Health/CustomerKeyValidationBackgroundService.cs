@@ -78,7 +78,7 @@ internal class CustomerKeyValidationBackgroundService : BackgroundService
         _customerManagedKeyHealth.Set(new CustomerKeyHealth
         {
             IsHealthy = false,
-            Reason = ExternalHealthReason.CustomerManagedKeyAccessLost,
+            Reason = HealthStatusReason.CustomerManagedKeyAccessLost,
             Exception = ex,
         });
     }
@@ -88,7 +88,7 @@ internal class CustomerKeyValidationBackgroundService : BackgroundService
         _customerManagedKeyHealth.Set(new CustomerKeyHealth
         {
             IsHealthy = true,
-            Reason = ExternalHealthReason.None,
+            Reason = HealthStatusReason.None,
             Exception = null,
         });
     }

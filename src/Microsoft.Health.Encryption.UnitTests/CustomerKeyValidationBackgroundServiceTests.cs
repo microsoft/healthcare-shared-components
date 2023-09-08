@@ -53,7 +53,7 @@ public class CustomerKeyValidationBackgroundServiceTests : IDisposable
         CustomerKeyHealth cmkHealth = await _customerKeyHealthCache.GetAsync().ConfigureAwait(false);
         Assert.True(cmkHealth.IsHealthy);
         Assert.Null(cmkHealth.Exception);
-        Assert.Equal(ExternalHealthReason.None, cmkHealth.Reason);
+        Assert.Equal(HealthStatusReason.None, cmkHealth.Reason);
     }
 
     [Fact]
@@ -67,7 +67,7 @@ public class CustomerKeyValidationBackgroundServiceTests : IDisposable
         CustomerKeyHealth cmkHealth = await _customerKeyHealthCache.GetAsync().ConfigureAwait(false);
         Assert.False(cmkHealth.IsHealthy);
         Assert.Equal(customerKeyInaccessibleException, cmkHealth.Exception);
-        Assert.Equal(ExternalHealthReason.CustomerManagedKeyAccessLost, cmkHealth.Reason);
+        Assert.Equal(HealthStatusReason.CustomerManagedKeyAccessLost, cmkHealth.Reason);
     }
 
     [Fact]
@@ -84,7 +84,7 @@ public class CustomerKeyValidationBackgroundServiceTests : IDisposable
         CustomerKeyHealth cmkHealth = await cmkHealthTask.ConfigureAwait(false);
         Assert.True(cmkHealth.IsHealthy);
         Assert.Null(cmkHealth.Exception);
-        Assert.Equal(ExternalHealthReason.None, cmkHealth.Reason);
+        Assert.Equal(HealthStatusReason.None, cmkHealth.Reason);
     }
 
     protected virtual void Dispose(bool disposing)

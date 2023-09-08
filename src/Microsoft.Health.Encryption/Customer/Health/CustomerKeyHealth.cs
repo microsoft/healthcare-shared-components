@@ -21,7 +21,7 @@ public class CustomerKeyHealth
     /// <summary>
     /// Gets or sets a reason for the health state
     /// </summary>
-    public ExternalHealthReason Reason { get; set; }
+    public HealthStatusReason Reason { get; set; }
 
     /// <summary>
     /// Gets or sets the exception captured from an unhealthy state
