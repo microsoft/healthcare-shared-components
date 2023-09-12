@@ -41,6 +41,12 @@
     <PackageReference Include="System.Drawing.Common" PrivateAssets="All" />
   </ItemGroup>
 
+  <!-- These aren't truly direct dependencies, but we'll treat them as such to enforce the package tree in downstream dependencies -->
+  <ItemGroup>
+    <PackageReference Include="Microsoft.IdentityModel.JsonWebTokens" />
+    <PackageReference Include="Microsoft.IdentityModel.Protocols.OpenIdConnect" />
+  </ItemGroup>
+
   <ItemGroup>
     <ProjectReference Include="..\Microsoft.Health.Abstractions\Microsoft.Health.Abstractions.csproj" />
     <ProjectReference Include="..\Microsoft.Health.Core\Microsoft.Health.Core.csproj" />
