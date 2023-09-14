@@ -6,7 +6,7 @@
     <PackageVersion Include="Azure.Messaging.EventGrid" Version="4.17.0" />
     <PackageVersion Include="Azure.Security.KeyVault.Keys" Version="4.5.0" />
     <PackageVersion Include="Azure.Storage.Blobs" Version="12.17.0" />
-    <PackageVersion Include="Azure.Storage.Common" Version="12.16.0" />
+    <PackageVersion Include="Azure.Storage.Common" Version="12.17.0" />
     <PackageVersion Include="coverlet.collector" Version="6.0.0" />
     <PackageVersion Include="DistributedLock.SqlServer" Version="1.0.3" />
     <PackageVersion Include="Ensure.That" Version="10.1.0" />
