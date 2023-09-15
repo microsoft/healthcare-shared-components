@@ -96,6 +96,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Health.Encryption
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Health.Encryption.UnitTests", "src\Microsoft.Health.Encryption.UnitTests\Microsoft.Health.Encryption.UnitTests.csproj", "{E2D4F975-9F71-416B-96E5-F2A5101FCBCD}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Health.Operations.Functions.Worker", "src\Microsoft.Health.Operations.Functions.Worker\Microsoft.Health.Operations.Functions.Worker.csproj", "{2313A08C-06B1-4536-8F29-9E9F3A351AAD}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -258,6 +260,10 @@ Global
 		{E2D4F975-9F71-416B-96E5-F2A5101FCBCD}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{E2D4F975-9F71-416B-96E5-F2A5101FCBCD}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{E2D4F975-9F71-416B-96E5-F2A5101FCBCD}.Release|Any CPU.Build.0 = Release|Any CPU
+		{2313A08C-06B1-4536-8F29-9E9F3A351AAD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2313A08C-06B1-4536-8F29-9E9F3A351AAD}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2313A08C-06B1-4536-8F29-9E9F3A351AAD}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2313A08C-06B1-4536-8F29-9E9F3A351AAD}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -302,9 +308,10 @@ Global
 		{85EE87C1-D278-47FC-A296-633D1DBF0E87} = {8AD2A324-DAB5-4380-94A5-31F7D817C384}
 		{C65A48AC-6832-4F5D-AEFA-D601EEE18B7C} = {8AD2A324-DAB5-4380-94A5-31F7D817C384}
 		{E2D4F975-9F71-416B-96E5-F2A5101FCBCD} = {8AD2A324-DAB5-4380-94A5-31F7D817C384}
+		{2313A08C-06B1-4536-8F29-9E9F3A351AAD} = {8AD2A324-DAB5-4380-94A5-31F7D817C384}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
-		RESX_SortFileContentOnSave = True
 		SolutionGuid = {562bbd07-1817-4af5-ab66-8837cf849248}
+		RESX_SortFileContentOnSave = True
 	EndGlobalSection
 EndGlobal
