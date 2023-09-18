@@ -76,7 +76,7 @@
     <PackageVersion Include="xunit.assert" Version="2.5.0" />
     <PackageVersion Include="Xunit.DependencyInjection" Version="8.8.2" />
     <PackageVersion Include="xunit.extensibility.core" Version="2.5.0" />
-    <PackageVersion Include="xunit.runner.visualstudio" Version="2.5.0" />
+    <PackageVersion Include="xunit.runner.visualstudio" Version="2.5.1" />
   </ItemGroup>
 
 </Project>
