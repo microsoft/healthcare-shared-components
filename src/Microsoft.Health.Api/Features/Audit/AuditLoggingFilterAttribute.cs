@@ -36,9 +36,9 @@ public class AuditLoggingFilterAttribute : ActionFilterAttribute
     {
         EnsureArg.IsNotNull(context, nameof(context));
 
-        AuditHelper.LogExecuting(context.HttpContext, ClaimsExtractor);
-
         context.HttpContext.Items["timer"] = Stopwatch.StartNew();
+
+        AuditHelper.LogExecuting(context.HttpContext, ClaimsExtractor);
 
         base.OnActionExecuting(context);
     }
@@ -54,7 +54,10 @@ public class AuditLoggingFilterAttribute : ActionFilterAttribute
     {
         EnsureArg.IsNotNull(context, nameof(context));
 
-        AuditHelper.LogExecuted(context.HttpContext, ClaimsExtractor);
+        var stopwatch = (Stopwatch)context.HttpContext.Items["timer"];
+        long durationMs = stopwatch.ElapsedMilliseconds;
+
+        AuditHelper.LogExecuted(context.HttpContext, ClaimsExtractor, durationMs: durationMs);
 
         base.OnResultExecuted(context);
     }

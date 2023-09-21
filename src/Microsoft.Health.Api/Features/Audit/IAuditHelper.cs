@@ -1,4 +1,4 @@
-﻿// -------------------------------------------------------------------------------------------------
+// -------------------------------------------------------------------------------------------------
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License (MIT). See LICENSE in the repo root for license information.
 // -------------------------------------------------------------------------------------------------
@@ -26,5 +26,6 @@ public interface IAuditHelper
     /// <param name="httpContext">The HTTP context.</param>
     /// <param name="claimsExtractor">The extractor used to extract claims.</param>
     /// <param name="shouldCheckForAuthXFailure">Should check for AuthX failure and print LogExecuted messages only if it is AuthX failure.</param>
-    void LogExecuted(HttpContext httpContext, IClaimsExtractor claimsExtractor, bool shouldCheckForAuthXFailure = false);
+    /// <param name="durationMs">Duration of the requests in milliseconds</param>
+    void LogExecuted(HttpContext httpContext, IClaimsExtractor claimsExtractor, bool shouldCheckForAuthXFailure = false, long? durationMs = null);
 }
