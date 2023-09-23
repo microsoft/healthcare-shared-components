@@ -34,7 +34,8 @@ internal sealed class WorkloadIdentityAuthenticationProvider : SqlAuthentication
         EnsureArg.IsNotNull(parameters, nameof(parameters));
 
         using CancellationTokenSource cts = new();
-        cts.CancelAfter(parameters.ConnectionTimeout * 1000); // Convert to milliseconds
+        if (parameters.ConnectionTimeout > 0)
+            cts.CancelAfter(parameters.ConnectionTimeout * 1000); // Convert to milliseconds
 
         string scope = parameters.Resource.EndsWith(DefaultScopeSuffix, StringComparison.Ordinal) ? parameters.Resource : parameters.Resource + DefaultScopeSuffix;
         string[] scopes = new string[] { scope };

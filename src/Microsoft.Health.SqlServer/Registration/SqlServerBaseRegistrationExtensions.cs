@@ -149,6 +149,10 @@ public static class SqlServerBaseRegistrationExtensions
     /// <summary>
     /// Replaces the SQL authentication provider for managed identity to use workload identity instead.
     /// </summary>
+    /// <remarks>
+    /// The authentication type must either be <see cref="SqlAuthenticationMethod.ActiveDirectoryManagedIdentity"/>
+    /// or <see cref="SqlAuthenticationMethod.ActiveDirectoryMSI"/>.
+    /// </remarks>
     /// <param name="services">The <see cref="IServiceCollection"/> to be updated.</param>
     /// <returns>The <paramref name="services"/> for additional method invocations.</returns>
     /// <exception cref="ArgumentNullException">
