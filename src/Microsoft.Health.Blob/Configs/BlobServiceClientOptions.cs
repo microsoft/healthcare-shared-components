@@ -1,8 +1,9 @@
-﻿// -------------------------------------------------------------------------------------------------
+// -------------------------------------------------------------------------------------------------
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License (MIT). See LICENSE in the repo root for license information.
 // -------------------------------------------------------------------------------------------------
 
+using System;
 using Azure.Identity;
 using Azure.Storage.Blobs;
 
@@ -33,9 +34,19 @@ public class BlobServiceClientOptions : BlobClientOptions
     /// and value separated by an equal sign (=) like in the following example:
     /// <c>"DefaultEndpointsProtocol=https;AccountName=myAccountName;AccountKey=myAccountKey"</c>.
     /// </para>
+    /// <para>
+    /// <see cref="ConnectionString"/> and <see cref="ServiceUri"/> are mutually exclusive.
+    /// </para>
     /// </remarks>
     /// <value>The connection string key-value pairs.</value>
     public string ConnectionString { get; set; }
+
+    /// <summary>
+    /// Gets or sets the Azure Blob Storage service URI.
+    /// </summary>
+    /// <remarks><see cref="ConnectionString"/> and <see cref="ServiceUri"/> are mutually exclusive.</remarks>
+    /// <value>The URI for the Azure Blob Storage service if specified; otherwise <see langword="null"/>.</value>
+    public Uri ServiceUri { get; set; }
 
     /// <summary>
     /// Gets or sets the type of credential used to authenticate the client.

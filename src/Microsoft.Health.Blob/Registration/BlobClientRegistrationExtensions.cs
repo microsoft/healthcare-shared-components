@@ -1,4 +1,4 @@
-﻿// -------------------------------------------------------------------------------------------------
+// -------------------------------------------------------------------------------------------------
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License (MIT). See LICENSE in the repo root for license information.
 // -------------------------------------------------------------------------------------------------
@@ -114,13 +114,6 @@ public static class BlobClientRegistrationExtensions
         var options = new BlobServiceClientOptions();
         configuration.Bind(options);
 
-        // We'll default to the emulator connection string like the previous API.
-        // Note that string.IsNullOrWhiteSpace is used by the underlying AddBlobServiceClient for checking credentials.
-        if (string.IsNullOrWhiteSpace(options.ConnectionString) && string.IsNullOrWhiteSpace(options.Credential))
-        {
-            options.ConnectionString = BlobLocalEmulator.ConnectionString;
-        }
-
         services.AddAzureClients(
             builder =>
             {
@@ -129,8 +122,15 @@ public static class BlobClientRegistrationExtensions
                 // if the configuration was passed directly to the AddBlobServiceClient call.
                 // However, the logic is more similar to BlobClientFactory to provide better compatibility.
                 IAzureClientBuilder<BlobServiceClient, BlobClientOptions> clientBuilder;
-                if (string.Equals(options.Credential, "managedidentity", StringComparison.OrdinalIgnoreCase))
+                if (string.IsNullOrWhiteSpace(options.ConnectionString) && options.ServiceUri == null)
                 {
+                    clientBuilder = builder
+                        .AddBlobServiceClient(BlobLocalEmulator.ConnectionString);
+                }
+                else if (string.Equals(options.Credential, "managedidentity", StringComparison.OrdinalIgnoreCase))
+                {
+                    // This is done for backwards compatability.
+                    // TODO: This may be removed in the future where local scenarios are be configured separately
                     clientBuilder = builder
                         .AddBlobServiceClient(new Uri(options.ConnectionString))
                         .WithCredential(new DefaultAzureCredential(options.Credentials));
@@ -138,9 +138,10 @@ public static class BlobClientRegistrationExtensions
                 else
                 {
                     clientBuilder = builder
-                        .AddBlobServiceClient(options.ConnectionString);
+                        .AddBlobServiceClient(configuration);
                 }
 
+                // Add optional BlobClientOptions
                 clientBuilder = clientBuilder.ConfigureOptions(x => configuration.Bind(x));
                 if (configure != null)
                 {

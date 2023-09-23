@@ -147,6 +147,23 @@ public static class SqlServerBaseRegistrationExtensions
     }
 
     /// <summary>
+    /// Replaces the SQL authentication provider for managed identity to use workload identity instead.
+    /// </summary>
+    /// <param name="services">The <see cref="IServiceCollection"/> to be updated.</param>
+    /// <returns>The <paramref name="services"/> for additional method invocations.</returns>
+    /// <exception cref="ArgumentNullException">
+    /// <paramref name="services"/> is <see langword="null"/>.
+    /// </exception>
+    public static IServiceCollection EnableWorkloadManagedIdentity(this IServiceCollection services)
+    {
+        EnsureArg.IsNotNull(services, nameof(services));
+
+        SqlAuthenticationProvider.SetProvider(SqlAuthenticationMethod.ActiveDirectoryManagedIdentity, new WorkloadIdentityAuthenticationProvider());
+
+        return services;
+    }
+
+    /// <summary>
     /// Adds an <see cref="SqlRetryLogicBaseProvider"/> to be used by SqlConnection and SqlCommand
     /// </summary>
     /// <param name="services">The <see cref="IServiceCollection"/> to be updated.</param>
