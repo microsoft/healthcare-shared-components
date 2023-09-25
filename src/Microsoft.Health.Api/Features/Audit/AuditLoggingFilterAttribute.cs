@@ -1,9 +1,10 @@
-﻿// -------------------------------------------------------------------------------------------------
+// -------------------------------------------------------------------------------------------------
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License (MIT). See LICENSE in the repo root for license information.
 // -------------------------------------------------------------------------------------------------
 
 using System;
+using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using EnsureThat;
 using Microsoft.AspNetCore.Mvc.Filters;
@@ -35,6 +36,8 @@ public class AuditLoggingFilterAttribute : ActionFilterAttribute
     {
         EnsureArg.IsNotNull(context, nameof(context));
 
+        context.HttpContext.Items["timer"] = Stopwatch.StartNew();
+
         AuditHelper.LogExecuting(context.HttpContext, ClaimsExtractor);
 
         base.OnActionExecuting(context);
@@ -51,7 +54,10 @@ public class AuditLoggingFilterAttribute : ActionFilterAttribute
     {
         EnsureArg.IsNotNull(context, nameof(context));
 
-        AuditHelper.LogExecuted(context.HttpContext, ClaimsExtractor);
+        var stopwatch = (Stopwatch)context.HttpContext.Items["timer"];
+        long durationMs = stopwatch.ElapsedMilliseconds;
+
+        AuditHelper.LogExecuted(context.HttpContext, ClaimsExtractor, durationMs: durationMs);
 
         base.OnResultExecuted(context);
     }
