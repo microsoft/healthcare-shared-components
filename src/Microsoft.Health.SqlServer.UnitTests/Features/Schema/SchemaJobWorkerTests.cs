@@ -65,7 +65,7 @@ public sealed class SchemaJobWorkerTests : IDisposable
 
         try
         {
-            await _worker.ExecuteAsync(info, "blah", _cts.Token).ConfigureAwait(false);
+            await _worker.ExecuteAsync(info, "blah", _cts.Token);
         }
         catch (TaskCanceledException)
         {
@@ -91,7 +91,7 @@ public sealed class SchemaJobWorkerTests : IDisposable
 
         try
         {
-            await _worker.ExecuteAsync(info, "blah", _cts.Token).ConfigureAwait(false);
+            await _worker.ExecuteAsync(info, "blah", _cts.Token);
         }
         catch (TaskCanceledException)
         {
@@ -117,7 +117,7 @@ public sealed class SchemaJobWorkerTests : IDisposable
 
         try
         {
-            await _worker.ExecuteAsync(info, "blah", _cts.Token).ConfigureAwait(false);
+            await _worker.ExecuteAsync(info, "blah", _cts.Token);
         }
         catch (TaskCanceledException)
         {
@@ -145,7 +145,7 @@ public sealed class SchemaJobWorkerTests : IDisposable
 
         try
         {
-            await _worker.ExecuteAsync(info, "blah", _cts.Token).ConfigureAwait(false);
+            await _worker.ExecuteAsync(info, "blah", _cts.Token);
         }
         catch (TaskCanceledException)
         {

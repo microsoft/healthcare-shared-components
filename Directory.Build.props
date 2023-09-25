@@ -76,7 +76,8 @@
       <PropertyGroup>
         <IsPackable>false</IsPackable>
         <!-- CA1707: Identifiers should not contain underscores -->
-        <NoWarn>($NoWarn);CA1707</NoWarn>
+        <!-- CA2007: Do not directly await a Task. xUnit1030 - Do not call ConfigureAwait in test method-->
+        <NoWarn>($NoWarn);CA1707,CA2007</NoWarn>
       </PropertyGroup>
       <ItemGroup>
         <PackageReference Include="coverlet.collector" PrivateAssets="All" />

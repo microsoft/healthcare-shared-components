@@ -29,13 +29,13 @@ public class DurableFunctionsTest : IClassFixture<WebJobsTestFixture<Startup>>
             .StartNewAsync(
                 nameof(DistributedSorter.InsertionSortAsync),
                 new SortingInput(new int[] { 3, 4, 1, 5, 4, 2 }))
-            .ConfigureAwait(false);
+            ;
 
-        DurableOrchestrationStatus status = await _durableClient.GetStatusAsync(instanceId).ConfigureAwait(false);
+        DurableOrchestrationStatus status = await _durableClient.GetStatusAsync(instanceId);
         while (status.RuntimeStatus.IsInProgress())
         {
-            await Task.Delay(1000).ConfigureAwait(false);
-            status = await _durableClient.GetStatusAsync(instanceId).ConfigureAwait(false);
+            await Task.Delay(1000);
+            status = await _durableClient.GetStatusAsync(instanceId);
         }
 
         Assert.Equal(OrchestrationRuntimeStatus.Completed, status.RuntimeStatus);

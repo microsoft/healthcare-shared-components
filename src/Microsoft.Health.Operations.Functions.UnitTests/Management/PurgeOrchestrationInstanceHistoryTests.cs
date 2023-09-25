@@ -63,13 +63,13 @@ public class PurgeOrchestrationInstanceHistoryTests
 
         using (Mock.Property(() => ClockResolver.UtcNowFunc, () => _utcNow))
         {
-            await _purgeTask.Run(_timer, _durableClient, NullLogger.Instance).ConfigureAwait(false);
+            await _purgeTask.Run(_timer, _durableClient, NullLogger.Instance);
         }
 
         await _durableClient
             .Received(count)
             .PurgeInstanceHistoryAsync(instanceId)
-            .ConfigureAwait(false);
+            ;
     }
 
     [Fact]
@@ -101,13 +101,13 @@ public class PurgeOrchestrationInstanceHistoryTests
 
         using (Mock.Property(() => ClockResolver.UtcNowFunc, () => _utcNow))
         {
-            await _purgeTask.Run(_timer, _durableClient, NullLogger.Instance).ConfigureAwait(false);
+            await _purgeTask.Run(_timer, _durableClient, NullLogger.Instance);
         }
 
         await _durableClient
             .Received(1)
             .PurgeInstanceHistoryAsync(instanceId1)
-            .ConfigureAwait(false);
+            ;
     }
 
     private bool AreConditionEqual(OrchestrationStatusQueryCondition condition)
