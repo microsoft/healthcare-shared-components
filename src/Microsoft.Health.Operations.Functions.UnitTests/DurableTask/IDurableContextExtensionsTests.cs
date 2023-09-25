@@ -95,7 +95,7 @@ public class IDurableContextExtensionsTests
             .Returns(new DurableOrchestrationStatus { CreatedTime = expected });
 
         // Invoke
-        DateTime actual = await context.GetCreatedTimeAsync().ConfigureAwait(false);
+        DateTime actual = await context.GetCreatedTimeAsync();
 
         // Assert behavior
         Assert.Equal(expected, actual);
@@ -105,7 +105,7 @@ public class IDurableContextExtensionsTests
             .CallActivityAsync<DurableOrchestrationStatus>(
                 nameof(DurableOrchestrationClientActivity.GetInstanceStatusAsync),
                 Arg.Any<GetInstanceStatusOptions>())
-            .ConfigureAwait(false);
+            ;
     }
 
     [Fact]
@@ -129,7 +129,7 @@ public class IDurableContextExtensionsTests
             .Returns(new DurableOrchestrationStatus { CreatedTime = expected });
 
         // Invoke
-        DateTime actual = await context.GetCreatedTimeAsync(options).ConfigureAwait(false);
+        DateTime actual = await context.GetCreatedTimeAsync(options);
 
         // Assert behavior
         Assert.Equal(expected, actual);
@@ -140,6 +140,6 @@ public class IDurableContextExtensionsTests
                 nameof(DurableOrchestrationClientActivity.GetInstanceStatusAsync),
                 options,
                 Arg.Any<GetInstanceStatusOptions>())
-            .ConfigureAwait(false);
+            ;
     }
 }

@@ -41,25 +41,25 @@ public sealed class BaseSchemaRunnerTests : SqlIntegrationTestBase, IDisposable
     [Fact]
     public async Task EnsureBaseSchemaExist_DoesNotExist_CreatesIt()
     {
-        Assert.False(await _dataStore.BaseSchemaExistsAsync(CancellationToken.None).ConfigureAwait(false));
-        await _runner.EnsureBaseSchemaExistsAsync(CancellationToken.None).ConfigureAwait(false);
-        Assert.True(await _dataStore.BaseSchemaExistsAsync(CancellationToken.None).ConfigureAwait(false));
+        Assert.False(await _dataStore.BaseSchemaExistsAsync(CancellationToken.None));
+        await _runner.EnsureBaseSchemaExistsAsync(CancellationToken.None);
+        Assert.True(await _dataStore.BaseSchemaExistsAsync(CancellationToken.None));
     }
 
     [Fact]
     public async Task EnsureBaseSchemaExist_Exists_DoesNothing()
     {
-        Assert.False(await _dataStore.BaseSchemaExistsAsync(CancellationToken.None).ConfigureAwait(false));
-        await _runner.EnsureBaseSchemaExistsAsync(CancellationToken.None).ConfigureAwait(false);
-        Assert.True(await _dataStore.BaseSchemaExistsAsync(CancellationToken.None).ConfigureAwait(false));
-        await _runner.EnsureBaseSchemaExistsAsync(CancellationToken.None).ConfigureAwait(false);
-        Assert.True(await _dataStore.BaseSchemaExistsAsync(CancellationToken.None).ConfigureAwait(false));
+        Assert.False(await _dataStore.BaseSchemaExistsAsync(CancellationToken.None));
+        await _runner.EnsureBaseSchemaExistsAsync(CancellationToken.None);
+        Assert.True(await _dataStore.BaseSchemaExistsAsync(CancellationToken.None));
+        await _runner.EnsureBaseSchemaExistsAsync(CancellationToken.None);
+        Assert.True(await _dataStore.BaseSchemaExistsAsync(CancellationToken.None));
     }
 
     [Fact]
     public async Task EnsureInstanceSchemaRecordExists_WhenNotExists_Throws()
     {
-        await Assert.ThrowsAsync<SchemaManagerException>(() => _runner.EnsureInstanceSchemaRecordExistsAsync(CancellationToken.None)).ConfigureAwait(false);
+        await Assert.ThrowsAsync<SchemaManagerException>(() => _runner.EnsureInstanceSchemaRecordExistsAsync(CancellationToken.None));
     }
 
     public void Dispose()
