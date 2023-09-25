@@ -57,19 +57,19 @@ public class MonitoredStreamTests
         byte[] bytes = Encoding.UTF8.GetBytes("This is a string");
         using (var monitoredStream = new MonitoredStream(new MemoryStream()))
         {
-            await monitoredStream.WriteAsync(bytes).ConfigureAwait(false);
+            await monitoredStream.WriteAsync(bytes);
             Assert.Equal(bytes.Length, monitoredStream.WriteCount);
         }
 
         using (var monitoredStream = new MonitoredStream(new MemoryStream()))
         {
-            await monitoredStream.WriteAsync(bytes, 0, bytes.Length).ConfigureAwait(false);
+            await monitoredStream.WriteAsync(bytes, 0, bytes.Length);
             Assert.Equal(bytes.Length, monitoredStream.WriteCount);
         }
 
         using (var monitoredStream = new MonitoredStream(new MemoryStream()))
         {
-            await monitoredStream.WriteAsync(bytes.AsMemory(0, bytes.Length), CancellationToken.None).ConfigureAwait(false);
+            await monitoredStream.WriteAsync(bytes.AsMemory(0, bytes.Length), CancellationToken.None);
             Assert.Equal(bytes.Length, monitoredStream.WriteCount);
         }
 

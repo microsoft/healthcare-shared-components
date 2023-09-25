@@ -52,11 +52,11 @@ public class SchemaTests : IClassFixture<HttpIntegrationTestFixture<Startup>>
             RequestUri = new Uri(_client.BaseAddress, "_schema/versions"),
         };
 
-        HttpResponseMessage response = await _client.SendAsync(request).ConfigureAwait(false);
+        HttpResponseMessage response = await _client.SendAsync(request);
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
 
-        var jArrayResponse = JArray.Parse(await response.Content.ReadAsStringAsync().ConfigureAwait(false));
+        var jArrayResponse = JArray.Parse(await response.Content.ReadAsStringAsync());
 
         Assert.NotEmpty(jArrayResponse);
 
@@ -85,11 +85,11 @@ public class SchemaTests : IClassFixture<HttpIntegrationTestFixture<Startup>>
             RequestUri = new Uri(_client.BaseAddress, "_schema/compatibility"),
         };
 
-        HttpResponseMessage response = await _client.SendAsync(request).ConfigureAwait(false);
+        HttpResponseMessage response = await _client.SendAsync(request);
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
 
-        string responseBodyAsString = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
+        string responseBodyAsString = await response.Content.ReadAsStringAsync();
 
         CompatibleVersions jsonList = JsonConvert.DeserializeObject<CompatibleVersions>(responseBodyAsString);
         Assert.NotNull(jsonList);
@@ -98,9 +98,9 @@ public class SchemaTests : IClassFixture<HttpIntegrationTestFixture<Startup>>
     [Fact(Skip = "Deployment steps to refactor to include environmentUrl")]
     public async Task WhenRequestingSchema_GivenGetMethodAndCurrentVersionPath_TheServerShouldReturnSuccess()
     {
-        HttpResponseMessage response = await SendAndVerifyStatusCode(HttpMethod.Get, "_schema/versions/current", HttpStatusCode.OK).ConfigureAwait(false);
+        HttpResponseMessage response = await SendAndVerifyStatusCode(HttpMethod.Get, "_schema/versions/current", HttpStatusCode.OK);
 
-        string responseBodyAsString = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
+        string responseBodyAsString = await response.Content.ReadAsStringAsync();
         var jsonList = JsonConvert.DeserializeObject<IList<CurrentVersionInformation>>(responseBodyAsString);
         Assert.Equal(2, jsonList[0].Id);
         Assert.Single(jsonList[0].Servers);
@@ -111,21 +111,21 @@ public class SchemaTests : IClassFixture<HttpIntegrationTestFixture<Startup>>
     [MemberData(nameof(Data))]
     public async Task GivenPostMethod_WhenRequestingSchema_TheServerShouldReturnNotFound(string path)
     {
-        await SendAndVerifyStatusCode(HttpMethod.Post, path, HttpStatusCode.NotFound).ConfigureAwait(false);
+        await SendAndVerifyStatusCode(HttpMethod.Post, path, HttpStatusCode.NotFound);
     }
 
     [Theory]
     [MemberData(nameof(Data))]
     public async Task GivenPutMethod_WhenRequestingSchema_TheServerShouldReturnNotFound(string path)
     {
-        await SendAndVerifyStatusCode(HttpMethod.Put, path, HttpStatusCode.NotFound).ConfigureAwait(false);
+        await SendAndVerifyStatusCode(HttpMethod.Put, path, HttpStatusCode.NotFound);
     }
 
     [Theory]
     [MemberData(nameof(Data))]
     public async Task GivenDeleteMethod_WhenRequestingSchema_TheServerShouldReturnNotFound(string path)
     {
-        await SendAndVerifyStatusCode(HttpMethod.Delete, path, HttpStatusCode.NotFound).ConfigureAwait(false);
+        await SendAndVerifyStatusCode(HttpMethod.Delete, path, HttpStatusCode.NotFound);
     }
 
     [InlineData("_schema/versions/abc/script")]
@@ -133,28 +133,28 @@ public class SchemaTests : IClassFixture<HttpIntegrationTestFixture<Startup>>
     [Theory]
     public async Task GivenNonIntegerVersion_WhenRequestingScript_TheServerShouldReturnNotFound(string path)
     {
-        await SendAndVerifyStatusCode(HttpMethod.Get, path, HttpStatusCode.NotFound).ConfigureAwait(false);
+        await SendAndVerifyStatusCode(HttpMethod.Get, path, HttpStatusCode.NotFound);
     }
 
     [Theory]
     [MemberData(nameof(ScriptData))]
     public async Task GivenPostMethod_WhenRequestingScript_TheServerShouldReturnNotFound(string path)
     {
-        await SendAndVerifyStatusCode(HttpMethod.Post, path, HttpStatusCode.NotFound).ConfigureAwait(false);
+        await SendAndVerifyStatusCode(HttpMethod.Post, path, HttpStatusCode.NotFound);
     }
 
     [Theory]
     [MemberData(nameof(ScriptData))]
     public async Task GivenPutMethod_WhenRequestingScript_TheServerShouldReturnNotFound(string path)
     {
-        await SendAndVerifyStatusCode(HttpMethod.Put, path, HttpStatusCode.NotFound).ConfigureAwait(false);
+        await SendAndVerifyStatusCode(HttpMethod.Put, path, HttpStatusCode.NotFound);
     }
 
     [Theory]
     [MemberData(nameof(ScriptData))]
     public async Task GivenDeleteMethod_WhenRequestingScript_TheServerShouldReturnNotFound(string path)
     {
-        await SendAndVerifyStatusCode(HttpMethod.Delete, path, HttpStatusCode.NotFound).ConfigureAwait(false);
+        await SendAndVerifyStatusCode(HttpMethod.Delete, path, HttpStatusCode.NotFound);
     }
 
     [InlineData("_schema/versions/1/script")]
@@ -167,7 +167,7 @@ public class SchemaTests : IClassFixture<HttpIntegrationTestFixture<Startup>>
             Method = HttpMethod.Get,
             RequestUri = new Uri(_client.BaseAddress, path),
         };
-        HttpResponseMessage response = await _client.SendAsync(request).ConfigureAwait(false);
+        HttpResponseMessage response = await _client.SendAsync(request);
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
 
@@ -181,7 +181,7 @@ public class SchemaTests : IClassFixture<HttpIntegrationTestFixture<Startup>>
     [Theory]
     public async Task GivenSchemaIdNotFound_WhenRequestingScript_TheServerShouldReturnNotFoundException(string path)
     {
-        await SendAndVerifyStatusCode(HttpMethod.Get, path, HttpStatusCode.NotFound).ConfigureAwait(false);
+        await SendAndVerifyStatusCode(HttpMethod.Get, path, HttpStatusCode.NotFound);
     }
 
     private async Task<HttpResponseMessage> SendAndVerifyStatusCode(HttpMethod httpMethod, string path, HttpStatusCode expectedStatusCode)
@@ -198,7 +198,7 @@ public class SchemaTests : IClassFixture<HttpIntegrationTestFixture<Startup>>
         using (var content = new StringContent(" ", Encoding.UTF8, "application/json"))
         {
             request.Content = content;
-            response = await _client.SendAsync(request).ConfigureAwait(false);
+            response = await _client.SendAsync(request);
             Assert.Equal(expectedStatusCode, response.StatusCode);
         }
 

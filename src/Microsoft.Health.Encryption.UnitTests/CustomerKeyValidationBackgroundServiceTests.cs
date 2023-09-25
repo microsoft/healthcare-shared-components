@@ -48,9 +48,9 @@ public class CustomerKeyValidationBackgroundServiceTests : IDisposable
     [Fact]
     public async Task GivenKeyIsAccessible_WhenHealthIsChecked_ThenHealthyStateShouldBeSaved()
     {
-        await _validationService.CheckHealth(CancellationToken.None).ConfigureAwait(false);
+        await _validationService.CheckHealth(CancellationToken.None);
 
-        CustomerKeyHealth cmkHealth = await _customerKeyHealthCache.GetAsync().ConfigureAwait(false);
+        CustomerKeyHealth cmkHealth = await _customerKeyHealthCache.GetAsync();
         Assert.True(cmkHealth.IsHealthy);
         Assert.Null(cmkHealth.Exception);
         Assert.Equal(HealthStatusReason.None, cmkHealth.Reason);
@@ -62,9 +62,9 @@ public class CustomerKeyValidationBackgroundServiceTests : IDisposable
         CustomerKeyInaccessibleException customerKeyInaccessibleException = new CustomerKeyInaccessibleException("Key is not accessible");
         _keyTestProvider.AssertHealthAsync().ThrowsForAnyArgs(customerKeyInaccessibleException);
 
-        await _validationService.CheckHealth(CancellationToken.None).ConfigureAwait(false);
+        await _validationService.CheckHealth(CancellationToken.None);
 
-        CustomerKeyHealth cmkHealth = await _customerKeyHealthCache.GetAsync().ConfigureAwait(false);
+        CustomerKeyHealth cmkHealth = await _customerKeyHealthCache.GetAsync();
         Assert.False(cmkHealth.IsHealthy);
         Assert.Equal(customerKeyInaccessibleException, cmkHealth.Exception);
         Assert.Equal(HealthStatusReason.CustomerManagedKeyAccessLost, cmkHealth.Reason);
@@ -78,10 +78,10 @@ public class CustomerKeyValidationBackgroundServiceTests : IDisposable
         Assert.True(!cmkHealthTask.IsCompleted);
 
         // check health
-        await _validationService.CheckHealth(CancellationToken.None).ConfigureAwait(false);
+        await _validationService.CheckHealth(CancellationToken.None);
 
         // health has been set, result is returned
-        CustomerKeyHealth cmkHealth = await cmkHealthTask.ConfigureAwait(false);
+        CustomerKeyHealth cmkHealth = await cmkHealthTask;
         Assert.True(cmkHealth.IsHealthy);
         Assert.Null(cmkHealth.Exception);
         Assert.Equal(HealthStatusReason.None, cmkHealth.Reason);
