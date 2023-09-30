@@ -1,4 +1,4 @@
-﻿// -------------------------------------------------------------------------------------------------
+// -------------------------------------------------------------------------------------------------
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License (MIT). See LICENSE in the repo root for license information.
 // -------------------------------------------------------------------------------------------------
@@ -89,6 +89,12 @@ public class SchemaJobWorker
             catch (SqlException se) when (se.Number == SqlErrorCodes.CouldNotFoundStoredProc && schemaInformation.Current == null)
             {
                 // this could happen during schema initialization until base schema is not executed so can be ignored
+            }
+            // Error: "Can not connect to the database in its current state". This error can be for various DB states (recovering, inacessible) but we assume that our DB will only hit this for Inaccessible state
+            catch (SqlException ex) when (ex.ErrorCode == 40925)
+            {
+                // this can happen when a user has misconfigured CMK for > 30 min, which results in the DB having a status of "Inacessible".
+                _logger.LogInformation(ex, "The SQL database cannot be accessed in its current state.");
             }
             catch (Exception ex)
             {

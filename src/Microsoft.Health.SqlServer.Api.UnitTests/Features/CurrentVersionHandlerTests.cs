@@ -50,7 +50,7 @@ public class CurrentVersionHandlerTests
 
         _schemaDataStore.GetCurrentVersionAsync(Arg.Any<CancellationToken>())
                 .Returns(mockCurrentVersions);
-        GetCurrentVersionResponse response = await _mediator.GetCurrentVersionAsync(_cancellationToken).ConfigureAwait(false);
+        GetCurrentVersionResponse response = await _mediator.GetCurrentVersionAsync(_cancellationToken);
         var currentVersionsResponse = response.CurrentVersions;
 
         Assert.Equal(mockCurrentVersions.Count, currentVersionsResponse.Count);
@@ -67,7 +67,7 @@ public class CurrentVersionHandlerTests
         _schemaDataStore.GetCurrentVersionAsync(Arg.Any<CancellationToken>())
                 .Returns(mockCurrentVersions);
 
-        GetCurrentVersionResponse response = await _mediator.GetCurrentVersionAsync(_cancellationToken).ConfigureAwait(false);
+        GetCurrentVersionResponse response = await _mediator.GetCurrentVersionAsync(_cancellationToken);
 
         Assert.Empty(response.CurrentVersions);
     }
