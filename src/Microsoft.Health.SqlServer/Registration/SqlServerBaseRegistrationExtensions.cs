@@ -162,7 +162,9 @@ public static class SqlServerBaseRegistrationExtensions
     {
         EnsureArg.IsNotNull(services, nameof(services));
 
-        SqlAuthenticationProvider.SetProvider(SqlAuthenticationMethod.ActiveDirectoryManagedIdentity, new WorkloadIdentityAuthenticationProvider());
+        WorkloadIdentityAuthenticationProvider provider = new();
+        SqlAuthenticationProvider.SetProvider(SqlAuthenticationMethod.ActiveDirectoryManagedIdentity, provider);
+        SqlAuthenticationProvider.SetProvider(SqlAuthenticationMethod.ActiveDirectoryMSI, provider);
 
         return services;
     }
