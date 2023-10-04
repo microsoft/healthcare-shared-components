@@ -17,6 +17,8 @@ namespace Microsoft.Health.Core.Extensions;
 /// </summary>
 public static class IAzureClientBuilderExtensions
 {
+    private const string RetrySection = "credentialRetry";
+
     /// <summary>
     /// Set the managed identity credential to use for this client registration.
     /// </summary>
@@ -35,7 +37,9 @@ public static class IAzureClientBuilderExtensions
         EnsureArg.IsNotNull(configuration, nameof(configuration));
 
         ManagedIdentityCredentialOptions options = new();
-        configuration.Bind(options);
+        configuration
+            .GetSection(RetrySection)
+            .Bind(options.Retry);
 
         if (string.IsNullOrEmpty(options.ClientId))
             throw new InvalidOperationException("Missing ClientId for Managed Identity.");
