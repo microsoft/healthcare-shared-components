@@ -37,14 +37,11 @@ public class WorkloadIdentityAuthenticationProviderTests
 
         WorkloadIdentityAuthenticationProvider provider = new(o => _credential);
 
-        await provider
-            .AcquireTokenAsync(new MockSqlAuthenticationParameters(resource: resource))
-            .ConfigureAwait(false);
+        await provider.AcquireTokenAsync(new MockSqlAuthenticationParameters(resource: resource));
 
         await _credential
             .Received(1)
-            .GetTokenAsync(Arg.Is<TokenRequestContext>(c => c.Scopes.Single() == DefaultResource), Arg.Any<CancellationToken>())
-            .ConfigureAwait(false);
+            .GetTokenAsync(Arg.Is<TokenRequestContext>(c => c.Scopes.Single() == DefaultResource), Arg.Any<CancellationToken>());
     }
 
     [Theory]
@@ -64,9 +61,7 @@ public class WorkloadIdentityAuthenticationProviderTests
             return _credential;
         });
 
-        SqlAuthenticationToken actual = await provider
-            .AcquireTokenAsync(new MockSqlAuthenticationParameters(authority: authority))
-            .ConfigureAwait(false);
+        SqlAuthenticationToken actual = await provider.AcquireTokenAsync(new MockSqlAuthenticationParameters(authority: authority));
 
         Assert.Equal(accessToken.Token, actual.AccessToken);
     }
@@ -86,17 +81,14 @@ public class WorkloadIdentityAuthenticationProviderTests
             return _credential;
         });
 
-        SqlAuthenticationToken actual = await provider
-            .AcquireTokenAsync(new MockSqlAuthenticationParameters(userId: null))
-            .ConfigureAwait(false);
+        SqlAuthenticationToken actual = await provider.AcquireTokenAsync(new MockSqlAuthenticationParameters(userId: null));
 
         Assert.Equal(accessToken.Token, actual.AccessToken);
         Assert.Equal(accessToken.ExpiresOn, actual.ExpiresOn);
 
         await _credential
             .Received(1)
-            .GetTokenAsync(Arg.Is<TokenRequestContext>(c => c.Scopes.Single() == DefaultResource), Arg.Any<CancellationToken>())
-            .ConfigureAwait(false);
+            .GetTokenAsync(Arg.Is<TokenRequestContext>(c => c.Scopes.Single() == DefaultResource), Arg.Any<CancellationToken>());
     }
 
     [Fact]
@@ -115,17 +107,14 @@ public class WorkloadIdentityAuthenticationProviderTests
             return _credential;
         });
 
-        SqlAuthenticationToken actual = await provider
-            .AcquireTokenAsync(new MockSqlAuthenticationParameters(userId: UserId))
-            .ConfigureAwait(false);
+        SqlAuthenticationToken actual = await provider.AcquireTokenAsync(new MockSqlAuthenticationParameters(userId: UserId));
 
         Assert.Equal(accessToken.Token, actual.AccessToken);
         Assert.Equal(accessToken.ExpiresOn, actual.ExpiresOn);
 
         await _credential
             .Received(1)
-            .GetTokenAsync(Arg.Is<TokenRequestContext>(c => c.Scopes.Single() == DefaultResource), Arg.Any<CancellationToken>())
-            .ConfigureAwait(false);
+            .GetTokenAsync(Arg.Is<TokenRequestContext>(c => c.Scopes.Single() == DefaultResource), Arg.Any<CancellationToken>());
     }
 
     [Fact]
@@ -143,12 +132,11 @@ public class WorkloadIdentityAuthenticationProviderTests
 
         await Assert
             .ThrowsAsync<TaskCanceledException>(
-                () => provider.AcquireTokenAsync(new MockSqlAuthenticationParameters(connectionTimeout: 1)))
-            .ConfigureAwait(false);
+                () => provider.AcquireTokenAsync(new MockSqlAuthenticationParameters(connectionTimeout: 1)));
 
         static async ValueTask<AccessToken> GetTokenAsync(CallInfo callInfo)
         {
-            await Task.Delay(-1, callInfo.ArgAt<CancellationToken>(1)).ConfigureAwait(false);
+            await Task.Delay(-1, callInfo.ArgAt<CancellationToken>(1));
             return new AccessToken();
         }
     }
