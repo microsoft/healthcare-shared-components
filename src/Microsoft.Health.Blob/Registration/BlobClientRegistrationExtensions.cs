@@ -17,6 +17,7 @@ using Microsoft.Extensions.Options;
 using Microsoft.Health.Blob.Configs;
 using Microsoft.Health.Blob.Features.Storage;
 using Microsoft.Health.Blob.Registration;
+using Microsoft.Health.Core.Extensions;
 using Microsoft.IO;
 
 namespace Microsoft.Extensions.DependencyInjection;
@@ -138,7 +139,8 @@ public static class BlobClientRegistrationExtensions
                 else
                 {
                     clientBuilder = builder
-                        .AddBlobServiceClient(configuration);
+                        .AddBlobServiceClient(configuration)
+                        .WithRetryableCredential(configuration);
                 }
 
                 // Add optional BlobClientOptions

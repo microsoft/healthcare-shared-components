@@ -38,7 +38,7 @@ public class IAzureClientBuilderExtensionsTests
             })
             .Build();
 
-        ManagedIdentityCredential actualCredential = AssertTokenCredentials<ManagedIdentityCredential>(config);
+        ManagedIdentityCredential actualCredential = AssertTokenCredential<ManagedIdentityCredential>(config);
         AssertRetryOptions(expectedOptions, actualCredential);
     }
 
@@ -46,10 +46,10 @@ public class IAzureClientBuilderExtensionsTests
     public void GivenConfiguration_WhenConfiguringManagedIdentity_ThenUseRetrySettings()
     {
         RetryOptions expectedOptions = CreateRetryOptions(
-                delay: TimeSpan.FromSeconds(2),
-                maxDelay: TimeSpan.FromMinutes(1),
-                maxRetries: 12,
-                networkTimeout: TimeSpan.FromMinutes(5));
+            delay: TimeSpan.FromSeconds(2),
+            maxDelay: TimeSpan.FromMinutes(1),
+            maxRetries: 12,
+            networkTimeout: TimeSpan.FromMinutes(5));
 
         IConfiguration config = new ConfigurationBuilder()
             .AddInMemoryCollection(new KeyValuePair<string, string>[]
@@ -64,7 +64,7 @@ public class IAzureClientBuilderExtensionsTests
             })
             .Build();
 
-        ManagedIdentityCredential actualCredential = AssertTokenCredentials<ManagedIdentityCredential>(config);
+        ManagedIdentityCredential actualCredential = AssertTokenCredential<ManagedIdentityCredential>(config);
         AssertRetryOptions(expectedOptions, actualCredential);
     }
 
@@ -78,10 +78,12 @@ public class IAzureClientBuilderExtensionsTests
             {
                 new KeyValuePair<string, string>("serviceUri", "https://127.0.0.1:10000/devstoreaccount1"),
                 new KeyValuePair<string, string>("clientId", Guid.NewGuid().ToString()),
+                new KeyValuePair<string, string>($"credentialRetry:{nameof(RetryOptions.Delay)}", "00:52:00"),
+                new KeyValuePair<string, string>($"credentialRetry:{nameof(RetryOptions.MaxRetries)}", "17"),
             })
             .Build();
 
-        DefaultAzureCredential actualCredential = AssertTokenCredentials<DefaultAzureCredential>(config);
+        DefaultAzureCredential actualCredential = AssertTokenCredential<DefaultAzureCredential>(config);
         AssertRetryOptions(expectedOptions, actualCredential);
     }
 
@@ -102,7 +104,7 @@ public class IAzureClientBuilderExtensionsTests
         return options;
     }
 
-    private static T AssertTokenCredentials<T>(IConfiguration config) where T : TokenCredential
+    private static T AssertTokenCredential<T>(IConfiguration config) where T : TokenCredential
     {
         IServiceCollection services = new ServiceCollection();
         services.AddAzureClients(builder => builder
