@@ -60,7 +60,7 @@ public class SqlConnectionWrapper : IDisposable
         }
         else
         {
-            SqlConnection = _sqlConnectionBuilder.GetSqlConnection(initialCatalog, _sqlServerDataStoreConfiguration.MaxPoolSize);
+            SqlConnection = await _sqlConnectionBuilder.GetSqlConnectionAsync(initialCatalog, _sqlServerDataStoreConfiguration.MaxPoolSize, cancellationToken).ConfigureAwait(false);
         }
 
         if (_enlistInTransactionIfPresent && _sqlTransactionHandler.SqlTransactionScope != null && _sqlTransactionHandler.SqlTransactionScope.SqlConnection == null)
