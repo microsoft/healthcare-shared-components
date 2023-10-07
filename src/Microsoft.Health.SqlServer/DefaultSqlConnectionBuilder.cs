@@ -106,6 +106,6 @@ public class DefaultSqlConnectionBuilder : ISqlConnectionBuilder
     /// <param name="initialCatalog">An optional initial catalog that may be used to override the default value.</param>
     /// <param name="maxPoolSize">An optional maximum for the SQL connection pool size.</param>
     /// <returns>A <see cref="SqlConnectionStringBuilder"/> representing the current connection string.</returns>
-    protected virtual async Task<SqlConnectionStringBuilder> GetConnectionStringBuilderAsync(string initialCatalog = null, int? maxPoolSize = null)
-        => await Task.FromResult(GetConnectionStringBuilder(initialCatalog, maxPoolSize)).ConfigureAwait(false);
+    protected virtual Task<SqlConnectionStringBuilder> GetConnectionStringBuilderAsync(string initialCatalog = null, int? maxPoolSize = null)
+        => Task.FromResult(GetConnectionStringBuilder(initialCatalog, maxPoolSize));
 }
