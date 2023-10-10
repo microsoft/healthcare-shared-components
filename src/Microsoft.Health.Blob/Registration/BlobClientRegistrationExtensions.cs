@@ -138,6 +138,10 @@ public static class BlobClientRegistrationExtensions
                 }
                 else
                 {
+                    // Remove any connection string if both are specified to prevent ambiguity
+                    if (options.ConnectionString != null && options.ServiceUri != null)
+                        configuration[nameof(BlobServiceClientOptions.ConnectionString)] = null;
+
                     clientBuilder = builder
                         .AddBlobServiceClient(configuration)
                         .WithRetryableCredential(configuration);
