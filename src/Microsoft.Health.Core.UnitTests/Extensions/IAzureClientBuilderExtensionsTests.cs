@@ -28,23 +28,27 @@ public class IAzureClientBuilderExtensionsTests
     [Fact]
     public void GivenNoConfiguration_WhenConfiguringManagedIdentity_ThenUseDefaults()
     {
+        string clientId = Guid.NewGuid().ToString();
         RetryOptions expectedOptions = CreateRetryOptions();
 
         IConfiguration config = new ConfigurationBuilder()
             .AddInMemoryCollection(new KeyValuePair<string, string>[]
             {
                 new KeyValuePair<string, string>("serviceUri", "https://127.0.0.1:10000/devstoreaccount1"),
+                new KeyValuePair<string, string>("clientId", clientId),
                 new KeyValuePair<string, string>("credential", "managedidentity"),
             })
             .Build();
 
         ManagedIdentityCredential actualCredential = AssertTokenCredential<ManagedIdentityCredential>(config);
+        Assert.Equal(clientId, GetClientId(actualCredential));
         AssertRetryOptions(expectedOptions, actualCredential);
     }
 
     [Fact]
     public void GivenConfiguration_WhenConfiguringManagedIdentity_ThenUseRetrySettings()
     {
+        string clientId = Guid.NewGuid().ToString();
         RetryOptions expectedOptions = CreateRetryOptions(
             delay: TimeSpan.FromSeconds(2),
             maxDelay: TimeSpan.FromMinutes(1),
@@ -55,6 +59,7 @@ public class IAzureClientBuilderExtensionsTests
             .AddInMemoryCollection(new KeyValuePair<string, string>[]
             {
                 new KeyValuePair<string, string>("serviceUri", "https://127.0.0.1:10000/devstoreaccount1"),
+                new KeyValuePair<string, string>("clientId", clientId),
                 new KeyValuePair<string, string>("credential", "managedidentity"),
                 new KeyValuePair<string, string>($"credentialRetry:{nameof(RetryOptions.Delay)}", expectedOptions.Delay.ToString()),
                 new KeyValuePair<string, string>($"credentialRetry:{nameof(RetryOptions.MaxDelay)}", expectedOptions.MaxDelay.ToString()),
@@ -65,6 +70,7 @@ public class IAzureClientBuilderExtensionsTests
             .Build();
 
         ManagedIdentityCredential actualCredential = AssertTokenCredential<ManagedIdentityCredential>(config);
+        Assert.Equal(clientId, GetClientId(actualCredential));
         AssertRetryOptions(expectedOptions, actualCredential);
     }
 
@@ -194,5 +200,17 @@ public class IAzureClientBuilderExtensionsTests
             .GetValue(actualResponseBodyPolicy);
 
         Assert.Equal(expected.NetworkTimeout, networkTimeout);
+    }
+
+    private static string GetClientId(ManagedIdentityCredential credential)
+    {
+        Type managedIdentityClientType = AzureIdentityAssembly.GetType("Azure.Identity.ManagedIdentityClient", throwOnError: true);
+        object client = typeof(ManagedIdentityCredential)
+            .GetProperty("Client", BindingFlags.NonPublic | BindingFlags.Instance)
+            .GetValue(credential);
+
+        return managedIdentityClientType
+            .GetProperty("ClientId", BindingFlags.NonPublic | BindingFlags.Instance)
+            .GetValue(client) as string;
     }
 }
