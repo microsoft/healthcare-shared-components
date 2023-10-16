@@ -17,6 +17,7 @@ namespace Microsoft.Health.Core.Extensions;
 /// </summary>
 public static class IAzureClientBuilderExtensions
 {
+    private const string ClientIdKey = "clientId";
     private const string CredentialKey = "credential";
     private const string RetrySection = "credentialRetry";
 
@@ -43,26 +44,21 @@ public static class IAzureClientBuilderExtensions
         EnsureArg.IsNotNull(builder, nameof(builder));
         EnsureArg.IsNotNull(configuration, nameof(configuration));
 
+        string clientId = configuration[ClientIdKey];
         string credentialType = configuration[CredentialKey];
 
         // TODO: Support other credential types if necessary
         if (string.Equals(credentialType, "managedidentity", StringComparison.OrdinalIgnoreCase))
         {
-            ManagedIdentityCredentialOptions options = new();
+            TokenCredentialOptions options = new();
             configuration
                 .GetSection(RetrySection)
                 .Bind(options.Retry);
 
-            ManagedIdentityCredential credential = new(options.ClientId, options);
-
+            ManagedIdentityCredential credential = new(clientId, options);
             return builder.WithCredential(credential);
         }
 
         return builder;
-    }
-
-    private sealed class ManagedIdentityCredentialOptions : TokenCredentialOptions
-    {
-        public string ClientId { get; set; }
     }
 }
