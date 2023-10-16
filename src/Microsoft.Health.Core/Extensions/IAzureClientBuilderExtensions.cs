@@ -50,20 +50,15 @@ public static class IAzureClientBuilderExtensions
         // TODO: Support other credential types if necessary
         if (string.Equals(credentialType, "managedidentity", StringComparison.OrdinalIgnoreCase))
         {
-            ManagedIdentityCredentialOptions options = new() { ClientId = clientId };
+            TokenCredentialOptions options = new();
             configuration
                 .GetSection(RetrySection)
                 .Bind(options.Retry);
 
-            ManagedIdentityCredential credential = new(options.ClientId, options);
+            ManagedIdentityCredential credential = new(clientId, options);
             return builder.WithCredential(credential);
         }
 
         return builder;
-    }
-
-    private sealed class ManagedIdentityCredentialOptions : TokenCredentialOptions
-    {
-        public string ClientId { get; set; }
     }
 }
