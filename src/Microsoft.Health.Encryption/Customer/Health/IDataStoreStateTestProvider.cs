@@ -3,19 +3,12 @@
 // Licensed under the MIT License (MIT). See LICENSE in the repo root for license information.
 // -------------------------------------------------------------------------------------------------
 
-using System;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace Microsoft.Health.Encryption.Customer.Health;
 
-public class CustomerKeyInaccessibleException : Exception
+internal interface IInaccessibleStateTestProvider
 {
-    public CustomerKeyInaccessibleException() { }
-
-    public CustomerKeyInaccessibleException(string message) : base(message)
-    {
-    }
-
-    public CustomerKeyInaccessibleException(string message, Exception innerException) : base(message, innerException)
-    {
-    }
+    Task AssertHealthAsync(CancellationToken cancellationToken = default);
 }

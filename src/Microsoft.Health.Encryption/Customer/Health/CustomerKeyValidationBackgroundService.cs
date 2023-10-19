@@ -18,12 +18,14 @@ namespace Microsoft.Health.Encryption.Customer.Health;
 internal class CustomerKeyValidationBackgroundService : BackgroundService
 {
     private readonly IKeyTestProvider _keyTestProvider;
+    private readonly IDataStoreStateTestProvider _dataStoreStateTestProvider;
     private readonly ValueCache<CustomerKeyHealth> _customerManagedKeyHealth;
     private readonly CustomerManagedKeyOptions _customerManagedKeyOptions;
     private readonly ILogger<CustomerKeyValidationBackgroundService> _logger;
 
     public CustomerKeyValidationBackgroundService(
         IKeyTestProvider keyTestProvider,
+        IDataStoreStateTestProvider dataStoreStateTestProvider,
         ValueCache<CustomerKeyHealth> customerManagedKeyHealth,
         IOptions<CustomerManagedKeyOptions> customerManagedKeyOptions,
         ILogger<CustomerKeyValidationBackgroundService> logger)
@@ -31,6 +33,7 @@ internal class CustomerKeyValidationBackgroundService : BackgroundService
         EnsureArg.IsNotNull(customerManagedKeyOptions, nameof(customerManagedKeyOptions));
 
         _keyTestProvider = EnsureArg.IsNotNull(keyTestProvider, nameof(keyTestProvider));
+        _dataStoreStateTestProvider = EnsureArg.IsNotNull(dataStoreStateTestProvider, nameof(_dataStoreStateTestProvider));
         _customerManagedKeyHealth = EnsureArg.IsNotNull(customerManagedKeyHealth, nameof(customerManagedKeyHealth));
         _customerManagedKeyOptions = EnsureArg.IsNotNull(customerManagedKeyOptions.Value, nameof(customerManagedKeyOptions.Value));
         _logger = EnsureArg.IsNotNull(logger, nameof(logger));
@@ -58,11 +61,16 @@ internal class CustomerKeyValidationBackgroundService : BackgroundService
         try
         {
             await _keyTestProvider.AssertHealthAsync(cancellationToken).ConfigureAwait(false);
+            await _dataStoreStateTestProvider.AssertHealthAsync(cancellationToken).ConfigureAwait(false);
             SetHealthy();
         }
         catch (CustomerKeyInaccessibleException ex)
         {
-            SetUnhealthy(ex);
+            SetUnhealthy(ex, HealthStatusReason.CustomerManagedKeyAccessLost);
+        }
+        catch (DataStoreStateInaccessibleException ex)
+        {
+            SetUnhealthy(ex, HealthStatusReason.DataStoreStateDegraded);
         }
         catch (Exception ex)
         {
@@ -73,12 +81,12 @@ internal class CustomerKeyValidationBackgroundService : BackgroundService
         }
     }
 
-    private void SetUnhealthy(Exception ex)
+    private void SetUnhealthy(Exception ex, HealthStatusReason reason)
     {
         _customerManagedKeyHealth.Set(new CustomerKeyHealth
         {
             IsHealthy = false,
-            Reason = HealthStatusReason.CustomerManagedKeyAccessLost,
+            Reason = reason,
             Exception = ex,
         });
     }

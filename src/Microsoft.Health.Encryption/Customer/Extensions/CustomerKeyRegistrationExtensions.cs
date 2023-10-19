@@ -24,6 +24,7 @@ public static class CustomerKeyRegistrationExtensions
 
         services.AddExternalCredentialProvider();
         services.AddSingleton<IKeyTestProvider, KeyWrapUnwrapTestProvider>();
+        services.AddSingleton<IDataStoreStateTestProvider>();
 
         if (configure != null)
         {

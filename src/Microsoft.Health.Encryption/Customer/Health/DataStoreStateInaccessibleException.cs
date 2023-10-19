@@ -7,15 +7,15 @@ using System;
 
 namespace Microsoft.Health.Encryption.Customer.Health;
 
-public class CustomerKeyInaccessibleException : Exception
+public class DataStoreStateInaccessibleException : Exception
 {
-    public CustomerKeyInaccessibleException() { }
+    public DataStoreStateInaccessibleException() { }
 
-    public CustomerKeyInaccessibleException(string message) : base(message)
+    public DataStoreStateInaccessibleException(string message) : base(message)
     {
     }
 
-    public CustomerKeyInaccessibleException(string message, Exception innerException) : base(message, innerException)
+    public DataStoreStateInaccessibleException(string message, Exception innerException) : base(message, innerException)
     {
     }
 }
