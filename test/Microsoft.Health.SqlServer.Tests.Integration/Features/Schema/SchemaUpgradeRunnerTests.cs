@@ -34,10 +34,11 @@ public sealed class SchemaUpgradeRunnerTests : SqlIntegrationTestBase, IDisposab
 
     public override async Task InitializeAsync()
     {
-        await base.InitializeAsync().ConfigureAwait(false);
+        await base.InitializeAsync();
 
         var sqlConnection = Substitute.For<ISqlConnectionBuilder>();
         sqlConnection.GetSqlConnection(Arg.Any<string>(), Arg.Any<int?>()).ReturnsForAnyArgs((x) => GetSqlConnection());
+        sqlConnection.GetSqlConnectionAsync(Arg.Any<string>(), Arg.Any<int?>()).ReturnsForAnyArgs((x) => GetSqlConnection());
         var config = Options.Create(new SqlServerDataStoreConfiguration());
 
         SqlRetryLogicBaseProvider sqlRetryLogicBaseProvider = SqlConfigurableRetryFactory.CreateFixedRetryProvider(new SqlClientRetryOptions().Settings);
@@ -50,60 +51,60 @@ public sealed class SchemaUpgradeRunnerTests : SqlIntegrationTestBase, IDisposab
     [Fact]
     public async Task ApplyBaseSchema_DoesNotExist_Succeeds()
     {
-        Assert.False(await _schemaDataStore.BaseSchemaExistsAsync(CancellationToken.None).ConfigureAwait(false));
-        await _runner.ApplyBaseSchemaAsync(CancellationToken.None).ConfigureAwait(false);
-        Assert.True(await _schemaDataStore.BaseSchemaExistsAsync(CancellationToken.None).ConfigureAwait(false));
+        Assert.False(await _schemaDataStore.BaseSchemaExistsAsync(CancellationToken.None));
+        await _runner.ApplyBaseSchemaAsync(CancellationToken.None);
+        Assert.True(await _schemaDataStore.BaseSchemaExistsAsync(CancellationToken.None));
     }
 
     [Fact]
     public async Task ApplySchema_BaseSchemaDoesNotExist_Fails()
     {
-        Assert.False(await _schemaDataStore.BaseSchemaExistsAsync(CancellationToken.None).ConfigureAwait(false));
-        var outerException = await Assert.ThrowsAsync<SqlException>(() => _runner.ApplySchemaAsync(1, true, CancellationToken.None)).ConfigureAwait(false);
+        Assert.False(await _schemaDataStore.BaseSchemaExistsAsync(CancellationToken.None));
+        var outerException = await Assert.ThrowsAsync<SqlException>(() => _runner.ApplySchemaAsync(1, true, CancellationToken.None));
         Assert.Contains("Could not find stored procedure 'dbo.UpsertSchemaVersion'.", outerException.Message, StringComparison.Ordinal);
     }
 
     [Fact]
     public async Task ApplySchema_BaseSchemaExists_Succeeds()
     {
-        await _runner.ApplyBaseSchemaAsync(CancellationToken.None).ConfigureAwait(false);
-        await _runner.ApplySchemaAsync(1, applyFullSchemaSnapshot: true, CancellationToken.None).ConfigureAwait(false);
-        var version = await _schemaDataStore.GetCurrentSchemaVersionAsync(CancellationToken.None).ConfigureAwait(false);
+        await _runner.ApplyBaseSchemaAsync(CancellationToken.None);
+        await _runner.ApplySchemaAsync(1, applyFullSchemaSnapshot: true, CancellationToken.None);
+        var version = await _schemaDataStore.GetCurrentSchemaVersionAsync(CancellationToken.None);
         Assert.Equal(1, version);
     }
 
     [Fact]
     public async Task ApplySchema_UsingDiff_Succeeds()
     {
-        await _runner.ApplyBaseSchemaAsync(CancellationToken.None).ConfigureAwait(false);
-        await _runner.ApplySchemaAsync(2, applyFullSchemaSnapshot: true, CancellationToken.None).ConfigureAwait(false);
-        var version = await _schemaDataStore.GetCurrentSchemaVersionAsync(CancellationToken.None).ConfigureAwait(false);
+        await _runner.ApplyBaseSchemaAsync(CancellationToken.None);
+        await _runner.ApplySchemaAsync(2, applyFullSchemaSnapshot: true, CancellationToken.None);
+        var version = await _schemaDataStore.GetCurrentSchemaVersionAsync(CancellationToken.None);
         Assert.Equal(2, version);
-        await _runner.ApplySchemaAsync(3, applyFullSchemaSnapshot: false, CancellationToken.None).ConfigureAwait(false);
-        version = await _schemaDataStore.GetCurrentSchemaVersionAsync(CancellationToken.None).ConfigureAwait(false);
+        await _runner.ApplySchemaAsync(3, applyFullSchemaSnapshot: false, CancellationToken.None);
+        version = await _schemaDataStore.GetCurrentSchemaVersionAsync(CancellationToken.None);
         Assert.Equal(3, version);
     }
 
     [Fact]
     public async Task ApplyFullSchemaAndDiffScript_OnPreviouslyFailedAttempt_Succeeds()
     {
-        await _runner.ApplyBaseSchemaAsync(CancellationToken.None).ConfigureAwait(false);
+        await _runner.ApplyBaseSchemaAsync(CancellationToken.None);
 
         // this is to generate an error
-        await _schemaDataStore.ExecuteScriptAsync("Insert into SchemaVersion values (2, 'started')", CancellationToken.None).ConfigureAwait(false);
+        await _schemaDataStore.ExecuteScriptAsync("Insert into SchemaVersion values (2, 'started')", CancellationToken.None);
 
         // attempt 1 : To apply schemaVersion-2 fails
-        await Assert.ThrowsAsync<ExecutionFailureException>(() => _runner.ApplySchemaAsync(2, applyFullSchemaSnapshot: true, CancellationToken.None)).ConfigureAwait(false);
+        await Assert.ThrowsAsync<ExecutionFailureException>(() => _runner.ApplySchemaAsync(2, applyFullSchemaSnapshot: true, CancellationToken.None));
 
         // attempt 2 : To apply schemaVersion-2 passes
-        await _runner.ApplySchemaAsync(2, applyFullSchemaSnapshot: true, CancellationToken.None).ConfigureAwait(false);
-        var version = await _schemaDataStore.GetCurrentSchemaVersionAsync(CancellationToken.None).ConfigureAwait(false);
+        await _runner.ApplySchemaAsync(2, applyFullSchemaSnapshot: true, CancellationToken.None);
+        var version = await _schemaDataStore.GetCurrentSchemaVersionAsync(CancellationToken.None);
         Assert.Equal(2, version);
 
         // diff script for version 3 should pass even if SchemaVersion table has an entry with 'failed' status for version 3
-        await _schemaDataStore.ExecuteScriptAsync("Insert into SchemaVersion values (3, 'failed')", CancellationToken.None).ConfigureAwait(false);
-        await _runner.ApplySchemaAsync(3, applyFullSchemaSnapshot: false, CancellationToken.None).ConfigureAwait(false);
-        version = await _schemaDataStore.GetCurrentSchemaVersionAsync(CancellationToken.None).ConfigureAwait(false);
+        await _schemaDataStore.ExecuteScriptAsync("Insert into SchemaVersion values (3, 'failed')", CancellationToken.None);
+        await _runner.ApplySchemaAsync(3, applyFullSchemaSnapshot: false, CancellationToken.None);
+        version = await _schemaDataStore.GetCurrentSchemaVersionAsync(CancellationToken.None);
         Assert.Equal(3, version);
     }
 

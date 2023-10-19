@@ -8,6 +8,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using EnsureThat;
+using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Logging;
 using Microsoft.Health.Core.Features.Health;
@@ -56,14 +57,27 @@ public class SqlServerHealthCheck : IHealthCheck
                 new Dictionary<string, object> { { "Reason", cmkStatus.Reason } });
         }
 
-        using SqlConnectionWrapper sqlConnectionWrapper = await _sqlConnectionWrapperFactory.ObtainSqlConnectionWrapperAsync(cancellationToken).ConfigureAwait(false);
-        using SqlCommandWrapper sqlCommandWrapper = sqlConnectionWrapper.CreateRetrySqlCommand();
+        try
+        {
+            using SqlConnectionWrapper sqlConnectionWrapper = await _sqlConnectionWrapperFactory.ObtainSqlConnectionWrapperAsync(cancellationToken).ConfigureAwait(false);
+            using SqlCommandWrapper sqlCommandWrapper = sqlConnectionWrapper.CreateRetrySqlCommand();
 
-        sqlCommandWrapper.CommandText = "select @@DBTS";
+            sqlCommandWrapper.CommandText = "select @@DBTS";
 
-        await sqlCommandWrapper.ExecuteScalarAsync(cancellationToken).ConfigureAwait(false);
+            await sqlCommandWrapper.ExecuteScalarAsync(cancellationToken).ConfigureAwait(false);
 
-        _logger.LogInformation("Successfully connected to SQL database.");
-        return HealthCheckResult.Healthy("Successfully connected.");
+            _logger.LogInformation("Successfully connected to SQL database.");
+            return HealthCheckResult.Healthy("Successfully connected.");
+        }
+        // Error: Can not connect to the database in its current state. This error can be for various DB states (recovering, inacessible) but we assume that our DB will only hit this for Inaccessible state
+        catch (SqlException ex) when (ex.ErrorCode == 40925)
+        {
+            // DB is status in Inaccessible because the encryption key was inacessible for > 30 mins. User must reprovision or we need to revalidate key on SQL DB. 
+            return new HealthCheckResult(
+                HealthStatus.Degraded,
+                DegradedDescription,
+                ex,
+                new Dictionary<string, object> { { "Reason", HealthStatusReason.DataStoreStateDegraded } });
+        }
     }
 }

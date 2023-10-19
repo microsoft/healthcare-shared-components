@@ -59,4 +59,9 @@ public static class SqlErrorCodes
     /// The query processor ran out of internal resources and could not produce a query plan.
     /// </summary>
     public const short QueryProcessorNoQueryPlan = 8623;
+
+    /// <summary>
+    /// Cannot insert duplicate key row in object with unique index.
+    /// </summary>
+    public const short UniqueKeyConstraintVoilation = 2601;
 }

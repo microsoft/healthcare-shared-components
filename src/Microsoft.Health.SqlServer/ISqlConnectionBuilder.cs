@@ -3,7 +3,6 @@
 // Licensed under the MIT License (MIT). See LICENSE in the repo root for license information.
 // -------------------------------------------------------------------------------------------------
 
-using System;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Data.SqlClient;
@@ -29,7 +28,6 @@ public interface ISqlConnectionBuilder
     /// <param name="maxPoolSize">Max Sql connection pool size</param>
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>SqlConnection object.</returns>
-    [Obsolete($"Use {nameof(GetSqlConnection)} instead.")]
     Task<SqlConnection> GetSqlConnectionAsync(string initialCatalog = null, int? maxPoolSize = null, CancellationToken cancellationToken = default);
 
     /// <summary>
