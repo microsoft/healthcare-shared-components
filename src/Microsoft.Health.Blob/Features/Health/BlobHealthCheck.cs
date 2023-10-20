@@ -4,7 +4,6 @@
 // -------------------------------------------------------------------------------------------------
 
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Azure.Storage.Blobs;
@@ -22,10 +21,8 @@ namespace Microsoft.Health.Blob.Features.Health;
 /// <summary>
 /// Performs health checks on blob storage.
 /// </summary>
-public class BlobHealthCheck : IHealthCheck
+public class BlobHealthCheck : KeyAccessDependent, IHealthCheck
 {
-    // This health check will not pass if the cached health is failing for any of these reasons
-    private readonly IEnumerable<HealthStatusReason> _dependentHealthStatusReasons = new List<HealthStatusReason> { HealthStatusReason.CustomerManagedKeyAccessLost };
     private const string DegradedDescription = "The health of the store has degraded.";
 
     private readonly BlobServiceClient _client;
@@ -70,8 +67,7 @@ public class BlobHealthCheck : IHealthCheck
         _logger.LogInformation("Performing health check.");
 
         CustomerKeyHealth cmkStatus = await _customerKeyHealthCache.GetAsync(cancellationToken).ConfigureAwait(false);
-        if (!cmkStatus.IsHealthy &&
-            _dependentHealthStatusReasons.Contains(cmkStatus.Reason))
+        if (IsImpactedByCustomerKeyHealth(cmkStatus))
         {
             // if the customer-managed key is inaccessible, storage will also be inaccessible
             return new HealthCheckResult(

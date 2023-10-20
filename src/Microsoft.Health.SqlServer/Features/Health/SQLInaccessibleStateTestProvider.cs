@@ -8,12 +8,13 @@ using System.Threading.Tasks;
 using EnsureThat;
 using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.Logging;
+using Microsoft.Health.Core.Features.Health;
 using Microsoft.Health.Encryption.Customer.Health;
 using Microsoft.Health.SqlServer.Features.Client;
 
 namespace Microsoft.Health.SqlServer.Features.Health;
 
-internal class SQLInaccessibleStateTestProvider : IDataStoreStateTestProvider
+internal class SQLInaccessibleStateTestProvider : ICustomerKeyTestProvider
 {
     private const string InaccessibleMessage = "The SQL DB state is Inaccessible";
 
@@ -28,18 +29,28 @@ internal class SQLInaccessibleStateTestProvider : IDataStoreStateTestProvider
         _logger = EnsureArg.IsNotNull(_logger, nameof(logger));
     }
 
-    public async Task AssertHealthAsync(CancellationToken cancellationToken = default)
+    public int Priority => 2;
+
+    public HealthStatusReason FailureReason => HealthStatusReason.DataStoreStateDegraded;
+
+    public async Task<CustomerKeyHealth> AssertHealthAsync(CancellationToken cancellationToken = default)
     {
         try
         {
             using SqlConnectionWrapper sqlConnectionWrapper = await _sqlConnectionWrapperFactory.ObtainSqlConnectionWrapperAsync(cancellationToken).ConfigureAwait(false);
+            return new CustomerKeyHealth();
         }
         // Error: Can not connect to the database in its current state. This error can be for various DB states (recovering, inacessible) but we assume that our DB will only hit this for Inaccessible state
         catch (SqlException ex) when (ex.ErrorCode == 40925)
         {
             _logger.LogInformation(ex, InaccessibleMessage);
 
-            throw new DataStoreStateInaccessibleException(InaccessibleMessage, ex);
+            return new CustomerKeyHealth
+            {
+                IsHealthy = false,
+                Reason = FailureReason,
+                Exception = ex,
+            };
         }
     }
 }

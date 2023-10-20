@@ -3,19 +3,17 @@
 // Licensed under the MIT License (MIT). See LICENSE in the repo root for license information.
 // -------------------------------------------------------------------------------------------------
 
-using System;
+using System.Threading;
+using System.Threading.Tasks;
+using Microsoft.Health.Core.Features.Health;
 
 namespace Microsoft.Health.Encryption.Customer.Health;
 
-public class DataStoreStateInaccessibleException : Exception
+internal interface ICustomerKeyTestProvider
 {
-    public DataStoreStateInaccessibleException() { }
+    int Priority { get; }
 
-    public DataStoreStateInaccessibleException(string message) : base(message)
-    {
-    }
+    HealthStatusReason FailureReason { get; }
 
-    public DataStoreStateInaccessibleException(string message, Exception innerException) : base(message, innerException)
-    {
-    }
+    Task<CustomerKeyHealth> AssertHealthAsync(CancellationToken cancellationToken = default);
 }

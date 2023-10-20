@@ -4,6 +4,8 @@
 // -------------------------------------------------------------------------------------------------
 
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using EnsureThat;
@@ -17,23 +19,22 @@ namespace Microsoft.Health.Encryption.Customer.Health;
 
 internal class CustomerKeyValidationBackgroundService : BackgroundService
 {
-    private readonly IKeyTestProvider _keyTestProvider;
-    private readonly IDataStoreStateTestProvider _dataStoreStateTestProvider;
+    private readonly IOrderedEnumerable<ICustomerKeyTestProvider> _customerKeyTestProviders;
     private readonly ValueCache<CustomerKeyHealth> _customerManagedKeyHealth;
     private readonly CustomerManagedKeyOptions _customerManagedKeyOptions;
     private readonly ILogger<CustomerKeyValidationBackgroundService> _logger;
 
     public CustomerKeyValidationBackgroundService(
-        IKeyTestProvider keyTestProvider,
-        IDataStoreStateTestProvider dataStoreStateTestProvider,
+        IEnumerable<ICustomerKeyTestProvider> keyTestProviders,
         ValueCache<CustomerKeyHealth> customerManagedKeyHealth,
         IOptions<CustomerManagedKeyOptions> customerManagedKeyOptions,
         ILogger<CustomerKeyValidationBackgroundService> logger)
     {
         EnsureArg.IsNotNull(customerManagedKeyOptions, nameof(customerManagedKeyOptions));
+        EnsureArg.IsNotNull(keyTestProviders, nameof(keyTestProviders));
+        EnsureArg.IsTrue(keyTestProviders.Any(), nameof(keyTestProviders));
 
-        _keyTestProvider = EnsureArg.IsNotNull(keyTestProvider, nameof(keyTestProvider));
-        _dataStoreStateTestProvider = EnsureArg.IsNotNull(dataStoreStateTestProvider, nameof(_dataStoreStateTestProvider));
+        _customerKeyTestProviders = keyTestProviders.OrderBy(k => k.Priority);
         _customerManagedKeyHealth = EnsureArg.IsNotNull(customerManagedKeyHealth, nameof(customerManagedKeyHealth));
         _customerManagedKeyOptions = EnsureArg.IsNotNull(customerManagedKeyOptions.Value, nameof(customerManagedKeyOptions.Value));
         _logger = EnsureArg.IsNotNull(logger, nameof(logger));
@@ -55,49 +56,19 @@ internal class CustomerKeyValidationBackgroundService : BackgroundService
         }
     }
 
-    [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "This background service failing should not crash the application.")]
     internal async Task CheckHealth(CancellationToken cancellationToken)
     {
-        try
+        foreach (ICustomerKeyTestProvider customerKeyTestProvider in _customerKeyTestProviders)
         {
-            await _keyTestProvider.AssertHealthAsync(cancellationToken).ConfigureAwait(false);
-            await _dataStoreStateTestProvider.AssertHealthAsync(cancellationToken).ConfigureAwait(false);
-            SetHealthy();
-        }
-        catch (CustomerKeyInaccessibleException ex)
-        {
-            SetUnhealthy(ex, HealthStatusReason.CustomerManagedKeyAccessLost);
-        }
-        catch (DataStoreStateInaccessibleException ex)
-        {
-            SetUnhealthy(ex, HealthStatusReason.DataStoreStateDegraded);
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, $"{nameof(CustomerKeyValidationBackgroundService)} has failed unexpectedly.");
+            CustomerKeyHealth health = await customerKeyTestProvider.AssertHealthAsync(cancellationToken).ConfigureAwait(false);
 
-            // reset to healthy so unexpected errors are not categorized as a customer misconfiguration
-            SetHealthy();
+            if (!health.IsHealthy)
+            {
+                _customerManagedKeyHealth.Set(health);
+                return;
+            }
         }
-    }
 
-    private void SetUnhealthy(Exception ex, HealthStatusReason reason)
-    {
-        _customerManagedKeyHealth.Set(new CustomerKeyHealth
-        {
-            IsHealthy = false,
-            Reason = reason,
-            Exception = ex,
-        });
-    }
-
-    private void SetHealthy()
-    {
-        _customerManagedKeyHealth.Set(new CustomerKeyHealth
-        {
-            IsHealthy = true,
-            Reason = HealthStatusReason.None,
-            Exception = null,
-        });
+        _customerManagedKeyHealth.Set(new CustomerKeyHealth());
     }
 }
