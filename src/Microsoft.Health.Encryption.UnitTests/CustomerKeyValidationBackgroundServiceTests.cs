@@ -40,7 +40,7 @@ public class CustomerKeyValidationBackgroundServiceTests : IDisposable
             .Returns(x =>
             {
                 x.Arg<CancellationToken>().ThrowIfCancellationRequested();
-                return Task.CompletedTask;
+                return Task.FromResult(new CustomerKeyHealth());
             });
 
         _dataStoreStateTestProvider.Priority.Returns(2);
@@ -49,7 +49,7 @@ public class CustomerKeyValidationBackgroundServiceTests : IDisposable
             .Returns(x =>
             {
                 x.Arg<CancellationToken>().ThrowIfCancellationRequested();
-                return Task.CompletedTask;
+                return Task.FromResult(new CustomerKeyHealth());
             });
 
         _validationService = new CustomerKeyValidationBackgroundService(
@@ -74,7 +74,7 @@ public class CustomerKeyValidationBackgroundServiceTests : IDisposable
     public async Task GivenKeyAccessFails_WhenHealthIsChecked_ThenNotHealthStateIsSaved()
     {
         var rfe = new RequestFailedException("key request failed");
-        _keyWrapUnwrapTestProvider.AssertHealthAsync().Returns(new CustomerKeyHealth()
+        _keyWrapUnwrapTestProvider.AssertHealthAsync(Arg.Any<CancellationToken>()).Returns(new CustomerKeyHealth()
         {
             IsHealthy = false,
             Reason = HealthStatusReason.CustomerManagedKeyAccessLost,
@@ -93,7 +93,7 @@ public class CustomerKeyValidationBackgroundServiceTests : IDisposable
     [Fact]
     public async Task GivenDataStoreStateFails_WhenHealthIsChecked_ThenNotHealthStateIsSaved()
     {
-        _dataStoreStateTestProvider.AssertHealthAsync().Returns(new CustomerKeyHealth()
+        _dataStoreStateTestProvider.AssertHealthAsync(Arg.Any<CancellationToken>()).Returns(new CustomerKeyHealth()
         {
             IsHealthy = false,
             Reason = HealthStatusReason.DataStoreStateDegraded,
@@ -111,7 +111,7 @@ public class CustomerKeyValidationBackgroundServiceTests : IDisposable
     [Fact]
     public async Task GivenAllTestProvidersFail_WhenHealthIsChecked_HighestPriorityHealthIsSaved()
     {
-        _dataStoreStateTestProvider.AssertHealthAsync().Returns(new CustomerKeyHealth()
+        _dataStoreStateTestProvider.AssertHealthAsync(Arg.Any<CancellationToken>()).Returns(new CustomerKeyHealth()
         {
             IsHealthy = false,
             Reason = HealthStatusReason.DataStoreStateDegraded,
@@ -119,7 +119,7 @@ public class CustomerKeyValidationBackgroundServiceTests : IDisposable
         });
 
         var rfe = new RequestFailedException("key request failed");
-        _keyWrapUnwrapTestProvider.AssertHealthAsync().Returns(new CustomerKeyHealth()
+        _keyWrapUnwrapTestProvider.AssertHealthAsync(Arg.Any<CancellationToken>()).Returns(new CustomerKeyHealth()
         {
             IsHealthy = false,
             Reason = HealthStatusReason.CustomerManagedKeyAccessLost,

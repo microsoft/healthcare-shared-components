@@ -14,6 +14,6 @@ public class KeyAccessDependent : CustomerKeyDependent
     {
         EnsureArg.IsNotNull(customerKeyHealth, nameof(customerKeyHealth));
 
-        return !customerKeyHealth.IsHealthy && (customerKeyHealth.Reason == HealthStatusReason.CustomerManagedKeyAccessLost || customerKeyHealth.Reason == HealthStatusReason.DataStoreStateDegraded);
+        return !customerKeyHealth.IsHealthy && customerKeyHealth.Reason == HealthStatusReason.CustomerManagedKeyAccessLost;
     }
 }
