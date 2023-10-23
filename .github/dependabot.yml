@@ -8,6 +8,9 @@ updates:
       interval: "daily"
       time: "08:00"
       timezone: "America/Los_Angeles"
+    package-regex: "^Microsoft.Identity.*$"
+    ignore:
+      - version: ">= 7.0.0"
     open-pull-requests-limit: 30
 
   - package-ecosystem: "github-actions"
