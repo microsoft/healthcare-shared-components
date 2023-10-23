@@ -8,9 +8,8 @@ updates:
       interval: "daily"
       time: "08:00"
       timezone: "America/Los_Angeles"
-    package-regex: "^Microsoft.Identity.*$"
     ignore:
-      - dependency-name: "IdentityModel"
+      - dependency-name: "Microsoft.IdentityModel.*"
         # Ignore all Dependabot updates for version >= 7.0.0
         versions: ["7.*"]
     open-pull-requests-limit: 30
