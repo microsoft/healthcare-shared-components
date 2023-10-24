@@ -11,7 +11,7 @@
     <EmbedUntrackedSources>true</EmbedUntrackedSources>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <HighEntropyVA>true</HighEntropyVA>
-    <IdentityModelTokenPackageVersion>6.33.0</IdentityModelTokenPackageVersion>
+    <IdentityModelTokenPackageVersion>7.0.3</IdentityModelTokenPackageVersion>
     <IsPackable>true</IsPackable>
     <LangVersion>latest</LangVersion>
     <LtsVersion>net6.0</LtsVersion>
