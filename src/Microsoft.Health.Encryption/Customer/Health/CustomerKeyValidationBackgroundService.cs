@@ -8,6 +8,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using EnsureThat;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.Health.Core.Features.Health;
 using Microsoft.Health.Encryption.Customer.Configs;
@@ -16,14 +17,16 @@ namespace Microsoft.Health.Encryption.Customer.Health;
 
 internal class CustomerKeyValidationBackgroundService : BackgroundService
 {
-    private readonly IKeyWrapUnwrapTestProvider _keyWrapUnwrapTestProvider;
+    private readonly IKeyTestProvider _keyWrapUnwrapTestProvider;
     private readonly ValueCache<CustomerKeyHealth> _customerManagedKeyHealth;
     private readonly CustomerManagedKeyOptions _customerManagedKeyOptions;
+    private readonly ILogger<CustomerKeyValidationBackgroundService> _logger;
 
     public CustomerKeyValidationBackgroundService(
-        IKeyWrapUnwrapTestProvider keyTestProvider,
+        IKeyTestProvider keyTestProvider,
         ValueCache<CustomerKeyHealth> customerManagedKeyHealth,
-        IOptions<CustomerManagedKeyOptions> customerManagedKeyOptions)
+        IOptions<CustomerManagedKeyOptions> customerManagedKeyOptions,
+        ILogger<CustomerKeyValidationBackgroundService> logger)
     {
         EnsureArg.IsNotNull(customerManagedKeyOptions, nameof(customerManagedKeyOptions));
         EnsureArg.IsNotNull(keyTestProvider, nameof(keyTestProvider));
@@ -31,6 +34,7 @@ internal class CustomerKeyValidationBackgroundService : BackgroundService
         _keyWrapUnwrapTestProvider = keyTestProvider;
         _customerManagedKeyHealth = EnsureArg.IsNotNull(customerManagedKeyHealth, nameof(customerManagedKeyHealth));
         _customerManagedKeyOptions = EnsureArg.IsNotNull(customerManagedKeyOptions.Value, nameof(customerManagedKeyOptions.Value));
+        _logger = EnsureArg.IsNotNull(logger, nameof(logger));
     }
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
@@ -49,9 +53,20 @@ internal class CustomerKeyValidationBackgroundService : BackgroundService
         }
     }
 
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "This background service failing should not crash the application.")]
     internal async Task CheckHealth(CancellationToken cancellationToken)
     {
-        CustomerKeyHealth customerKeyHealth = await _keyWrapUnwrapTestProvider.AssertHealthAsync(cancellationToken).ConfigureAwait(false);
-        _customerManagedKeyHealth.Set(customerKeyHealth);
+        try
+        {
+            CustomerKeyHealth customerKeyHealth = await _keyWrapUnwrapTestProvider.AssertHealthAsync(cancellationToken).ConfigureAwait(false);
+            _customerManagedKeyHealth.Set(customerKeyHealth);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, $"{nameof(CustomerKeyValidationBackgroundService)} has failed unexpectedly.");
+
+            // reset to healthy so unexpected errors are not categorized as a customer misconfiguration
+            _customerManagedKeyHealth.Set(new CustomerKeyHealth());
+        }
     }
 }

@@ -4,9 +4,7 @@
 // -------------------------------------------------------------------------------------------------
 
 using System;
-using System.Collections.Generic;
 using Azure;
-using Microsoft.Health.Core.Features.Health;
 using Microsoft.Data.SqlClient;
 
 namespace Microsoft.Health.Encryption.Customer.Health;
@@ -20,8 +18,4 @@ public static class CustomerKeyConstants
     /// Intentionally leaving out code 40925 when the DB is Inaccessible so that can be reported using a different HealthStatusReason
     /// </summary>
     public static Func<Exception, bool> SQLExceptionFilter => ex => ex is SqlException sqlException && (sqlException.ErrorCode == 40981 || sqlException.ErrorCode == 33183 || sqlException.ErrorCode == 33184);
-
-    public static IEnumerable<HealthStatusReason> KeyAccessDependentReasons => new List<HealthStatusReason>() { HealthStatusReason.CustomerManagedKeyAccessLost };
-
-    public static IEnumerable<HealthStatusReason> KeyAccessAndDataStoreStateDependentReasons => new List<HealthStatusReason>() { HealthStatusReason.CustomerManagedKeyAccessLost, HealthStatusReason.DataStoreStateDegraded };
 }

@@ -5,13 +5,10 @@
 
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.Health.Core.Features.Health;
 
 namespace Microsoft.Health.Encryption.Customer.Health;
 
-internal interface IKeyWrapUnwrapTestProvider
+internal interface IKeyTestProvider
 {
-    HealthStatusReason FailureReason { get; }
-
     Task<CustomerKeyHealth> AssertHealthAsync(CancellationToken cancellationToken = default);
 }

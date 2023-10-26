@@ -7,6 +7,7 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 using Azure;
+using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 using Microsoft.Health.Core.Features.Health;
 using Microsoft.Health.Encryption.Customer.Configs;
@@ -18,7 +19,7 @@ namespace Microsoft.Health.Encryption.UnitTests;
 
 public class CustomerKeyValidationBackgroundServiceTests : IDisposable
 {
-    private readonly IKeyWrapUnwrapTestProvider _keyWrapUnwrapTestProvider = Substitute.For<IKeyWrapUnwrapTestProvider>();
+    private readonly IKeyTestProvider _keyWrapUnwrapTestProvider = Substitute.For<IKeyTestProvider>();
 
     private readonly CustomerManagedKeyOptions _customerManagedKeyOptions = new CustomerManagedKeyOptions { KeyName = "test" };
 
@@ -31,7 +32,6 @@ public class CustomerKeyValidationBackgroundServiceTests : IDisposable
         IOptions<CustomerManagedKeyOptions> cmkOptions = Substitute.For<IOptions<CustomerManagedKeyOptions>>();
         cmkOptions.Value.Returns(_customerManagedKeyOptions);
 
-        _keyWrapUnwrapTestProvider.FailureReason.Returns(HealthStatusReason.CustomerManagedKeyAccessLost);
         _keyWrapUnwrapTestProvider.AssertHealthAsync(Arg.Any<CancellationToken>())
             .Returns(x =>
             {
@@ -42,7 +42,8 @@ public class CustomerKeyValidationBackgroundServiceTests : IDisposable
         _validationService = new CustomerKeyValidationBackgroundService(
             _keyWrapUnwrapTestProvider,
             _customerKeyHealthCache,
-            cmkOptions);
+            cmkOptions,
+            NullLogger<CustomerKeyValidationBackgroundService>.Instance);
     }
 
     [Fact]
