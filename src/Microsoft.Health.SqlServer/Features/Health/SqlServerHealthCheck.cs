@@ -3,6 +3,7 @@
 // Licensed under the MIT License (MIT). See LICENSE in the repo root for license information.
 // -------------------------------------------------------------------------------------------------
 
+using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
@@ -18,39 +19,30 @@ namespace Microsoft.Health.SqlServer.Features.Health;
 /// <summary>
 /// An <see cref="IHealthCheck"/> implementation that verifies connectivity to the SQL database
 /// </summary>
-public class SqlServerHealthCheck : KeyAccessAndDataStoreStateDependent, IHealthCheck
+public class SqlServerHealthCheck : StorageHealthCheck
 {
-    private const string DegradedDescription = "The health of the store has degraded.";
-
     private readonly ILogger<SqlServerHealthCheck> _logger;
     private readonly SqlConnectionWrapperFactory _sqlConnectionWrapperFactory;
-    private readonly ValueCache<CustomerKeyHealth> _customerKeyHealthCache;
 
     public SqlServerHealthCheck(
         SqlConnectionWrapperFactory sqlConnectionWrapperFactory,
         ValueCache<CustomerKeyHealth> customerKeyHealthCache,
         ILogger<SqlServerHealthCheck> logger)
+        : base(customerKeyHealthCache, logger)
     {
         _sqlConnectionWrapperFactory = EnsureArg.IsNotNull(sqlConnectionWrapperFactory, nameof(sqlConnectionWrapperFactory));
-        _customerKeyHealthCache = EnsureArg.IsNotNull(customerKeyHealthCache, nameof(customerKeyHealthCache));
         _logger = EnsureArg.IsNotNull(logger, nameof(logger));
     }
 
-    public async Task<HealthCheckResult> CheckHealthAsync(HealthCheckContext context, CancellationToken cancellationToken)
+    public override string DegradedDescription => "The health of the store has degraded.";
+
+    public override IEnumerable<HealthStatusReason> DependentHealthReasons => CustomerKeyConstants.KeyAccessAndDataStoreStateDependentReasons;
+
+    public override Func<Exception, bool> CMKAccessLostExceptionFilter => CustomerKeyConstants.SQLExceptionFilter;
+
+    public override async Task CheckStorageHealthAsync(CancellationToken cancellationToken)
     {
-        _logger.LogInformation($"Starting {nameof(SqlServerHealthCheck)}.");
-
-        CustomerKeyHealth cmkStatus = await _customerKeyHealthCache.GetAsync(cancellationToken).ConfigureAwait(false);
-
-        if (IsImpactedByCustomerKeyHealth(cmkStatus))
-        {
-            // if the customer-managed key is inaccessible, storage will also be inaccessible
-            return new HealthCheckResult(
-                HealthStatus.Degraded,
-                DegradedDescription,
-                cmkStatus.Exception,
-                new Dictionary<string, object> { { "Reason", cmkStatus.Reason } });
-        }
+        _logger.LogInformation($"Performing health check for {nameof(SqlServerHealthCheck)}");
 
         using SqlConnectionWrapper sqlConnectionWrapper = await _sqlConnectionWrapperFactory.ObtainSqlConnectionWrapperAsync(cancellationToken).ConfigureAwait(false);
         using SqlCommandWrapper sqlCommandWrapper = sqlConnectionWrapper.CreateRetrySqlCommand();
@@ -60,6 +52,5 @@ public class SqlServerHealthCheck : KeyAccessAndDataStoreStateDependent, IHealth
         await sqlCommandWrapper.ExecuteScalarAsync(cancellationToken).ConfigureAwait(false);
 
         _logger.LogInformation("Successfully connected to SQL database.");
-        return HealthCheckResult.Healthy("Successfully connected.");
     }
 }

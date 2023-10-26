@@ -3,12 +3,12 @@
 // Licensed under the MIT License (MIT). See LICENSE in the repo root for license information.
 // -------------------------------------------------------------------------------------------------
 
+using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using Azure.Storage.Blobs;
 using EnsureThat;
-using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.Health.Blob.Configs;
@@ -21,14 +21,11 @@ namespace Microsoft.Health.Blob.Features.Health;
 /// <summary>
 /// Performs health checks on blob storage.
 /// </summary>
-public class BlobHealthCheck : KeyAccessDependent, IHealthCheck
+public class BlobHealthCheck : StorageHealthCheck
 {
-    private const string DegradedDescription = "The health of the store has degraded.";
-
     private readonly BlobServiceClient _client;
     private readonly BlobContainerConfiguration _blobContainerConfiguration;
     private readonly IBlobClientTestProvider _testProvider;
-    private readonly ValueCache<CustomerKeyHealth> _customerKeyHealthCache;
     private readonly ILogger<BlobHealthCheck> _logger;
 
     /// <summary>
@@ -47,37 +44,29 @@ public class BlobHealthCheck : KeyAccessDependent, IHealthCheck
         IBlobClientTestProvider testProvider,
         ValueCache<CustomerKeyHealth> customerKeyHealthCache,
         ILogger<BlobHealthCheck> logger)
+        : base(customerKeyHealthCache, logger)
     {
         EnsureArg.IsNotNull(client, nameof(client));
         EnsureArg.IsNotNull(namedBlobContainerConfigurationAccessor, nameof(namedBlobContainerConfigurationAccessor));
         EnsureArg.IsNotNullOrWhiteSpace(containerConfigurationName, nameof(containerConfigurationName));
         EnsureArg.IsNotNull(testProvider, nameof(testProvider));
-        EnsureArg.IsNotNull(customerKeyHealthCache, nameof(customerKeyHealthCache));
         EnsureArg.IsNotNull(logger, nameof(logger));
 
         _client = client;
         _blobContainerConfiguration = namedBlobContainerConfigurationAccessor.Get(containerConfigurationName);
         _testProvider = testProvider;
-        _customerKeyHealthCache = customerKeyHealthCache;
         _logger = logger;
     }
 
-    public async Task<HealthCheckResult> CheckHealthAsync(HealthCheckContext context, CancellationToken cancellationToken = default)
+    public override string DegradedDescription => "The health of the store has degraded.";
+
+    public override IEnumerable<HealthStatusReason> DependentHealthReasons => CustomerKeyConstants.KeyAccessDependentReasons;
+
+    public override Func<Exception, bool> CMKAccessLostExceptionFilter => CustomerKeyConstants.StorageAccountExceptionFilter;
+
+    public override async Task CheckStorageHealthAsync(CancellationToken cancellationToken)
     {
-        _logger.LogInformation("Performing health check.");
-
-        CustomerKeyHealth cmkStatus = await _customerKeyHealthCache.GetAsync(cancellationToken).ConfigureAwait(false);
-        if (IsImpactedByCustomerKeyHealth(cmkStatus))
-        {
-            // if the customer-managed key is inaccessible, storage will also be inaccessible
-            return new HealthCheckResult(
-                HealthStatus.Degraded,
-                DegradedDescription,
-                cmkStatus.Exception,
-                new Dictionary<string, object> { { "Reason", cmkStatus.Reason } });
-        }
-
+        _logger.LogInformation($"Performing health check for {nameof(BlobHealthCheck)}");
         await _testProvider.PerformTestAsync(_client, _blobContainerConfiguration, cancellationToken).ConfigureAwait(false);
-        return HealthCheckResult.Healthy("Successfully connected.");
     }
 }
