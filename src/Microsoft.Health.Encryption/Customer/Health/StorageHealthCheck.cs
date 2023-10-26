@@ -8,7 +8,6 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using EnsureThat;
-using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Logging;
 using Microsoft.Health.Core.Features.Health;
@@ -43,8 +42,7 @@ public abstract class StorageHealthCheck : IHealthCheck
 
         try
         {
-            await CheckStorageHealthAsync(cancellationToken).ConfigureAwait(false);
-            return HealthCheckResult.Healthy("Successfully connected.");
+            return await CheckStorageHealthAsync(cancellationToken).ConfigureAwait(false);
         }
         catch (Exception ex) when (CMKAccessLostExceptionFilter(ex))
         {
@@ -54,20 +52,11 @@ public abstract class StorageHealthCheck : IHealthCheck
                 ex,
                 new Dictionary<string, object> { { "Reason", HealthStatusReason.CustomerManagedKeyAccessLost } });
         }
-        // Error: "Can not connect to the database in its current state". This error can be for various DB states (recovering, inacessible) but we assume that our DB will only hit this for Inaccessible state
-        catch (SqlException sqlEx) when (sqlEx.ErrorCode == 40925)
-        {
-            return new HealthCheckResult(
-                HealthStatus.Degraded,
-                DegradedDescription,
-                sqlEx,
-                new Dictionary<string, object> { { "Reason", HealthStatusReason.DataStoreStateDegraded } });
-        }
     }
 
-    public abstract string DegradedDescription { get; }
+    public virtual string DegradedDescription => "The health of the store has degraded.";
 
-    public abstract Func<Exception, bool> CMKAccessLostExceptionFilter { get; }
+    public abstract bool CMKAccessLostExceptionFilter(Exception ex);
 
-    public abstract Task CheckStorageHealthAsync(CancellationToken cancellationToken);
+    public abstract Task<HealthCheckResult> CheckStorageHealthAsync(CancellationToken cancellationToken);
 }

@@ -4,9 +4,11 @@
 // -------------------------------------------------------------------------------------------------
 
 using System;
+using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using EnsureThat;
+using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Logging;
 using Microsoft.Health.Core.Features.Health;
@@ -33,21 +35,33 @@ public class SqlServerHealthCheck : StorageHealthCheck
         _logger = EnsureArg.IsNotNull(logger, nameof(logger));
     }
 
-    public override string DegradedDescription => "The health of the store has degraded.";
+    public override bool CMKAccessLostExceptionFilter(Exception ex) => CustomerKeyConstants.SQLExceptionFilter(ex);
 
-    public override Func<Exception, bool> CMKAccessLostExceptionFilter => CustomerKeyConstants.SQLExceptionFilter;
-
-    public override async Task CheckStorageHealthAsync(CancellationToken cancellationToken)
+    public override async Task<HealthCheckResult> CheckStorageHealthAsync(CancellationToken cancellationToken)
     {
-        _logger.LogInformation($"Performing health check for {nameof(SqlServerHealthCheck)}");
+        try
+        {
+            _logger.LogInformation($"Performing health check for {nameof(SqlServerHealthCheck)}");
 
-        using SqlConnectionWrapper sqlConnectionWrapper = await _sqlConnectionWrapperFactory.ObtainSqlConnectionWrapperAsync(cancellationToken).ConfigureAwait(false);
-        using SqlCommandWrapper sqlCommandWrapper = sqlConnectionWrapper.CreateRetrySqlCommand();
+            using SqlConnectionWrapper sqlConnectionWrapper = await _sqlConnectionWrapperFactory.ObtainSqlConnectionWrapperAsync(cancellationToken).ConfigureAwait(false);
+            using SqlCommandWrapper sqlCommandWrapper = sqlConnectionWrapper.CreateRetrySqlCommand();
 
-        sqlCommandWrapper.CommandText = "select @@DBTS";
+            sqlCommandWrapper.CommandText = "select @@DBTS";
 
-        await sqlCommandWrapper.ExecuteScalarAsync(cancellationToken).ConfigureAwait(false);
+            await sqlCommandWrapper.ExecuteScalarAsync(cancellationToken).ConfigureAwait(false);
 
-        _logger.LogInformation("Successfully connected to SQL database.");
+            _logger.LogInformation("Successfully connected to SQL database.");
+
+            return HealthCheckResult.Healthy("Successfully connected.");
+        }
+        // Error: "Can not connect to the database in its current state". This error can be for various DB states (recovering, inacessible) but we assume that our DB will only hit this for Inaccessible state
+        catch (SqlException sqlEx) when (sqlEx.ErrorCode == 40925)
+        {
+            return new HealthCheckResult(
+                HealthStatus.Degraded,
+                DegradedDescription,
+                sqlEx,
+                new Dictionary<string, object> { { "Reason", HealthStatusReason.DataStoreStateDegraded } });
+        }
     }
 }

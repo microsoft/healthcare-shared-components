@@ -8,6 +8,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Azure.Storage.Blobs;
 using EnsureThat;
+using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.Health.Blob.Configs;
@@ -57,13 +58,13 @@ public class BlobHealthCheck : StorageHealthCheck
         _logger = logger;
     }
 
-    public override string DegradedDescription => "The health of the store has degraded.";
+    public override bool CMKAccessLostExceptionFilter(Exception ex) => CustomerKeyConstants.StorageAccountExceptionFilter(ex);
 
-    public override Func<Exception, bool> CMKAccessLostExceptionFilter => CustomerKeyConstants.StorageAccountExceptionFilter;
-
-    public override async Task CheckStorageHealthAsync(CancellationToken cancellationToken)
+    public override async Task<HealthCheckResult> CheckStorageHealthAsync(CancellationToken cancellationToken)
     {
         _logger.LogInformation($"Performing health check for {nameof(BlobHealthCheck)}");
         await _testProvider.PerformTestAsync(_client, _blobContainerConfiguration, cancellationToken).ConfigureAwait(false);
+
+        return HealthCheckResult.Healthy("Successfully connected.");
     }
 }
