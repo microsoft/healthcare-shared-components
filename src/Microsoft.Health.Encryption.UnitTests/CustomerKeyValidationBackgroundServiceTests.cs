@@ -4,11 +4,9 @@
 // -------------------------------------------------------------------------------------------------
 
 using System;
-using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using Azure;
-using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 using Microsoft.Health.Core.Features.Health;
 using Microsoft.Health.Encryption.Customer.Configs;
@@ -20,8 +18,7 @@ namespace Microsoft.Health.Encryption.UnitTests;
 
 public class CustomerKeyValidationBackgroundServiceTests : IDisposable
 {
-    private readonly ICustomerKeyTestProvider _keyWrapUnwrapTestProvider = Substitute.For<ICustomerKeyTestProvider>();
-    private readonly ICustomerKeyTestProvider _dataStoreStateTestProvider = Substitute.For<ICustomerKeyTestProvider>();
+    private readonly IKeyWrapUnwrapTestProvider _keyWrapUnwrapTestProvider = Substitute.For<IKeyWrapUnwrapTestProvider>();
 
     private readonly CustomerManagedKeyOptions _customerManagedKeyOptions = new CustomerManagedKeyOptions { KeyName = "test" };
 
@@ -34,7 +31,6 @@ public class CustomerKeyValidationBackgroundServiceTests : IDisposable
         IOptions<CustomerManagedKeyOptions> cmkOptions = Substitute.For<IOptions<CustomerManagedKeyOptions>>();
         cmkOptions.Value.Returns(_customerManagedKeyOptions);
 
-        _keyWrapUnwrapTestProvider.Priority.Returns(1);
         _keyWrapUnwrapTestProvider.FailureReason.Returns(HealthStatusReason.CustomerManagedKeyAccessLost);
         _keyWrapUnwrapTestProvider.AssertHealthAsync(Arg.Any<CancellationToken>())
             .Returns(x =>
@@ -43,20 +39,10 @@ public class CustomerKeyValidationBackgroundServiceTests : IDisposable
                 return Task.FromResult(new CustomerKeyHealth());
             });
 
-        _dataStoreStateTestProvider.Priority.Returns(2);
-        _dataStoreStateTestProvider.FailureReason.Returns(HealthStatusReason.DataStoreStateDegraded);
-        _dataStoreStateTestProvider.AssertHealthAsync(Arg.Any<CancellationToken>())
-            .Returns(x =>
-            {
-                x.Arg<CancellationToken>().ThrowIfCancellationRequested();
-                return Task.FromResult(new CustomerKeyHealth());
-            });
-
         _validationService = new CustomerKeyValidationBackgroundService(
-            new List<ICustomerKeyTestProvider>() { _keyWrapUnwrapTestProvider, _dataStoreStateTestProvider },
+            _keyWrapUnwrapTestProvider,
             _customerKeyHealthCache,
-            cmkOptions,
-            NullLogger<CustomerKeyValidationBackgroundService>.Instance);
+            cmkOptions);
     }
 
     [Fact]
@@ -73,51 +59,6 @@ public class CustomerKeyValidationBackgroundServiceTests : IDisposable
     [Fact]
     public async Task GivenKeyAccessFails_WhenHealthIsChecked_ThenNotHealthStateIsSaved()
     {
-        var rfe = new RequestFailedException("key request failed");
-        _keyWrapUnwrapTestProvider.AssertHealthAsync(Arg.Any<CancellationToken>()).Returns(new CustomerKeyHealth()
-        {
-            IsHealthy = false,
-            Reason = HealthStatusReason.CustomerManagedKeyAccessLost,
-            Exception = rfe,
-        });
-
-        await _validationService.CheckHealth(CancellationToken.None);
-
-        CustomerKeyHealth cmkHealth = await _customerKeyHealthCache.GetAsync();
-
-        Assert.False(cmkHealth.IsHealthy);
-        Assert.Equal(rfe, cmkHealth.Exception);
-        Assert.Equal(HealthStatusReason.CustomerManagedKeyAccessLost, cmkHealth.Reason);
-    }
-
-    [Fact]
-    public async Task GivenDataStoreStateFails_WhenHealthIsChecked_ThenNotHealthStateIsSaved()
-    {
-        _dataStoreStateTestProvider.AssertHealthAsync(Arg.Any<CancellationToken>()).Returns(new CustomerKeyHealth()
-        {
-            IsHealthy = false,
-            Reason = HealthStatusReason.DataStoreStateDegraded,
-            Exception = new AggregateException(),
-        });
-
-        await _validationService.CheckHealth(CancellationToken.None);
-
-        CustomerKeyHealth cmkHealth = await _customerKeyHealthCache.GetAsync();
-
-        Assert.False(cmkHealth.IsHealthy);
-        Assert.Equal(HealthStatusReason.DataStoreStateDegraded, cmkHealth.Reason);
-    }
-
-    [Fact]
-    public async Task GivenAllTestProvidersFail_WhenHealthIsChecked_HighestPriorityHealthIsSaved()
-    {
-        _dataStoreStateTestProvider.AssertHealthAsync(Arg.Any<CancellationToken>()).Returns(new CustomerKeyHealth()
-        {
-            IsHealthy = false,
-            Reason = HealthStatusReason.DataStoreStateDegraded,
-            Exception = new AggregateException(),
-        });
-
         var rfe = new RequestFailedException("key request failed");
         _keyWrapUnwrapTestProvider.AssertHealthAsync(Arg.Any<CancellationToken>()).Returns(new CustomerKeyHealth()
         {

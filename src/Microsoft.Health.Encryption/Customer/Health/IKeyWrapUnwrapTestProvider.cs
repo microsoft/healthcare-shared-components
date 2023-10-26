@@ -9,10 +9,8 @@ using Microsoft.Health.Core.Features.Health;
 
 namespace Microsoft.Health.Encryption.Customer.Health;
 
-internal interface ICustomerKeyTestProvider
+internal interface IKeyWrapUnwrapTestProvider
 {
-    int Priority { get; }
-
     HealthStatusReason FailureReason { get; }
 
     Task<CustomerKeyHealth> AssertHealthAsync(CancellationToken cancellationToken = default);

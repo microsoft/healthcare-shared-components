@@ -20,7 +20,7 @@ using Microsoft.Health.Encryption.Customer.Configs;
 
 namespace Microsoft.Health.Encryption.Customer.Health;
 
-internal class KeyWrapUnwrapTestProvider : ICustomerKeyTestProvider
+internal class KeyWrapUnwrapTestProvider : IKeyWrapUnwrapTestProvider
 {
     private const string AccessLostMessage = "Access to the customer-managed key has been lost";
 
@@ -45,8 +45,6 @@ internal class KeyWrapUnwrapTestProvider : ICustomerKeyTestProvider
             _keyClient = new KeyClient(_customerManagedKeyOptions.KeyVaultUri, externalCredential);
         }
     }
-
-    public int Priority => 1;
 
     public HealthStatusReason FailureReason => HealthStatusReason.CustomerManagedKeyAccessLost;
 

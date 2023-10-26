@@ -4,13 +4,10 @@
 // -------------------------------------------------------------------------------------------------
 
 using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using EnsureThat;
 using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.Health.Core.Features.Health;
 using Microsoft.Health.Encryption.Customer.Configs;
@@ -19,25 +16,21 @@ namespace Microsoft.Health.Encryption.Customer.Health;
 
 internal class CustomerKeyValidationBackgroundService : BackgroundService
 {
-    private readonly IOrderedEnumerable<ICustomerKeyTestProvider> _customerKeyTestProviders;
+    private readonly IKeyWrapUnwrapTestProvider _keyWrapUnwrapTestProvider;
     private readonly ValueCache<CustomerKeyHealth> _customerManagedKeyHealth;
     private readonly CustomerManagedKeyOptions _customerManagedKeyOptions;
-    private readonly ILogger<CustomerKeyValidationBackgroundService> _logger;
 
     public CustomerKeyValidationBackgroundService(
-        IEnumerable<ICustomerKeyTestProvider> keyTestProviders,
+        IKeyWrapUnwrapTestProvider keyTestProvider,
         ValueCache<CustomerKeyHealth> customerManagedKeyHealth,
-        IOptions<CustomerManagedKeyOptions> customerManagedKeyOptions,
-        ILogger<CustomerKeyValidationBackgroundService> logger)
+        IOptions<CustomerManagedKeyOptions> customerManagedKeyOptions)
     {
         EnsureArg.IsNotNull(customerManagedKeyOptions, nameof(customerManagedKeyOptions));
-        EnsureArg.IsNotNull(keyTestProviders, nameof(keyTestProviders));
-        EnsureArg.IsTrue(keyTestProviders.Any(), nameof(keyTestProviders));
+        EnsureArg.IsNotNull(keyTestProvider, nameof(keyTestProvider));
 
-        _customerKeyTestProviders = keyTestProviders.OrderBy(k => k.Priority);
+        _keyWrapUnwrapTestProvider = keyTestProvider;
         _customerManagedKeyHealth = EnsureArg.IsNotNull(customerManagedKeyHealth, nameof(customerManagedKeyHealth));
         _customerManagedKeyOptions = EnsureArg.IsNotNull(customerManagedKeyOptions.Value, nameof(customerManagedKeyOptions.Value));
-        _logger = EnsureArg.IsNotNull(logger, nameof(logger));
     }
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
@@ -49,26 +42,16 @@ internal class CustomerKeyValidationBackgroundService : BackgroundService
                 await CheckHealth(stoppingToken).ConfigureAwait(false);
                 await Task.Delay(_customerManagedKeyOptions.KeyValidationPeriod, stoppingToken).ConfigureAwait(false);
             }
-            catch (OperationCanceledException e)
+            catch (OperationCanceledException) when (stoppingToken.IsCancellationRequested)
             {
-                _logger.LogInformation(e, $"{nameof(CustomerKeyValidationBackgroundService)} cancelled");
+                break;
             }
         }
     }
 
     internal async Task CheckHealth(CancellationToken cancellationToken)
     {
-        foreach (ICustomerKeyTestProvider customerKeyTestProvider in _customerKeyTestProviders)
-        {
-            CustomerKeyHealth health = await customerKeyTestProvider.AssertHealthAsync(cancellationToken).ConfigureAwait(false);
-
-            if (!health.IsHealthy)
-            {
-                _customerManagedKeyHealth.Set(health);
-                return;
-            }
-        }
-
-        _customerManagedKeyHealth.Set(new CustomerKeyHealth());
+        CustomerKeyHealth customerKeyHealth = await _keyWrapUnwrapTestProvider.AssertHealthAsync(cancellationToken).ConfigureAwait(false);
+        _customerManagedKeyHealth.Set(customerKeyHealth);
     }
 }

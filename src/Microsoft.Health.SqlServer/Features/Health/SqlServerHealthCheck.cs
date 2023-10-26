@@ -4,7 +4,6 @@
 // -------------------------------------------------------------------------------------------------
 
 using System;
-using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using EnsureThat;
@@ -35,8 +34,6 @@ public class SqlServerHealthCheck : StorageHealthCheck
     }
 
     public override string DegradedDescription => "The health of the store has degraded.";
-
-    public override IEnumerable<HealthStatusReason> DependentHealthReasons => CustomerKeyConstants.KeyAccessAndDataStoreStateDependentReasons;
 
     public override Func<Exception, bool> CMKAccessLostExceptionFilter => CustomerKeyConstants.SQLExceptionFilter;
 

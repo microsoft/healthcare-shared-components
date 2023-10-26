@@ -84,19 +84,6 @@ public class BlobHealthCheckTests
     }
 
     [Fact]
-    public async Task GivenPrerequisiteIsNotHealthyForAReasonNotDependentOn_WhenHealthIsChecked_ThenHealthStateReturned()
-    {
-        _customerKeyHealthCache.Set(new CustomerKeyHealth
-        {
-            IsHealthy = false,
-            Reason = HealthStatusReason.DataStoreStateDegraded,
-        });
-
-        HealthCheckResult result = await _healthCheck.CheckHealthAsync(new HealthCheckContext());
-        Assert.Equal(HealthStatus.Healthy, result.Status);
-    }
-
-    [Fact]
     public async Task GivenCancellation_WhenHealthIsChecked_ThenOperationCancelledExceptionIsThrown()
     {
         using var cancellationTokenSource = new CancellationTokenSource();

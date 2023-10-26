@@ -4,7 +4,6 @@
 // -------------------------------------------------------------------------------------------------
 
 using System;
-using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using Azure.Storage.Blobs;
@@ -59,8 +58,6 @@ public class BlobHealthCheck : StorageHealthCheck
     }
 
     public override string DegradedDescription => "The health of the store has degraded.";
-
-    public override IEnumerable<HealthStatusReason> DependentHealthReasons => CustomerKeyConstants.KeyAccessDependentReasons;
 
     public override Func<Exception, bool> CMKAccessLostExceptionFilter => CustomerKeyConstants.StorageAccountExceptionFilter;
 

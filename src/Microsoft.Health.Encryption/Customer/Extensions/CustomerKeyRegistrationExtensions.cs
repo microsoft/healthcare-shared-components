@@ -23,7 +23,7 @@ public static class CustomerKeyRegistrationExtensions
         services.AddHostedService<CustomerKeyValidationBackgroundService>();
 
         services.AddExternalCredentialProvider();
-        services.AddSingleton<ICustomerKeyTestProvider, KeyWrapUnwrapTestProvider>();
+        services.AddSingleton<IKeyWrapUnwrapTestProvider, KeyWrapUnwrapTestProvider>();
 
         if (configure != null)
         {

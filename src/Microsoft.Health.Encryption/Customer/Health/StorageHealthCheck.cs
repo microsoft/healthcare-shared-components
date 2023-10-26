@@ -5,10 +5,10 @@
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using EnsureThat;
+using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Logging;
 using Microsoft.Health.Core.Features.Health;
@@ -31,7 +31,7 @@ public abstract class StorageHealthCheck : IHealthCheck
         _logger.LogInformation("Checking customer key health");
 
         CustomerKeyHealth cmkStatus = await _customerKeyHealthCache.GetAsync(cancellationToken).ConfigureAwait(false);
-        if (!cmkStatus.IsHealthy && DependentHealthReasons.Contains(cmkStatus.Reason))
+        if (!cmkStatus.IsHealthy)
         {
             // if the customer-managed key is inaccessible, storage will also be inaccessible
             return new HealthCheckResult(
@@ -54,11 +54,18 @@ public abstract class StorageHealthCheck : IHealthCheck
                 ex,
                 new Dictionary<string, object> { { "Reason", HealthStatusReason.CustomerManagedKeyAccessLost } });
         }
+        // Error: "Can not connect to the database in its current state". This error can be for various DB states (recovering, inacessible) but we assume that our DB will only hit this for Inaccessible state
+        catch (SqlException sqlEx) when (sqlEx.ErrorCode == 40925)
+        {
+            return new HealthCheckResult(
+                HealthStatus.Degraded,
+                DegradedDescription,
+                sqlEx,
+                new Dictionary<string, object> { { "Reason", HealthStatusReason.DataStoreStateDegraded } });
+        }
     }
 
     public abstract string DegradedDescription { get; }
-
-    public abstract IEnumerable<HealthStatusReason> DependentHealthReasons { get; }
 
     public abstract Func<Exception, bool> CMKAccessLostExceptionFilter { get; }
 
