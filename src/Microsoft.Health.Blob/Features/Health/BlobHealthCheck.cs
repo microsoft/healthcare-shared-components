@@ -3,7 +3,6 @@
 // Licensed under the MIT License (MIT). See LICENSE in the repo root for license information.
 // -------------------------------------------------------------------------------------------------
 
-using System;
 using System.Threading;
 using System.Threading.Tasks;
 using Azure.Storage.Blobs;
@@ -21,7 +20,7 @@ namespace Microsoft.Health.Blob.Features.Health;
 /// <summary>
 /// Performs health checks on blob storage.
 /// </summary>
-public class BlobHealthCheck : StorageHealthCheck
+public class BlobHealthCheck : AzureStorageHealthCheck
 {
     private readonly BlobServiceClient _client;
     private readonly BlobContainerConfiguration _blobContainerConfiguration;
@@ -57,8 +56,6 @@ public class BlobHealthCheck : StorageHealthCheck
         _testProvider = testProvider;
         _logger = logger;
     }
-
-    public override bool IsCMKAccessLost(Exception ex) => CustomerKeyConstants.StorageAccountExceptionFilter(ex);
 
     public override async Task<HealthCheckResult> CheckStorageHealthAsync(CancellationToken cancellationToken)
     {

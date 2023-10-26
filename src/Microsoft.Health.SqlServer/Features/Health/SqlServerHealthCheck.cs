@@ -35,7 +35,11 @@ public class SqlServerHealthCheck : StorageHealthCheck
         _logger = EnsureArg.IsNotNull(logger, nameof(logger));
     }
 
-    public override bool IsCMKAccessLost(Exception ex) => CustomerKeyConstants.SQLExceptionFilter(ex);
+    /// <summary>
+    /// Filter on error codes for azure key vault https://learn.microsoft.com/en-us/sql/relational-databases/errors-events/database-engine-events-and-errors-31000-to-41399?view=sql-server-ver16
+    /// Intentionally leaving out code 40925 when the DB is Inaccessible so that can be reported using a different HealthStatusReason
+    /// </summary>
+    public override bool IsCMKAccessLost(Exception ex) => ex is SqlException sqlException && (sqlException.ErrorCode is 40981 or 33183 or 33184);
 
     public override async Task<HealthCheckResult> CheckStorageHealthAsync(CancellationToken cancellationToken)
     {
