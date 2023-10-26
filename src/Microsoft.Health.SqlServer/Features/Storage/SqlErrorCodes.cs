@@ -63,5 +63,5 @@ public static class SqlErrorCodes
     /// <summary>
     /// Cannot insert duplicate key row in object with unique index.
     /// </summary>
-    public const short UniqueKeyConstraintVoilation = 2601;
+    public const short UniqueKeyConstraintViolation = 2601;
 }
