@@ -44,7 +44,7 @@ public abstract class StorageHealthCheck : IHealthCheck
         {
             return await CheckStorageHealthAsync(cancellationToken).ConfigureAwait(false);
         }
-        catch (Exception ex) when (CMKAccessLostExceptionFilter(ex))
+        catch (Exception ex) when (IsCMKAccessLost(ex))
         {
             return new HealthCheckResult(
                 HealthStatus.Degraded,
@@ -56,7 +56,7 @@ public abstract class StorageHealthCheck : IHealthCheck
 
     public virtual string DegradedDescription => "The health of the store has degraded.";
 
-    public abstract bool CMKAccessLostExceptionFilter(Exception ex);
+    public abstract bool IsCMKAccessLost(Exception ex);
 
     public abstract Task<HealthCheckResult> CheckStorageHealthAsync(CancellationToken cancellationToken);
 }

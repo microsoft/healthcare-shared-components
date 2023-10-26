@@ -58,7 +58,7 @@ public class BlobHealthCheck : StorageHealthCheck
         _logger = logger;
     }
 
-    public override bool CMKAccessLostExceptionFilter(Exception ex) => CustomerKeyConstants.StorageAccountExceptionFilter(ex);
+    public override bool IsCMKAccessLost(Exception ex) => CustomerKeyConstants.StorageAccountExceptionFilter(ex);
 
     public override async Task<HealthCheckResult> CheckStorageHealthAsync(CancellationToken cancellationToken)
     {

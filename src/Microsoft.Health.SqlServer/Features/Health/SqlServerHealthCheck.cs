@@ -35,7 +35,7 @@ public class SqlServerHealthCheck : StorageHealthCheck
         _logger = EnsureArg.IsNotNull(logger, nameof(logger));
     }
 
-    public override bool CMKAccessLostExceptionFilter(Exception ex) => CustomerKeyConstants.SQLExceptionFilter(ex);
+    public override bool IsCMKAccessLost(Exception ex) => CustomerKeyConstants.SQLExceptionFilter(ex);
 
     public override async Task<HealthCheckResult> CheckStorageHealthAsync(CancellationToken cancellationToken)
     {
