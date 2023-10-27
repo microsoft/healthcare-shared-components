@@ -14,6 +14,7 @@ using Azure.Security.KeyVault.Keys.Cryptography;
 using EnsureThat;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using Microsoft.Health.Core.Features.Health;
 using Microsoft.Health.Core.Features.Identity;
 using Microsoft.Health.Encryption.Customer.Configs;
 
@@ -45,11 +46,11 @@ internal class KeyWrapUnwrapTestProvider : IKeyTestProvider
         }
     }
 
-    public async Task AssertHealthAsync(CancellationToken cancellationToken = default)
+    public async Task<CustomerKeyHealth> AssertHealthAsync(CancellationToken cancellationToken = default)
     {
         if (_keyClient == null)
             // customer-managed key is not enabled
-            return;
+            return new CustomerKeyHealth();
 
         try
         {
@@ -63,12 +64,19 @@ internal class KeyWrapUnwrapTestProvider : IKeyTestProvider
             CryptographyClient cryptClient = _keyClient.GetCryptographyClient(_customerManagedKeyOptions.KeyName, _customerManagedKeyOptions.KeyVersion);
             WrapResult wrappedKey = await cryptClient.WrapKeyAsync(KeyWrapAlgorithm.Rsa15, encryptionKey, cancellationToken).ConfigureAwait(false);
             await cryptClient.UnwrapKeyAsync(wrappedKey.Algorithm, wrappedKey.EncryptedKey, cancellationToken).ConfigureAwait(false);
+
+            return new CustomerKeyHealth();
         }
         catch (Exception ex) when (ex is RequestFailedException or CryptographicException or InvalidOperationException or NotSupportedException)
         {
             _logger.LogInformation(ex, AccessLostMessage);
 
-            throw new CustomerKeyInaccessibleException(AccessLostMessage, ex);
+            return new CustomerKeyHealth
+            {
+                IsHealthy = false,
+                Reason = HealthStatusReason.CustomerManagedKeyAccessLost,
+                Exception = ex,
+            };
         }
     }
 }

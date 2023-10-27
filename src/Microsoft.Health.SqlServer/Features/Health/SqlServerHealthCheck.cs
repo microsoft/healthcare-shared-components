@@ -19,41 +19,27 @@ namespace Microsoft.Health.SqlServer.Features.Health;
 /// <summary>
 /// An <see cref="IHealthCheck"/> implementation that verifies connectivity to the SQL database
 /// </summary>
-public class SqlServerHealthCheck : IHealthCheck
+public class SqlServerHealthCheck : StorageHealthCheck
 {
-    private const string DegradedDescription = "The health of the store has degraded.";
-
     private readonly ILogger<SqlServerHealthCheck> _logger;
     private readonly SqlConnectionWrapperFactory _sqlConnectionWrapperFactory;
-    private readonly ValueCache<CustomerKeyHealth> _customerKeyHealthCache;
 
     public SqlServerHealthCheck(
         SqlConnectionWrapperFactory sqlConnectionWrapperFactory,
         ValueCache<CustomerKeyHealth> customerKeyHealthCache,
         ILogger<SqlServerHealthCheck> logger)
+        : base(customerKeyHealthCache, logger)
     {
         _sqlConnectionWrapperFactory = EnsureArg.IsNotNull(sqlConnectionWrapperFactory, nameof(sqlConnectionWrapperFactory));
-        _customerKeyHealthCache = EnsureArg.IsNotNull(customerKeyHealthCache, nameof(customerKeyHealthCache));
         _logger = EnsureArg.IsNotNull(logger, nameof(logger));
     }
 
-    public async Task<HealthCheckResult> CheckHealthAsync(HealthCheckContext context, CancellationToken cancellationToken)
+    public override async Task<HealthCheckResult> CheckStorageHealthAsync(CancellationToken cancellationToken)
     {
-        _logger.LogInformation($"Starting {nameof(SqlServerHealthCheck)}.");
-
-        CustomerKeyHealth cmkStatus = await _customerKeyHealthCache.GetAsync(cancellationToken).ConfigureAwait(false);
-        if (!cmkStatus.IsHealthy)
-        {
-            // if the customer-managed key is inaccessible, storage will also be inaccessible
-            return new HealthCheckResult(
-                HealthStatus.Degraded,
-                DegradedDescription,
-                cmkStatus.Exception,
-                new Dictionary<string, object> { { "Reason", cmkStatus.Reason } });
-        }
-
         try
         {
+            _logger.LogInformation($"Performing health check for {nameof(SqlServerHealthCheck)}");
+
             using SqlConnectionWrapper sqlConnectionWrapper = await _sqlConnectionWrapperFactory.ObtainSqlConnectionWrapperAsync(cancellationToken).ConfigureAwait(false);
             using SqlCommandWrapper sqlCommandWrapper = sqlConnectionWrapper.CreateRetrySqlCommand();
 
@@ -62,17 +48,22 @@ public class SqlServerHealthCheck : IHealthCheck
             await sqlCommandWrapper.ExecuteScalarAsync(cancellationToken).ConfigureAwait(false);
 
             _logger.LogInformation("Successfully connected to SQL database.");
+
             return HealthCheckResult.Healthy("Successfully connected.");
         }
-        // Error: Can not connect to the database in its current state. This error can be for various DB states (recovering, inacessible) but we assume that our DB will only hit this for Inaccessible state
-        catch (SqlException ex) when (ex.ErrorCode == 40925)
+        // Filter on error codes for azure key vault https://learn.microsoft.com/en-us/sql/relational-databases/errors-events/database-engine-events-and-errors-31000-to-41399?view=sql-server-ver16
+        catch (SqlException e) when (e.ErrorCode is 40981 or 33183 or 33184 or 40925)
         {
-            // DB is status in Inaccessible because the encryption key was inacessible for > 30 mins. User must reprovision or we need to revalidate key on SQL DB. 
+            // Error 40925: "Can not connect to the database in its current state". This error can be for various DB states (recovering, inacessible) but we assume that our DB will only hit this for Inaccessible state
+            HealthStatusReason reason = e.ErrorCode is 40925
+                ? HealthStatusReason.DataStoreStateDegraded
+                : HealthStatusReason.CustomerManagedKeyAccessLost;
+
             return new HealthCheckResult(
                 HealthStatus.Degraded,
                 DegradedDescription,
-                ex,
-                new Dictionary<string, object> { { "Reason", HealthStatusReason.DataStoreStateDegraded } });
+                e,
+                new Dictionary<string, object> { { "Reason", reason } });
         }
     }
 }
