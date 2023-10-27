@@ -57,7 +57,7 @@ public class BlobHealthCheck : AzureStorageHealthCheck
         _logger = logger;
     }
 
-    public override async Task<HealthCheckResult> CheckStorageHealthAsync(CancellationToken cancellationToken)
+    public override async Task<HealthCheckResult> CheckAzureStorageHealthAsync(CancellationToken cancellationToken)
     {
         _logger.LogInformation($"Performing health check for {nameof(BlobHealthCheck)}");
         await _testProvider.PerformTestAsync(_client, _blobContainerConfiguration, cancellationToken).ConfigureAwait(false);

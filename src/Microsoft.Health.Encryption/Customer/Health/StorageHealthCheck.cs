@@ -3,7 +3,6 @@
 // Licensed under the MIT License (MIT). See LICENSE in the repo root for license information.
 // -------------------------------------------------------------------------------------------------
 
-using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
@@ -40,23 +39,10 @@ public abstract class StorageHealthCheck : IHealthCheck
                 new Dictionary<string, object> { { "Reason", cmkStatus.Reason } });
         }
 
-        try
-        {
-            return await CheckStorageHealthAsync(cancellationToken).ConfigureAwait(false);
-        }
-        catch (Exception ex) when (IsCMKAccessLost(ex))
-        {
-            return new HealthCheckResult(
-                HealthStatus.Degraded,
-                DegradedDescription,
-                ex,
-                new Dictionary<string, object> { { "Reason", HealthStatusReason.CustomerManagedKeyAccessLost } });
-        }
+        return await CheckStorageHealthAsync(cancellationToken).ConfigureAwait(false);
     }
 
     public virtual string DegradedDescription => "The health of the store has degraded.";
-
-    public abstract bool IsCMKAccessLost(Exception ex);
 
     public abstract Task<HealthCheckResult> CheckStorageHealthAsync(CancellationToken cancellationToken);
 }

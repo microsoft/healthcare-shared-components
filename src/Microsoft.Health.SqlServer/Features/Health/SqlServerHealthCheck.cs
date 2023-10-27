@@ -35,12 +35,6 @@ public class SqlServerHealthCheck : StorageHealthCheck
         _logger = EnsureArg.IsNotNull(logger, nameof(logger));
     }
 
-    /// <summary>
-    /// Filter on error codes for azure key vault https://learn.microsoft.com/en-us/sql/relational-databases/errors-events/database-engine-events-and-errors-31000-to-41399?view=sql-server-ver16
-    /// Intentionally leaving out code 40925 when the DB is Inaccessible so that can be reported using a different HealthStatusReason
-    /// </summary>
-    public override bool IsCMKAccessLost(Exception ex) => ex is SqlException sqlException && (sqlException.ErrorCode is 40981 or 33183 or 33184);
-
     public override async Task<HealthCheckResult> CheckStorageHealthAsync(CancellationToken cancellationToken)
     {
         try
@@ -57,6 +51,15 @@ public class SqlServerHealthCheck : StorageHealthCheck
             _logger.LogInformation("Successfully connected to SQL database.");
 
             return HealthCheckResult.Healthy("Successfully connected.");
+        }
+        // Filter on error codes for azure key vault https://learn.microsoft.com/en-us/sql/relational-databases/errors-events/database-engine-events-and-errors-31000-to-41399?view=sql-server-ver16
+        catch (Exception ex) when (ex is SqlException sqlException && (sqlException.ErrorCode is 40981 or 33183 or 33184))
+        {
+            return new HealthCheckResult(
+                HealthStatus.Degraded,
+                DegradedDescription,
+                ex,
+                new Dictionary<string, object> { { "Reason", HealthStatusReason.CustomerManagedKeyAccessLost } });
         }
         // Error: "Can not connect to the database in its current state". This error can be for various DB states (recovering, inacessible) but we assume that our DB will only hit this for Inaccessible state
         catch (SqlException sqlEx) when (sqlEx.ErrorCode == 40925)

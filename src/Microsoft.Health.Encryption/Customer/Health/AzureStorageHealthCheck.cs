@@ -4,9 +4,13 @@
 // -------------------------------------------------------------------------------------------------
 
 using System;
+using System.Threading.Tasks;
+using System.Threading;
 using Azure;
+using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Logging;
 using Microsoft.Health.Core.Features.Health;
+using System.Collections.Generic;
 
 namespace Microsoft.Health.Encryption.Customer.Health;
 
@@ -17,5 +21,21 @@ public abstract class AzureStorageHealthCheck : StorageHealthCheck
     {
     }
 
-    public override bool IsCMKAccessLost(Exception ex) => ex is RequestFailedException rfe && rfe.ErrorCode == "KeyVaultEncryptionKeyNotFound";
+    public override async Task<HealthCheckResult> CheckStorageHealthAsync(CancellationToken cancellationToken)
+    {
+        try
+        {
+            return await CheckAzureStorageHealthAsync(cancellationToken).ConfigureAwait(false);
+        }
+        catch (Exception ex) when (ex is RequestFailedException rfe && rfe.ErrorCode == "KeyVaultEncryptionKeyNotFound")
+        {
+            return new HealthCheckResult(
+                HealthStatus.Degraded,
+                DegradedDescription,
+                ex,
+                new Dictionary<string, object> { { "Reason", HealthStatusReason.CustomerManagedKeyAccessLost } });
+        }
+    }
+
+    public abstract Task<HealthCheckResult> CheckAzureStorageHealthAsync(CancellationToken cancellationToken);
 }

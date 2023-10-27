@@ -41,15 +41,8 @@ internal class CustomerKeyValidationBackgroundService : BackgroundService
     {
         while (!stoppingToken.IsCancellationRequested)
         {
-            try
-            {
-                await CheckHealth(stoppingToken).ConfigureAwait(false);
-                await Task.Delay(_customerManagedKeyOptions.KeyValidationPeriod, stoppingToken).ConfigureAwait(false);
-            }
-            catch (OperationCanceledException) when (stoppingToken.IsCancellationRequested)
-            {
-                break;
-            }
+            await CheckHealth(stoppingToken).ConfigureAwait(false);
+            await Task.Delay(_customerManagedKeyOptions.KeyValidationPeriod, stoppingToken).ConfigureAwait(false);
         }
     }
 
