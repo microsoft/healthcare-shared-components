@@ -18,7 +18,7 @@ public abstract class StorageHealthCheck : IHealthCheck
     private readonly ValueCache<CustomerKeyHealth> _customerKeyHealthCache;
     private readonly ILogger<StorageHealthCheck> _logger;
 
-    internal StorageHealthCheck(ValueCache<CustomerKeyHealth> customerKeyHealthCache, ILogger<StorageHealthCheck> logger)
+    protected StorageHealthCheck(ValueCache<CustomerKeyHealth> customerKeyHealthCache, ILogger<StorageHealthCheck> logger)
     {
         _customerKeyHealthCache = EnsureArg.IsNotNull(customerKeyHealthCache, nameof(customerKeyHealthCache));
         _logger = EnsureArg.IsNotNull(logger, nameof(logger));
