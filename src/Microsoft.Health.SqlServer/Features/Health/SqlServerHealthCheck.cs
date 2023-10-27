@@ -53,22 +53,21 @@ public class SqlServerHealthCheck : StorageHealthCheck
             return HealthCheckResult.Healthy("Successfully connected.");
         }
         // Filter on error codes for azure key vault https://learn.microsoft.com/en-us/sql/relational-databases/errors-events/database-engine-events-and-errors-31000-to-41399?view=sql-server-ver16
-        catch (Exception ex) when (ex is SqlException sqlException && (sqlException.ErrorCode is 40981 or 33183 or 33184))
+        catch (Exception ex) when (ex is SqlException sqlException && (sqlException.ErrorCode is 40981 or 33183 or 33184 or 40925))
         {
+            HealthStatusReason reason = HealthStatusReason.CustomerManagedKeyAccessLost;
+
+            // Error: "Can not connect to the database in its current state". This error can be for various DB states (recovering, inacessible) but we assume that our DB will only hit this for Inaccessible state
+            if (sqlException.ErrorCode is 40925)
+            {
+                reason = HealthStatusReason.DataStoreStateDegraded;
+            }
+
             return new HealthCheckResult(
                 HealthStatus.Degraded,
                 DegradedDescription,
                 ex,
-                new Dictionary<string, object> { { "Reason", HealthStatusReason.CustomerManagedKeyAccessLost } });
-        }
-        // Error: "Can not connect to the database in its current state". This error can be for various DB states (recovering, inacessible) but we assume that our DB will only hit this for Inaccessible state
-        catch (SqlException sqlEx) when (sqlEx.ErrorCode == 40925)
-        {
-            return new HealthCheckResult(
-                HealthStatus.Degraded,
-                DegradedDescription,
-                sqlEx,
-                new Dictionary<string, object> { { "Reason", HealthStatusReason.DataStoreStateDegraded } });
+                new Dictionary<string, object> { { "Reason", reason } });
         }
     }
 }

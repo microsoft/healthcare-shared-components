@@ -3,7 +3,6 @@
 // Licensed under the MIT License (MIT). See LICENSE in the repo root for license information.
 // -------------------------------------------------------------------------------------------------
 
-using System;
 using System.Threading.Tasks;
 using System.Threading;
 using Azure;
@@ -27,12 +26,12 @@ public abstract class AzureStorageHealthCheck : StorageHealthCheck
         {
             return await CheckAzureStorageHealthAsync(cancellationToken).ConfigureAwait(false);
         }
-        catch (Exception ex) when (ex is RequestFailedException rfe && rfe.ErrorCode == "KeyVaultEncryptionKeyNotFound")
+        catch (RequestFailedException rfe) when (rfe.ErrorCode == "KeyVaultEncryptionKeyNotFound")
         {
             return new HealthCheckResult(
                 HealthStatus.Degraded,
                 DegradedDescription,
-                ex,
+                rfe,
                 new Dictionary<string, object> { { "Reason", HealthStatusReason.CustomerManagedKeyAccessLost } });
         }
     }
