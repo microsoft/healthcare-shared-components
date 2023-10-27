@@ -15,7 +15,7 @@ namespace Microsoft.Health.Encryption.Customer.Health;
 
 public abstract class AzureStorageHealthCheck : StorageHealthCheck
 {
-    internal AzureStorageHealthCheck(ValueCache<CustomerKeyHealth> customerKeyHealthCache, ILogger<StorageHealthCheck> logger)
+    protected AzureStorageHealthCheck(ValueCache<CustomerKeyHealth> customerKeyHealthCache, ILogger<StorageHealthCheck> logger)
         : base(customerKeyHealthCache, logger)
     {
     }
