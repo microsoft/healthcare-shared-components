@@ -16,7 +16,7 @@ public class SecurityHeadersHelperTests
     [Fact]
     public async void GivenANullContext_WhenSettingSecurityHeaders_ThenExceptionIsThrown()
     {
-        await Assert.ThrowsAsync<ArgumentNullException>(async () => await SecurityHeadersHelper.SetSecurityHeaders(null));
+        await Assert.ThrowsAsync<ArgumentNullException>(() => SecurityHeadersHelper.SetSecurityHeaders(null));
     }
 
     [Fact]
@@ -24,7 +24,7 @@ public class SecurityHeadersHelperTests
     {
         int notAContext = 1;
 
-        await Assert.ThrowsAsync<ArgumentException>(async () => await SecurityHeadersHelper.SetSecurityHeaders(notAContext));
+        await Assert.ThrowsAsync<ArgumentException>(() => SecurityHeadersHelper.SetSecurityHeaders(notAContext));
     }
 
     [Fact]
