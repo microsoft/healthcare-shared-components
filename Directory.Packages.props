@@ -9,7 +9,7 @@
     <PackageVersion Include="coverlet.collector" Version="6.0.0" />
     <PackageVersion Include="DistributedLock.SqlServer" Version="1.0.3" />
     <PackageVersion Include="Ensure.That" Version="10.1.0" />
-    <PackageVersion Include="Google.Protobuf" Version="3.24.4" />
+    <PackageVersion Include="Google.Protobuf" Version="3.25.0" />
     <PackageVersion Include="IdentityServer4" Version="4.1.2" />
     <PackageVersion Include="IdentityServer4.Storage" Version="4.1.2" />
     <PackageVersion Include="MartinCostello.Logging.XUnit" Version="0.3.0" />
