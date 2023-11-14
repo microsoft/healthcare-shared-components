@@ -36,7 +36,7 @@ public abstract class StorageHealthCheck : IHealthCheck
                 HealthStatus.Degraded,
                 DegradedDescription,
                 cmkStatus.Exception,
-                new Dictionary<string, object> { { "Reason", cmkStatus.Reason } });
+                new Dictionary<string, object> { { "Reason", cmkStatus.Reason.ToString() } });
         }
 
         return await CheckStorageHealthAsync(cancellationToken).ConfigureAwait(false);
