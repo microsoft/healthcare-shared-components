@@ -54,6 +54,8 @@ internal class KeyWrapUnwrapTestProvider : IKeyTestProvider
 
         try
         {
+            _logger.LogInformation("Trying Get, Wrap, and Unwrap on customer-managed key.");
+
             // Get Key
             await _keyClient.GetKeyAsync(_customerManagedKeyOptions.KeyName, _customerManagedKeyOptions.KeyVersion, cancellationToken).ConfigureAwait(false);
 
