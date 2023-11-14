@@ -63,7 +63,7 @@ public class SqlServerHealthCheck : StorageHealthCheck
                 HealthStatus.Degraded,
                 DegradedDescription,
                 e,
-                new Dictionary<string, object> { { "Reason", reason } });
+                new Dictionary<string, object> { { "Reason", reason.ToString() } });
         }
     }
 }

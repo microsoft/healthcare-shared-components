@@ -32,7 +32,7 @@ public abstract class AzureStorageHealthCheck : StorageHealthCheck
                 HealthStatus.Degraded,
                 DegradedDescription,
                 rfe,
-                new Dictionary<string, object> { { "Reason", HealthStatusReason.CustomerManagedKeyAccessLost } });
+                new Dictionary<string, object> { { "Reason", HealthStatusReason.CustomerManagedKeyAccessLost.ToString() } });
         }
     }
 
