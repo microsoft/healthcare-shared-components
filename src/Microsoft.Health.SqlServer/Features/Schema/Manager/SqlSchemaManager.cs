@@ -185,7 +185,7 @@ public class SqlSchemaManager : ISchemaManager
     }
 
     /// <inheritdoc />
-    public async Task<IList<AvailableVersion>> GetAvailableSchema(CancellationToken cancellationToken = default)
+    public async Task<List<AvailableVersion>> GetAvailableSchema(CancellationToken cancellationToken = default)
     {
         try
         {

@@ -1,4 +1,4 @@
-﻿// -------------------------------------------------------------------------------------------------
+// -------------------------------------------------------------------------------------------------
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License (MIT). See LICENSE in the repo root for license information.
 // -------------------------------------------------------------------------------------------------
@@ -135,7 +135,7 @@ internal sealed class HostJsonFileConfigurationSource : IConfigurationSource
             if (!hostJsonVersion.Equals(LatestHostConfigVersion, StringComparison.OrdinalIgnoreCase))
             {
                 StringBuilder errorMsg = new StringBuilder($"'{hostJsonVersion}' is an invalid value for {HostMetadataFileName} 'version' property. We recommend you set the 'version' property to '2.0'. ");
-                if (hostJsonVersion.StartsWith("3", StringComparison.OrdinalIgnoreCase))
+                if (hostJsonVersion.StartsWith('3'))
                 {
                     // In case the customer has confused host.json version with the fact that they're running Functions v3
                     errorMsg.Append($"This does not correspond to the function runtime version, only to the schema version of the {HostMetadataFileName} file. ");

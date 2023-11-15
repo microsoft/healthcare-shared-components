@@ -14,15 +14,16 @@
     <IdentityModelTokenPackageVersion>6.33.0</IdentityModelTokenPackageVersion>
     <IsPackable>true</IsPackable>
     <LangVersion>latest</LangVersion>
-    <LtsVersion>net6.0</LtsVersion>
+    <LtsVersion>net8.0</LtsVersion>
     <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <PreviousVersion>net6.0</PreviousVersion>
     <Product>Microsoft Health</Product>
     <PublishRepositoryUrl>true</PublishRepositoryUrl>
     <RootDirectory>$(MSBuildThisFileDirectory)</RootDirectory>
     <RunSettingsFilePath>$(RootDirectory)CodeCoverage.runsettings</RunSettingsFilePath>
     <StsVersion>net7.0</StsVersion>
-    <SupportedFrameworks>$(LtsVersion);$(StsVersion)</SupportedFrameworks>
+    <SupportedFrameworks>$(LtsVersion);$(StsVersion);$(PreviousVersion)</SupportedFrameworks>
     <TargetLatestRuntimePatch>true</TargetLatestRuntimePatch>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <WarningsAsErrors />
@@ -30,14 +31,19 @@
 
   <!-- SDK Packages -->
   <Choose>
-    <When Condition="'$(TargetFramework)' == '$(LtsVersion)'">
+    <When Condition="'$(TargetFramework)' == '$(PreviousVersion)'">
       <PropertyGroup>
         <SdkPackageVersion>6.0.0</SdkPackageVersion>
       </PropertyGroup>
     </When>
-    <Otherwise>
+    <When Condition="'$(TargetFramework)' == '$(StsVersion)'">
       <PropertyGroup>
         <SdkPackageVersion>7.0.0</SdkPackageVersion>
+      </PropertyGroup>
+    </When>
+    <Otherwise>
+      <PropertyGroup>
+        <SdkPackageVersion>8.0.0</SdkPackageVersion>
       </PropertyGroup>
     </Otherwise>
   </Choose>

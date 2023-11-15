@@ -37,6 +37,11 @@ public abstract class RoleLoader<TDataActions> : IHostedService
     private readonly AuthorizationConfiguration<TDataActions> _authorizationConfiguration;
     private readonly Microsoft.Extensions.FileProviders.IFileProvider _fileProvider;
 
+#if NET8_0_OR_GREATER
+    private static readonly System.Text.CompositeFormat ErrorValidatingRolesFormat = System.Text.CompositeFormat.Parse(Resources.ErrorValidatingRoles);
+    private static readonly System.Text.CompositeFormat DuplicateRoleNamesFormat = System.Text.CompositeFormat.Parse(Resources.DuplicateRoleNames);
+#endif
+
     protected RoleLoader(AuthorizationConfiguration<TDataActions> authorizationConfiguration, IHostEnvironment hostEnvironment)
     {
         EnsureArg.IsNotNull(authorizationConfiguration, nameof(authorizationConfiguration));
@@ -62,8 +67,15 @@ public abstract class RoleLoader<TDataActions> : IHostedService
             Schema = JSchema.Load(schemaReader),
         };
 
-        validatingReader.ValidationEventHandler += (sender, args) =>
-            throw new InvalidDefinitionException(string.Format(CultureInfo.CurrentCulture, Resources.ErrorValidatingRoles, args.Message));
+        validatingReader.ValidationEventHandler += (sender, args) => throw new InvalidDefinitionException(
+            string.Format(
+                CultureInfo.CurrentCulture,
+#if NET8_0_OR_GREATER
+                ErrorValidatingRolesFormat,
+#else
+                Resources.ErrorValidatingRoles,
+#endif
+                args.Message));
 
         RolesContract rolesContract = jsonSerializer.Deserialize<RolesContract>(validatingReader);
 
@@ -76,7 +88,15 @@ public abstract class RoleLoader<TDataActions> : IHostedService
             if (groupingCount > 1)
             {
                 throw new InvalidDefinitionException(
-                    string.Format(CultureInfo.CurrentCulture, Resources.DuplicateRoleNames, groupingCount, grouping.Key));
+                    string.Format(
+                        CultureInfo.CurrentCulture,
+#if NET8_0_OR_GREATER
+                        DuplicateRoleNamesFormat,
+#else
+                        Resources.DuplicateRoleNames,
+#endif
+                        groupingCount,
+                        grouping.Key));
             }
         }
 
