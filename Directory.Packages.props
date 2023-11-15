@@ -64,7 +64,7 @@
     <PackageVersion Include="Newtonsoft.Json" Version="13.0.3" />
     <PackageVersion Include="Newtonsoft.Json.Schema" Version="3.0.15" />
     <PackageVersion Include="NSubstitute" Version="5.1.0" />
-    <PackageVersion Include="Polly" Version="8.1.0" />
+    <PackageVersion Include="Polly" Version="8.2.0" />
     <PackageVersion Include="Polly.Contrib.WaitAndRetry" Version="1.1.1" />
     <PackageVersion Include="System.CommandLine.DragonFruit" Version="0.2.0-alpha.19174.3" />
     <PackageVersion Include="System.CommandLine.Experimental" Version="0.2.0-alpha.19174.3" />
