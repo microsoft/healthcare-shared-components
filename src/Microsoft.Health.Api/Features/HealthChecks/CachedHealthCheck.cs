@@ -10,7 +10,9 @@ using EnsureThat;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+#if !NET8_0_OR_GREATER
 using Microsoft.Health.Core;
+#endif
 
 namespace Microsoft.Health.Api.Features.HealthChecks;
 
@@ -24,8 +26,20 @@ internal sealed class CachedHealthCheck : IHealthCheck, IDisposable
     // By default, the times are DateTimeOffset.MinValue such that they are always considered invalid
     private CachedHealthCheckResult _cache = new CachedHealthCheckResult();
 
+#if NET8_0_OR_GREATER
+    private readonly TimeProvider _timeProvider;
+
+    public CachedHealthCheck(IHealthCheck healthCheck, IOptions<HealthCheckCachingOptions> options, ILoggerFactory loggerFactory)
+        : this(healthCheck, TimeProvider.System, options, loggerFactory)
+    { }
+
+    internal CachedHealthCheck(IHealthCheck healthCheck, TimeProvider timeProvider, IOptions<HealthCheckCachingOptions> options, ILoggerFactory loggerFactory)
+    {
+        _timeProvider = EnsureArg.IsNotNull(timeProvider, nameof(timeProvider));
+#else
     public CachedHealthCheck(IHealthCheck healthCheck, IOptions<HealthCheckCachingOptions> options, ILoggerFactory loggerFactory)
     {
+#endif
         _healthCheck = EnsureArg.IsNotNull(healthCheck, nameof(healthCheck));
         _options = EnsureArg.IsNotNull(options?.Value, nameof(options));
         _logger = EnsureArg.IsNotNull(loggerFactory, nameof(loggerFactory)).CreateLogger(healthCheck.GetType().FullName);
@@ -34,7 +48,11 @@ internal sealed class CachedHealthCheck : IHealthCheck, IDisposable
 
     public async Task<HealthCheckResult> CheckHealthAsync(HealthCheckContext context, CancellationToken cancellationToken = default)
     {
+#if NET8_0_OR_GREATER
+        DateTimeOffset currentTime = _timeProvider.GetUtcNow();
+#else
         DateTimeOffset currentTime = Clock.UtcNow;
+#endif
         if (!IsUpToDate(currentTime))
         {
             await RefreshCacheAsync(context, !HasExpired(currentTime), cancellationToken).ConfigureAwait(false);
@@ -61,13 +79,21 @@ internal sealed class CachedHealthCheck : IHealthCheck, IDisposable
         try
         {
             // Once we've entered the semaphore, check the cache again for its freshness
+#if NET8_0_OR_GREATER
+            if (!IsUpToDate(_timeProvider.GetUtcNow()))
+#else
             if (!IsUpToDate(Clock.UtcNow))
+#endif
             {
                 HealthCheckResult result = await _healthCheck.CheckHealthAsync(context, cancellationToken).ConfigureAwait(false);
                 RefreshCache(result);
             }
         }
+#if NET8_0_OR_GREATER
+        catch (Exception ex) when (!HasExpired(_timeProvider.GetUtcNow()))
+#else
         catch (Exception ex) when (!HasExpired(Clock.UtcNow))
+#endif
         {
             if (ex is OperationCanceledException oce)
             {
@@ -87,7 +113,11 @@ internal sealed class CachedHealthCheck : IHealthCheck, IDisposable
     private void RefreshCache(HealthCheckResult newResult)
     {
         // The cache if it's not up-to-date or we found a better status
+#if NET8_0_OR_GREATER
+        DateTimeOffset currentTime = _timeProvider.GetUtcNow();
+#else
         DateTimeOffset currentTime = Clock.UtcNow;
+#endif
         CachedHealthCheckResult currentCache = _cache;
 
         if (currentTime >= currentCache.StaleTime || newResult.Status > currentCache.Result.Status)
@@ -119,7 +149,11 @@ internal sealed class CachedHealthCheck : IHealthCheck, IDisposable
             //       If the token is canceled, the method throws instead an OperationCanceledException.
             return await _semaphore.WaitAsync(timeout, cancellationToken).ConfigureAwait(false);
         }
+#if NET8_0_OR_GREATER
+        catch (OperationCanceledException oce) when (!HasExpired(_timeProvider.GetUtcNow()))
+#else
         catch (OperationCanceledException oce) when (!HasExpired(Clock.UtcNow))
+#endif
         {
             _logger.LogWarning(oce, "Health check was canceled. Falling back to cache.");
             return false;

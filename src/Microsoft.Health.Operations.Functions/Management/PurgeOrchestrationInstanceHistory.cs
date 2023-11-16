@@ -13,7 +13,9 @@ using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Extensions.DurableTask;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+#if !NET8_0_OR_GREATER
 using Microsoft.Health.Core;
+#endif
 using Microsoft.Health.Functions.Extensions;
 
 namespace Microsoft.Health.Operations.Functions.Management;
@@ -26,6 +28,27 @@ public sealed class PurgeOrchestrationInstanceHistory
     private readonly PurgeHistoryOptions _options;
     private const string PurgeFrequencyVariable = $"%{AzureFunctionsJobHost.RootSectionName}:{PurgeHistoryOptions.SectionName}:{nameof(PurgeHistoryOptions.Frequency)}%";
 
+#if NET8_0_OR_GREATER
+    private readonly TimeProvider _timeProvider;
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="PurgeOrchestrationInstanceHistory"/> class based
+    /// on the provided options.
+    /// </summary>
+    /// <param name="options">A collection of options for configuring the purge process.</param>
+    /// <exception cref="ArgumentException"><see cref="PurgeHistoryOptions.Statuses"/> is empty.</exception>
+    /// <exception cref="ArgumentNullException"><paramref name="options"/> or its value is <see langword="null"/>.</exception>
+    /// <exception cref="ArgumentOutOfRangeException">
+    /// <see cref="PurgeHistoryOptions.MinimumAgeDays"/> less than or equal to zero.
+    /// </exception>
+    public PurgeOrchestrationInstanceHistory(IOptions<PurgeHistoryOptions> options)
+        : this(TimeProvider.System, options)
+    { }
+
+    internal PurgeOrchestrationInstanceHistory(TimeProvider timeProvider, IOptions<PurgeHistoryOptions> options)
+    {
+        _timeProvider = EnsureArg.IsNotNull(timeProvider, nameof(timeProvider));
+#else
     /// <summary>
     /// Initializes a new instance of the <see cref="PurgeOrchestrationInstanceHistory"/> class based
     /// on the provided options.
@@ -38,6 +61,7 @@ public sealed class PurgeOrchestrationInstanceHistory
     /// </exception>
     public PurgeOrchestrationInstanceHistory(IOptions<PurgeHistoryOptions> options)
     {
+#endif
         _options = EnsureArg.IsNotNull(options?.Value, nameof(options));
         EnsureArg.HasItems(_options.Statuses, nameof(options));
         TimeSpan.FromDays(EnsureArg.IsGt(_options.MinimumAgeDays, 0, nameof(options)));
@@ -61,13 +85,18 @@ public sealed class PurgeOrchestrationInstanceHistory
         TimeSpan minimumAge = TimeSpan.FromDays(_options.MinimumAgeDays);
         IReadOnlyCollection<string> excludeFunctions = _options.ExcludeFunctions == null ? Array.Empty<string>() : _options.ExcludeFunctions;
 
-        log.LogInformation("Purging orchestration instance history at: {Timestamp}", Clock.UtcNow);
+#if NET8_0_OR_GREATER
+        DateTimeOffset currentTime = _timeProvider.GetUtcNow();
+#else
+        DateTimeOffset currentTime = Clock.UtcNow;
+#endif
+        log.LogInformation("Purging orchestration instance history at: {Timestamp}", currentTime);
         if (myTimer.IsPastDue)
         {
             log.LogWarning("Current function invocation is running late.");
         }
 
-        DateTimeOffset end = Clock.UtcNow - minimumAge;
+        DateTimeOffset end = currentTime - minimumAge;
         log.LogInformation("Purging all orchestration instances with status in {{{Statuses}}} that started before '{End}' and not in {{{ListofInstanceToSkipPurging}}}.",
             string.Join(", ", statuses),
             end,

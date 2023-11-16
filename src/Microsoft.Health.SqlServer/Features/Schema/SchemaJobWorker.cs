@@ -13,7 +13,6 @@ using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using Microsoft.Health.Core;
 using Microsoft.Health.Core.Features.Control;
 using Microsoft.Health.SqlServer.Configs;
 using Microsoft.Health.SqlServer.Features.Schema.Extensions;
@@ -59,7 +58,7 @@ public class SchemaJobWorker
     {
         EnsureArg.IsNotNull(schemaInformation, nameof(schemaInformation));
 
-        _logger.LogInformation("Polling started at {UtcTime}", Clock.UtcNow);
+        _logger.LogInformation("Polling started at {UtcTime}", DateTime.UtcNow);
 
         while (!cancellationToken.IsCancellationRequested)
         {

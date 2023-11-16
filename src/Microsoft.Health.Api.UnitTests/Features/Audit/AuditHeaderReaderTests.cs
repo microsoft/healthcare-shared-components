@@ -25,7 +25,6 @@ public class AuditHeaderReaderTests
     private readonly HttpContext _httpContext;
     private readonly IOptions<AuditConfiguration> _optionsAuditConfiguration;
     private const string CustomAuditHeaderPrefix = "X-MS-AZUREHEALTH-AUDIT-";
-    private static readonly string[] Items = ["item1", "item2"];
 
     public AuditHeaderReaderTests()
     {
@@ -102,7 +101,7 @@ public class AuditHeaderReaderTests
     public void GivenMultipleValuesOfSameHeader_WhenHeadersRead_ThenConcatenatedStringValueReturend()
     {
         var headerReader = new AuditHeaderReader(_optionsAuditConfiguration);
-        _httpContext.Request.Headers.Append(_optionsAuditConfiguration.Value.CustomAuditHeaderPrefix + "repeated", new StringValues(Items));
+        _httpContext.Request.Headers.Append(_optionsAuditConfiguration.Value.CustomAuditHeaderPrefix + "repeated", new StringValues(["item1", "item2"]));
 
         var result = headerReader.Read(_httpContext);
         Assert.Equal("item1,item2", result[_optionsAuditConfiguration.Value.CustomAuditHeaderPrefix + "repeated"]);

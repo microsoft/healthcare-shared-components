@@ -12,7 +12,6 @@ using EnsureThat;
 using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using Microsoft.Health.Core;
 using Microsoft.Health.SqlServer.Configs;
 using Microsoft.Health.SqlServer.Features.Client;
 using Microsoft.SqlServer.Management.Common;
@@ -57,7 +56,7 @@ public class SchemaManagerDataStore : ISchemaManagerDataStore
 
             var server = new Server(serverConnection);
             var watch = Stopwatch.StartNew();
-            _logger.LogInformation("Script execution started at {UtcTime}", Clock.UtcNow);
+            _logger.LogInformation("Script execution started at {UtcTime}", DateTime.UtcNow);
 
             server.ConnectionContext.ExecuteNonQuery(script);
 
