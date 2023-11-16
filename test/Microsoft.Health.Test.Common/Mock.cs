@@ -47,8 +47,12 @@ public static class Mock
                 propertyInfo.SetValue(closureFieldValue, val);
                 disposable.When(x => x.Dispose()).Do(_ =>
                 {
-                    propertyInfo.SetValue(closureFieldValue, previous);
-                    semaphore?.Release();
+                    SemaphoreSlim s = Interlocked.CompareExchange(ref semaphore, null, semaphore);
+                    if (s is not null)
+                    {
+                        propertyInfo.SetValue(closureFieldValue, previous);
+                        s.Release();
+                    }
                 });
             }
             else

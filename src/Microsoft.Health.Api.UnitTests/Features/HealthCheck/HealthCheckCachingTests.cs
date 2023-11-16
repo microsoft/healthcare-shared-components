@@ -147,6 +147,12 @@ public class HealthCheckCachingTests
                 cache.CheckHealthAsync(_context, tokenSource.Token)),
             x => Assert.Equal(HealthStatus.Healthy, x.Status));
 
+#if NET8_0_OR_GREATER
+        timeProvider.Advance(TimeSpan.FromSeconds(1));
+#else
+        replacement.Dispose();
+#endif
+
         await _healthCheck.Received(1).CheckHealthAsync(_context, tokenSource.Token);
 
         // Call the middleware again to ensure we get new results
