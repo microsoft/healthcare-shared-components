@@ -1,4 +1,4 @@
-﻿// -------------------------------------------------------------------------------------------------
+// -------------------------------------------------------------------------------------------------
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License (MIT). See LICENSE in the repo root for license information.
 // -------------------------------------------------------------------------------------------------
@@ -22,7 +22,7 @@ public class ScriptProvider<TSchemaVersionEnum> : IScriptProvider
         using Stream stream = Assembly.GetAssembly(typeof(TSchemaVersionEnum)).GetManifestResourceStream(resourceName);
         if (stream == null)
         {
-            throw new FileNotFoundException(Resources.ScriptNotFound);
+            throw new FileNotFoundException(SR.ScriptNotFound);
         }
 
         using var reader = new StreamReader(stream);
@@ -40,7 +40,7 @@ public class ScriptProvider<TSchemaVersionEnum> : IScriptProvider
         using Stream fileStream = Assembly.GetAssembly(typeof(TSchemaVersionEnum)).GetManifestResourceStream(resourceName);
         if (fileStream == null)
         {
-            throw new FileNotFoundException(Resources.ScriptNotFound);
+            throw new FileNotFoundException(SR.ScriptNotFound);
         }
 
         var scriptBytes = new byte[fileStream.Length];

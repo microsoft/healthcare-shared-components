@@ -4,7 +4,6 @@
 // -------------------------------------------------------------------------------------------------
 
 using System;
-using System.Collections.ObjectModel;
 using System.CommandLine;
 using System.CommandLine.Invocation;
 using System.CommandLine.Rendering;
@@ -49,10 +48,7 @@ public class AvailableCommand : Command
             Console.WindowHeight,
             true);
 
-        var tableView = new TableView<AvailableVersion>
-        {
-            Items = new ReadOnlyCollection<AvailableVersion>(availableVersions),
-        };
+        var tableView = new TableView<AvailableVersion> { Items = availableVersions };
 
         tableView.AddColumn(
           cellValue: availableVersion => availableVersion.Id,

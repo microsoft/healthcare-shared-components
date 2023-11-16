@@ -65,7 +65,7 @@ public class SqlSchemaManager : ISchemaManager
 
             int retryCountForHttpRequestException = 18;
 
-            var availableVersions = await Policy.Handle<HttpRequestException>()
+            _ = await Policy.Handle<HttpRequestException>()
                 .WaitAndRetryAsync(
                     retryCount: retryCountForHttpRequestException,   // approx. 3 mins wait time for the service to responds to requests
                     sleepDurationProvider: retryCount => TimeSpan.FromSeconds(10),
@@ -77,7 +77,7 @@ public class SqlSchemaManager : ISchemaManager
             // If the user hits apply command multiple times in a row, then the service schema job might not poll the updated available versions
             // so there are retries to give it a fair amount of time.
 
-            availableVersions = await Policy.Handle<SchemaManagerException>()
+            List<AvailableVersion> availableVersions = await Policy.Handle<SchemaManagerException>()
                 .WaitAndRetryAsync(
                     retryCount: RetryAttempts,
                     sleepDurationProvider: retryCount => RetrySleepDuration,
@@ -110,7 +110,7 @@ public class SqlSchemaManager : ISchemaManager
             // Checking the specified version is not out of range of available versions
             if (availableVersions.Count < 1 || targetVersion < availableVersions[0].Id || targetVersion > availableVersions[^1].Id)
             {
-                throw new SchemaManagerException(string.Format(CultureInfo.CurrentCulture, Resources.SpecifiedVersionNotAvailable, targetVersion));
+                throw new SchemaManagerException(string.Format(CultureInfo.CurrentCulture, SR.SpecifiedVersionNotAvailable, targetVersion));
             }
 
 
@@ -185,7 +185,7 @@ public class SqlSchemaManager : ISchemaManager
     }
 
     /// <inheritdoc />
-    public async Task<List<AvailableVersion>> GetAvailableSchema(CancellationToken cancellationToken = default)
+    public async Task<IReadOnlyList<AvailableVersion>> GetAvailableSchema(CancellationToken cancellationToken = default)
     {
         try
         {
@@ -212,7 +212,7 @@ public class SqlSchemaManager : ISchemaManager
     }
 
     /// <inheritdoc />
-    public async Task<IList<CurrentVersion>> GetCurrentSchema(CancellationToken cancellationToken = default)
+    public async Task<IReadOnlyList<CurrentVersion>> GetCurrentSchema(CancellationToken cancellationToken = default)
     {
         try
         {
@@ -246,7 +246,7 @@ public class SqlSchemaManager : ISchemaManager
 
         if (availableVersions[0].Id != await _schemaManagerDataStore.GetCurrentSchemaVersionAsync(cancellationToken).ConfigureAwait(false))
         {
-            throw new SchemaManagerException(Resources.AvailableVersionsErrorMessage);
+            throw new SchemaManagerException(SR.AvailableVersionsErrorMessage);
         }
 
         return availableVersions;
@@ -258,7 +258,7 @@ public class SqlSchemaManager : ISchemaManager
 
         if (maxAvailableVersion > compatibleVersion.Max)
         {
-            throw new SchemaManagerException(string.Format(CultureInfo.CurrentCulture, Resources.VersionIncompatibilityMessage, maxAvailableVersion));
+            throw new SchemaManagerException(string.Format(CultureInfo.CurrentCulture, SR.VersionIncompatibilityMessage, maxAvailableVersion));
         }
     }
 
@@ -284,7 +284,7 @@ public class SqlSchemaManager : ISchemaManager
         // check if any instance is not running on the previous version
         if (currentVersions.Any(currentVersion => currentVersion.Id != (version - 1) && currentVersion.Servers.Count > 0))
         {
-            throw new SchemaManagerException(string.Format(CultureInfo.CurrentCulture, Resources.InvalidVersionMessage, version));
+            throw new SchemaManagerException(string.Format(CultureInfo.CurrentCulture, SR.InvalidVersionMessage, version));
         }
     }
 

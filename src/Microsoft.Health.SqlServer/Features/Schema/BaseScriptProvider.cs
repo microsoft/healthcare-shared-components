@@ -1,4 +1,4 @@
-﻿// -------------------------------------------------------------------------------------------------
+// -------------------------------------------------------------------------------------------------
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License (MIT). See LICENSE in the repo root for license information.
 // -------------------------------------------------------------------------------------------------
@@ -18,7 +18,7 @@ public class BaseScriptProvider : IBaseScriptProvider
         {
             if (stream == null)
             {
-                throw new FileNotFoundException(Resources.BaseScriptNotFound);
+                throw new FileNotFoundException(SR.BaseScriptNotFound);
             }
 
             using (var reader = new StreamReader(stream))

@@ -19,6 +19,9 @@ public class DurableFunctionsTest : IClassFixture<WebJobsTestFixture<Startup>>
 {
     private readonly IDurableClient _durableClient;
 
+    private static readonly int[] OutOfOrder = [3, 4, 1, 5, 4, 2];
+    private static readonly int[] Ordered = [5, 4, 4, 3, 2, 1];
+
     public DurableFunctionsTest(IDurableClientFactory factory)
         => _durableClient = EnsureArg.IsNotNull(factory, nameof(factory)).CreateClient();
 
@@ -28,8 +31,7 @@ public class DurableFunctionsTest : IClassFixture<WebJobsTestFixture<Startup>>
         string instanceId = await _durableClient
             .StartNewAsync(
                 nameof(DistributedSorter.InsertionSortAsync),
-                new SortingInput(new int[] { 3, 4, 1, 5, 4, 2 }))
-            ;
+                new SortingInput(OutOfOrder));
 
         DurableOrchestrationStatus status = await _durableClient.GetStatusAsync(instanceId);
         while (status.RuntimeStatus.IsInProgress())
@@ -40,10 +42,9 @@ public class DurableFunctionsTest : IClassFixture<WebJobsTestFixture<Startup>>
 
         Assert.Equal(OrchestrationRuntimeStatus.Completed, status.RuntimeStatus);
 
-        int[] expected = new int[] { 5, 4, 4, 3, 2, 1 };
         int[]? actual = status.Output.ToObject<int[]>();
 
         Assert.NotNull(actual);
-        Assert.True(expected.SequenceEqual(actual!));
+        Assert.True(Ordered.SequenceEqual(actual!));
     }
 }

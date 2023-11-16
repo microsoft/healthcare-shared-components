@@ -57,7 +57,7 @@ internal class SqlServerSchemaDataStore : ISchemaDataStore
                 }
                 else
                 {
-                    throw new CompatibleVersionsNotFoundException(Resources.CompatibilityRecordNotFound);
+                    throw new CompatibleVersionsNotFoundException(SR.CompatibilityRecordNotFound);
                 }
             }
 
@@ -68,7 +68,7 @@ internal class SqlServerSchemaDataStore : ISchemaDataStore
         {
             if (o == DBNull.Value)
             {
-                throw new CompatibleVersionsNotFoundException(Resources.CompatibilityRecordNotFound);
+                throw new CompatibleVersionsNotFoundException(SR.CompatibilityRecordNotFound);
             }
             else
             {

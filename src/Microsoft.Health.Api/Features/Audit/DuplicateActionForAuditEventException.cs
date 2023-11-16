@@ -1,4 +1,4 @@
-﻿// -------------------------------------------------------------------------------------------------
+// -------------------------------------------------------------------------------------------------
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License (MIT). See LICENSE in the repo root for license information.
 // -------------------------------------------------------------------------------------------------
@@ -25,7 +25,7 @@ public class DuplicateActionForAuditEventException : Exception
     }
 
     public DuplicateActionForAuditEventException(string controllerName, string actionName)
-        : base(string.Format(CultureInfo.CurrentCulture, Resources.DuplicateActionForAuditEvent, controllerName, actionName))
+        : base(string.Format(CultureInfo.CurrentCulture, SR.DuplicateActionForAuditEvent, controllerName, actionName))
     {
     }
 }

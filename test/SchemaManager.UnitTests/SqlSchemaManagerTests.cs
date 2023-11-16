@@ -37,7 +37,7 @@ public class SqlSchemaManagerTests
     {
         _client.GetCurrentVersionInformationAsync(Arg.Any<CancellationToken>()).ReturnsForAnyArgs(new List<CurrentVersion> { new CurrentVersion(1, "Complete", new List<string> { "server1" }) });
 
-        IList<CurrentVersion> current = await _sqlSchemaManager.GetCurrentSchema();
+        IReadOnlyList<CurrentVersion> current = await _sqlSchemaManager.GetCurrentSchema();
 
         Assert.NotNull(current);
         Assert.Single(current);
@@ -51,7 +51,7 @@ public class SqlSchemaManagerTests
     {
         _client.GetCurrentVersionInformationAsync(Arg.Any<CancellationToken>()).ReturnsForAnyArgs(new List<CurrentVersion> { });
 
-        IList<CurrentVersion> current = await _sqlSchemaManager.GetCurrentSchema();
+        IReadOnlyList<CurrentVersion> current = await _sqlSchemaManager.GetCurrentSchema();
 
         Assert.NotNull(current);
         Assert.Empty(current);
@@ -63,7 +63,7 @@ public class SqlSchemaManagerTests
     public async Task GetAvailableSchema_SingleList_Succeeds()
     {
         _client.GetAvailabilityAsync(Arg.Any<CancellationToken>()).ReturnsForAnyArgs(new List<AvailableVersion> { new AvailableVersion(1, "_script/1.sql", "_script/1.diff.sql") });
-        IList<AvailableVersion> available = await _sqlSchemaManager.GetAvailableSchema();
+        IReadOnlyList<AvailableVersion> available = await _sqlSchemaManager.GetAvailableSchema();
 
         Assert.NotNull(available);
         Assert.Single(available);
@@ -76,7 +76,7 @@ public class SqlSchemaManagerTests
     public async Task GetAvailableSchema_ContainsVersionZero_RemovesZero()
     {
         _client.GetAvailabilityAsync(Arg.Any<CancellationToken>()).ReturnsForAnyArgs(new List<AvailableVersion> { new AvailableVersion(0, "_script/0.sql", "_script/0.diff.sql"), new AvailableVersion(1, "_script/1.sql", "_script/1.diff.sql") });
-        IList<AvailableVersion> available = await _sqlSchemaManager.GetAvailableSchema();
+        IReadOnlyList<AvailableVersion> available = await _sqlSchemaManager.GetAvailableSchema();
 
         Assert.NotNull(available);
         Assert.Single(available);

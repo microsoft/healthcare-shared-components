@@ -196,7 +196,11 @@ public class HealthCheckCachingTests
         DateTimeOffset futureTime = DateTimeOffset.UtcNow.AddSeconds(delaySeconds);
         using (Mock.Property(() => ClockResolver.UtcNowFunc, () => futureTime))
         {
+#if NET8_0_OR_GREATER
+            await tokenSource.CancelAsync();
+#else
             tokenSource.Cancel();
+#endif
 
             Task<HealthCheckResult> task = cache.CheckHealthAsync(_context, tokenSource.Token);
             if (throwsException)
@@ -260,7 +264,11 @@ public class HealthCheckCachingTests
             Task<HealthCheckResult> task = cache.CheckHealthAsync(_context, tokenSource.Token);
 
             startRefreshEvent.Wait();
+#if NET8_0_OR_GREATER
+            await tokenSource.CancelAsync();
+#else
             tokenSource.Cancel();
+#endif
 
             if (throwsException)
             {

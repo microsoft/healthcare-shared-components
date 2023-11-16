@@ -22,7 +22,7 @@ namespace Microsoft.Health.SqlServer.Tests.Integration.Features.Schema.Manager;
 public sealed class BaseSchemaRunnerTests : SqlIntegrationTestBase, IDisposable
 {
     private readonly BaseSchemaRunner _runner;
-    private readonly ISchemaManagerDataStore _dataStore;
+    private readonly SchemaManagerDataStore _dataStore;
     private readonly SqlTransactionHandler _sqlTransactionHandler = new SqlTransactionHandler();
 
     public BaseSchemaRunnerTests(ITestOutputHelper output)

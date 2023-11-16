@@ -36,7 +36,7 @@ public class BaseSchemaRunner : IBaseSchemaRunner
 
     public async Task EnsureBaseSchemaExistsAsync(CancellationToken cancellationToken)
     {
-        IBaseScriptProvider baseScriptProvider = new BaseScriptProvider();
+        BaseScriptProvider baseScriptProvider = new();
 
         await InitializeAsync(cancellationToken).ConfigureAwait(false);
 
@@ -76,13 +76,13 @@ public class BaseSchemaRunner : IBaseSchemaRunner
         {
             if (!await _schemaManagerDataStore.InstanceSchemaRecordExistsAsync(cancellationToken).ConfigureAwait(false))
             {
-                throw new InstanceSchemaNotFoundException(Resources.InstanceSchemaRecordErrorMessage);
+                throw new InstanceSchemaNotFoundException(SR.InstanceSchemaRecordErrorMessage);
             }
         }
         catch (SqlException e) when (e.Message.Contains("Invalid object name", StringComparison.OrdinalIgnoreCase))
         {
             // Table doesn't exist
-            throw new SchemaManagerException(Resources.InstanceSchemaRecordTableNotFound, e);
+            throw new SchemaManagerException(SR.InstanceSchemaRecordTableNotFound, e);
         }
     }
 
@@ -103,7 +103,7 @@ public class BaseSchemaRunner : IBaseSchemaRunner
 
         if (!canInitialize)
         {
-            throw new SchemaManagerException(Resources.InsufficientTablesPermissionsMessage);
+            throw new SchemaManagerException(SR.InsufficientTablesPermissionsMessage);
         }
     }
 
@@ -124,7 +124,7 @@ public class BaseSchemaRunner : IBaseSchemaRunner
             }
             else
             {
-                throw new SchemaManagerException(Resources.InsufficientDatabasePermissionsMessage);
+                throw new SchemaManagerException(SR.InsufficientDatabasePermissionsMessage);
             }
         }
     }
