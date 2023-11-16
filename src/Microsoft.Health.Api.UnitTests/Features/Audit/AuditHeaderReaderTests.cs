@@ -78,13 +78,14 @@ public class AuditHeaderReaderTests
     }
 
     [Fact]
+    [SuppressMessage("Usage", "ASP0019:Suggest using IHeaderDictionary.Append or the indexer", Justification = "Desired behavior adds empty headers.")]
     public void GivenHeaderWithNoValue_WhenHeadersRead_ThenHeaderNameWithEmptyValueIsReturned()
     {
         var headerReader = new AuditHeaderReader(_optionsAuditConfiguration);
         var headers = GenerateRandomHeaders(1, 5).ToList()[0][0] as Dictionary<string, string>;
         foreach (var header in headers)
         {
-            _httpContext.Request.Headers.Append(header.Key, default);
+            _httpContext.Request.Headers.Add(header.Key, default);
         }
 
         var result = headerReader.Read(_httpContext);
