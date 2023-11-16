@@ -157,32 +157,31 @@ public class AuditEventTypeMappingTests : IAsyncLifetime
 
     [SuppressMessage("Performance", "CA1812:Avoid uninstantiated internal classes", Justification = "Class metadata is used.")]
     [SuppressMessage("Performance", "CA1822:Mark members as static", Justification = "Controller actions should be instance members.")]
-    [SuppressMessage("Performance", "CA1859: Use concrete types when possible for improved performance", Justification = "Controller would typically use interfaces.")]
     private sealed class MockController : Controller
     {
         [AllowAnonymous]
-        public IActionResult Anonymous() => new OkResult();
+        public OkResult Anonymous() => new OkResult();
 
         [FhirAnonymousOperation(MetadataFhirAnonymousOperationType)]
-        public IActionResult MetadataAnonymous() => new OkResult();
+        public OkResult MetadataAnonymous() => new OkResult();
 
         [FhirAnonymousOperation(VersionsFhirAnonymousOperationType)]
-        public IActionResult VersionsAnonymous() => new OkResult();
+        public OkResult VersionsAnonymous() => new OkResult();
 
         [AuditEventType(AuditEventType)]
-        public IActionResult Auditted() => new OkResult();
+        public OkResult Auditted() => new OkResult();
 
         [Route("some/route")]
         [Route("another/route")]
         [AuditEventType(AuditEventType)]
-        public IActionResult MultipleRoutes() => new OkResult();
+        public OkResult MultipleRoutes() => new OkResult();
 
         [AuditEventType(AuditEventType)]
-        public IActionResult SameName(int x) => new OkResult();
+        public OkResult SameName(int x) => new OkResult();
 
         [AuditEventType(AnotherAuditEventType)]
-        public IActionResult SameName(string y) => new OkResult();
+        public OkResult SameName(string y) => new OkResult();
 
-        public IActionResult NoAttribute() => new OkResult();
+        public OkResult NoAttribute() => new OkResult();
     }
 }
