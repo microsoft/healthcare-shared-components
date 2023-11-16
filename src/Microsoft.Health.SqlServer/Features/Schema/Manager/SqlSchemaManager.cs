@@ -110,7 +110,7 @@ public class SqlSchemaManager : ISchemaManager
             // Checking the specified version is not out of range of available versions
             if (availableVersions.Count < 1 || targetVersion < availableVersions[0].Id || targetVersion > availableVersions[^1].Id)
             {
-                throw new SchemaManagerException(string.Format(CultureInfo.CurrentCulture, SR.SpecifiedVersionNotAvailable, targetVersion));
+                throw new SchemaManagerException(string.Format(CultureInfo.CurrentCulture, FormatResources.SpecifiedVersionNotAvailable, targetVersion));
             }
 
 
@@ -246,7 +246,7 @@ public class SqlSchemaManager : ISchemaManager
 
         if (availableVersions[0].Id != await _schemaManagerDataStore.GetCurrentSchemaVersionAsync(cancellationToken).ConfigureAwait(false))
         {
-            throw new SchemaManagerException(SR.AvailableVersionsErrorMessage);
+            throw new SchemaManagerException(Resources.AvailableVersionsErrorMessage);
         }
 
         return availableVersions;
@@ -258,7 +258,7 @@ public class SqlSchemaManager : ISchemaManager
 
         if (maxAvailableVersion > compatibleVersion.Max)
         {
-            throw new SchemaManagerException(string.Format(CultureInfo.CurrentCulture, SR.VersionIncompatibilityMessage, maxAvailableVersion));
+            throw new SchemaManagerException(string.Format(CultureInfo.CurrentCulture, FormatResources.VersionIncompatibilityMessage, maxAvailableVersion));
         }
     }
 
@@ -284,7 +284,7 @@ public class SqlSchemaManager : ISchemaManager
         // check if any instance is not running on the previous version
         if (currentVersions.Any(currentVersion => currentVersion.Id != (version - 1) && currentVersion.Servers.Count > 0))
         {
-            throw new SchemaManagerException(string.Format(CultureInfo.CurrentCulture, SR.InvalidVersionMessage, version));
+            throw new SchemaManagerException(string.Format(CultureInfo.CurrentCulture, FormatResources.InvalidVersionMessage, version));
         }
     }
 

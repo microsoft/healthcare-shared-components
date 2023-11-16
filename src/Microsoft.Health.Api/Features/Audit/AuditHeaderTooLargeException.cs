@@ -10,7 +10,7 @@ namespace Microsoft.Health.Api.Features.Audit;
 public class AuditHeaderTooLargeException : AuditHeaderException
 {
     public AuditHeaderTooLargeException(string headerName, int size)
-        : base(string.Format(CultureInfo.CurrentCulture, SR.CustomAuditHeaderTooLarge, AuditConstants.MaximumLengthOfCustomHeader, headerName, size))
+        : base(string.Format(CultureInfo.CurrentCulture, FormatResources.CustomAuditHeaderTooLarge, AuditConstants.MaximumLengthOfCustomHeader, headerName, size))
     {
     }
 }

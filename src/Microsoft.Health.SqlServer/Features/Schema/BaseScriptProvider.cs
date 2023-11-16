@@ -18,7 +18,7 @@ public class BaseScriptProvider : IBaseScriptProvider
         {
             if (stream == null)
             {
-                throw new FileNotFoundException(SR.BaseScriptNotFound);
+                throw new FileNotFoundException(Resources.BaseScriptNotFound);
             }
 
             using (var reader = new StreamReader(stream))

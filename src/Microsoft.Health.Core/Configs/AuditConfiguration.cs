@@ -20,6 +20,6 @@ public class AuditConfiguration
     public string CustomAuditHeaderPrefix
     {
         get => _customAuditHeaderPrefix;
-        set => _customAuditHeaderPrefix = !string.IsNullOrEmpty(value) ? value : throw new InvalidDefinitionException(SR.CustomHeaderPrefixCannotBeEmpty);
+        set => _customAuditHeaderPrefix = !string.IsNullOrEmpty(value) ? value : throw new InvalidDefinitionException(Resources.CustomHeaderPrefixCannotBeEmpty);
     }
 }

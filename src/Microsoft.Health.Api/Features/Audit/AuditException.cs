@@ -11,7 +11,7 @@ namespace Microsoft.Health.Api.Features.Audit;
 public class AuditException : MicrosoftHealthException
 {
     public AuditException(string controllerName, string actionName)
-        : base(string.Format(CultureInfo.CurrentCulture, SR.MissingAuditInformation, controllerName, actionName))
+        : base(string.Format(CultureInfo.CurrentCulture, FormatResources.MissingAuditInformation, controllerName, actionName))
     {
     }
 }

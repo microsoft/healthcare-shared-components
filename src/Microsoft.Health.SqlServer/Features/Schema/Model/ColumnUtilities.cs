@@ -31,7 +31,7 @@ internal static class ColumnUtilities
     {
         if (((SqlDecimal)value).Precision > sqlMetaData.Precision || ((SqlDecimal)value).Scale > sqlMetaData.Scale)
         {
-            throw new SqlTruncateException(string.Format(CultureInfo.CurrentCulture, SR.DecimalValueOutOfRange, value, sqlMetaData.Precision, sqlMetaData.Scale));
+            throw new SqlTruncateException(string.Format(CultureInfo.CurrentCulture, FormatResources.DecimalValueOutOfRange, value, sqlMetaData.Precision, sqlMetaData.Scale));
         }
     }
 }

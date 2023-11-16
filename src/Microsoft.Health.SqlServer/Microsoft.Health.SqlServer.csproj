@@ -70,6 +70,24 @@
     </Generated>
   </ItemGroup>
 
+  <ItemGroup>
+    <Compile Update="Resources.Designer.cs">
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Resources.resx</DependentUpon>
+    </Compile>
+    <None Include="Resources.Format.cs">
+      <DependentUpon>Resources.resx</DependentUpon>
+    </None>
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Update="Resources.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>Resources.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+  </ItemGroup>
+
   <PropertyGroup>
     <GeneratorProjectPath>$(MSBuildThisFileDirectory)..\..\tools\Microsoft.Health.Extensions.BuildTimeCodeGenerator\Microsoft.Health.Extensions.BuildTimeCodeGenerator.csproj</GeneratorProjectPath>
   </PropertyGroup>

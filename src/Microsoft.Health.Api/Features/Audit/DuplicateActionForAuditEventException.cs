@@ -25,7 +25,7 @@ public class DuplicateActionForAuditEventException : Exception
     }
 
     public DuplicateActionForAuditEventException(string controllerName, string actionName)
-        : base(string.Format(CultureInfo.CurrentCulture, SR.DuplicateActionForAuditEvent, controllerName, actionName))
+        : base(string.Format(CultureInfo.CurrentCulture, FormatResources.DuplicateActionForAuditEvent, controllerName, actionName))
     {
     }
 }

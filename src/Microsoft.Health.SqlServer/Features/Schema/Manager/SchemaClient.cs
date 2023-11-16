@@ -35,7 +35,7 @@ public class SchemaClient : ISchemaClient
         }
         else
         {
-            throw new SchemaManagerException(string.Format(CultureInfo.CurrentCulture, SR.CurrentDefaultErrorDescription, response.StatusCode));
+            throw new SchemaManagerException(string.Format(CultureInfo.CurrentCulture, FormatResources.CurrentDefaultErrorDescription, response.StatusCode));
         }
     }
 
@@ -49,7 +49,7 @@ public class SchemaClient : ISchemaClient
         }
         else
         {
-            throw new SchemaManagerException(SR.ScriptNotFound);
+            throw new SchemaManagerException(Resources.ScriptNotFound);
         }
     }
 
@@ -63,7 +63,7 @@ public class SchemaClient : ISchemaClient
         }
         else
         {
-            throw new SchemaManagerException(SR.CompatibilityDefaultErrorMessage);
+            throw new SchemaManagerException(Resources.CompatibilityDefaultErrorMessage);
         }
     }
 
@@ -77,7 +77,7 @@ public class SchemaClient : ISchemaClient
         }
         else
         {
-            throw new SchemaManagerException(SR.AvailableVersionsDefaultErrorMessage);
+            throw new SchemaManagerException(Resources.AvailableVersionsDefaultErrorMessage);
         }
     }
 
@@ -91,7 +91,7 @@ public class SchemaClient : ISchemaClient
         }
         else
         {
-            throw new SchemaManagerException(SR.ScriptNotFound);
+            throw new SchemaManagerException(Resources.ScriptNotFound);
         }
     }
 }

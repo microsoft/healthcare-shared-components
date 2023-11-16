@@ -22,7 +22,7 @@ public class ScriptProvider<TSchemaVersionEnum> : IScriptProvider
         using Stream stream = Assembly.GetAssembly(typeof(TSchemaVersionEnum)).GetManifestResourceStream(resourceName);
         if (stream == null)
         {
-            throw new FileNotFoundException(SR.ScriptNotFound);
+            throw new FileNotFoundException(Resources.ScriptNotFound);
         }
 
         using var reader = new StreamReader(stream);
@@ -40,7 +40,7 @@ public class ScriptProvider<TSchemaVersionEnum> : IScriptProvider
         using Stream fileStream = Assembly.GetAssembly(typeof(TSchemaVersionEnum)).GetManifestResourceStream(resourceName);
         if (fileStream == null)
         {
-            throw new FileNotFoundException(SR.ScriptNotFound);
+            throw new FileNotFoundException(Resources.ScriptNotFound);
         }
 
         var scriptBytes = new byte[fileStream.Length];

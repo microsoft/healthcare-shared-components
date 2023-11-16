@@ -76,13 +76,13 @@ public class BaseSchemaRunner : IBaseSchemaRunner
         {
             if (!await _schemaManagerDataStore.InstanceSchemaRecordExistsAsync(cancellationToken).ConfigureAwait(false))
             {
-                throw new InstanceSchemaNotFoundException(SR.InstanceSchemaRecordErrorMessage);
+                throw new InstanceSchemaNotFoundException(Resources.InstanceSchemaRecordErrorMessage);
             }
         }
         catch (SqlException e) when (e.Message.Contains("Invalid object name", StringComparison.OrdinalIgnoreCase))
         {
             // Table doesn't exist
-            throw new SchemaManagerException(SR.InstanceSchemaRecordTableNotFound, e);
+            throw new SchemaManagerException(Resources.InstanceSchemaRecordTableNotFound, e);
         }
     }
 
@@ -103,7 +103,7 @@ public class BaseSchemaRunner : IBaseSchemaRunner
 
         if (!canInitialize)
         {
-            throw new SchemaManagerException(SR.InsufficientTablesPermissionsMessage);
+            throw new SchemaManagerException(Resources.InsufficientTablesPermissionsMessage);
         }
     }
 
@@ -124,7 +124,7 @@ public class BaseSchemaRunner : IBaseSchemaRunner
             }
             else
             {
-                throw new SchemaManagerException(SR.InsufficientDatabasePermissionsMessage);
+                throw new SchemaManagerException(Resources.InsufficientDatabasePermissionsMessage);
             }
         }
     }

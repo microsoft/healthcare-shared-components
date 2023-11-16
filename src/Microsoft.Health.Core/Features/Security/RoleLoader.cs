@@ -62,7 +62,7 @@ public abstract class RoleLoader<TDataActions> : IHostedService
             Schema = JSchema.Load(schemaReader),
         };
 
-        validatingReader.ValidationEventHandler += (sender, args) => throw new InvalidDefinitionException(string.Format(CultureInfo.CurrentCulture, SR.ErrorValidatingRoles, args.Message));
+        validatingReader.ValidationEventHandler += (sender, args) => throw new InvalidDefinitionException(string.Format(CultureInfo.CurrentCulture, FormatResources.ErrorValidatingRoles, args.Message));
 
         RolesContract rolesContract = jsonSerializer.Deserialize<RolesContract>(validatingReader);
 
@@ -74,7 +74,7 @@ public abstract class RoleLoader<TDataActions> : IHostedService
             int groupingCount = grouping.Count();
             if (groupingCount > 1)
             {
-                throw new InvalidDefinitionException(string.Format(CultureInfo.CurrentCulture, SR.DuplicateRoleNames, groupingCount, grouping.Key));
+                throw new InvalidDefinitionException(string.Format(CultureInfo.CurrentCulture, FormatResources.DuplicateRoleNames, groupingCount, grouping.Key));
             }
         }
 
