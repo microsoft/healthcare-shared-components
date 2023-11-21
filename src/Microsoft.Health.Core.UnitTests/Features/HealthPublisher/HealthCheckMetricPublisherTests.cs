@@ -135,7 +135,7 @@ public class HealthCheckMetricPublisherTests
                 "some description",
                 TimeSpan.Zero,
                 exception: null,
-                data: new Dictionary<string, object>() { { "Reason", includedReason } }));
+                data: new Dictionary<string, object>() { { "Reason", includedReason.ToString() } }));
         }
 
         return new HealthReport(entries, overallStatus, TimeSpan.Zero);

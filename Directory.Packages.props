@@ -1,11 +1,11 @@
 <Project>
   <ItemGroup>
-    <PackageVersion Include="Azure.Core" Version="1.35.0" />
-    <PackageVersion Include="Azure.Identity" Version="1.10.3" />
+    <PackageVersion Include="Azure.Core" Version="1.36.0" />
+    <PackageVersion Include="Azure.Identity" Version="1.10.4" />
     <PackageVersion Include="Azure.Messaging.EventGrid" Version="4.21.0" />
     <PackageVersion Include="Azure.Security.KeyVault.Keys" Version="4.5.0" />
-    <PackageVersion Include="Azure.Storage.Blobs" Version="12.19.0" />
-    <PackageVersion Include="Azure.Storage.Common" Version="12.18.0" />
+    <PackageVersion Include="Azure.Storage.Blobs" Version="12.19.1" />
+    <PackageVersion Include="Azure.Storage.Common" Version="12.18.1" />
     <PackageVersion Include="coverlet.collector" Version="6.0.0" />
     <PackageVersion Include="DistributedLock.SqlServer" Version="1.0.3" />
     <PackageVersion Include="Ensure.That" Version="10.1.0" />
@@ -17,15 +17,15 @@
     <PackageVersion Include="Microsoft.ApplicationInsights" Version="2.21.0" />
     <PackageVersion Include="Microsoft.AspNetCore.Mvc.Testing" Version="$(SdkPackageVersion)" />
     <PackageVersion Include="Microsoft.AspNetCore.TestHost" Version="$(SdkPackageVersion)" />
-    <PackageVersion Include="Microsoft.Azure.DurableTask.Core" Version="2.15.1" />
+    <PackageVersion Include="Microsoft.Azure.DurableTask.Core" Version="2.16.0" />
     <PackageVersion Include="Microsoft.Azure.Functions.Extensions" Version="1.1.0" />
     <PackageVersion Include="Microsoft.Azure.WebJobs" Version="3.0.39" />
     <PackageVersion Include="Microsoft.Azure.WebJobs.Core" Version="3.0.39" />
     <PackageVersion Include="Microsoft.Azure.WebJobs.Extensions" Version="5.0.0" />
-    <PackageVersion Include="Microsoft.Azure.WebJobs.Extensions.DurableTask" Version="2.12.0" />
+    <PackageVersion Include="Microsoft.Azure.WebJobs.Extensions.DurableTask" Version="2.13.0" />
     <PackageVersion Include="Microsoft.Azure.WebJobs.Host.Storage" Version="5.0.0" />
-    <PackageVersion Include="Microsoft.Build.Framework" Version="17.7.2" />
-    <PackageVersion Include="Microsoft.Build.Utilities.Core" Version="17.7.2" />
+    <PackageVersion Include="Microsoft.Build.Framework" Version="17.8.3" />
+    <PackageVersion Include="Microsoft.Build.Utilities.Core" Version="17.8.3" />
     <PackageVersion Include="Microsoft.CodeAnalysis.Common" Version="$(CodeAnalysisPackageVersion)" />
     <PackageVersion Include="Microsoft.CodeAnalysis.CSharp" Version="$(CodeAnalysisPackageVersion)" />
     <PackageVersion Include="Microsoft.CodeAnalysis.CSharp.Workspaces" Version="$(CodeAnalysisPackageVersion)" />
@@ -64,7 +64,7 @@
     <PackageVersion Include="Newtonsoft.Json" Version="13.0.3" />
     <PackageVersion Include="Newtonsoft.Json.Schema" Version="3.0.15" />
     <PackageVersion Include="NSubstitute" Version="5.1.0" />
-    <PackageVersion Include="Polly" Version="8.1.0" />
+    <PackageVersion Include="Polly" Version="8.2.0" />
     <PackageVersion Include="Polly.Contrib.WaitAndRetry" Version="1.1.1" />
     <PackageVersion Include="System.CommandLine.DragonFruit" Version="0.2.0-alpha.19174.3" />
     <PackageVersion Include="System.CommandLine.Experimental" Version="0.2.0-alpha.19174.3" />
