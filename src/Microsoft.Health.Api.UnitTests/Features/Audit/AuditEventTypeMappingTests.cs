@@ -127,7 +127,7 @@ public class AuditEventTypeMappingTests : IAsyncLifetime
     }
 
     [Fact]
-    public Task GivenTwoMethodsWithTheSameNameAndDifferentAuditEvents_WhenMappingIsCreated_ThenDuplicateActionForAuditEventExceptionShouldBeThrown()
+    public async Task GivenTwoMethodsWithTheSameNameAndDifferentAuditEvents_WhenMappingIsCreated_ThenDuplicateActionForAuditEventExceptionShouldBeThrown()
     {
         Type mockControllerType = typeof(MockController);
 
@@ -152,7 +152,7 @@ public class AuditEventTypeMappingTests : IAsyncLifetime
 
         var eventTypeMapping = new AuditEventTypeMapping(_actionDescriptorCollectionProvider);
 
-        return Assert.ThrowsAsync<DuplicateActionForAuditEventException>(() => ((IHostedService)eventTypeMapping).StartAsync(CancellationToken.None));
+        await Assert.ThrowsAsync<DuplicateActionForAuditEventException>(() => ((IHostedService)eventTypeMapping).StartAsync(CancellationToken.None));
     }
 
     [SuppressMessage("Performance", "CA1812:Avoid uninstantiated internal classes", Justification = "Class metadata is used.")]
