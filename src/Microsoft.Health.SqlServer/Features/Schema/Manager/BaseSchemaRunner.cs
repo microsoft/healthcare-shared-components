@@ -36,7 +36,7 @@ public class BaseSchemaRunner : IBaseSchemaRunner
 
     public async Task EnsureBaseSchemaExistsAsync(CancellationToken cancellationToken)
     {
-        IBaseScriptProvider baseScriptProvider = new BaseScriptProvider();
+        BaseScriptProvider baseScriptProvider = new();
 
         await InitializeAsync(cancellationToken).ConfigureAwait(false);
 

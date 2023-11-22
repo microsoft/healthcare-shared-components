@@ -1,11 +1,10 @@
-﻿// -------------------------------------------------------------------------------------------------
+// -------------------------------------------------------------------------------------------------
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License (MIT). See LICENSE in the repo root for license information.
 // -------------------------------------------------------------------------------------------------
 
 using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.CommandLine;
 using System.CommandLine.Invocation;
 using System.CommandLine.Rendering;
@@ -50,12 +49,9 @@ public class CurrentCommand : Command
                       Console.WindowHeight,
                       true);
 
-        IList<CurrentVersion> currentVersions = await _schemaManager.GetCurrentSchema(cancellationToken).ConfigureAwait(false);
+        IReadOnlyList<CurrentVersion> currentVersions = await _schemaManager.GetCurrentSchema(cancellationToken).ConfigureAwait(false);
 
-        var tableView = new TableView<CurrentVersion>
-        {
-            Items = new ReadOnlyCollection<CurrentVersion>(currentVersions),
-        };
+        var tableView = new TableView<CurrentVersion> { Items = currentVersions };
 
         tableView.AddColumn(
            cellValue: currentVersion => currentVersion.Id,

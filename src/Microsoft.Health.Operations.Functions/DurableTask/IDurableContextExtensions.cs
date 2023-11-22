@@ -78,5 +78,5 @@ public static class IDurableContextExtensions
     private static Guid GetOperationId(string instanceId)
         => Guid.TryParseExact(instanceId, OperationId.FormatSpecifier, out Guid operationId)
             ? operationId
-            : throw new FormatException(string.Format(CultureInfo.CurrentCulture, Resources.InvalidInstanceId, instanceId));
+            : throw new FormatException(string.Format(CultureInfo.CurrentCulture, FormatResources.InvalidInstanceId, instanceId));
 }

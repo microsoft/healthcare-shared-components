@@ -87,7 +87,11 @@ public class BlobHealthCheckTests
     public async Task GivenCancellation_WhenHealthIsChecked_ThenOperationCancelledExceptionIsThrown()
     {
         using var cancellationTokenSource = new CancellationTokenSource();
+#if NET8_0_OR_GREATER
+        await cancellationTokenSource.CancelAsync();
+#else
         cancellationTokenSource.Cancel();
+#endif
 
         await Assert.ThrowsAsync<OperationCanceledException>(() => _healthCheck.CheckHealthAsync(new HealthCheckContext(), cancellationTokenSource.Token));
     }

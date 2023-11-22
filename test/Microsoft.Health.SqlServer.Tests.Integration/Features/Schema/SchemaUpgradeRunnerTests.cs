@@ -4,6 +4,7 @@
 // -------------------------------------------------------------------------------------------------
 
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Data.SqlClient;
@@ -32,6 +33,7 @@ public sealed class SchemaUpgradeRunnerTests : SqlIntegrationTestBase, IDisposab
     {
     }
 
+    [SuppressMessage("Performance", "CA1849:Call async methods when in an async method", Justification = "BeginTransaction is used by underlying implementation.")]
     public override async Task InitializeAsync()
     {
         await base.InitializeAsync();

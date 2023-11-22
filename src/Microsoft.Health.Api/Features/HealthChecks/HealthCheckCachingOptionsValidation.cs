@@ -1,4 +1,4 @@
-﻿// -------------------------------------------------------------------------------------------------
+// -------------------------------------------------------------------------------------------------
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License (MIT). See LICENSE in the repo root for license information.
 // -------------------------------------------------------------------------------------------------
@@ -29,7 +29,7 @@ public sealed class HealthCheckCachingOptionsValidation : IValidateOptions<Healt
             failures.Add(
                 string.Format(
                     CultureInfo.CurrentCulture,
-                    Resources.PropertyCannotBeLessThanValue,
+                    FormatResources.PropertyCannotBeLessThanValue,
                     nameof(HealthCheckCachingOptions.Expiry),
                     options.Expiry,
                     TimeSpan.Zero));
@@ -41,7 +41,7 @@ public sealed class HealthCheckCachingOptionsValidation : IValidateOptions<Healt
             failures.Add(
                 string.Format(
                     CultureInfo.CurrentCulture,
-                    Resources.PropertyCannotBeLessThanValue,
+                    FormatResources.PropertyCannotBeLessThanValue,
                     nameof(HealthCheckCachingOptions.RefreshOffset),
                     options.RefreshOffset,
                     TimeSpan.Zero));
@@ -53,7 +53,7 @@ public sealed class HealthCheckCachingOptionsValidation : IValidateOptions<Healt
             failures.Add(
                 string.Format(
                     CultureInfo.CurrentCulture,
-                    Resources.PropertyCannotBeLessThanValue,
+                    FormatResources.PropertyCannotBeLessThanValue,
                     nameof(HealthCheckCachingOptions.MaxRefreshThreads),
                     options.MaxRefreshThreads,
                     1));
@@ -65,7 +65,7 @@ public sealed class HealthCheckCachingOptionsValidation : IValidateOptions<Healt
             failures.Add(
                 string.Format(
                     CultureInfo.CurrentCulture,
-                    Resources.PropertyCannotBeLargerThanAnother,
+                    FormatResources.PropertyCannotBeLargerThanAnother,
                     nameof(HealthCheckCachingOptions.RefreshOffset),
                     options.RefreshOffset,
                     nameof(HealthCheckCachingOptions.Expiry),

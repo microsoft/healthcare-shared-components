@@ -43,13 +43,19 @@ public static class Mock
 
             if (propertyGetExpression.Member is PropertyInfo propertyInfo)
             {
+                int disposed = 0;
                 var previous = propertyInfo.GetValue(closureFieldValue);
                 propertyInfo.SetValue(closureFieldValue, val);
-                disposable.When(x => x.Dispose()).Do(_ =>
-                {
-                    propertyInfo.SetValue(closureFieldValue, previous);
-                    semaphore?.Release();
-                });
+                disposable
+                    .When(x => x.Dispose())
+                    .Do(_ =>
+                    {
+                        if (Interlocked.CompareExchange(ref disposed, 1, 0) == 0)
+                        {
+                            propertyInfo.SetValue(closureFieldValue, previous);
+                            semaphore?.Release();
+                        }
+                    });
             }
             else
             {

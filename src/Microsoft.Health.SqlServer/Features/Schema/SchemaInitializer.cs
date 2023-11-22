@@ -297,7 +297,7 @@ public sealed class SchemaInitializer : IHostedService
 
         if (!Identifier.IsValidDatabase(databaseName))
         {
-            throw new ArgumentException(string.Format(CultureInfo.CurrentCulture, Resources.InvalidDatabaseIdentifier, databaseName), nameof(databaseName));
+            throw new ArgumentException(string.Format(CultureInfo.CurrentCulture, FormatResources.InvalidDatabaseIdentifier, databaseName), nameof(databaseName));
         }
 
         using SqlCommandWrapper canCreateDatabaseCommand = connection.CreateRetrySqlCommand();

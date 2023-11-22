@@ -3,14 +3,17 @@
 // Licensed under the MIT License (MIT). See LICENSE in the repo root for license information.
 // -------------------------------------------------------------------------------------------------
 
-using System.Globalization;
+#if NET8_0_OR_GREATER
+using System.Text;
+#endif
 
-namespace Microsoft.Health.Api.Features.Audit;
+namespace Microsoft.Health.Operations.Functions;
 
-public class AuditHeaderCountExceededException : AuditHeaderException
+internal static class FormatResources
 {
-    public AuditHeaderCountExceededException(int size)
-        : base(string.Format(CultureInfo.CurrentCulture, FormatResources.TooManyCustomAuditHeaders, AuditConstants.MaximumNumberOfCustomHeaders, size))
-    {
-    }
+#if NET8_0_OR_GREATER
+    public static CompositeFormat InvalidInstanceId { get; } = CompositeFormat.Parse(Resources.InvalidInstanceId);
+#else
+    public static string InvalidInstanceId => Resources.InvalidInstanceId;
+#endif
 }

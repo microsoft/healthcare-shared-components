@@ -26,14 +26,14 @@ public interface ISchemaManager
     /// </summary>
     /// <param name="cancellationToken">A cancellation token.</param>
     /// <returns>A list of available schema versions from the service.</returns>
-    public Task<IList<AvailableVersion>> GetAvailableSchema(CancellationToken cancellationToken = default);
+    public Task<IReadOnlyList<AvailableVersion>> GetAvailableSchema(CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Gets the current schema version of the service.
     /// </summary>
     /// <param name="cancellationToken">A cancellation token.</param>
     /// <returns>A list of the current schema versions from the service.</returns>
-    public Task<IList<CurrentVersion>> GetCurrentSchema(CancellationToken cancellationToken = default);
+    public Task<IReadOnlyList<CurrentVersion>> GetCurrentSchema(CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Gets the latest schema version of the db.

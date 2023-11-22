@@ -1,4 +1,4 @@
-﻿// -------------------------------------------------------------------------------------------------
+// -------------------------------------------------------------------------------------------------
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License (MIT). See LICENSE in the repo root for license information.
 // -------------------------------------------------------------------------------------------------
@@ -52,7 +52,7 @@ public class AuditHeaderReaderTests
         var headers = GenerateRandomHeaders(1, 0).ToList()[0][0] as Dictionary<string, string>;
         foreach (var header in headers)
         {
-            _httpContext.Request.Headers.Add(header.Key, new StringValues(header.Value));
+            _httpContext.Request.Headers.Append(header.Key, new StringValues(header.Value));
         }
 
         result = headerReader.Read(_httpContext);
@@ -69,7 +69,7 @@ public class AuditHeaderReaderTests
 
         foreach (var header in headers)
         {
-            _httpContext.Request.Headers.Add(header.Key, new StringValues(header.Value));
+            _httpContext.Request.Headers.Append(header.Key, new StringValues(header.Value));
         }
 
         var result = headerReader.Read(_httpContext);
@@ -77,6 +77,7 @@ public class AuditHeaderReaderTests
     }
 
     [Fact]
+    [SuppressMessage("Usage", "ASP0019:Suggest using IHeaderDictionary.Append or the indexer", Justification = "Desired behavior adds empty headers.")]
     public void GivenHeaderWithNoValue_WhenHeadersRead_ThenHeaderNameWithEmptyValueIsReturned()
     {
         var headerReader = new AuditHeaderReader(_optionsAuditConfiguration);
@@ -100,7 +101,7 @@ public class AuditHeaderReaderTests
     public void GivenMultipleValuesOfSameHeader_WhenHeadersRead_ThenConcatenatedStringValueReturend()
     {
         var headerReader = new AuditHeaderReader(_optionsAuditConfiguration);
-        _httpContext.Request.Headers.Add(_optionsAuditConfiguration.Value.CustomAuditHeaderPrefix + "repeated", new StringValues(new[] { "item1", "item2" }));
+        _httpContext.Request.Headers.Append(_optionsAuditConfiguration.Value.CustomAuditHeaderPrefix + "repeated", new StringValues(["item1", "item2"]));
 
         var result = headerReader.Read(_httpContext);
         Assert.Equal("item1,item2", result[_optionsAuditConfiguration.Value.CustomAuditHeaderPrefix + "repeated"]);
@@ -114,7 +115,7 @@ public class AuditHeaderReaderTests
         var headers = GenerateRandomHeaders(1, 11).ToList()[0][0] as Dictionary<string, string>;
         foreach (var header in headers)
         {
-            _httpContext.Request.Headers.Add(header.Key, new StringValues(header.Value));
+            _httpContext.Request.Headers.Append(header.Key, new StringValues(header.Value));
         }
 
         Assert.Throws<AuditHeaderCountExceededException>(() => headerReader.Read(_httpContext));
@@ -129,10 +130,10 @@ public class AuditHeaderReaderTests
         var headers = GenerateRandomHeaders(1, 9).ToList()[0][0] as Dictionary<string, string>;
         foreach (var header in headers)
         {
-            _httpContext.Request.Headers.Add(header.Key, new StringValues(header.Value));
+            _httpContext.Request.Headers.Append(header.Key, new StringValues(header.Value));
         }
 
-        _httpContext.Request.Headers.Add(_optionsAuditConfiguration.Value.CustomAuditHeaderPrefix + "big", GenerateRandomString(2049));
+        _httpContext.Request.Headers.Append(_optionsAuditConfiguration.Value.CustomAuditHeaderPrefix + "big", GenerateRandomString(2049));
 
         Assert.Throws<AuditHeaderTooLargeException>(() => headerReader.Read(_httpContext));
     }
@@ -145,7 +146,7 @@ public class AuditHeaderReaderTests
         var headers = GenerateRandomHeaders(1, 5).ToList()[0][0] as Dictionary<string, string>;
         foreach (var header in headers)
         {
-            _httpContext.Request.Headers.Add(header.Key, new StringValues(header.Value));
+            _httpContext.Request.Headers.Append(header.Key, new StringValues(header.Value));
         }
 
         var result = headerReader.Read(_httpContext);
@@ -168,7 +169,8 @@ public class AuditHeaderReaderTests
         Assert.Throws<InvalidDefinitionException>(() => auditConfiguration.CustomAuditHeaderPrefix = prefix);
     }
 
-    public static IEnumerable<object[]> GenerateRandomHeaders(int testCount, int numberOfAuditHeaders)
+    [SuppressMessage("Design", "CA1002:Do not expose generic lists", Justification = "Public member used for XUnit.")]
+    public static List<object[]> GenerateRandomHeaders(int testCount, int numberOfAuditHeaders)
     {
         var tests = new List<object[]>();
         var random = new Random();
@@ -193,7 +195,7 @@ public class AuditHeaderReaderTests
                 headers[GenerateRandomString(10)] = GenerateRandomString(random.Next(1, 2048));
             }
 
-            tests.Add(new object[] { headers, numberOfAuditHeaders });
+            tests.Add([headers, numberOfAuditHeaders]);
         }
 
         return tests;

@@ -1,4 +1,4 @@
-﻿// -------------------------------------------------------------------------------------------------
+// -------------------------------------------------------------------------------------------------
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License (MIT). See LICENSE in the repo root for license information.
 // -------------------------------------------------------------------------------------------------
@@ -17,7 +17,7 @@ public class BlobClientInitializerTests
 {
     private const string TestContainerName1 = "testcontainer1";
     private const string TestContainerName2 = "testcontainer2";
-    private readonly IBlobInitializer _blobInitializer;
+    private readonly BlobInitializer _blobInitializer;
     private readonly BlobServiceClient _blobClient;
     private readonly IBlobContainerInitializer _containerInitializer1;
     private readonly IBlobContainerInitializer _containerInitializer2;
