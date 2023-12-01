@@ -64,4 +64,24 @@ public static class SqlErrorCodes
     /// Cannot insert duplicate key row in object with unique index.
     /// </summary>
     public const short UniqueKeyConstraintViolation = 2601;
+
+    /// <summary>
+    /// Database '%.*ls' is not accessible due to Azure Key Vault critical error.
+    /// </summary>
+    public const int KeyVaultCriticalError = 40981;
+
+    /// <summary>
+    /// The Azure Key Vault client encountered an error with message '%s'.
+    /// </summary>
+    public const int KeyVaultEncounteredError = 33183;
+
+    /// <summary>
+    /// An error occurred while obtaining information for the Azure Key Vault client with message '%s'.
+    /// </summary>
+    public const int KeyVaultErrorObtainingInfo = 33184;
+
+    /// <summary>
+    /// Can not connect to the database in its current state.
+    /// </summary>
+    public const int CannotConnectToDBInCurrentState = 40925;
 }

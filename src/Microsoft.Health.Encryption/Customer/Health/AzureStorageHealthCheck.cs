@@ -10,6 +10,7 @@ using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Logging;
 using Microsoft.Health.Core.Features.Health;
 using System.Collections.Generic;
+using Microsoft.Health.Encryption.Customer.Extensions;
 
 namespace Microsoft.Health.Encryption.Customer.Health;
 
@@ -26,7 +27,7 @@ public abstract class AzureStorageHealthCheck : StorageHealthCheck
         {
             return await CheckAzureStorageHealthAsync(cancellationToken).ConfigureAwait(false);
         }
-        catch (RequestFailedException rfe) when (rfe.ErrorCode == "KeyVaultEncryptionKeyNotFound")
+        catch (RequestFailedException rfe) when (rfe.IsCMKError())
         {
             return new HealthCheckResult(
                 HealthStatus.Degraded,

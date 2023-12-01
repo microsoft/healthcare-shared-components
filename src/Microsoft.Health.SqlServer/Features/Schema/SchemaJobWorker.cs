@@ -89,11 +89,9 @@ public class SchemaJobWorker
             {
                 // this could happen during schema initialization until base schema is not executed so can be ignored
             }
-            // Error: "Can not connect to the database in its current state". This error can be for various DB states (recovering, inacessible) but we assume that our DB will only hit this for Inaccessible state
-            catch (SqlException ex) when (ex.ErrorCode == 40925)
+            catch (SqlException ex) when (ex.IsCMKError())
             {
-                // this can happen when a user has misconfigured CMK for > 30 min, which results in the DB having a status of "Inacessible".
-                _logger.LogInformation(ex, "The SQL database cannot be accessed in its current state.");
+                _logger.LogInformation(ex, "The customer-managed key is misconfigured by the customer.");
             }
             catch (Exception ex)
             {

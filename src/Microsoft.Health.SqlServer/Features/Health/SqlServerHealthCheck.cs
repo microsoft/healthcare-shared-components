@@ -13,6 +13,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Health.Core.Features.Health;
 using Microsoft.Health.Encryption.Customer.Health;
 using Microsoft.Health.SqlServer.Features.Client;
+using Microsoft.Health.SqlServer.Features.Storage;
 
 namespace Microsoft.Health.SqlServer.Features.Health;
 
@@ -51,11 +52,10 @@ public class SqlServerHealthCheck : StorageHealthCheck
 
             return HealthCheckResult.Healthy("Successfully connected.");
         }
-        // Filter on error codes for azure key vault https://learn.microsoft.com/en-us/sql/relational-databases/errors-events/database-engine-events-and-errors-31000-to-41399?view=sql-server-ver16
-        catch (SqlException e) when (e.Number is 40981 or 33183 or 33184 or 40925)
+        catch (SqlException e) when (e.IsCMKError())
         {
             // Error 40925: "Can not connect to the database in its current state". This error can be for various DB states (recovering, inacessible) but we assume that our DB will only hit this for Inaccessible state
-            HealthStatusReason reason = e.Number is 40925
+            HealthStatusReason reason = e.Number is SqlErrorCodes.CannotConnectToDBInCurrentState
                 ? HealthStatusReason.DataStoreStateDegraded
                 : HealthStatusReason.CustomerManagedKeyAccessLost;
 
