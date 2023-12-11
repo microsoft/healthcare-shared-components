@@ -13,9 +13,16 @@ public class PerformanceTests
     [Fact]
     public void GivenTheITimed_WhenBeingDisposed_ThenHandlerShouldBeInvoked()
     {
-        using (ITimed timedHandler = Performance.TrackDuration(duration => Assert.True(duration > 1000)))
+        bool hasHandlerInvoked = false;
+        using (ITimed timedHandler = Performance.TrackDuration(duration =>
+        {
+            hasHandlerInvoked = true;
+            Assert.True(duration > 1000);
+        }))
         {
             Thread.Sleep(1000);
         }
+
+        Assert.True(hasHandlerInvoked);
     }
 }
