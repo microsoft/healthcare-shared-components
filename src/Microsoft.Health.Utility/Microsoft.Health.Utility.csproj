@@ -1,0 +1,12 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <Description>Common utilities used by Microsoft Health.</Description>
+    <TargetFrameworks>$(SupportedFrameworks)</TargetFrameworks>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Ensure.That" />
+  </ItemGroup>
+
+</Project>
