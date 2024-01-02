@@ -45,6 +45,7 @@
     </When>
     <Otherwise>
       <PropertyGroup>
+        <!-- >= 12.2.0 MediatR started depending on 8.x Microsoft.Extension.* libraries -->
         <MediatRVersion>12.2.0</MediatRVersion>
         <SdkPackageVersion>8.0.0</SdkPackageVersion>
       </PropertyGroup>
