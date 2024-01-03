@@ -96,14 +96,15 @@ public sealed class SchemaInitializer : IHostedService
             try
             {
                 IDistributedSynchronizationHandle lockHandle = await sqlLock.TryAcquireAsync(TimeSpan.FromSeconds(30), cancellationToken).ConfigureAwait(false);
+
+                if (lockHandle == null)
+                {
+                    _logger.LogInformation("Schema upgrade lock was not acquired, skipping");
+                    return;
+                }
+
                 await using (lockHandle.ConfigureAwait(false))
                 {
-                    if (lockHandle == null)
-                    {
-                        _logger.LogInformation("Schema upgrade lock was not acquired, skipping");
-                        return;
-                    }
-
                     _logger.LogInformation("Schema upgrade lock acquired");
 
                     // Recheck the version with lock
