@@ -60,12 +60,29 @@ public class HealthCheckMetricPublisherTests
             HealthStatus.Degraded,
             new HealthStatusReason[] {
                 HealthStatusReason.ServiceDegraded,
+                HealthStatusReason.ConnectedStoreDegraded,
                 HealthStatusReason.CustomerManagedKeyAccessLost,
                 HealthStatusReason.None });
 
         _healthCheckMetricPublisher.PublishAsync(report, CancellationToken.None);
 
         _resourceHealthSignalProvider.Received(1).EmitHealthMetric(HealthStatusReason.CustomerManagedKeyAccessLost, _resourceHealthDimensions);
+    }
+
+    [Fact]
+    public void GivenReportWithConnectedStoreDegraded_PublishAsync_ConnectedStoreDegradedPublished()
+    {
+        HealthReport report = CreateDummyHealthReport(
+            HealthStatus.Degraded,
+            new HealthStatusReason[] {
+                HealthStatusReason.ServiceDegraded,
+                HealthStatusReason.DataStoreStateDegraded,
+                HealthStatusReason.ConnectedStoreDegraded,
+                HealthStatusReason.None });
+
+        _healthCheckMetricPublisher.PublishAsync(report, CancellationToken.None);
+
+        _resourceHealthSignalProvider.Received(1).EmitHealthMetric(HealthStatusReason.ConnectedStoreDegraded, _resourceHealthDimensions);
     }
 
     [Fact]
