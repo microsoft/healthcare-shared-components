@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.1.32228.430
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{404C6C33-DB00-4182-BD90-F10A8B17C321}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "build", "build", "{404C6C33-DB00-4182-BD90-F10A8B17C321}"
 	ProjectSection(SolutionItems) = preProject
 		.editorconfig = .editorconfig
 		.globalconfig = .globalconfig
@@ -99,6 +99,11 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.Health.Utility", "src\Microsoft.Health.Utility\Microsoft.Health.Utility.csproj", "{D377F3B4-CE6E-4C1B-9012-9CCA5B979DAD}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.Health.Utility.UnitTests", "src\Microsoft.Health.Utility.UnitTests\Microsoft.Health.Utility.UnitTests.csproj", "{F37C4E23-8BB1-4C76-8403-BB05F14D83CD}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "lang", "lang", "{99CA0B4C-C0EB-44B7-9C06-F0C8725D9A6C}"
+	ProjectSection(SolutionItems) = preProject
+		lang\IsExternalInit.cs = lang\IsExternalInit.cs
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

@@ -11,7 +11,7 @@
     <EmbedUntrackedSources>true</EmbedUntrackedSources>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <HighEntropyVA>true</HighEntropyVA>
-    <IdentityModelTokenPackageVersion>6.33.0</IdentityModelTokenPackageVersion>
+    <IdentityModelTokenPackageVersion>7.0.3</IdentityModelTokenPackageVersion>
     <IsPackable>true</IsPackable>
     <LangVersion>latest</LangVersion>
     <LtsVersion>net8.0</LtsVersion>
@@ -33,16 +33,20 @@
   <Choose>
     <When Condition="'$(TargetFramework)' == '$(PreviousVersion)'">
       <PropertyGroup>
+        <MediatRVersion>12.1.1</MediatRVersion>
         <SdkPackageVersion>6.0.0</SdkPackageVersion>
       </PropertyGroup>
     </When>
     <When Condition="'$(TargetFramework)' == '$(StsVersion)'">
       <PropertyGroup>
+        <MediatRVersion>12.1.1</MediatRVersion>
         <SdkPackageVersion>7.0.0</SdkPackageVersion>
       </PropertyGroup>
     </When>
     <Otherwise>
       <PropertyGroup>
+        <!-- >= 12.2.0 MediatR started depending on 8.x Microsoft.Extension.* libraries -->
+        <MediatRVersion>12.2.0</MediatRVersion>
         <SdkPackageVersion>8.0.0</SdkPackageVersion>
       </PropertyGroup>
     </Otherwise>
