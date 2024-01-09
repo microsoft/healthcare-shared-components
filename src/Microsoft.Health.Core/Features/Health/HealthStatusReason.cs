@@ -21,6 +21,7 @@ public enum HealthStatusReason
     /// </summary>
     ServiceDegraded,
     DataStoreStateDegraded,
+    ExternalStoreDegraded,
     CustomerManagedKeyAccessLost,
 
     /// <summary>
