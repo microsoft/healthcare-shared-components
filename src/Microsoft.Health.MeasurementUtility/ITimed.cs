@@ -5,7 +5,7 @@
 
 using System;
 
-namespace Microsoft.Health.Utility;
+namespace Microsoft.Health.MeasurementUtility;
 
 public interface ITimed : IDisposable
 {

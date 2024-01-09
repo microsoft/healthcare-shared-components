@@ -6,7 +6,7 @@
 using System.Threading;
 using Xunit;
 
-namespace Microsoft.Health.Utility.UnitTests;
+namespace Microsoft.Health.MeasurementUtility.UnitTests;
 
 public class PerformanceTests
 {

@@ -7,7 +7,7 @@ using System;
 using System.Diagnostics;
 using EnsureThat;
 
-namespace Microsoft.Health.Utility;
+namespace Microsoft.Health.MeasurementUtility;
 
 public static class Performance
 {
