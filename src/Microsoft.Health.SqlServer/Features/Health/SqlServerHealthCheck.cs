@@ -4,6 +4,8 @@
 // -------------------------------------------------------------------------------------------------
 
 using System.Collections.Generic;
+using System.Net;
+using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using EnsureThat;
@@ -52,18 +54,31 @@ public class SqlServerHealthCheck : StorageHealthCheck
 
             return HealthCheckResult.Healthy("Successfully connected.");
         }
-        catch (SqlException e) when (e.IsCMKError())
+        catch (HttpRequestException httpe) when (IsAccessInvalid(httpe))
+        {
+            HealthStatusReason reason = HealthStatusReason.DataStoreStateDegraded;
+
+            return new HealthCheckResult(
+                HealthStatus.Degraded,
+                DegradedDescription,
+                httpe,
+                new Dictionary<string, object> { { "Reason", reason.ToString() } });
+        }
+        catch (SqlException sqle) when (sqle.IsCMKError())
         {
             // Error 40925: "Can not connect to the database in its current state". This error can be for various DB states (recovering, inacessible) but we assume that our DB will only hit this for Inaccessible state
-            HealthStatusReason reason = e.Number is SqlErrorCodes.CannotConnectToDBInCurrentState
+            HealthStatusReason reason = sqle.Number is SqlErrorCodes.CannotConnectToDBInCurrentState
                 ? HealthStatusReason.DataStoreStateDegraded
                 : HealthStatusReason.CustomerManagedKeyAccessLost;
 
             return new HealthCheckResult(
                 HealthStatus.Degraded,
                 DegradedDescription,
-                e,
+                sqle,
                 new Dictionary<string, object> { { "Reason", reason.ToString() } });
         }
     }
+
+    private static bool IsAccessInvalid(HttpRequestException exception)
+        => exception.StatusCode == HttpStatusCode.Forbidden || exception.StatusCode == HttpStatusCode.Unauthorized;
 }
