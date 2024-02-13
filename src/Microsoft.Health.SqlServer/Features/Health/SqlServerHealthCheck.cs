@@ -56,7 +56,7 @@ public class SqlServerHealthCheck : StorageHealthCheck
         }
         catch (HttpRequestException httpe) when (IsAccessInvalid(httpe))
         {
-            HealthStatusReason reason = HealthStatusReason.DataStoreStateDegraded;
+            HealthStatusReason reason = HealthStatusReason.DataStoreConnectionDegraded;
 
             return new HealthCheckResult(
                 HealthStatus.Degraded,
