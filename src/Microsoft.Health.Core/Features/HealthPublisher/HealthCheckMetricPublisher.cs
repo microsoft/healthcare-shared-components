@@ -4,6 +4,7 @@
 // -------------------------------------------------------------------------------------------------
 
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Threading;
 using System.Threading.Tasks;
 using EnsureThat;
@@ -14,14 +15,16 @@ using Microsoft.Health.Core.Features.Health;
 using Microsoft.Health.Core.Features.Metric;
 
 namespace Microsoft.Health.Core.Features.HealthPublisher;
+
 internal class HealthCheckMetricPublisher : IHealthCheckPublisher
 {
-    public static IReadOnlyDictionary<HealthStatus, HealthStatusReason> DefaultStatusToReasonMapping = new Dictionary<HealthStatus, HealthStatusReason>()
-    {
-        { HealthStatus.Healthy, HealthStatusReason.None },
-        { HealthStatus.Degraded, HealthStatusReason.ServiceDegraded },
-        { HealthStatus.Unhealthy, HealthStatusReason.ServiceUnavailable },
-    };
+    public static ImmutableDictionary<HealthStatus, HealthStatusReason> DefaultStatusToReasonMapping = ImmutableDictionary.CreateRange(
+        new KeyValuePair<HealthStatus, HealthStatusReason>[]
+        {
+            new(HealthStatus.Healthy, HealthStatusReason.None),
+            new(HealthStatus.Degraded, HealthStatusReason.ServiceDegraded),
+            new(HealthStatus.Unhealthy, HealthStatusReason.ServiceUnavailable),
+        });
 
     private readonly IResourceHealthSignalProvider _resourceHealthSignalProvider;
     private readonly ResourceHealthDimensionOptions _resourceHealthDimensionOptions;

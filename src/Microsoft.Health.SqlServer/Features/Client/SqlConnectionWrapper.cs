@@ -5,6 +5,7 @@
 
 using System;
 using System.Data;
+using System.Diagnostics.CodeAnalysis;
 using System.Threading;
 using System.Threading.Tasks;
 using EnsureThat;
@@ -52,6 +53,7 @@ public class SqlConnectionWrapper : IDisposable
 
     public SqlTransaction SqlTransaction { get; private set; }
 
+    [SuppressMessage("Performance", "CA1849:Call async methods when in an async method", Justification = "BeginTransactionAsync is only implemented by base class.")]
     internal async Task InitializeAsync(string initialCatalog = null, CancellationToken cancellationToken = default)
     {
         if (_enlistInTransactionIfPresent && _sqlTransactionHandler.SqlTransactionScope?.SqlConnection != null)

@@ -142,14 +142,14 @@ public static class TypeRegistrationExtensions
         return invokeMethod.CreateDelegate(delegateType, factory);
     }
 
-    private static IEnumerable<T> Do<T>(this IEnumerable<T> registrations, Action<T> action)
+    private static T[] Do<T>(this IEnumerable<T> registrations, Action<T> action)
     {
         EnsureArg.IsNotNull(registrations, nameof(registrations));
         EnsureArg.IsNotNull(action, nameof(action));
 
         var registrationArray = registrations.ToArray();
 
-        foreach (var registration in registrationArray)
+        foreach (T registration in registrationArray)
         {
             action(registration);
         }

@@ -20,8 +20,8 @@ internal class CachedHealthCheckMiddleware
     private readonly RequestDelegate _next;
     private readonly ValueCache<HealthReport> _healthCheckReportCache;
 
-    private static readonly IImmutableDictionary<HealthStatus, int> DefaultStatusCodesMapping = ImmutableDictionary.CreateRange(
-        new KeyValuePair<HealthStatus, int>[]
+    private static readonly ImmutableDictionary<HealthStatus, int> DefaultStatusCodesMapping = ImmutableDictionary.CreateRange(
+        new[]
         {
             KeyValuePair.Create(HealthStatus.Healthy, StatusCodes.Status200OK),
             KeyValuePair.Create(HealthStatus.Degraded, StatusCodes.Status200OK),

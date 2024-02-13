@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.1.32228.430
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{404C6C33-DB00-4182-BD90-F10A8B17C321}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "build", "build", "{404C6C33-DB00-4182-BD90-F10A8B17C321}"
 	ProjectSection(SolutionItems) = preProject
 		.editorconfig = .editorconfig
 		.globalconfig = .globalconfig
@@ -95,6 +95,15 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Health.Encryption", "src\Microsoft.Health.Encryption\Microsoft.Health.Encryption.csproj", "{C65A48AC-6832-4F5D-AEFA-D601EEE18B7C}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Health.Encryption.UnitTests", "src\Microsoft.Health.Encryption.UnitTests\Microsoft.Health.Encryption.UnitTests.csproj", "{E2D4F975-9F71-416B-96E5-F2A5101FCBCD}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "lang", "lang", "{99CA0B4C-C0EB-44B7-9C06-F0C8725D9A6C}"
+	ProjectSection(SolutionItems) = preProject
+		lang\IsExternalInit.cs = lang\IsExternalInit.cs
+	EndProjectSection
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Health.MeasurementUtility", "src\Microsoft.Health.MeasurementUtility\Microsoft.Health.MeasurementUtility.csproj", "{2369BE93-FF96-4270-AD08-7A45F090BD00}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Health.MeasurementUtility.UnitTests", "src\Microsoft.Health.MeasurementUtility.UnitTests\Microsoft.Health.MeasurementUtility.UnitTests.csproj", "{E89B5131-D8C2-4AEC-9762-A123FA4314BC}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -258,6 +267,14 @@ Global
 		{E2D4F975-9F71-416B-96E5-F2A5101FCBCD}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{E2D4F975-9F71-416B-96E5-F2A5101FCBCD}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{E2D4F975-9F71-416B-96E5-F2A5101FCBCD}.Release|Any CPU.Build.0 = Release|Any CPU
+		{2369BE93-FF96-4270-AD08-7A45F090BD00}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2369BE93-FF96-4270-AD08-7A45F090BD00}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2369BE93-FF96-4270-AD08-7A45F090BD00}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2369BE93-FF96-4270-AD08-7A45F090BD00}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E89B5131-D8C2-4AEC-9762-A123FA4314BC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E89B5131-D8C2-4AEC-9762-A123FA4314BC}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E89B5131-D8C2-4AEC-9762-A123FA4314BC}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E89B5131-D8C2-4AEC-9762-A123FA4314BC}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -302,9 +319,11 @@ Global
 		{85EE87C1-D278-47FC-A296-633D1DBF0E87} = {8AD2A324-DAB5-4380-94A5-31F7D817C384}
 		{C65A48AC-6832-4F5D-AEFA-D601EEE18B7C} = {8AD2A324-DAB5-4380-94A5-31F7D817C384}
 		{E2D4F975-9F71-416B-96E5-F2A5101FCBCD} = {8AD2A324-DAB5-4380-94A5-31F7D817C384}
+		{2369BE93-FF96-4270-AD08-7A45F090BD00} = {8AD2A324-DAB5-4380-94A5-31F7D817C384}
+		{E89B5131-D8C2-4AEC-9762-A123FA4314BC} = {8AD2A324-DAB5-4380-94A5-31F7D817C384}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
-		RESX_SortFileContentOnSave = True
 		SolutionGuid = {562bbd07-1817-4af5-ab66-8837cf849248}
+		RESX_SortFileContentOnSave = True
 	EndGlobalSection
 EndGlobal

@@ -21,6 +21,16 @@ public interface ISqlConnectionBuilder
     string DefaultDatabase { get; }
 
     /// <summary>
+    /// Gets unopened sql connection with setting application intent to read only
+    /// If initial catalog is not provided, it is determined from the connection string.
+    /// </summary>
+    /// <param name="initialCatalog">Initial catalog to connect to.</param>
+    /// <param name="maxPoolSize">Max Sql connection pool size</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>SqlConnection object.</returns>
+    Task<SqlConnection> GetReadOnlySqlConnectionAsync(string initialCatalog = null, int? maxPoolSize = null, CancellationToken cancellationToken = default);
+
+    /// <summary>
     /// Get unopened SqlConnection object.
     /// If initial catalog is not provided, it is determined from the connection string.
     /// </summary>

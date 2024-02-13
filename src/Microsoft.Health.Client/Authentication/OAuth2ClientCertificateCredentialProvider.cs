@@ -1,4 +1,4 @@
-﻿// -------------------------------------------------------------------------------------------------
+// -------------------------------------------------------------------------------------------------
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License (MIT). See LICENSE in the repo root for license information.
 // -------------------------------------------------------------------------------------------------
@@ -76,6 +76,7 @@ public class OAuth2ClientCertificateCredentialProvider : CredentialProvider
 
     internal static string GenerateClientAssertion(string clientId, X509Certificate2 x509Certificate2, Uri tokenUri)
     {
+        // TODO: Migrate to using JsonWebToken
         // Values specified for the assertion JWT specified here: https://docs.microsoft.com/azure/active-directory/develop/active-directory-certificate-credentials
         var additionalClaims = new List<Claim>
         {

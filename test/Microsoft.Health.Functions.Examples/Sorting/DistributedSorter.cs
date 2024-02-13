@@ -73,7 +73,7 @@ public class DistributedSorter
         EnsureArg.IsNotNull(values, nameof(values));
         EnsureArg.IsNotNull(logger, nameof(logger));
 
-        IComparer<int> comparer = _options.GetComparer();
+        Comparer<int> comparer = _options.GetComparer();
 
         for (int j = values.Length - 1; j > 0 && comparer.Compare(values[j - 1], values[j]) > 0; j--)
         {

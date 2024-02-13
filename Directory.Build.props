@@ -4,25 +4,26 @@
   <PropertyGroup>
     <Authors>Microsoft Health Team</Authors>
     <AllowedOutputExtensionsInPackageBuildOutputFolder>$(AllowedOutputExtensionsInPackageBuildOutputFolder);.pdb</AllowedOutputExtensionsInPackageBuildOutputFolder>
-    <CodeAnalysisPackageVersion>4.7.0</CodeAnalysisPackageVersion>
+    <CodeAnalysisPackageVersion>4.8.0</CodeAnalysisPackageVersion>
     <Company>Microsoft Corporation</Company>
     <Copyright>Copyright © Microsoft Corporation. All rights reserved.</Copyright>
     <Deterministic>true</Deterministic>
     <EmbedUntrackedSources>true</EmbedUntrackedSources>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <HighEntropyVA>true</HighEntropyVA>
-    <IdentityModelTokenPackageVersion>6.33.0</IdentityModelTokenPackageVersion>
+    <IdentityModelTokenPackageVersion>7.1.2</IdentityModelTokenPackageVersion>
     <IsPackable>true</IsPackable>
     <LangVersion>latest</LangVersion>
-    <LtsVersion>net6.0</LtsVersion>
+    <LtsVersion>net8.0</LtsVersion>
     <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <PreviousVersion>net6.0</PreviousVersion>
     <Product>Microsoft Health</Product>
     <PublishRepositoryUrl>true</PublishRepositoryUrl>
     <RootDirectory>$(MSBuildThisFileDirectory)</RootDirectory>
     <RunSettingsFilePath>$(RootDirectory)CodeCoverage.runsettings</RunSettingsFilePath>
     <StsVersion>net7.0</StsVersion>
-    <SupportedFrameworks>$(LtsVersion);$(StsVersion)</SupportedFrameworks>
+    <SupportedFrameworks>$(LtsVersion);$(StsVersion);$(PreviousVersion)</SupportedFrameworks>
     <TargetLatestRuntimePatch>true</TargetLatestRuntimePatch>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <WarningsAsErrors />
@@ -30,14 +31,23 @@
 
   <!-- SDK Packages -->
   <Choose>
-    <When Condition="'$(TargetFramework)' == '$(LtsVersion)'">
+    <When Condition="'$(TargetFramework)' == '$(PreviousVersion)'">
       <PropertyGroup>
+        <MediatRVersion>12.1.1</MediatRVersion>
         <SdkPackageVersion>6.0.0</SdkPackageVersion>
+      </PropertyGroup>
+    </When>
+    <When Condition="'$(TargetFramework)' == '$(StsVersion)'">
+      <PropertyGroup>
+        <MediatRVersion>12.1.1</MediatRVersion>
+        <SdkPackageVersion>7.0.0</SdkPackageVersion>
       </PropertyGroup>
     </When>
     <Otherwise>
       <PropertyGroup>
-        <SdkPackageVersion>7.0.0</SdkPackageVersion>
+        <!-- >= 12.2.0 MediatR started depending on 8.x Microsoft.Extension.* libraries -->
+        <MediatRVersion>12.2.0</MediatRVersion>
+        <SdkPackageVersion>8.0.0</SdkPackageVersion>
       </PropertyGroup>
     </Otherwise>
   </Choose>

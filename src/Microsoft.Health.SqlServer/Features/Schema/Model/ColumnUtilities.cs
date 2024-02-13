@@ -1,4 +1,4 @@
-﻿// -------------------------------------------------------------------------------------------------
+// -------------------------------------------------------------------------------------------------
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License (MIT). See LICENSE in the repo root for license information.
 // -------------------------------------------------------------------------------------------------
@@ -31,7 +31,7 @@ internal static class ColumnUtilities
     {
         if (((SqlDecimal)value).Precision > sqlMetaData.Precision || ((SqlDecimal)value).Scale > sqlMetaData.Scale)
         {
-            throw new SqlTruncateException(string.Format(CultureInfo.CurrentCulture, Resources.DecimalValueOutOfRange, value, sqlMetaData.Precision, sqlMetaData.Scale));
+            throw new SqlTruncateException(string.Format(CultureInfo.CurrentCulture, FormatResources.DecimalValueOutOfRange, value, sqlMetaData.Precision, sqlMetaData.Scale));
         }
     }
 }

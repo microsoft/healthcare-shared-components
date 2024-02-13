@@ -30,6 +30,7 @@
   <Target Name="PublishAll" BeforeTargets="GenerateNuspec">
     <MSBuild Projects="$(MSBuildProjectFullPath)" Targets="Publish" Properties="TargetFramework=$(LtsVersion)" />
     <MSBuild Projects="$(MSBuildProjectFullPath)" Targets="Publish" Properties="TargetFramework=$(StsVersion)" />
+    <MSBuild Projects="$(MSBuildProjectFullPath)" Targets="Publish" Properties="TargetFramework=$(PreviousVersion)" />
   </Target>
 
 </Project>

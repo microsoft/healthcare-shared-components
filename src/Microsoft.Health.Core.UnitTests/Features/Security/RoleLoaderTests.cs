@@ -23,6 +23,9 @@ namespace Microsoft.Health.Core.UnitTests.Features.Security;
 
 public class RoleLoaderTests
 {
+    private static readonly string[] AllDataActions = ["*"];
+    private static readonly string[] DefaultScopes = ["/"];
+
     public static IEnumerable<object[]> GetInvalidRoles()
     {
         yield return new object[]
@@ -35,9 +38,9 @@ public class RoleLoaderTests
                     new
                     {
                         name = string.Empty,
-                        dataActions = new[] { "*" },
+                        dataActions = AllDataActions,
                         notDataActions = Array.Empty<string>(),
-                        scopes = new[] { "/" },
+                        scopes = DefaultScopes,
                     },
                 },
             },
@@ -54,7 +57,7 @@ public class RoleLoaderTests
                     {
                         name = "abc",
                         notDataActions = Array.Empty<string>(),
-                        scopes = new[] { "/" },
+                        scopes = DefaultScopes,
                     },
                 },
             },
@@ -70,9 +73,9 @@ public class RoleLoaderTests
                     new
                     {
                         name = "abc",
-                        dataActions = new[] { "*" },
+                        dataActions = AllDataActions,
                         notDataActions = new[] { "abc" },
-                        scopes = new[] { "/" },
+                        scopes = DefaultScopes,
                     },
                 },
             },
@@ -88,7 +91,7 @@ public class RoleLoaderTests
                     new
                     {
                         name = "abc",
-                        dataActions = new[] { "*" },
+                        dataActions = AllDataActions,
                         notDataActions = Array.Empty<string>(),
                     },
                 },
@@ -105,7 +108,7 @@ public class RoleLoaderTests
                     new
                     {
                         name = "abc",
-                        dataActions = new[] { "*" },
+                        dataActions = AllDataActions,
                         notDataActions = Array.Empty<string>(),
                         scopes = new[] { "/a" },
                     },
@@ -123,7 +126,7 @@ public class RoleLoaderTests
                     new
                     {
                         name = "abc",
-                        dataActions = new[] { "*" },
+                        dataActions = AllDataActions,
                         notDataActions = Array.Empty<string>(),
                         scopes = new[] { "/", "/" },
                     },
@@ -141,16 +144,16 @@ public class RoleLoaderTests
                     new
                     {
                         name = "abc",
-                        dataActions = new[] { "*" },
+                        dataActions = AllDataActions,
                         notDataActions = Array.Empty<string>(),
-                        scopes = new[] { "/" },
+                        scopes = DefaultScopes,
                     },
                     new
                     {
                         name = "abc",
-                        dataActions = new[] { "*" },
+                        dataActions = AllDataActions,
                         notDataActions = Array.Empty<string>(),
-                        scopes = new[] { "/" },
+                        scopes = DefaultScopes,
                     },
                 },
             },
@@ -167,9 +170,9 @@ public class RoleLoaderTests
                 new
                 {
                     name = "x",
-                    dataActions = new[] { "*" },
+                    dataActions = AllDataActions,
                     notDataActions = Array.Empty<string>(),
-                    scopes = new[] { "/" },
+                    scopes = DefaultScopes,
                 },
             },
         };
@@ -196,7 +199,7 @@ public class RoleLoaderTests
                     name = $"role{a}",
                     dataActions = new[] { char.ToLowerInvariant(a.ToString()[0]) + a.ToString()[1..] },
                     notDataActions = Array.Empty<string>(),
-                    scopes = new[] { "/" },
+                    scopes = DefaultScopes,
                 }).ToArray(),
         };
 

@@ -8,10 +8,15 @@
         <ToolTargetFramework>net6.0</ToolTargetFramework>
       </PropertyGroup>
     </When>
-    <Otherwise>
+    <When Condition="'$(TargetFramework)' == 'net7.0'">
       <PropertyGroup>
         <ToolTargetFramework>net7.0</ToolTargetFramework>
-    </PropertyGroup>
+      </PropertyGroup>
+    </When>
+    <Otherwise>
+      <PropertyGroup>
+        <ToolTargetFramework>net8.0</ToolTargetFramework>
+      </PropertyGroup>
     </Otherwise>
   </Choose>
 

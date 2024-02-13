@@ -13,7 +13,6 @@ using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using Microsoft.Health.Core;
 using Microsoft.Health.Core.Features.Control;
 using Microsoft.Health.SqlServer.Configs;
 using Microsoft.Health.SqlServer.Features.Schema.Extensions;
@@ -59,7 +58,7 @@ public class SchemaJobWorker
     {
         EnsureArg.IsNotNull(schemaInformation, nameof(schemaInformation));
 
-        _logger.LogInformation("Polling started at {UtcTime}", Clock.UtcNow);
+        _logger.LogInformation("Polling started at {UtcTime}", DateTime.UtcNow);
 
         while (!cancellationToken.IsCancellationRequested)
         {
@@ -90,11 +89,9 @@ public class SchemaJobWorker
             {
                 // this could happen during schema initialization until base schema is not executed so can be ignored
             }
-            // Error: "Can not connect to the database in its current state". This error can be for various DB states (recovering, inacessible) but we assume that our DB will only hit this for Inaccessible state
-            catch (SqlException ex) when (ex.ErrorCode == 40925)
+            catch (SqlException ex) when (ex.IsCMKError())
             {
-                // this can happen when a user has misconfigured CMK for > 30 min, which results in the DB having a status of "Inacessible".
-                _logger.LogInformation(ex, "The SQL database cannot be accessed in its current state.");
+                _logger.LogInformation(ex, "The customer-managed key is misconfigured by the customer.");
             }
             catch (Exception ex)
             {
