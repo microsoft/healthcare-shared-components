@@ -54,27 +54,27 @@ public class SqlServerHealthCheck : StorageHealthCheck
 
             return HealthCheckResult.Healthy("Successfully connected.");
         }
-        catch (HttpRequestException httpe) when (IsInvalidAccess(httpe))
+        catch (HttpRequestException httpEx) when (IsInvalidAccess(httpEx))
         {
             HealthStatusReason reason = HealthStatusReason.DataStoreConnectionDegraded;
 
             return new HealthCheckResult(
                 HealthStatus.Degraded,
                 DegradedDescription,
-                httpe,
+                httpEx,
                 new Dictionary<string, object> { { "Reason", reason.ToString() } });
         }
-        catch (SqlException sqle) when (sqle.IsCMKError())
+        catch (SqlException sqlEx) when (sqlEx.IsCMKError())
         {
             // Error 40925: "Can not connect to the database in its current state". This error can be for various DB states (recovering, inacessible) but we assume that our DB will only hit this for Inaccessible state
-            HealthStatusReason reason = sqle.Number is SqlErrorCodes.CannotConnectToDBInCurrentState
+            HealthStatusReason reason = sqlEx.Number is SqlErrorCodes.CannotConnectToDBInCurrentState
                 ? HealthStatusReason.DataStoreStateDegraded
                 : HealthStatusReason.CustomerManagedKeyAccessLost;
 
             return new HealthCheckResult(
                 HealthStatus.Degraded,
                 DegradedDescription,
-                sqle,
+                sqlEx,
                 new Dictionary<string, object> { { "Reason", reason.ToString() } });
         }
     }
