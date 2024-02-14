@@ -54,7 +54,7 @@ public class SqlServerHealthCheck : StorageHealthCheck
 
             return HealthCheckResult.Healthy("Successfully connected.");
         }
-        catch (HttpRequestException httpe) when (IsAccessInvalid(httpe))
+        catch (HttpRequestException httpe) when (IsInvalidAccess(httpe))
         {
             HealthStatusReason reason = HealthStatusReason.DataStoreConnectionDegraded;
 
@@ -79,6 +79,6 @@ public class SqlServerHealthCheck : StorageHealthCheck
         }
     }
 
-    private static bool IsAccessInvalid(HttpRequestException exception)
+    private static bool IsInvalidAccess(HttpRequestException exception)
         => exception.StatusCode == HttpStatusCode.Forbidden || exception.StatusCode == HttpStatusCode.Unauthorized;
 }
