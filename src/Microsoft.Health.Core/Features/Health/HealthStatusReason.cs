@@ -20,6 +20,7 @@ public enum HealthStatusReason
     /// Degraded status reasons, in order of most healthy to least healthy
     /// </summary>
     ServiceDegraded,
+    DataStoreConnectionDegraded,
     DataStoreStateDegraded,
     ConnectedStoreDegraded,
     CustomerManagedKeyAccessLost,

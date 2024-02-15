@@ -7,6 +7,7 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
+using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using EnsureThat;
@@ -44,24 +45,33 @@ internal class SqlServerSchemaDataStore : ISchemaDataStore
     public async Task<CompatibleVersions> GetLatestCompatibleVersionsAsync(CancellationToken cancellationToken)
     {
         CompatibleVersions compatibleVersions;
-        using (SqlConnectionWrapper sqlConnectionWrapper = await _sqlConnectionWrapperFactory.ObtainSqlConnectionWrapperAsync(cancellationToken: cancellationToken).ConfigureAwait(false))
-        using (SqlCommandWrapper sqlCommandWrapper = sqlConnectionWrapper.CreateRetrySqlCommand())
+
+        try
         {
-            SchemaShared.SelectCompatibleSchemaVersions.PopulateCommand(sqlCommandWrapper);
-
-            using (var dataReader = await sqlCommandWrapper.ExecuteReaderAsync(cancellationToken).ConfigureAwait(false))
+            using (SqlConnectionWrapper sqlConnectionWrapper = await _sqlConnectionWrapperFactory.ObtainSqlConnectionWrapperAsync(cancellationToken: cancellationToken).ConfigureAwait(false))
+            using (SqlCommandWrapper sqlCommandWrapper = sqlConnectionWrapper.CreateRetrySqlCommand())
             {
-                if (await dataReader.ReadAsync(cancellationToken).ConfigureAwait(false))
-                {
-                    compatibleVersions = new CompatibleVersions(ConvertToInt(dataReader.GetValue(0)), ConvertToInt(dataReader.GetValue(1)));
-                }
-                else
-                {
-                    throw new CompatibleVersionsNotFoundException(Resources.CompatibilityRecordNotFound);
-                }
-            }
+                SchemaShared.SelectCompatibleSchemaVersions.PopulateCommand(sqlCommandWrapper);
 
-            return compatibleVersions;
+                using (var dataReader = await sqlCommandWrapper.ExecuteReaderAsync(cancellationToken).ConfigureAwait(false))
+                {
+                    if (await dataReader.ReadAsync(cancellationToken).ConfigureAwait(false))
+                    {
+                        compatibleVersions = new CompatibleVersions(ConvertToInt(dataReader.GetValue(0)), ConvertToInt(dataReader.GetValue(1)));
+                    }
+                    else
+                    {
+                        throw new CompatibleVersionsNotFoundException(Resources.CompatibilityRecordNotFound);
+                    }
+                }
+
+                return compatibleVersions;
+            }
+        }
+        catch (HttpRequestException httpEx) when (httpEx.IsInvalidAccess())
+        {
+            _logger.LogError(httpEx, "Error while getting SQL connection on getting latest compatible version");
+            throw;
         }
 
         static int ConvertToInt(object o)
@@ -79,61 +89,74 @@ internal class SqlServerSchemaDataStore : ISchemaDataStore
 
     public async Task<int> UpsertInstanceSchemaInformationAsync(string name, SchemaInformation schemaInformation, CancellationToken cancellationToken)
     {
-        using (SqlConnectionWrapper sqlConnectionWrapper = await _sqlConnectionWrapperFactory.ObtainSqlConnectionWrapperAsync(cancellationToken: cancellationToken).ConfigureAwait(false))
-        using (SqlCommandWrapper sqlCommandWrapper = sqlConnectionWrapper.CreateRetrySqlCommand())
+        try
         {
-            SchemaShared.UpsertInstanceSchema.PopulateCommand(
-                 sqlCommandWrapper,
-                 name,
-                 schemaInformation.MaximumSupportedVersion,
-                 schemaInformation.MinimumSupportedVersion,
-                 _configuration.SchemaOptions.InstanceRecordExpirationTimeInMinutes);
-            try
+            using (SqlConnectionWrapper sqlConnectionWrapper = await _sqlConnectionWrapperFactory.ObtainSqlConnectionWrapperAsync(cancellationToken: cancellationToken).ConfigureAwait(false))
+            using (SqlCommandWrapper sqlCommandWrapper = sqlConnectionWrapper.CreateRetrySqlCommand())
             {
+                SchemaShared.UpsertInstanceSchema.PopulateCommand(
+                     sqlCommandWrapper,
+                     name,
+                     schemaInformation.MaximumSupportedVersion,
+                     schemaInformation.MinimumSupportedVersion,
+                     _configuration.SchemaOptions.InstanceRecordExpirationTimeInMinutes);
+
                 return (int)await sqlCommandWrapper.ExecuteScalarAsync(cancellationToken).ConfigureAwait(false);
             }
-            catch (SqlException e)
+        }
+        catch (HttpRequestException httpEx) when (httpEx.IsInvalidAccess())
+        {
+            _logger.LogError(httpEx, "Error while getting SQL connection on upserting InstanceSchema information");
+            throw;
+        }
+        catch (SqlException sqlEx)
+        {
+            if (sqlEx.Number == SqlErrorCodes.CouldNotFoundStoredProc && schemaInformation.Current == null)
             {
-                if (e.Number == SqlErrorCodes.CouldNotFoundStoredProc && schemaInformation.Current == null)
-                {
-                    // this could happen during schema initialization until base schema is not executed
-                    throw;
-                }
-
-                _logger.LogError(e, "Error from SQL database on upserting InstanceSchema information");
+                // this could happen during schema initialization until base schema is not executed
                 throw;
             }
+
+            _logger.LogError(sqlEx, "Error from SQL database on upserting InstanceSchema information");
+            throw;
         }
     }
 
     public async Task DeleteExpiredInstanceSchemaAsync(CancellationToken cancellationToken)
     {
-        using (SqlConnectionWrapper sqlConnectionWrapper = await _sqlConnectionWrapperFactory.ObtainSqlConnectionWrapperAsync(cancellationToken: cancellationToken).ConfigureAwait(false))
-        using (SqlCommandWrapper sqlCommandWrapper = sqlConnectionWrapper.CreateRetrySqlCommand())
+        try
         {
-            SchemaShared.DeleteInstanceSchema.PopulateCommand(sqlCommandWrapper);
-            try
+            using (SqlConnectionWrapper sqlConnectionWrapper = await _sqlConnectionWrapperFactory.ObtainSqlConnectionWrapperAsync(cancellationToken: cancellationToken).ConfigureAwait(false))
+            using (SqlCommandWrapper sqlCommandWrapper = sqlConnectionWrapper.CreateRetrySqlCommand())
             {
+                SchemaShared.DeleteInstanceSchema.PopulateCommand(sqlCommandWrapper);
+
                 await sqlCommandWrapper.ExecuteNonQueryAsync(cancellationToken).ConfigureAwait(false);
             }
-            catch (SqlException e)
-            {
-                _logger.LogError(e, "Error from SQL database on deleting expired InstanceSchema records");
-                throw;
-            }
+        }
+        catch (HttpRequestException httpEx) when (httpEx.IsInvalidAccess())
+        {
+            _logger.LogError(httpEx, "Error while getting SQL connection on deleting expired InstanceSchema records");
+            throw;
+        }
+        catch (SqlException sqlEx)
+        {
+            _logger.LogError(sqlEx, "Error from SQL database on deleting expired InstanceSchema records");
+            throw;
         }
     }
 
     public async Task<List<CurrentVersionInformation>> GetCurrentVersionAsync(CancellationToken cancellationToken)
     {
         var currentVersions = new List<CurrentVersionInformation>();
-        using (SqlConnectionWrapper sqlConnectionWrapper = await _sqlConnectionWrapperFactory.ObtainSqlConnectionWrapperAsync(cancellationToken: cancellationToken).ConfigureAwait(false))
-        using (SqlCommandWrapper sqlCommandWrapper = sqlConnectionWrapper.CreateRetrySqlCommand())
-        {
-            SchemaShared.SelectCurrentVersionsInformation.PopulateCommand(sqlCommandWrapper);
 
-            try
+        try
+        {
+            using (SqlConnectionWrapper sqlConnectionWrapper = await _sqlConnectionWrapperFactory.ObtainSqlConnectionWrapperAsync(cancellationToken: cancellationToken).ConfigureAwait(false))
+            using (SqlCommandWrapper sqlCommandWrapper = sqlConnectionWrapper.CreateRetrySqlCommand())
             {
+                SchemaShared.SelectCurrentVersionsInformation.PopulateCommand(sqlCommandWrapper);
+
                 using (var dataReader = await sqlCommandWrapper.ExecuteReaderAsync(cancellationToken).ConfigureAwait(false))
                 {
                     if (dataReader.HasRows)
@@ -162,11 +185,16 @@ internal class SqlServerSchemaDataStore : ISchemaDataStore
                     }
                 }
             }
-            catch (SqlException e)
-            {
-                _logger.LogError(e, "Error from SQL database on retrieving current version information");
-                throw;
-            }
+        }
+        catch (HttpRequestException httpEx) when (httpEx.IsInvalidAccess())
+        {
+            _logger.LogError(httpEx, "Error while getting SQL connection on retrieving current version information");
+            throw;
+        }
+        catch (SqlException sqlEx)
+        {
+            _logger.LogError(sqlEx, "Error from SQL database on retrieving current version information");
+            throw;
         }
 
         return currentVersions;

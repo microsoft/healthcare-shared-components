@@ -4,6 +4,7 @@
 // -------------------------------------------------------------------------------------------------
 
 using System.Collections.Generic;
+using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using EnsureThat;
@@ -52,17 +53,30 @@ public class SqlServerHealthCheck : StorageHealthCheck
 
             return HealthCheckResult.Healthy("Successfully connected.");
         }
-        catch (SqlException e) when (e.IsCMKError())
+        catch (HttpRequestException httpEx) when (httpEx.IsInvalidAccess())
+        {
+            // Attempts to retrieve the connection string can fail with HTTP errors if the SQL Connection Wrapper relies on
+            // HTTP requests. For this reason, these HTTP errors must be caught and properly handled.
+
+            HealthStatusReason reason = HealthStatusReason.DataStoreConnectionDegraded;
+
+            return new HealthCheckResult(
+                HealthStatus.Degraded,
+                DegradedDescription,
+                httpEx,
+                new Dictionary<string, object> { { "Reason", reason.ToString() } });
+        }
+        catch (SqlException sqlEx) when (sqlEx.IsCMKError())
         {
             // Error 40925: "Can not connect to the database in its current state". This error can be for various DB states (recovering, inacessible) but we assume that our DB will only hit this for Inaccessible state
-            HealthStatusReason reason = e.Number is SqlErrorCodes.CannotConnectToDBInCurrentState
+            HealthStatusReason reason = sqlEx.Number is SqlErrorCodes.CannotConnectToDBInCurrentState
                 ? HealthStatusReason.DataStoreStateDegraded
                 : HealthStatusReason.CustomerManagedKeyAccessLost;
 
             return new HealthCheckResult(
                 HealthStatus.Degraded,
                 DegradedDescription,
-                e,
+                sqlEx,
                 new Dictionary<string, object> { { "Reason", reason.ToString() } });
         }
     }

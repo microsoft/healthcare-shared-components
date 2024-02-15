@@ -40,7 +40,7 @@ public class SqlConnectionWrapperFactory
     public string DefaultDatabase => _sqlConnectionBuilder.DefaultDatabase;
 
     [SuppressMessage("Reliability", "CA2000:Dispose objects before losing scope", Justification = "Callers are responsible for disposal.")]
-    public async Task<SqlConnectionWrapper> ObtainSqlConnectionWrapperAsync(CancellationToken cancellationToken, bool enlistInTransaction = false)
+    public virtual async Task<SqlConnectionWrapper> ObtainSqlConnectionWrapperAsync(CancellationToken cancellationToken, bool enlistInTransaction = false)
     {
         var sqlConnectionWrapper = new SqlConnectionWrapper(_sqlTransactionHandler, _sqlConnectionBuilder, _sqlRetryLogicBaseProvider, enlistInTransaction, _sqlServerDataStoreConfiguration);
         await sqlConnectionWrapper.InitializeAsync(cancellationToken: cancellationToken).ConfigureAwait(false);
