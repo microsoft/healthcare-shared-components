@@ -4,7 +4,6 @@
 // -------------------------------------------------------------------------------------------------
 
 using System.Collections.Generic;
-using System.Net;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
@@ -54,8 +53,11 @@ public class SqlServerHealthCheck : StorageHealthCheck
 
             return HealthCheckResult.Healthy("Successfully connected.");
         }
-        catch (HttpRequestException httpEx) when (IsInvalidAccess(httpEx))
+        catch (HttpRequestException httpEx) when (httpEx.IsInvalidAccess())
         {
+            // Attempts to retrieve the connection string can fail with HTTP errors if the SQL Connection Wrapper relies on
+            // HTTP requests. For this reason, these HTTP errors must be caught and properly handled.
+
             HealthStatusReason reason = HealthStatusReason.DataStoreConnectionDegraded;
 
             return new HealthCheckResult(
@@ -78,7 +80,4 @@ public class SqlServerHealthCheck : StorageHealthCheck
                 new Dictionary<string, object> { { "Reason", reason.ToString() } });
         }
     }
-
-    private static bool IsInvalidAccess(HttpRequestException exception)
-        => exception.StatusCode == HttpStatusCode.Forbidden || exception.StatusCode == HttpStatusCode.Unauthorized;
 }

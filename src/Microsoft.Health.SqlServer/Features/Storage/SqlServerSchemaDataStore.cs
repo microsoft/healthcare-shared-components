@@ -8,7 +8,6 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Net.Http;
-using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
 using EnsureThat;
@@ -69,7 +68,7 @@ internal class SqlServerSchemaDataStore : ISchemaDataStore
                 return compatibleVersions;
             }
         }
-        catch (HttpRequestException httpEx) when (IsInvalidAccess(httpEx))
+        catch (HttpRequestException httpEx) when (httpEx.IsInvalidAccess())
         {
             _logger.LogError(httpEx, "Error while getting SQL connection on getting latest compatible version");
             throw;
@@ -105,7 +104,7 @@ internal class SqlServerSchemaDataStore : ISchemaDataStore
                 return (int)await sqlCommandWrapper.ExecuteScalarAsync(cancellationToken).ConfigureAwait(false);
             }
         }
-        catch (HttpRequestException httpEx) when (IsInvalidAccess(httpEx))
+        catch (HttpRequestException httpEx) when (httpEx.IsInvalidAccess())
         {
             _logger.LogError(httpEx, "Error while getting SQL connection on upserting InstanceSchema information");
             throw;
@@ -135,7 +134,7 @@ internal class SqlServerSchemaDataStore : ISchemaDataStore
                 await sqlCommandWrapper.ExecuteNonQueryAsync(cancellationToken).ConfigureAwait(false);
             }
         }
-        catch (HttpRequestException httpEx) when (IsInvalidAccess(httpEx))
+        catch (HttpRequestException httpEx) when (httpEx.IsInvalidAccess())
         {
             _logger.LogError(httpEx, "Error while getting SQL connection on deleting expired InstanceSchema records");
             throw;
@@ -187,7 +186,7 @@ internal class SqlServerSchemaDataStore : ISchemaDataStore
                 }
             }
         }
-        catch (HttpRequestException httpEx) when (IsInvalidAccess(httpEx))
+        catch (HttpRequestException httpEx) when (httpEx.IsInvalidAccess())
         {
             _logger.LogError(httpEx, "Error while getting SQL connection on retrieving current version information");
             throw;
@@ -200,7 +199,4 @@ internal class SqlServerSchemaDataStore : ISchemaDataStore
 
         return currentVersions;
     }
-
-    private static bool IsInvalidAccess(HttpRequestException exception)
-        => exception.StatusCode == HttpStatusCode.Forbidden || exception.StatusCode == HttpStatusCode.Unauthorized;
 }
