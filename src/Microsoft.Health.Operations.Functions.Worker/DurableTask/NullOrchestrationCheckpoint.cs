@@ -5,7 +5,7 @@
 
 using System;
 using System.Collections.Generic;
-using Newtonsoft.Json.Linq;
+using Microsoft.DurableTask;
 
 namespace Microsoft.Health.Operations.Functions.Worker.DurableTask;
 
@@ -20,8 +20,10 @@ public sealed class NullOrchestrationCheckpoint : IOrchestrationCheckpoint
     /// <value>The singleton instance.</value>
     public static NullOrchestrationCheckpoint Value { get; } = new NullOrchestrationCheckpoint();
 
-    /// <inheritdoc cref="IOperationCheckpoint.CreatedTime" />
-    public DateTime? CreatedTime => null;
+    DateTime? IOperationCheckpoint.CreatedTime => null;
+
+    /// <inheritdoc cref="IOperationCheckpoint.CreatedAtTime" />
+    public DateTimeOffset? CreatedAtTime => null;
 
     /// <inheritdoc cref="IOperationCheckpoint.PercentComplete" />
     public int? PercentComplete => 0;
@@ -32,7 +34,7 @@ public sealed class NullOrchestrationCheckpoint : IOrchestrationCheckpoint
     private NullOrchestrationCheckpoint()
     { }
 
-    /// <inheritdoc cref="IOrchestrationCheckpoint.GetResults(JToken?)" />
-    object? IOrchestrationCheckpoint.GetResults(JToken? output)
+    /// <inheritdoc cref="IOrchestrationCheckpoint.GetResults(string, DataConverter)" />
+    object? IOrchestrationCheckpoint.GetResults(string serializedOutput, DataConverter converter)
         => null;
 }

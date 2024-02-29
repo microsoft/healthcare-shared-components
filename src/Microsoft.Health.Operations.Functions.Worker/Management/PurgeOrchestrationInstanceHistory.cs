@@ -10,14 +10,12 @@ using System.Threading;
 using System.Threading.Tasks;
 using EnsureThat;
 using Microsoft.Azure.Functions.Worker;
-using Microsoft.Azure.WebJobs;
 using Microsoft.DurableTask.Client;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 #if !NET8_0_OR_GREATER
 using Microsoft.Health.Core;
 #endif
-using Microsoft.Health.Functions.Extensions;
 
 namespace Microsoft.Health.Operations.Functions.Worker.Management;
 
@@ -27,7 +25,7 @@ namespace Microsoft.Health.Operations.Functions.Worker.Management;
 public sealed class PurgeOrchestrationInstanceHistory
 {
     private readonly PurgeHistoryOptions _options;
-    private const string PurgeFrequencyVariable = $"%{AzureFunctionsJobHost.RootSectionName}:{PurgeHistoryOptions.SectionName}:{nameof(PurgeHistoryOptions.Frequency)}%";
+    private const string PurgeFrequencyVariable = $"%{PurgeHistoryOptions.SectionName}:{nameof(PurgeHistoryOptions.Frequency)}%";
 
 #if NET8_0_OR_GREATER
     private readonly TimeProvider _timeProvider;
@@ -75,7 +73,7 @@ public sealed class PurgeOrchestrationInstanceHistory
     /// <param name="log">A diagnostic logger.</param>
     /// <param name="cancellationToken">An optional token for cancellation.</param>
     /// <returns>A task that represents the asynchronous purge operation.</returns>
-    [FunctionName(nameof(PurgeOrchestrationInstanceHistory))]
+    [Function(nameof(PurgeOrchestrationInstanceHistory))]
     public async Task Run([TimerTrigger(PurgeFrequencyVariable)] TimerInfo myTimer, [DurableClient] DurableTaskClient client, ILogger log, CancellationToken cancellationToken = default)
     {
         EnsureArg.IsNotNull(client, nameof(client));

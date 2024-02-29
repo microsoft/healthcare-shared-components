@@ -5,16 +5,14 @@
 
 using System;
 using System.Collections.Generic;
-using System.ComponentModel;
 using EnsureThat;
+using Microsoft.DurableTask;
 using Microsoft.Health.Operations;
-using Microsoft.Health.Operations.Functions.DurableTask;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
+using Microsoft.Health.Operations.Functions.Worker.DurableTask;
 
 namespace Microsoft.Health.Functions.Examples.Sorting;
 
-internal sealed class SortingCheckpoint(int[] values, int sortedLength = 1, DateTimeOffset? createdAtTime = null) : SortingInput(values), IOrchestrationCheckpoint
+public sealed class SortingCheckpoint(int[] values, int sortedLength = 1, DateTimeOffset? createdAtTime = null) : SortingInput(values), IOrchestrationCheckpoint
 {
     DateTime? IOperationCheckpoint.CreatedTime => CreatedAtTime?.DateTime;
 
@@ -24,10 +22,13 @@ internal sealed class SortingCheckpoint(int[] values, int sortedLength = 1, Date
 
     public IReadOnlyCollection<string>? ResourceIds => null;
 
-    [DefaultValue(1)]
-    [JsonProperty(nameof(SortedLength), DefaultValueHandling = DefaultValueHandling.Populate)]
     public int SortedLength { get; } = EnsureArg.IsGt(sortedLength, 0, nameof(sortedLength));
 
-    public object? GetResults(JToken? output)
-        => output?.ToObject<int[]>() ?? Values;
+    public object? GetResults(string serializedOutput, DataConverter converter)
+    {
+        if (string.IsNullOrEmpty(serializedOutput))
+            return Values;
+
+        return EnsureArg.IsNotNull(converter, nameof(converter)).Deserialize<int[]>(serializedOutput);
+    }
 }

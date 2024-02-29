@@ -16,13 +16,11 @@
     <PackageReference Include="Microsoft.Extensions.Configuration.Abstractions" />
     <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" />
     <PackageReference Include="Microsoft.Extensions.Options" />
-    <PackageReference Include="Newtonsoft.Json" />
     <PackageReference Include="System.Linq.Async" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\Microsoft.Health.Core\Microsoft.Health.Core.csproj" />
-    <ProjectReference Include="..\Microsoft.Health.Functions.Extensions\Microsoft.Health.Functions.Extensions.csproj" />
     <ProjectReference Include="..\Microsoft.Health.Operations\Microsoft.Health.Operations.csproj" />
   </ItemGroup>
 

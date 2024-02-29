@@ -78,6 +78,7 @@ public class IDurableContextExtensionsTests
     }
 
     [Fact]
+    [Obsolete("GetCreatedTimeAsync deprecated in favor of GetCreatedAtTimeAsync.")]
     public async Task GivenRunningOrchestration_WhenQueryingCreatedTime_ThenReturnCreatedTime()
     {
         // Arrange input
@@ -104,11 +105,11 @@ public class IDurableContextExtensionsTests
             .Received(1)
             .CallActivityAsync<DurableOrchestrationStatus>(
                 nameof(DurableOrchestrationClientActivity.GetInstanceStatusAsync),
-                Arg.Any<GetInstanceStatusOptions>())
-            ;
+                Arg.Any<GetInstanceStatusOptions>());
     }
 
     [Fact]
+    [Obsolete("GetCreatedTimeAsync deprecated in favor of GetCreatedAtTimeAsync.")]
     public async Task GivenRunningOrchestration_WhenQueryingCreatedTimeWithOptions_ThenReturnCreatedTime()
     {
         // Arrange input
@@ -139,7 +140,70 @@ public class IDurableContextExtensionsTests
             .CallActivityWithRetryAsync<DurableOrchestrationStatus>(
                 nameof(DurableOrchestrationClientActivity.GetInstanceStatusAsync),
                 options,
+                Arg.Any<GetInstanceStatusOptions>());
+    }
+
+    [Fact]
+    public async Task GivenRunningOrchestration_WhenQueryingCreatedAtTime_ThenReturnCreatedAtTime()
+    {
+        // Arrange input
+        string instanceId = OperationId.Generate();
+        var expected = DateTime.UtcNow;
+
+        string operationId = OperationId.Generate();
+        IDurableOrchestrationContext context = Substitute.For<IDurableOrchestrationContext>();
+        context.InstanceId.Returns(operationId);
+
+        context
+            .CallActivityAsync<DurableOrchestrationStatus>(
+                nameof(DurableOrchestrationClientActivity.GetInstanceStatusAsync),
                 Arg.Any<GetInstanceStatusOptions>())
-            ;
+            .Returns(new DurableOrchestrationStatus { CreatedTime = expected });
+
+        // Invoke
+        DateTimeOffset actual = await context.GetCreatedAtTimeAsync();
+
+        // Assert behavior
+        Assert.Equal(expected, actual);
+
+        await context
+            .Received(1)
+            .CallActivityAsync<DurableOrchestrationStatus>(
+                nameof(DurableOrchestrationClientActivity.GetInstanceStatusAsync),
+                Arg.Any<GetInstanceStatusOptions>());
+    }
+
+    [Fact]
+    public async Task GivenRunningOrchestration_WhenQueryingCreatedAtTimeWithOptions_ThenReturnCreatedAtTime()
+    {
+        // Arrange input
+        string instanceId = OperationId.Generate();
+        var expected = DateTime.UtcNow;
+
+        string operationId = OperationId.Generate();
+        IDurableOrchestrationContext context = Substitute.For<IDurableOrchestrationContext>();
+        context.InstanceId.Returns(operationId);
+
+        var options = new RetryOptions(TimeSpan.FromSeconds(5), 3);
+
+        context
+            .CallActivityWithRetryAsync<DurableOrchestrationStatus>(
+                nameof(DurableOrchestrationClientActivity.GetInstanceStatusAsync),
+                options,
+                Arg.Any<GetInstanceStatusOptions>())
+            .Returns(new DurableOrchestrationStatus { CreatedTime = expected });
+
+        // Invoke
+        DateTimeOffset actual = await context.GetCreatedAtTimeAsync(options);
+
+        // Assert behavior
+        Assert.Equal(expected, actual);
+
+        await context
+            .Received(1)
+            .CallActivityWithRetryAsync<DurableOrchestrationStatus>(
+                nameof(DurableOrchestrationClientActivity.GetInstanceStatusAsync),
+                options,
+                Arg.Any<GetInstanceStatusOptions>());
     }
 }

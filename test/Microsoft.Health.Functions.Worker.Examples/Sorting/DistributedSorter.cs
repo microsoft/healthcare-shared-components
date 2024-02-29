@@ -7,11 +7,11 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using EnsureThat;
-using Microsoft.Azure.WebJobs;
-using Microsoft.Azure.WebJobs.Extensions.DurableTask;
+using Microsoft.Azure.Functions.Worker;
+using Microsoft.DurableTask;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using Microsoft.Health.Operations.Functions.DurableTask;
+using Microsoft.Health.Operations.Functions.Worker.DurableTask;
 
 namespace Microsoft.Health.Functions.Examples.Sorting;
 
@@ -22,30 +22,26 @@ public class DistributedSorter
     public DistributedSorter(IOptions<SortingOptions> options)
         => _options = EnsureArg.IsNotNull(options?.Value, nameof(options));
 
-    [FunctionName(nameof(InsertionSortAsync))]
-    public async Task<IReadOnlyList<int>> InsertionSortAsync([OrchestrationTrigger] IDurableOrchestrationContext context, ILogger logger)
+    [Function(nameof(InsertionSortAsync))]
+    public async Task<IReadOnlyList<int>> InsertionSortAsync(
+        [OrchestrationTrigger] TaskOrchestrationContext context,
+        SortingCheckpoint checkpoint)
     {
-        EnsureArg.IsNotNull(context, nameof(context));
-        EnsureArg.IsNotNull(logger, nameof(logger));
-
-        context.ThrowIfInvalidOperationId();
-        logger = context.CreateReplaySafeLogger(logger);
-
-        SortingCheckpoint checkpoint = context.GetInput<SortingCheckpoint>();
+        EnsureArg.IsNotNull(context, nameof(context)).ThrowIfInvalidOperationId();
         EnsureArg.IsNotNull(checkpoint, nameof(context));
 
-        if (checkpoint.SortedLength == 1)
-        {
+        ILogger logger = context.CreateReplaySafeLogger(typeof(DistributedSorter));
+
+        if (checkpoint.SortedLength is 1)
             logger.LogInformation("Sorting [{Values}]", string.Join(", ", checkpoint.Values));
-        }
 
         if (checkpoint.SortedLength < checkpoint.Values.Length)
         {
             int sortedLength = checkpoint.SortedLength + 1;
-            int[] sorted = await context.CallActivityWithRetryAsync<int[]>(
+            int[] sorted = await context.CallActivityAsync<int[]>(
                 nameof(SortRange),
-                _options.Retry,
-                checkpoint.Values[0..sortedLength]);
+                checkpoint.Values[0..sortedLength],
+                new TaskOptions { Retry = _options.Retry });
 
             logger.LogInformation(
                 "Sorted {SortedLength}/{TotalLength} numbers: [{Values}]",
@@ -57,7 +53,7 @@ public class DistributedSorter
                 new SortingCheckpoint(
                     Concat(sorted, checkpoint.Values[sortedLength..]),
                     sortedLength,
-                    checkpoint.CreatedAtTime ?? await context.GetCreatedAtTimeAsync(_options.Retry)));
+                    checkpoint.CreatedAtTime ?? await context.GetCreatedAtTimeAsync(new TaskOptions { Retry = _options.Retry })));
         }
         else
         {
@@ -67,7 +63,7 @@ public class DistributedSorter
         return checkpoint.Values;
     }
 
-    [FunctionName(nameof(SortRange))]
+    [Function(nameof(SortRange))]
     public Task<int[]> SortRange([ActivityTrigger] int[] values, ILogger logger)
     {
         EnsureArg.IsNotNull(values, nameof(values));

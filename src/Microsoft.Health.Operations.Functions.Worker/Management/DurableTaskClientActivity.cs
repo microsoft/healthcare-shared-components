@@ -7,7 +7,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using EnsureThat;
 using Microsoft.Azure.Functions.Worker;
-using Microsoft.Azure.WebJobs;
 using Microsoft.DurableTask;
 using Microsoft.DurableTask.Client;
 using Microsoft.Extensions.Logging;
@@ -33,7 +32,7 @@ public static class DurableTaskClientActivity
     /// The value of its <see cref="Task{TResult}.Result"/> property contains current status of the desired
     /// operation, if found; otherwise, <see langword="null"/>.
     /// </returns>
-    [FunctionName(nameof(GetInstanceAsync))]
+    [Function(nameof(GetInstanceAsync))]
     public static async Task<OrchestrationInstanceMetadata?> GetInstanceAsync(
         [ActivityTrigger] GetInstanceOptions options,
         TaskActivityContext context,
