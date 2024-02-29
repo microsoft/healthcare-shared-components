@@ -17,7 +17,7 @@ namespace Microsoft.Health.Encryption.Customer.Health;
 
 internal class CustomerKeyValidationBackgroundService : BackgroundService
 {
-    private readonly IKeyTestProvider _keyTestProvider;
+    private readonly IKeyTestProvider _keyWrapUnwrapTestProvider;
     private readonly ValueCache<CustomerKeyHealth> _customerManagedKeyHealth;
     private readonly CustomerManagedKeyOptions _customerManagedKeyOptions;
     private readonly ILogger<CustomerKeyValidationBackgroundService> _logger;
@@ -29,8 +29,9 @@ internal class CustomerKeyValidationBackgroundService : BackgroundService
         ILogger<CustomerKeyValidationBackgroundService> logger)
     {
         EnsureArg.IsNotNull(customerManagedKeyOptions, nameof(customerManagedKeyOptions));
+        EnsureArg.IsNotNull(keyTestProvider, nameof(keyTestProvider));
 
-        _keyTestProvider = EnsureArg.IsNotNull(keyTestProvider, nameof(keyTestProvider));
+        _keyWrapUnwrapTestProvider = keyTestProvider;
         _customerManagedKeyHealth = EnsureArg.IsNotNull(customerManagedKeyHealth, nameof(customerManagedKeyHealth));
         _customerManagedKeyOptions = EnsureArg.IsNotNull(customerManagedKeyOptions.Value, nameof(customerManagedKeyOptions.Value));
         _logger = EnsureArg.IsNotNull(logger, nameof(logger));
@@ -40,15 +41,8 @@ internal class CustomerKeyValidationBackgroundService : BackgroundService
     {
         while (!stoppingToken.IsCancellationRequested)
         {
-            try
-            {
-                await CheckHealth(stoppingToken).ConfigureAwait(false);
-                await Task.Delay(_customerManagedKeyOptions.KeyValidationPeriod, stoppingToken).ConfigureAwait(false);
-            }
-            catch (OperationCanceledException e)
-            {
-                _logger.LogInformation(e, $"{nameof(CustomerKeyValidationBackgroundService)} cancelled");
-            }
+            await CheckHealth(stoppingToken).ConfigureAwait(false);
+            await Task.Delay(_customerManagedKeyOptions.KeyValidationPeriod, stoppingToken).ConfigureAwait(false);
         }
     }
 
@@ -57,39 +51,15 @@ internal class CustomerKeyValidationBackgroundService : BackgroundService
     {
         try
         {
-            await _keyTestProvider.AssertHealthAsync(cancellationToken).ConfigureAwait(false);
-            SetHealthy();
-        }
-        catch (CustomerKeyInaccessibleException ex)
-        {
-            SetUnhealthy(ex);
+            CustomerKeyHealth customerKeyHealth = await _keyWrapUnwrapTestProvider.AssertHealthAsync(cancellationToken).ConfigureAwait(false);
+            _customerManagedKeyHealth.Set(customerKeyHealth);
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, $"{nameof(CustomerKeyValidationBackgroundService)} has failed unexpectedly.");
 
             // reset to healthy so unexpected errors are not categorized as a customer misconfiguration
-            SetHealthy();
+            _customerManagedKeyHealth.Set(new CustomerKeyHealth());
         }
-    }
-
-    private void SetUnhealthy(Exception ex)
-    {
-        _customerManagedKeyHealth.Set(new CustomerKeyHealth
-        {
-            IsHealthy = false,
-            Reason = HealthStatusReason.CustomerManagedKeyAccessLost,
-            Exception = ex,
-        });
-    }
-
-    private void SetHealthy()
-    {
-        _customerManagedKeyHealth.Set(new CustomerKeyHealth
-        {
-            IsHealthy = true,
-            Reason = HealthStatusReason.None,
-            Exception = null,
-        });
     }
 }

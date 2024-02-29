@@ -1,4 +1,4 @@
-﻿// -------------------------------------------------------------------------------------------------
+// -------------------------------------------------------------------------------------------------
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License (MIT). See LICENSE in the repo root for license information.
 // -------------------------------------------------------------------------------------------------
@@ -35,7 +35,7 @@ public class SchemaClient : ISchemaClient
         }
         else
         {
-            throw new SchemaManagerException(string.Format(CultureInfo.CurrentCulture, Resources.CurrentDefaultErrorDescription, response.StatusCode));
+            throw new SchemaManagerException(string.Format(CultureInfo.CurrentCulture, FormatResources.CurrentDefaultErrorDescription, response.StatusCode));
         }
     }
 
@@ -49,7 +49,7 @@ public class SchemaClient : ISchemaClient
         }
         else
         {
-            throw new SchemaManagerException(string.Format(CultureInfo.CurrentCulture, Resources.ScriptNotFound, response.StatusCode));
+            throw new SchemaManagerException(Resources.ScriptNotFound);
         }
     }
 
@@ -63,7 +63,7 @@ public class SchemaClient : ISchemaClient
         }
         else
         {
-            throw new SchemaManagerException(string.Format(CultureInfo.CurrentCulture, Resources.CompatibilityDefaultErrorMessage, response.StatusCode));
+            throw new SchemaManagerException(Resources.CompatibilityDefaultErrorMessage);
         }
     }
 
@@ -77,7 +77,7 @@ public class SchemaClient : ISchemaClient
         }
         else
         {
-            throw new SchemaManagerException(string.Format(CultureInfo.CurrentCulture, Resources.AvailableVersionsDefaultErrorMessage, response.StatusCode));
+            throw new SchemaManagerException(Resources.AvailableVersionsDefaultErrorMessage);
         }
     }
 
@@ -91,7 +91,7 @@ public class SchemaClient : ISchemaClient
         }
         else
         {
-            throw new SchemaManagerException(string.Format(CultureInfo.CurrentCulture, Resources.ScriptNotFound, response.StatusCode));
+            throw new SchemaManagerException(Resources.ScriptNotFound);
         }
     }
 }

@@ -57,7 +57,7 @@ public class BlobHealthCheckTests
     [Fact]
     public async Task GivenBlobDataStoreIsAvailable_WhenHealthIsChecked_ThenHealthyStateShouldBeReturned()
     {
-        HealthCheckResult result = await _healthCheck.CheckHealthAsync(new HealthCheckContext()).ConfigureAwait(false);
+        HealthCheckResult result = await _healthCheck.CheckHealthAsync(new HealthCheckContext());
 
         Assert.Equal(HealthStatus.Healthy, result.Status);
     }
@@ -67,7 +67,7 @@ public class BlobHealthCheckTests
     {
         _testProvider.PerformTestAsync(default, _containerConfiguration).ThrowsForAnyArgs<HttpRequestException>();
 
-        await Assert.ThrowsAsync<HttpRequestException>(() => _healthCheck.CheckHealthAsync(new HealthCheckContext())).ConfigureAwait(false);
+        await Assert.ThrowsAsync<HttpRequestException>(() => _healthCheck.CheckHealthAsync(new HealthCheckContext()));
     }
 
     [Fact]
@@ -79,7 +79,7 @@ public class BlobHealthCheckTests
             Reason = HealthStatusReason.CustomerManagedKeyAccessLost,
         });
 
-        HealthCheckResult result = await _healthCheck.CheckHealthAsync(new HealthCheckContext()).ConfigureAwait(false);
+        HealthCheckResult result = await _healthCheck.CheckHealthAsync(new HealthCheckContext());
         Assert.Equal(HealthStatus.Degraded, result.Status);
     }
 
@@ -87,8 +87,12 @@ public class BlobHealthCheckTests
     public async Task GivenCancellation_WhenHealthIsChecked_ThenOperationCancelledExceptionIsThrown()
     {
         using var cancellationTokenSource = new CancellationTokenSource();
+#if NET8_0_OR_GREATER
+        await cancellationTokenSource.CancelAsync();
+#else
         cancellationTokenSource.Cancel();
+#endif
 
-        await Assert.ThrowsAsync<OperationCanceledException>(() => _healthCheck.CheckHealthAsync(new HealthCheckContext(), cancellationTokenSource.Token)).ConfigureAwait(false);
+        await Assert.ThrowsAsync<OperationCanceledException>(() => _healthCheck.CheckHealthAsync(new HealthCheckContext(), cancellationTokenSource.Token));
     }
 }

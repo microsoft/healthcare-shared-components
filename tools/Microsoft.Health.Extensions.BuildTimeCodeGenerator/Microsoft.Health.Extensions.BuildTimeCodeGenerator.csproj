@@ -7,6 +7,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="Azure.Identity" PrivateAssets="All" />
     <PackageReference Include="Ensure.That" />
     <PackageReference Include="Microsoft.CodeAnalysis.Common" />
     <PackageReference Include="Microsoft.CodeAnalysis.CSharp" />
@@ -29,6 +30,7 @@
   <Target Name="PublishAll" BeforeTargets="GenerateNuspec">
     <MSBuild Projects="$(MSBuildProjectFullPath)" Targets="Publish" Properties="TargetFramework=$(LtsVersion)" />
     <MSBuild Projects="$(MSBuildProjectFullPath)" Targets="Publish" Properties="TargetFramework=$(StsVersion)" />
+    <MSBuild Projects="$(MSBuildProjectFullPath)" Targets="Publish" Properties="TargetFramework=$(PreviousVersion)" />
   </Target>
 
 </Project>

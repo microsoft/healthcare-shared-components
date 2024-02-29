@@ -76,6 +76,9 @@
       <AutoGen>True</AutoGen>
       <DependentUpon>Resources.resx</DependentUpon>
     </Compile>
+    <None Include="Resources.Format.cs">
+      <DependentUpon>Resources.resx</DependentUpon>
+    </None>
   </ItemGroup>
 
   <ItemGroup>

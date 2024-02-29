@@ -16,6 +16,6 @@ public class SortingOptions
 
     public ActivityRetryOptions Retry { get; set; } = new ActivityRetryOptions();
 
-    public IComparer<int> GetComparer()
+    public Comparer<int> GetComparer()
         => Ascending ? Comparer<int>.Default : Comparer<int>.Create((x, y) => Comparer<int>.Default.Compare(y, x));
 }

@@ -1,4 +1,4 @@
-﻿// -------------------------------------------------------------------------------------------------
+// -------------------------------------------------------------------------------------------------
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License (MIT). See LICENSE in the repo root for license information.
 // -------------------------------------------------------------------------------------------------
@@ -13,7 +13,6 @@ using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using Microsoft.Health.Core;
 using Microsoft.Health.Core.Features.Control;
 using Microsoft.Health.SqlServer.Configs;
 using Microsoft.Health.SqlServer.Features.Schema.Extensions;
@@ -59,7 +58,7 @@ public class SchemaJobWorker
     {
         EnsureArg.IsNotNull(schemaInformation, nameof(schemaInformation));
 
-        _logger.LogInformation("Polling started at {UtcTime}", Clock.UtcNow);
+        _logger.LogInformation("Polling started at {UtcTime}", DateTime.UtcNow);
 
         while (!cancellationToken.IsCancellationRequested)
         {
@@ -89,6 +88,10 @@ public class SchemaJobWorker
             catch (SqlException se) when (se.Number == SqlErrorCodes.CouldNotFoundStoredProc && schemaInformation.Current == null)
             {
                 // this could happen during schema initialization until base schema is not executed so can be ignored
+            }
+            catch (SqlException ex) when (ex.IsCMKError())
+            {
+                _logger.LogInformation(ex, "The customer-managed key is misconfigured by the customer.");
             }
             catch (Exception ex)
             {

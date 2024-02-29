@@ -3,17 +3,15 @@
 // Licensed under the MIT License (MIT). See LICENSE in the repo root for license information.
 // -------------------------------------------------------------------------------------------------
 
-using System;
+using System.Net;
+using System.Net.Http;
 
-namespace Microsoft.Health.Encryption.Customer.Health;
+namespace Microsoft.Health.SqlServer.Features.Storage;
 
-public class CustomerKeyInaccessibleException : Exception
+public static class HttpErrorExtensions
 {
-    public CustomerKeyInaccessibleException(string message) : base(message)
+    public static bool IsInvalidAccess(this HttpRequestException exception)
     {
-    }
-
-    public CustomerKeyInaccessibleException(string message, Exception innerException) : base(message, innerException)
-    {
+        return exception?.StatusCode is HttpStatusCode.Forbidden or HttpStatusCode.Unauthorized;
     }
 }

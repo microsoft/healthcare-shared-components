@@ -58,6 +58,7 @@ public class DefaultSqlConnectionBuilder : ISqlConnectionBuilder
     public string DefaultDatabase { get; }
 
     /// <inheritdoc />
+    [SuppressMessage("Reliability", "CA2000:Dispose objects before losing scope", Justification = "Caller must dispose result.")]
     public SqlConnection GetSqlConnection(string initialCatalog = null, int? maxPoolSize = null)
     {
         SqlConnectionStringBuilder builder = GetConnectionStringBuilder(initialCatalog, maxPoolSize);
@@ -65,10 +66,21 @@ public class DefaultSqlConnectionBuilder : ISqlConnectionBuilder
     }
 
     /// <inheritdoc />
-    [Obsolete($"Use {nameof(GetSqlConnection)} instead.")]
     [SuppressMessage("Reliability", "CA2000:Dispose objects before losing scope", Justification = "Caller must dispose result.")]
-    public Task<SqlConnection> GetSqlConnectionAsync(string initialCatalog = null, int? maxPoolSize = null, CancellationToken cancellationToken = default)
-        => Task.FromResult(GetSqlConnection(initialCatalog, maxPoolSize));
+    public async Task<SqlConnection> GetSqlConnectionAsync(string initialCatalog = null, int? maxPoolSize = null, CancellationToken cancellationToken = default)
+    {
+        SqlConnectionStringBuilder builder = await GetConnectionStringBuilderAsync(initialCatalog, maxPoolSize).ConfigureAwait(false);
+        return new SqlConnection(builder.ToString()) { RetryLogicProvider = _retryProvider };
+    }
+
+    /// <inheritdoc />
+    [SuppressMessage("Reliability", "CA2000:Dispose objects before losing scope", Justification = "Caller must dispose result.")]
+    public async Task<SqlConnection> GetReadOnlySqlConnectionAsync(string initialCatalog = null, int? maxPoolSize = null, CancellationToken cancellationToken = default)
+    {
+        SqlConnectionStringBuilder builder = await GetConnectionStringBuilderAsync(initialCatalog, maxPoolSize).ConfigureAwait(false);
+        builder.ApplicationIntent = ApplicationIntent.ReadOnly;
+        return new SqlConnection(builder.ToString()) { RetryLogicProvider = _retryProvider };
+    }
 
     /// <summary>
     /// Creates a <see cref="SqlConnectionStringBuilder"/> using the configured connection string and modified based on the input.
@@ -96,4 +108,13 @@ public class DefaultSqlConnectionBuilder : ISqlConnectionBuilder
 
         return builder;
     }
+
+    /// <summary>
+    /// Creates a <see cref="SqlConnectionStringBuilder"/> using the configured connection string and modified based on the input.
+    /// </summary>
+    /// <param name="initialCatalog">An optional initial catalog that may be used to override the default value.</param>
+    /// <param name="maxPoolSize">An optional maximum for the SQL connection pool size.</param>
+    /// <returns>A <see cref="SqlConnectionStringBuilder"/> representing the current connection string.</returns>
+    protected virtual Task<SqlConnectionStringBuilder> GetConnectionStringBuilderAsync(string initialCatalog = null, int? maxPoolSize = null)
+        => Task.FromResult(GetConnectionStringBuilder(initialCatalog, maxPoolSize));
 }

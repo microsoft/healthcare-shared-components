@@ -1,39 +1,40 @@
 <Project>
+
   <ItemGroup>
-    <PackageVersion Include="Azure.Core" Version="1.35.0" />
-    <PackageVersion Include="Azure.Identity" Version="1.10.1" />
-    <PackageVersion Include="Azure.Messaging.EventGrid" Version="4.18.0" />
+    <PackageVersion Include="Azure.Core" Version="1.36.0" />
+    <PackageVersion Include="Azure.Identity" Version="1.10.4" />
+    <PackageVersion Include="Azure.Messaging.EventGrid" Version="4.21.0" />
     <PackageVersion Include="Azure.Security.KeyVault.Keys" Version="4.5.0" />
-    <PackageVersion Include="Azure.Storage.Blobs" Version="12.18.0" />
-    <PackageVersion Include="Azure.Storage.Common" Version="12.17.0" />
+    <PackageVersion Include="Azure.Storage.Blobs" Version="12.19.1" />
+    <PackageVersion Include="Azure.Storage.Common" Version="12.18.1" />
     <PackageVersion Include="coverlet.collector" Version="6.0.0" />
     <PackageVersion Include="DistributedLock.SqlServer" Version="1.0.3" />
     <PackageVersion Include="Ensure.That" Version="10.1.0" />
-    <PackageVersion Include="Google.Protobuf" Version="3.24.3" />
+    <PackageVersion Include="Google.Protobuf" Version="3.25.2" />
     <PackageVersion Include="IdentityServer4" Version="4.1.2" />
     <PackageVersion Include="IdentityServer4.Storage" Version="4.1.2" />
     <PackageVersion Include="MartinCostello.Logging.XUnit" Version="0.3.0" />
-    <PackageVersion Include="MediatR" Version="12.1.1" />
-    <PackageVersion Include="Microsoft.ApplicationInsights" Version="2.21.0" />
+    <PackageVersion Include="MediatR" Version="$(MediatRVersion)" />
+    <PackageVersion Include="Microsoft.ApplicationInsights" Version="2.22.0" />
     <PackageVersion Include="Microsoft.AspNetCore.Mvc.Testing" Version="$(SdkPackageVersion)" />
     <PackageVersion Include="Microsoft.AspNetCore.TestHost" Version="$(SdkPackageVersion)" />
-    <PackageVersion Include="Microsoft.Azure.DurableTask.Core" Version="2.14.0" />
+    <PackageVersion Include="Microsoft.Azure.DurableTask.Core" Version="2.16.0" />
     <PackageVersion Include="Microsoft.Azure.Functions.Extensions" Version="1.1.0" />
-    <PackageVersion Include="Microsoft.Azure.Functions.Worker.Extensions.DurableTask" Version="1.0.3" />
-    <PackageVersion Include="Microsoft.Azure.Functions.Worker.Extensions.Timer" Version="4.2.0" />
-    <PackageVersion Include="Microsoft.Azure.WebJobs" Version="3.0.37" />
-    <PackageVersion Include="Microsoft.Azure.WebJobs.Core" Version="3.0.37" />
+    <PackageVersion Include="Microsoft.Azure.Functions.Worker.Extensions.DurableTask" Version="1.1.1" />
+    <PackageVersion Include="Microsoft.Azure.Functions.Worker.Extensions.Timer" Version="4.3.0" />
+    <PackageVersion Include="Microsoft.Azure.WebJobs" Version="3.0.39" />
+    <PackageVersion Include="Microsoft.Azure.WebJobs.Core" Version="3.0.39" />
     <PackageVersion Include="Microsoft.Azure.WebJobs.Extensions" Version="5.0.0" />
-    <PackageVersion Include="Microsoft.Azure.WebJobs.Extensions.DurableTask" Version="2.11.2" />
+    <PackageVersion Include="Microsoft.Azure.WebJobs.Extensions.DurableTask" Version="2.13.0" />
     <PackageVersion Include="Microsoft.Azure.WebJobs.Host.Storage" Version="5.0.0" />
-    <PackageVersion Include="Microsoft.Build.Framework" Version="17.7.2" />
-    <PackageVersion Include="Microsoft.Build.Utilities.Core" Version="17.7.2" />
+    <PackageVersion Include="Microsoft.Build.Framework" Version="17.8.3" />
+    <PackageVersion Include="Microsoft.Build.Utilities.Core" Version="17.8.3" />
     <PackageVersion Include="Microsoft.CodeAnalysis.Common" Version="$(CodeAnalysisPackageVersion)" />
     <PackageVersion Include="Microsoft.CodeAnalysis.CSharp" Version="$(CodeAnalysisPackageVersion)" />
     <PackageVersion Include="Microsoft.CodeAnalysis.CSharp.Workspaces" Version="$(CodeAnalysisPackageVersion)" />
-    <PackageVersion Include="Microsoft.Data.SqlClient" Version="5.1.1" />
-    <PackageVersion Include="Microsoft.DurableTask.Client" Version="1.0.3" />
-    <PackageVersion Include="Microsoft.Extensions.Azure" Version="1.7.0" />
+    <PackageVersion Include="Microsoft.Data.SqlClient" Version="5.1.4" />
+    <PackageVersion Include="Microsoft.DurableTask.Client" Version="1.2.0" />
+    <PackageVersion Include="Microsoft.Extensions.Azure" Version="1.7.1" />
     <PackageVersion Include="Microsoft.Extensions.Configuration" Version="$(SdkPackageVersion)" />
     <PackageVersion Include="Microsoft.Extensions.Configuration.Abstractions" Version="$(SdkPackageVersion)" />
     <PackageVersion Include="Microsoft.Extensions.Configuration.CommandLine" Version="$(SdkPackageVersion)" />
@@ -55,19 +56,20 @@
     <PackageVersion Include="Microsoft.Extensions.Options" Version="$(SdkPackageVersion)" />
     <PackageVersion Include="Microsoft.Extensions.Options.ConfigurationExtensions" Version="$(SdkPackageVersion)" />
     <PackageVersion Include="Microsoft.Extensions.Primitives" Version="$(SdkPackageVersion)" />
+    <PackageVersion Include="Microsoft.Extensions.TimeProvider.Testing" Version="8.0.0" />
     <PackageVersion Include="Microsoft.IdentityModel.JsonWebTokens" Version="$(IdentityModelTokenPackageVersion)" />
     <PackageVersion Include="Microsoft.IdentityModel.Protocols.OpenIdConnect" Version="$(IdentityModelTokenPackageVersion)" />
     <PackageVersion Include="Microsoft.IdentityModel.Tokens" Version="$(IdentityModelTokenPackageVersion)" />
-    <PackageVersion Include="Microsoft.IO.RecyclableMemoryStream" Version="2.3.2" />
+    <PackageVersion Include="Microsoft.IO.RecyclableMemoryStream" Version="3.0.0" />
     <PackageVersion Include="Microsoft.NET.Sdk.Functions" Version="4.2.0" />
-    <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="17.7.2" />
-    <PackageVersion Include="Microsoft.SourceLink.GitHub" Version="1.1.1" />
-    <PackageVersion Include="Microsoft.SqlServer.DacFx" Version="162.0.52" />
-    <PackageVersion Include="Microsoft.SqlServer.SqlManagementObjects" Version="170.18.0" />
+    <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="17.8.0" />
+    <PackageVersion Include="Microsoft.SourceLink.GitHub" Version="8.0.0" />
+    <PackageVersion Include="Microsoft.SqlServer.DacFx" Version="162.1.172" />
+    <PackageVersion Include="Microsoft.SqlServer.SqlManagementObjects" Version="170.21.0" />
     <PackageVersion Include="Newtonsoft.Json" Version="13.0.3" />
     <PackageVersion Include="Newtonsoft.Json.Schema" Version="3.0.15" />
     <PackageVersion Include="NSubstitute" Version="5.1.0" />
-    <PackageVersion Include="Polly" Version="7.2.4" />
+    <PackageVersion Include="Polly" Version="8.2.1" />
     <PackageVersion Include="Polly.Contrib.WaitAndRetry" Version="1.1.1" />
     <PackageVersion Include="System.CommandLine.DragonFruit" Version="0.2.0-alpha.19174.3" />
     <PackageVersion Include="System.CommandLine.Experimental" Version="0.2.0-alpha.19174.3" />
@@ -75,10 +77,11 @@
     <PackageVersion Include="System.Drawing.Common" Version="$(SdkPackageVersion)" />
     <PackageVersion Include="System.Linq.Async" Version="6.0.1" />
     <PackageVersion Include="System.Text.Json" Version="$(SdkPackageVersion)" />
-    <PackageVersion Include="xunit" Version="2.5.0" />
-    <PackageVersion Include="xunit.assert" Version="2.5.0" />
-    <PackageVersion Include="Xunit.DependencyInjection" Version="8.8.2" />
-    <PackageVersion Include="xunit.extensibility.core" Version="2.5.0" />
-    <PackageVersion Include="xunit.runner.visualstudio" Version="2.5.0" />
+    <PackageVersion Include="xunit" Version="2.6.5" />
+    <PackageVersion Include="xunit.assert" Version="2.6.2" />
+    <PackageVersion Include="Xunit.DependencyInjection" Version="8.9.1" />
+    <PackageVersion Include="xunit.extensibility.core" Version="2.6.2" />
+    <PackageVersion Include="xunit.runner.visualstudio" Version="2.5.6" />
   </ItemGroup>
+
 </Project>

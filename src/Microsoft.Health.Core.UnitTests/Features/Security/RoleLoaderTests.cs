@@ -23,6 +23,9 @@ namespace Microsoft.Health.Core.UnitTests.Features.Security;
 
 public class RoleLoaderTests
 {
+    private static readonly string[] AllDataActions = ["*"];
+    private static readonly string[] DefaultScopes = ["/"];
+
     public static IEnumerable<object[]> GetInvalidRoles()
     {
         yield return new object[]
@@ -35,9 +38,9 @@ public class RoleLoaderTests
                     new
                     {
                         name = string.Empty,
-                        dataActions = new[] { "*" },
+                        dataActions = AllDataActions,
                         notDataActions = Array.Empty<string>(),
-                        scopes = new[] { "/" },
+                        scopes = DefaultScopes,
                     },
                 },
             },
@@ -54,7 +57,7 @@ public class RoleLoaderTests
                     {
                         name = "abc",
                         notDataActions = Array.Empty<string>(),
-                        scopes = new[] { "/" },
+                        scopes = DefaultScopes,
                     },
                 },
             },
@@ -70,9 +73,9 @@ public class RoleLoaderTests
                     new
                     {
                         name = "abc",
-                        dataActions = new[] { "*" },
+                        dataActions = AllDataActions,
                         notDataActions = new[] { "abc" },
-                        scopes = new[] { "/" },
+                        scopes = DefaultScopes,
                     },
                 },
             },
@@ -88,7 +91,7 @@ public class RoleLoaderTests
                     new
                     {
                         name = "abc",
-                        dataActions = new[] { "*" },
+                        dataActions = AllDataActions,
                         notDataActions = Array.Empty<string>(),
                     },
                 },
@@ -105,7 +108,7 @@ public class RoleLoaderTests
                     new
                     {
                         name = "abc",
-                        dataActions = new[] { "*" },
+                        dataActions = AllDataActions,
                         notDataActions = Array.Empty<string>(),
                         scopes = new[] { "/a" },
                     },
@@ -123,7 +126,7 @@ public class RoleLoaderTests
                     new
                     {
                         name = "abc",
-                        dataActions = new[] { "*" },
+                        dataActions = AllDataActions,
                         notDataActions = Array.Empty<string>(),
                         scopes = new[] { "/", "/" },
                     },
@@ -141,16 +144,16 @@ public class RoleLoaderTests
                     new
                     {
                         name = "abc",
-                        dataActions = new[] { "*" },
+                        dataActions = AllDataActions,
                         notDataActions = Array.Empty<string>(),
-                        scopes = new[] { "/" },
+                        scopes = DefaultScopes,
                     },
                     new
                     {
                         name = "abc",
-                        dataActions = new[] { "*" },
+                        dataActions = AllDataActions,
                         notDataActions = Array.Empty<string>(),
-                        scopes = new[] { "/" },
+                        scopes = DefaultScopes,
                     },
                 },
             },
@@ -167,14 +170,14 @@ public class RoleLoaderTests
                 new
                 {
                     name = "x",
-                    dataActions = new[] { "*" },
+                    dataActions = AllDataActions,
                     notDataActions = Array.Empty<string>(),
-                    scopes = new[] { "/" },
+                    scopes = DefaultScopes,
                 },
             },
         };
 
-        AuthorizationConfiguration<DataActions> authConfig = await LoadAsync(roles).ConfigureAwait(false);
+        AuthorizationConfiguration<DataActions> authConfig = await LoadAsync(roles);
 
         Role<DataActions> actualRole = Assert.Single(authConfig.Roles);
         Assert.Equal(roles.roles.First().name, actualRole.Name);
@@ -196,11 +199,11 @@ public class RoleLoaderTests
                     name = $"role{a}",
                     dataActions = new[] { char.ToLowerInvariant(a.ToString()[0]) + a.ToString()[1..] },
                     notDataActions = Array.Empty<string>(),
-                    scopes = new[] { "/" },
+                    scopes = DefaultScopes,
                 }).ToArray(),
         };
 
-        AuthorizationConfiguration<DataActions> authConfig = await LoadAsync(roles).ConfigureAwait(false);
+        AuthorizationConfiguration<DataActions> authConfig = await LoadAsync(roles);
 
         Assert.All(
             actionNames.Zip(authConfig.Roles.Select(r => r.AllowedDataActions)),
@@ -212,7 +215,7 @@ public class RoleLoaderTests
     public async Task GivenInvalidRoles_WhenLoaded_RaiseValidationErrors(string description, object roles)
     {
         Assert.NotEmpty(description);
-        await Assert.ThrowsAsync<InvalidDefinitionException>(() => LoadAsync(roles)).ConfigureAwait(false);
+        await Assert.ThrowsAsync<InvalidDefinitionException>(() => LoadAsync(roles));
     }
 
     private static async Task<AuthorizationConfiguration<DataActions>> LoadAsync(object roles)
@@ -227,7 +230,7 @@ public class RoleLoaderTests
 
         var authConfig = new AuthorizationConfiguration<DataActions>();
         var roleLoader = new SamplesRoleLoader(authConfig, hostEnvironment);
-        await roleLoader.StartAsync(CancellationToken.None).ConfigureAwait(false);
+        await roleLoader.StartAsync(CancellationToken.None);
         return authConfig;
     }
 }

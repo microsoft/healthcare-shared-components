@@ -28,22 +28,20 @@ public class DurableFunctionsTest : IClassFixture<WebJobsTestFixture<Startup>>
         string instanceId = await _durableClient
             .StartNewAsync(
                 nameof(DistributedSorter.InsertionSortAsync),
-                new SortingInput(new int[] { 3, 4, 1, 5, 4, 2 }))
-            .ConfigureAwait(false);
+                new SortingInput([3, 4, 1, 5, 4, 2]));
 
-        DurableOrchestrationStatus status = await _durableClient.GetStatusAsync(instanceId).ConfigureAwait(false);
+        DurableOrchestrationStatus status = await _durableClient.GetStatusAsync(instanceId);
         while (status.RuntimeStatus.IsInProgress())
         {
-            await Task.Delay(1000).ConfigureAwait(false);
-            status = await _durableClient.GetStatusAsync(instanceId).ConfigureAwait(false);
+            await Task.Delay(1000);
+            status = await _durableClient.GetStatusAsync(instanceId);
         }
 
         Assert.Equal(OrchestrationRuntimeStatus.Completed, status.RuntimeStatus);
 
-        int[] expected = new int[] { 5, 4, 4, 3, 2, 1 };
         int[]? actual = status.Output.ToObject<int[]>();
 
         Assert.NotNull(actual);
-        Assert.True(expected.SequenceEqual(actual!));
+        Assert.True(actual!.SequenceEqual([5, 4, 4, 3, 2, 1]));
     }
 }

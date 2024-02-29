@@ -3,7 +3,6 @@
 // Licensed under the MIT License (MIT). See LICENSE in the repo root for license information.
 // -------------------------------------------------------------------------------------------------
 
-using System;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Data.SqlClient;
@@ -22,6 +21,16 @@ public interface ISqlConnectionBuilder
     string DefaultDatabase { get; }
 
     /// <summary>
+    /// Gets unopened sql connection with setting application intent to read only
+    /// If initial catalog is not provided, it is determined from the connection string.
+    /// </summary>
+    /// <param name="initialCatalog">Initial catalog to connect to.</param>
+    /// <param name="maxPoolSize">Max Sql connection pool size</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>SqlConnection object.</returns>
+    Task<SqlConnection> GetReadOnlySqlConnectionAsync(string initialCatalog = null, int? maxPoolSize = null, CancellationToken cancellationToken = default);
+
+    /// <summary>
     /// Get unopened SqlConnection object.
     /// If initial catalog is not provided, it is determined from the connection string.
     /// </summary>
@@ -29,7 +38,6 @@ public interface ISqlConnectionBuilder
     /// <param name="maxPoolSize">Max Sql connection pool size</param>
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>SqlConnection object.</returns>
-    [Obsolete($"Use {nameof(GetSqlConnection)} instead.")]
     Task<SqlConnection> GetSqlConnectionAsync(string initialCatalog = null, int? maxPoolSize = null, CancellationToken cancellationToken = default);
 
     /// <summary>

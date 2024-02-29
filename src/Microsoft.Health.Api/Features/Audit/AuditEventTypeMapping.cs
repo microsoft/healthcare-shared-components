@@ -1,4 +1,4 @@
-﻿// -------------------------------------------------------------------------------------------------
+// -------------------------------------------------------------------------------------------------
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License (MIT). See LICENSE in the repo root for license information.
 // -------------------------------------------------------------------------------------------------
@@ -38,7 +38,7 @@ public class AuditEventTypeMapping : IAuditEventTypeMapping, IHostedService
 {
     private readonly IActionDescriptorCollectionProvider _actionDescriptorCollectionProvider;
 
-    private IReadOnlyDictionary<(string ControllerName, string ActionName), Attribute> _attributeDictionary;
+    private Dictionary<(string ControllerName, string ActionName), Attribute> _attributeDictionary;
 
     public AuditEventTypeMapping(IActionDescriptorCollectionProvider actionDescriptorCollectionProvider)
     {

@@ -4,61 +4,80 @@
 // -------------------------------------------------------------------------------------------------
 
 using System.Collections.Generic;
+using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using EnsureThat;
+using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Logging;
 using Microsoft.Health.Core.Features.Health;
 using Microsoft.Health.Encryption.Customer.Health;
 using Microsoft.Health.SqlServer.Features.Client;
+using Microsoft.Health.SqlServer.Features.Storage;
 
 namespace Microsoft.Health.SqlServer.Features.Health;
 
 /// <summary>
 /// An <see cref="IHealthCheck"/> implementation that verifies connectivity to the SQL database
 /// </summary>
-public class SqlServerHealthCheck : IHealthCheck
+public class SqlServerHealthCheck : StorageHealthCheck
 {
-    private const string DegradedDescription = "The health of the store has degraded.";
-
     private readonly ILogger<SqlServerHealthCheck> _logger;
     private readonly SqlConnectionWrapperFactory _sqlConnectionWrapperFactory;
-    private readonly ValueCache<CustomerKeyHealth> _customerKeyHealthCache;
 
     public SqlServerHealthCheck(
         SqlConnectionWrapperFactory sqlConnectionWrapperFactory,
         ValueCache<CustomerKeyHealth> customerKeyHealthCache,
         ILogger<SqlServerHealthCheck> logger)
+        : base(customerKeyHealthCache, logger)
     {
         _sqlConnectionWrapperFactory = EnsureArg.IsNotNull(sqlConnectionWrapperFactory, nameof(sqlConnectionWrapperFactory));
-        _customerKeyHealthCache = EnsureArg.IsNotNull(customerKeyHealthCache, nameof(customerKeyHealthCache));
         _logger = EnsureArg.IsNotNull(logger, nameof(logger));
     }
 
-    public async Task<HealthCheckResult> CheckHealthAsync(HealthCheckContext context, CancellationToken cancellationToken)
+    public override async Task<HealthCheckResult> CheckStorageHealthAsync(CancellationToken cancellationToken)
     {
-        _logger.LogInformation($"Starting {nameof(SqlServerHealthCheck)}.");
-
-        CustomerKeyHealth cmkStatus = await _customerKeyHealthCache.GetAsync(cancellationToken).ConfigureAwait(false);
-        if (!cmkStatus.IsHealthy)
+        try
         {
-            // if the customer-managed key is inaccessible, storage will also be inaccessible
+            _logger.LogInformation($"Performing health check for {nameof(SqlServerHealthCheck)}");
+
+            using SqlConnectionWrapper sqlConnectionWrapper = await _sqlConnectionWrapperFactory.ObtainSqlConnectionWrapperAsync(cancellationToken).ConfigureAwait(false);
+            using SqlCommandWrapper sqlCommandWrapper = sqlConnectionWrapper.CreateRetrySqlCommand();
+
+            sqlCommandWrapper.CommandText = "select @@DBTS";
+
+            await sqlCommandWrapper.ExecuteScalarAsync(cancellationToken).ConfigureAwait(false);
+
+            _logger.LogInformation("Successfully connected to SQL database.");
+
+            return HealthCheckResult.Healthy("Successfully connected.");
+        }
+        catch (HttpRequestException httpEx) when (httpEx.IsInvalidAccess())
+        {
+            // Attempts to retrieve the connection string can fail with HTTP errors if the SQL Connection Wrapper relies on
+            // HTTP requests. For this reason, these HTTP errors must be caught and properly handled.
+
+            HealthStatusReason reason = HealthStatusReason.DataStoreConnectionDegraded;
+
             return new HealthCheckResult(
                 HealthStatus.Degraded,
                 DegradedDescription,
-                cmkStatus.Exception,
-                new Dictionary<string, object> { { "Reason", cmkStatus.Reason } });
+                httpEx,
+                new Dictionary<string, object> { { "Reason", reason.ToString() } });
         }
+        catch (SqlException sqlEx) when (sqlEx.IsCMKError())
+        {
+            // Error 40925: "Can not connect to the database in its current state". This error can be for various DB states (recovering, inacessible) but we assume that our DB will only hit this for Inaccessible state
+            HealthStatusReason reason = sqlEx.Number is SqlErrorCodes.CannotConnectToDBInCurrentState
+                ? HealthStatusReason.DataStoreStateDegraded
+                : HealthStatusReason.CustomerManagedKeyAccessLost;
 
-        using SqlConnectionWrapper sqlConnectionWrapper = await _sqlConnectionWrapperFactory.ObtainSqlConnectionWrapperAsync(cancellationToken).ConfigureAwait(false);
-        using SqlCommandWrapper sqlCommandWrapper = sqlConnectionWrapper.CreateRetrySqlCommand();
-
-        sqlCommandWrapper.CommandText = "select @@DBTS";
-
-        await sqlCommandWrapper.ExecuteScalarAsync(cancellationToken).ConfigureAwait(false);
-
-        _logger.LogInformation("Successfully connected to SQL database.");
-        return HealthCheckResult.Healthy("Successfully connected.");
+            return new HealthCheckResult(
+                HealthStatus.Degraded,
+                DegradedDescription,
+                sqlEx,
+                new Dictionary<string, object> { { "Reason", reason.ToString() } });
+        }
     }
 }

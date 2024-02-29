@@ -1,4 +1,4 @@
-﻿// -------------------------------------------------------------------------------------------------
+// -------------------------------------------------------------------------------------------------
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License (MIT). See LICENSE in the repo root for license information.
 // -------------------------------------------------------------------------------------------------
@@ -47,7 +47,7 @@ public class SchemaController : Controller
     [HttpGet]
     [AllowAnonymous]
     [Route(KnownRoutes.Versions)]
-    public ActionResult AvailableVersions()
+    public JsonResult AvailableVersions()
     {
         _logger.LogInformation("Attempting to get available schemas");
         IUrlHelper urlHelper = _urlHelperFactory.GetUrlHelper(ControllerContext);
@@ -73,7 +73,7 @@ public class SchemaController : Controller
     [HttpGet]
     [AllowAnonymous]
     [Route(KnownRoutes.Current)]
-    public async Task<ActionResult> CurrentVersionAsync()
+    public async Task<JsonResult> CurrentVersionAsync()
     {
         _logger.LogInformation("Attempting to get current schemas");
         GetCurrentVersionResponse currentVersionResponse = await _mediator.GetCurrentVersionAsync(HttpContext.RequestAborted).ConfigureAwait(false);

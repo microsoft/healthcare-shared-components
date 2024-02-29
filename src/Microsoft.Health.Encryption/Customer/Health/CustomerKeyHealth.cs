@@ -16,12 +16,12 @@ public class CustomerKeyHealth
     /// <summary>
     /// Gets or sets a boolean representing if the resource is healthy or not
     /// </summary>
-    public bool IsHealthy { get; set; }
+    public bool IsHealthy { get; set; } = true;
 
     /// <summary>
     /// Gets or sets a reason for the health state
     /// </summary>
-    public HealthStatusReason Reason { get; set; }
+    public HealthStatusReason Reason { get; set; } = HealthStatusReason.None;
 
     /// <summary>
     /// Gets or sets the exception captured from an unhealthy state

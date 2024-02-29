@@ -9,6 +9,7 @@
     <PackageReference Include="Azure.Core" />
     <PackageReference Include="Azure.Identity" />
     <PackageReference Include="Ensure.That" />
+    <PackageReference Include="Microsoft.Extensions.Azure" />
     <PackageReference Include="Microsoft.Extensions.Diagnostics.HealthChecks" />
     <PackageReference Include="Microsoft.Extensions.Diagnostics.HealthChecks.Abstractions" />
     <PackageReference Include="Microsoft.Extensions.FileProviders.Abstractions" />
@@ -29,6 +30,9 @@
       <AutoGen>True</AutoGen>
       <DependentUpon>Resources.resx</DependentUpon>
     </Compile>
+    <None Include="Resources.Format.cs">
+      <DependentUpon>Resources.resx</DependentUpon>
+    </None>
   </ItemGroup>
 
   <ItemGroup>

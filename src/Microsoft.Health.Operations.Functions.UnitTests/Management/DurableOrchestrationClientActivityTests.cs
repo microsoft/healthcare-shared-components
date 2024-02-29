@@ -29,12 +29,12 @@ public class DurableOrchestrationClientActivityTests
         client.GetStatusAsync(instanceId, false, false, false).Returns(Task.FromResult<DurableOrchestrationStatus>(null!));
 
         // Call activity
-        DurableOrchestrationStatus actual = await DurableOrchestrationClientActivity.GetInstanceStatusAsync(context, client, NullLogger.Instance).ConfigureAwait(false);
+        DurableOrchestrationStatus? actual = await DurableOrchestrationClientActivity.GetInstanceStatusAsync(context, client, NullLogger.Instance);
 
         // Assert behavior
         Assert.Null(actual);
         context.Received(1).GetInput<GetInstanceStatusOptions>();
-        await client.Received(1).GetStatusAsync(instanceId, false, false, false).ConfigureAwait(false);
+        await client.Received(1).GetStatusAsync(instanceId, false, false, false);
     }
 
     [Fact]
@@ -52,11 +52,11 @@ public class DurableOrchestrationClientActivityTests
         client.GetStatusAsync(instanceId, true, true, false).Returns(Task.FromResult(expected));
 
         // Call activity
-        DurableOrchestrationStatus actual = await DurableOrchestrationClientActivity.GetInstanceStatusAsync(context, client, NullLogger.Instance).ConfigureAwait(false);
+        DurableOrchestrationStatus? actual = await DurableOrchestrationClientActivity.GetInstanceStatusAsync(context, client, NullLogger.Instance);
 
         // Assert behavior
         Assert.Same(expected, actual);
         context.Received(1).GetInput<GetInstanceStatusOptions>();
-        await client.Received(1).GetStatusAsync(instanceId, true, true, false).ConfigureAwait(false);
+        await client.Received(1).GetStatusAsync(instanceId, true, true, false);
     }
 }
