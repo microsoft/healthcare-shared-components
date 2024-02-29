@@ -8,6 +8,8 @@ using Microsoft.DurableTask.Client;
 
 namespace Microsoft.Health.Operations.Functions.Worker.DurableTask;
 
+#pragma warning disable CS0618 // Allow the user of obsolete OrchestrationRuntimeStatus values methods
+
 /// <summary>
 /// Provides a set of <see langword="static"/> utility methods for <see cref="OrchestrationRuntimeStatus"/> values.
 /// </summary>
@@ -21,11 +23,7 @@ public static class OrchestrationRuntimeStatusExtensions
     /// <see langword="true"/> if the orchestration has not yet reached a terminal status; otherwise <see langword="false"/>.
     /// </returns>
     public static bool IsInProgress(this OrchestrationRuntimeStatus status)
-        => status is OrchestrationRuntimeStatus.Pending
-            or OrchestrationRuntimeStatus.Running
-#pragma warning disable CS0618 // Type or member is obsolete
-            or OrchestrationRuntimeStatus.ContinuedAsNew;
-#pragma warning restore CS0618 // Type or member is obsolete
+        => status is OrchestrationRuntimeStatus.Pending or OrchestrationRuntimeStatus.Running or OrchestrationRuntimeStatus.ContinuedAsNew;
 
     /// <summary>
     /// Determines whether the <see cref="OrchestrationRuntimeStatus"/> indicates that the orchestration has stopped execution.
@@ -35,13 +33,13 @@ public static class OrchestrationRuntimeStatusExtensions
     /// <see langword="true"/> if the orchestration has reached a terminal status; otherwise <see langword="false"/>.
     /// </returns>
     public static bool IsStopped(this OrchestrationRuntimeStatus status)
-        => status is OrchestrationRuntimeStatus.Completed
-#pragma warning disable CS0618 // Type or member is obsolete
+    {
+        return status is OrchestrationRuntimeStatus.Completed
             or OrchestrationRuntimeStatus.Canceled
-#pragma warning restore CS0618 // Type or member is obsolete
             or OrchestrationRuntimeStatus.Terminated
             or OrchestrationRuntimeStatus.Failed
             or OrchestrationRuntimeStatus.Suspended;
+    }
 
     /// <summary>
     /// Gets the corresponding <see cref="OperationStatus"/> value for the given
@@ -53,19 +51,18 @@ public static class OrchestrationRuntimeStatusExtensions
     /// given <paramref name="status"/> is not recognized.
     /// </returns>
     public static OperationStatus ToOperationStatus(this OrchestrationRuntimeStatus status)
-        => status switch
+    {
+        return status switch
         {
-#pragma warning disable CS0618 // Type or member is obsolete
             OrchestrationRuntimeStatus.Running or OrchestrationRuntimeStatus.ContinuedAsNew => OperationStatus.Running,
-#pragma warning restore CS0618 // Type or member is obsolete
             OrchestrationRuntimeStatus.Completed => OperationStatus.Succeeded,
             OrchestrationRuntimeStatus.Failed => OperationStatus.Failed,
-#pragma warning disable CS0618 // Type or member is obsolete
             OrchestrationRuntimeStatus.Canceled or OrchestrationRuntimeStatus.Terminated => OperationStatus.Canceled,
-#pragma warning restore CS0618 // Type or member is obsolete
             OrchestrationRuntimeStatus.Pending => OperationStatus.NotStarted,
+            OrchestrationRuntimeStatus.Suspended => OperationStatus.Paused,
             _ => OperationStatus.Unknown
         };
+    }
 
     /// <summary>
     /// Gets the corresponding <see cref="OrchestrationRuntimeStatus"/> value for the given
@@ -74,15 +71,16 @@ public static class OrchestrationRuntimeStatusExtensions
     /// <param name="status">The operation's reported status.</param>
     /// <returns>The corresponding <see cref="OrchestrationRuntimeStatus"/> value.</returns>
     public static OrchestrationRuntimeStatus ToOrchestrationRuntimeStatus(this OperationStatus status)
-        => status switch
+    {
+        return status switch
         {
             OperationStatus.NotStarted => OrchestrationRuntimeStatus.Pending,
             OperationStatus.Running => OrchestrationRuntimeStatus.Running,
-#pragma warning disable CS0618
             OperationStatus.Completed or OperationStatus.Succeeded => OrchestrationRuntimeStatus.Completed,
-#pragma warning restore CS0618
             OperationStatus.Failed => OrchestrationRuntimeStatus.Failed,
             OperationStatus.Canceled => OrchestrationRuntimeStatus.Terminated,
+            OperationStatus.Paused => OrchestrationRuntimeStatus.Suspended,
             _ => throw new ArgumentOutOfRangeException(nameof(status)),
         };
+    }
 }

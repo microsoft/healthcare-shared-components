@@ -61,6 +61,7 @@ public static class IDurableContextExtensions
     /// A task that represents the asynchronous retrieval operation. The value of the <see cref="Task{TResult}.Result"/>
     /// property represents the date and time that the orchestration was created in UTC.
     /// </returns>
+    [Obsolete("Please use GetCreatedAtTimeAsync instead to help prepare for an isolated worker migration.")]
     public static async Task<DateTime> GetCreatedTimeAsync(this IDurableOrchestrationContext context, RetryOptions? retryOptions = null)
     {
         // CreatedTime is not preserved between restarts from ContinueAsNew,

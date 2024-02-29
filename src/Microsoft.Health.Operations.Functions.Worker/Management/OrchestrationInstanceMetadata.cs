@@ -12,6 +12,13 @@ namespace Microsoft.Health.Operations.Functions.Management;
 /// <inheritdoc cref="OrchestrationMetadata" />
 public sealed class OrchestrationInstanceMetadata
 {
+    /// <inheritdoc cref="OrchestrationMetadata(string, string)" />
+    public OrchestrationInstanceMetadata(string name, string instanceId)
+    {
+        Name = EnsureArg.IsNotNullOrWhiteSpace(name, nameof(name));
+        InstanceId = EnsureArg.IsNotNullOrWhiteSpace(instanceId, nameof(instanceId));
+    }
+
     /// <inheritdoc cref="OrchestrationMetadata.Name" />
     public string Name { get; }
 
@@ -35,11 +42,4 @@ public sealed class OrchestrationInstanceMetadata
 
     /// <inheritdoc cref="OrchestrationMetadata.SerializedCustomStatus" />
     public string? SerializedCustomStatus { get; init; }
-
-    /// <inheritdoc cref="OrchestrationMetadata(string, string)" />
-    public OrchestrationInstanceMetadata(string name, string instanceId)
-    {
-        Name = EnsureArg.IsNotNullOrWhiteSpace(name, nameof(name));
-        InstanceId = EnsureArg.IsNotNullOrWhiteSpace(instanceId, nameof(instanceId));
-    }
 }

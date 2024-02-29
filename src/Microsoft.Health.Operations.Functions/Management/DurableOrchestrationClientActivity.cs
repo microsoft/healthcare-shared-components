@@ -3,6 +3,7 @@
 // Licensed under the MIT License (MIT). See LICENSE in the repo root for license information.
 // -------------------------------------------------------------------------------------------------
 
+using System;
 using System.Threading.Tasks;
 using EnsureThat;
 using Microsoft.Azure.WebJobs;
@@ -28,6 +29,7 @@ public static class DurableOrchestrationClientActivity
     /// operation, if found; otherwise, <see langword="null"/>.
     /// </returns>
     [FunctionName(nameof(GetInstanceStatusAsync))]
+    [Obsolete("Please use GetInstanceAsync instead to help prepare for an isolated worker migration.")]
     public static Task<DurableOrchestrationStatus?> GetInstanceStatusAsync(
         [ActivityTrigger] IDurableActivityContext context,
         [DurableClient] IDurableOrchestrationClient client,
