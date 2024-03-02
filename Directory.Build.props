@@ -14,6 +14,7 @@
     <IdentityModelTokenPackageVersion>7.1.2</IdentityModelTokenPackageVersion>
     <IsPackable>true</IsPackable>
     <LangVersion>latest</LangVersion>
+    <LatestVersion>net8.0</LatestVersion>
     <LtsVersion>net8.0</LtsVersion>
     <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>

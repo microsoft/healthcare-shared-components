@@ -4,9 +4,7 @@
 // -------------------------------------------------------------------------------------------------
 
 using Microsoft.Extensions.Hosting;
+using Microsoft.Health.Functions.Worker.Examples;
 
-IHost host = new HostBuilder()
-    .ConfigureFunctionsWorkerDefaults()
-    .Build();
-
+IHost host = new ExampleHostBuilder().Build();
 host.Run();

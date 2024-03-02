@@ -111,6 +111,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.Health.Functions.
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.Health.Functions.Worker.Examples", "test\Microsoft.Health.Functions.Worker.Examples\Microsoft.Health.Functions.Worker.Examples.csproj", "{60413AE6-8C05-4C83-8769-71A6BF4DEAFC}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.Health.Functions.Worker.Tests.Integration", "test\Microsoft.Health.Functions.Worker.Tests.Integration\Microsoft.Health.Functions.Worker.Tests.Integration.csproj", "{38338E0D-EAD9-4CA3-9E9C-24A39198D473}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -293,6 +295,10 @@ Global
 		{60413AE6-8C05-4C83-8769-71A6BF4DEAFC}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{60413AE6-8C05-4C83-8769-71A6BF4DEAFC}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{60413AE6-8C05-4C83-8769-71A6BF4DEAFC}.Release|Any CPU.Build.0 = Release|Any CPU
+		{38338E0D-EAD9-4CA3-9E9C-24A39198D473}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{38338E0D-EAD9-4CA3-9E9C-24A39198D473}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{38338E0D-EAD9-4CA3-9E9C-24A39198D473}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{38338E0D-EAD9-4CA3-9E9C-24A39198D473}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -342,6 +348,7 @@ Global
 		{B17610DE-31EF-49FE-A0A5-05B843C93C43} = {8AD2A324-DAB5-4380-94A5-31F7D817C384}
 		{673F5824-F4CE-4A9B-BFAE-1E99F7E9FCB5} = {8AD2A324-DAB5-4380-94A5-31F7D817C384}
 		{60413AE6-8C05-4C83-8769-71A6BF4DEAFC} = {CCD9FF99-E177-446E-B9E5-9F570FD96A34}
+		{38338E0D-EAD9-4CA3-9E9C-24A39198D473} = {CCD9FF99-E177-446E-B9E5-9F570FD96A34}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		RESX_SortFileContentOnSave = True

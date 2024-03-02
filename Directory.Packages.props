@@ -36,6 +36,7 @@
     <PackageVersion Include="Microsoft.CodeAnalysis.CSharp.Workspaces" Version="$(CodeAnalysisPackageVersion)" />
     <PackageVersion Include="Microsoft.Data.SqlClient" Version="5.2.0" />
     <PackageVersion Include="Microsoft.DurableTask.Client" Version="1.2.0" />
+    <PackageVersion Include="Microsoft.DurableTask.Client.OrchestrationServiceClientShim" Version="1.0.5" />
     <PackageVersion Include="Microsoft.Extensions.Azure" Version="1.7.2" />
     <PackageVersion Include="Microsoft.Extensions.Configuration" Version="$(SdkPackageVersion)" />
     <PackageVersion Include="Microsoft.Extensions.Configuration.Abstractions" Version="$(SdkPackageVersion)" />

@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <Description>Common utilities and Azure Functions Isolated Workers for long-running operations used by Microsoft Health.</Description>
-    <TargetFrameworks>$(SupportedFrameworks)</TargetFrameworks>
+    <TargetFrameworks>$(LatestVersion)</TargetFrameworks>
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
@@ -10,6 +10,7 @@
     <PackageReference Include="Ensure.That" />
     <PackageReference Include="Google.Protobuf" PrivateAssets="All" />
     <PackageReference Include="Microsoft.Azure.DurableTask.Core" />
+    <PackageReference Include="Microsoft.Azure.Functions.Worker" />
     <PackageReference Include="Microsoft.Azure.Functions.Worker.Extensions.DurableTask" />
     <PackageReference Include="Microsoft.Azure.Functions.Worker.Extensions.Timer" />
     <PackageReference Include="Microsoft.DurableTask.Client" />

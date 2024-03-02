@@ -3,14 +3,16 @@
 // Licensed under the MIT License (MIT). See LICENSE in the repo root for license information.
 // -------------------------------------------------------------------------------------------------
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using Microsoft.Extensions.Hosting;
+using Microsoft.Health.Operations.Functions.Worker;
 
-namespace Microsoft.Health.Functions.Worker.Extensions;
+namespace Microsoft.Health.Functions.Worker.Examples;
 
-internal class AzureFunctionsJobWorker
+public class ExampleHostBuilder : WorkerHostBuilder
 {
+    public ExampleHostBuilder()
+        : base()
+    {
+        HostBuilder.ConfigureFunctionsWorkerDefaults();
+    }
 }

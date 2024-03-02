@@ -6,7 +6,7 @@
 using System.Collections.Generic;
 using Microsoft.Health.Operations.Functions.Worker.DurableTask;
 
-namespace Microsoft.Health.Functions.Examples.Sorting;
+namespace Microsoft.Health.Functions.Worker.Examples.Sorting;
 
 public class SortingOptions
 {
