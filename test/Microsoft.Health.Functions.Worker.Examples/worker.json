@@ -1,0 +1,12 @@
+{
+  "PurgeHistory": {
+    "MinimumAgeDays": 7,
+    "Statuses": [ "Completed" ]
+  },
+  "Sorting": {
+    "Ascending": false,
+    "Retry": {
+      "MaxNumberOfAttempts": 3
+    }
+  }
+}

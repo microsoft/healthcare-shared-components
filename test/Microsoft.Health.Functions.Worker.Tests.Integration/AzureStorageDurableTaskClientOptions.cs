@@ -22,7 +22,7 @@ internal sealed class AzureStorageDurableTaskClientOptions
     public int PartitionCount { get; set; } = 4;
 
     [Required]
-    public string TaskHubName { get; set; } = "IsolatedWorkerIntegrationTests";
+    public string TaskHubName { get; set; } = "WorkerIntegrationTests";
 
     public AzureStorageOrchestrationServiceSettings ToOrchestrationServiceSettings()
     {

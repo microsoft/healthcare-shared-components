@@ -31,9 +31,25 @@ public sealed class AzureFunctionsJobHostBuilder
 
     private Action<HostBuilderContext, IWebJobsBuilder, Action<HostBuilderContext, ILoggingBuilder>> _configureWebJobs = (h, w, c) => { };
     private Action<HostBuilderContext, ILoggingBuilder> _configureLogger = BeginConfigureLogging;
+    private readonly List<KeyValuePair<string, string?>> _environmentVariables = new();
 
     private AzureFunctionsJobHostBuilder(string root)
         => _root = EnsureArg.IsNotNull(root, nameof(root));
+
+    /// <summary>
+    /// Configures the Azure Functions host with the specified environment variables.
+    /// </summary>
+    /// <param name="variables">a collection of environment variables.</param>
+    /// <returns>The <see cref="AzureFunctionsJobHostBuilder"/> instance.</returns>
+    public AzureFunctionsJobHostBuilder ConfigureEnvironmentVariables(params (string Key, string? Value)[] variables)
+    {
+        EnsureArg.IsNotNull(variables, nameof(variables));
+
+        foreach ((string key, string? value) in variables)
+            _environmentVariables.Add(KeyValuePair.Create(key, value));
+
+        return this;
+    }
 
     /// <summary>
     /// Configures the logging used by the Azure Functions host.
@@ -76,10 +92,11 @@ public sealed class AzureFunctionsJobHostBuilder
                         .Add(CreateRootConfigurationSource())
                         .Add(new HostJsonFileConfigurationSource(_root))
                         .Add(new LocalSettingsJsonFileConfigurationSource(_root))
-                        .AddEnvironmentVariables();
+                        .AddEnvironmentVariables()
+                        .Add(new MemoryConfigurationSource { InitialData = _environmentVariables });
                 })
             .ConfigureLogging((c, b) => _configureLogger(c, b))
-            .ConfigureServices(services =>
+            .ConfigureServices((cxt, services) =>
                 services
                     .AddSingleton<ITelemetryChannel, NullTelemetryChannel>()
                     .AddSingleton(sp => new TelemetryConfiguration { TelemetryChannel = sp.GetRequiredService<ITelemetryChannel>() })
@@ -95,17 +112,7 @@ public sealed class AzureFunctionsJobHostBuilder
     /// </remarks>
     /// <returns>An instance <see cref="AzureFunctionsJobHostBuilder"/> that can be additionally configured.</returns>
     public static AzureFunctionsJobHostBuilder Create()
-        => Create(Assembly.GetExecutingAssembly());
-
-    /// <summary>
-    /// Creates a new builder that may be used to configure the <see cref="IHost"/>.
-    /// </summary>
-    /// <remarks>
-    /// The content root for the host is derived from the executing assembly.
-    /// </remarks>
-    /// <returns>An instance <see cref="AzureFunctionsJobHostBuilder"/> that can be additionally configured.</returns>
-    public static AzureFunctionsJobHostBuilder Create(Assembly workerAssembly)
-        => Create(Path.GetDirectoryName(EnsureArg.IsNotNull(workerAssembly, nameof(workerAssembly)).Location)!);
+        => Create(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)!);
 
     /// <summary>
     /// Creates a new builder that may be used to configure the <see cref="IHost"/>.

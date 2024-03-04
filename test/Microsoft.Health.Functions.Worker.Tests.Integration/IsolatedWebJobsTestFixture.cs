@@ -3,6 +3,10 @@
 // Licensed under the MIT License (MIT). See LICENSE in the repo root for license information.
 // -------------------------------------------------------------------------------------------------
 
+using System;
+using System.Collections.Generic;
+using System.Globalization;
+using System.IO;
 using System.Threading.Tasks;
 using DurableTask.AzureStorage;
 using DurableTask.Core;
@@ -14,7 +18,6 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.Health.Functions.Worker.Examples;
-using Microsoft.Health.Functions.Worker.Examples.Sorting;
 using Microsoft.Health.Functions.Worker.Extensions;
 using Xunit;
 using Xunit.Abstractions;
@@ -47,14 +50,29 @@ public sealed class IsolatedWebJobsTestFixture : IAsyncLifetime
             .BuildServiceProvider()
             .GetRequiredService<DurableTaskClient>();
 
-        _workerHost = new ExampleHostBuilder()
-            .ConfigureLogging(b => b.AddXUnit(sink))
-            .Build();
+        string contentRoot = Path.GetDirectoryName(typeof(ExampleHostBuilder).Assembly.Location)!;
 
         _jobHost = AzureFunctionsJobHostBuilder
-            .Create(typeof(DistributedSorter).Assembly)
+            .Create(contentRoot)
+            .ConfigureEnvironmentVariables(
+                ("Logging:LogLevel:Default", "Debug"),
+                ("AzureWebJobsFeatureFlags", "EnableWorkerIndexing"),
+                ("LanguageWorkers:WorkersDirectory", contentRoot))
             .ConfigureLogging(b => b.AddXUnit(sink))
             .ConfigureWebJobs(b => b.AddDurableTask())
+            .Build();
+
+        _workerHost = new ExampleHostBuilder()
+            .ConfigureLogging(b => b.AddXUnit(sink))
+            .ConfigureAppConfiguration(x => x.AddInMemoryCollection(
+                [
+                    new KeyValuePair<string, string?>("Logging:LogLevel:Default", "Debug"),
+                    new KeyValuePair<string, string?>("Functions:Worker:HostEndpoint", "http://localhost:63198"),
+                    new KeyValuePair<string, string?>("Functions:Worker:RequestId", Guid.NewGuid().ToString()),
+                    new KeyValuePair<string, string?>("Functions:Worker:WorkerId", Guid.NewGuid().ToString()),
+                    new KeyValuePair<string, string?>("Functions:Worker:GrpcMaxMessageLength", int.MaxValue.ToString(CultureInfo.InvariantCulture)),
+                ]))
+            .UseContentRoot(contentRoot)
             .Build();
     }
 
@@ -62,13 +80,13 @@ public sealed class IsolatedWebJobsTestFixture : IAsyncLifetime
 
     public async Task DisposeAsync()
     {
-        await _workerHost.StopAsync();
         await _jobHost.StopAsync();
+        await _workerHost.StopAsync();
     }
 
     public async Task InitializeAsync()
     {
-        await _workerHost.StartAsync();
         await _jobHost.StartAsync();
+        await _workerHost.StartAsync();
     }
 }

@@ -5,8 +5,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.IO;
-using System.Reflection;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -15,13 +13,7 @@ namespace Microsoft.Health.Operations.Functions.Worker;
 
 public abstract class WorkerHostBuilder : IHostBuilder
 {
-    protected WorkerHostBuilder()
-    {
-        string contentRoot = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)!;
-        HostBuilder = new HostBuilder().UseContentRoot(contentRoot);
-    }
-
-    protected IHostBuilder HostBuilder { get; private set; }
+    protected HostBuilder HostBuilder { get; } = new HostBuilder();
 
     public IDictionary<object, object> Properties => HostBuilder.Properties;
 
