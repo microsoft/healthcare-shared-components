@@ -24,8 +24,9 @@ namespace Microsoft.Health.Operations.Functions.Worker.Management;
 /// </summary>
 public sealed class PurgeOrchestrationInstanceHistory
 {
+    private const string PurgeFrequencyVariable = $"%{AzureFunctionsJobHost.RootSectionName}:{PurgeHistoryOptions.SectionName}:{nameof(PurgeHistoryOptions.Frequency)}%";
+
     private readonly PurgeHistoryOptions _options;
-    private const string PurgeFrequencyVariable = $"%{PurgeHistoryOptions.SectionName}:{nameof(PurgeHistoryOptions.Frequency)}%";
 
 #if NET8_0_OR_GREATER
     private readonly TimeProvider _timeProvider;

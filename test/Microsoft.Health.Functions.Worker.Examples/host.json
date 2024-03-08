@@ -8,7 +8,14 @@
   "Logging": {
     "FileLoggingMode": "never",
     "LogLevel": {
-      "default": "Debug"
+      "default": "Information",
+      "DurableTask": "Warning",
+      "Function": "Warning",
+      "Function.*.User": "Information",
+      "Host": "Warning"
     }
+  },
+  "PurgeHistory": {
+    "Frequency": "0 0 * * *"
   }
 }
