@@ -1,0 +1,55 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "extends": [
+    ":dependencyDashboard",
+    ":semanticPrefixFixDepsChoreOthers",
+    "group:dotNetCore",
+    "group:monorepos",
+    "group:recommended",
+    "replacements:all",
+    "workarounds:all"
+  ],
+  "labels": [
+    "dependencies"
+  ],
+  "packageRules": [
+    {
+      "groupName": "IdentityServer4",
+      "matchPackagePrefixes": [
+        "IdentityServer4"
+      ]
+    },
+    {
+      "groupName": "Microsoft.Build",
+      "matchPackagePrefixes": [
+        "Microsoft.Build"
+      ]
+    },
+    {
+      "groupName": "Microsoft.CodeAnalysis",
+      "matchPackagePrefixes": [
+        "Microsoft.CodeAnalysis"
+      ]
+    },
+    {
+      "groupName": "Microsoft.IdentityModel",
+      "matchPackagePrefixes": [
+        "Microsoft.IdentityModel"
+      ]
+    },
+    {
+      "groupName": "System.CommandLine",
+      "matchPackagePrefixes": [
+        "System.CommandLine"
+      ]
+    },
+    {
+      "groupName": "XUnit",
+      "matchPackagePrefixes": [
+        "xunit"
+      ]
+    }
+  ],
+  "prConcurrentLimit": 0,
+  "prHourlyLimit": 0
+}
