@@ -4,14 +4,12 @@
   <PropertyGroup>
     <Authors>Microsoft Health Team</Authors>
     <AllowedOutputExtensionsInPackageBuildOutputFolder>$(AllowedOutputExtensionsInPackageBuildOutputFolder);.pdb</AllowedOutputExtensionsInPackageBuildOutputFolder>
-    <CodeAnalysisPackageVersion>4.8.0</CodeAnalysisPackageVersion>
     <Company>Microsoft Corporation</Company>
     <Copyright>Copyright © Microsoft Corporation. All rights reserved.</Copyright>
     <Deterministic>true</Deterministic>
     <EmbedUntrackedSources>true</EmbedUntrackedSources>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <HighEntropyVA>true</HighEntropyVA>
-    <IdentityModelTokenPackageVersion>7.1.2</IdentityModelTokenPackageVersion>
     <IsPackable>true</IsPackable>
     <LangVersion>latest</LangVersion>
     <LtsVersion>net8.0</LtsVersion>
