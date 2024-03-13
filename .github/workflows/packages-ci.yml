@@ -20,6 +20,16 @@ jobs:
       with:
         fetch-depth: 0
 
+    - name: Install Latest .NET SDK
+      uses: actions/setup-dotnet@v4
+
+    - name: Install Older .NET SDK
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: |
+          7.x
+          6.x
+
     - name: Determine Version
       id: version
       uses: ./.github/actions/compute-version
