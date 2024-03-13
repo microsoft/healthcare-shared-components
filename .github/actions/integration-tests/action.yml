@@ -38,7 +38,7 @@ runs:
         "-p:ContinuousIntegrationBuild=true;AssemblyVersion=${{ inputs.assemblyVersion }};FileVersion=${{ inputs.fileVersion }};InformationalVersion=${{ inputs.informationalVersion }}" \
         -warnaserror \
         --no-build \
-        --filter FullyQualifiedName~E2E|FullyQualifiedName~Integration
+        --filter "FullyQualifiedName~E2E|FullyQualifiedName~Integration"
     env:
       AzureWebJobsStorage: 'UseDevelopmentStorage=true'
       DurableTask__ConnectionName: 'AzureWebJobsStorage'
