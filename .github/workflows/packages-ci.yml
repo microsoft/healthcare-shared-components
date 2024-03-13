@@ -1,0 +1,58 @@
+name: Packages PR
+
+on:
+  push:
+    branches: [ main ]
+    paths-ignore:
+    - '**.md'
+
+permissions:
+  contents: write
+
+jobs:
+  validate:
+    name: Validate
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+
+    - name: Determine Version
+      id: version
+      uses: ./.github/actions/compute-version
+
+    - name: Build
+      uses: ./.github/actions/dotnet-build
+      with:
+        assemblyVersion: ${{ steps.version.outputs.assemblyVersion }}
+        buildConfiguration: Release
+        fileVersion: ${{ steps.version.outputs.fileVersion }}
+        informationalVersion: ${{ steps.version.outputs.informationalVersion }}
+
+    - name: Run Integration Tests
+      uses: ./.github/actions/integration-tests
+      with:
+        assemblyVersion: ${{ steps.version.outputs.assemblyVersion }}
+        buildConfiguration: Release
+        fileVersion: ${{ steps.version.outputs.fileVersion }}
+        informationalVersion: ${{ steps.version.outputs.informationalVersion }}
+
+    - name: Publish Packages
+      uses: ./.github/actions/dotnet-publish
+      with:
+        buildConfiguration: Release
+        nugetApiKey: ${{ secrets.PACKAGING_TOKEN }}
+        packageFolder: ${{ github.workspace }}/packages
+        packageVersion: ${{ steps.version.outputs.nuGetVersion }}
+        symbolsPat: ${{ secrets.SYMBOLS_TOKEN }}
+
+    - name: Create Release
+      uses: ./.github/actions/github-release
+      with:
+        gitHubToken: ${{ secrets.GITHUB_TOKEN }}
+        packageFolder: ${{ github.workspace }}/packages
+        tag: v${{ steps.version.outputs.nuGetVersion }}
+        title: '${{ steps.version.outputs.nuGetVersion }}: ${{ github.event.head_commit.message }}'

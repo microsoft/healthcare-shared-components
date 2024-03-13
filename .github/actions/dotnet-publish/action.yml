@@ -1,0 +1,59 @@
+name: dotnet publish
+description: Pushes the packages to the NuGet feed and the symbols to the Azure DevOps symbol server.
+inputs:
+  buildConfiguration:
+    default: Debug
+    description: The dotnet build configuration.
+    required: false
+  nugetApiKey:
+    description: API Key for the Microsoft Health OSS feed
+    required: true
+  packageFolder:
+    description: The folder for generated NuGet packages
+    required: true
+  packageVersion:
+    description: The NuGet package version
+    required: true
+  symbolsAccountName:
+    default: microsofthealthoss
+    description: The Azure DevOps account name containing the symbol server
+    required: false
+  symbolsPat:
+    description: Personal Access Token (PAT) for the Azure DevOps account containing the symbol server
+    required: true
+
+runs:
+  using: composite
+  steps:
+  - name: dotnet pack
+    shell: bash
+    run: |
+      dotnet pack "./Microsoft.Health.sln" \
+        -c "${{ inputs.buildConfiguration }}" \
+        "-p:ContinuousIntegrationBuild=true" \
+        "-p:PackageVersion=${{ inputs.packageVersion }}" \
+        --no-build \
+        -o "${{ inputs.packageFolder }}"
+
+  - name: dotnet nuget push
+    shell: bash
+    working-directory: './packages'
+    run: |
+      dotnet nuget push *.nupkg \
+        --source "Microsoft Health OSS" \
+        --api-key ${{ inputs.apiKey }} \
+        --skip-duplicate
+
+  - name: Publish Symbols
+    uses: microsoft/action-publish-symbols@v2.1.6
+    with:
+      accountName: ${{ inputs.symbolsAccountName }}
+      personalAccessToken: ${{ inputs.symbolsPat }}
+      searchPattern: '**/bin/**/*.pdb'
+      symbolServiceUrl: 'https://artifacts.dev.azure.com'
+
+  - name: Upload Packages
+    uses: actions/upload-artifact@v4
+    with:
+      name: packages
+      path: ${{ inputs.packageFolder }}

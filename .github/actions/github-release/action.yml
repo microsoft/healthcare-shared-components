@@ -1,0 +1,32 @@
+name: github release
+description: Creates a GitHub release for the shared packages.
+inputs:
+  gitHubToken:
+    description: Personal Access Token (PAT) for GitHub used to create the release
+    required: true
+  packageFolder:
+    description: The folder for generated NuGet packages
+    required: true
+  tag:
+    description: The Git tag to create and associate with the release
+    required: true
+  title:
+    description: The title for the GitHub release
+    required: true
+
+runs:
+  using: composite
+  steps:
+  - name: Release
+    shell: bash
+    run: |
+      gh release create "${{ inputs.tag }}" \
+        --repo="${{ github.repository }}" \
+        --title="${{ inputs.title }}" \
+        --generate-notes
+
+      for pkg in ${{ inputs.packageFolder }}/*.nupkg; do
+          gh release upload "${{ inputs.tag }}" $filename --repo="${{ github.repository }}"
+      done
+    env:
+      GITHUB_TOKEN: ${{ inputs.gitHubToken }}

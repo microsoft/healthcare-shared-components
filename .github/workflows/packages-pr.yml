@@ -1,0 +1,38 @@
+name: Packages PR
+
+on:
+  pull_request:
+    branches: [ main ]
+    paths-ignore:
+    - '**.md'
+
+jobs:
+  validate:
+    name: Validate
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+
+    - name: Determine Version
+      id: version
+      uses: ./.github/actions/compute-version
+
+    - name: Build
+      uses: ./.github/actions/dotnet-build
+      with:
+        assemblyVersion: ${{ steps.chart.outputs.assemblyVersion }}
+        buildConfiguration: Release
+        fileVersion: ${{ steps.chart.outputs.fileVersion }}
+        informationalVersion: ${{ steps.chart.outputs.informationalVersion }}
+
+    - name: Run Integration Tests
+      uses: ./.github/actions/integration-tests
+      with:
+        assemblyVersion: ${{ steps.chart.outputs.assemblyVersion }}
+        buildConfiguration: Release
+        fileVersion: ${{ steps.chart.outputs.fileVersion }}
+        informationalVersion: ${{ steps.chart.outputs.informationalVersion }}
