@@ -5,11 +5,11 @@ inputs:
     default: Debug
     description: The dotnet build configuration.
     required: false
-  nugetApiKey:
-    description: API Key for the Microsoft Health OSS feed
-    required: true
   packageFolder:
     description: The folder for generated NuGet packages
+    required: true
+  packagePat:
+    description: Personal Access Token (PAT) with permission to write packages
     required: true
   packageVersion:
     description: The NuGet package version
@@ -19,7 +19,7 @@ inputs:
     description: The Azure DevOps account name containing the symbol server
     required: false
   symbolsPat:
-    description: Personal Access Token (PAT) for the Azure DevOps account containing the symbol server
+    description: Personal Access Token (PAT) with permission to write symbols
     required: true
 
 runs:
@@ -45,9 +45,14 @@ runs:
     shell: bash
     working-directory: '${{ inputs.packageFolder }}'
     run: |
+      dotnet nuget update source "Microsoft Health OSS" \
+        --username pat \
+        --password ${{ inputs.packagePat }} \
+        --configfile "${{ github.workspace }}/nuget.config"
+
       dotnet nuget push *.nupkg \
         --source "Microsoft Health OSS" \
-        --api-key ${{ inputs.nugetApiKey }} \
+        --api-key AZ  \
         --skip-duplicate
 
   - name: Publish Symbols
