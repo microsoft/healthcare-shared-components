@@ -47,7 +47,7 @@ runs:
     run: |
       dotnet nuget push *.nupkg \
         --source "Microsoft Health OSS" \
-        --api-key ${{ inputs.apiKey }} \
+        --api-key ${{ inputs.nugetApiKey }} \
         --skip-duplicate
 
   - name: Publish Symbols
