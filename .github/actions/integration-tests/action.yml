@@ -1,0 +1,55 @@
+name: integration tests
+description: Runs a series of tests that integrate with Azure Storage and SQL.
+inputs:
+  assemblyVersion:
+    description: The scaler assembly's version.
+    required: true
+  buildConfiguration:
+    default: Debug
+    description: The dotnet build configuration.
+    required: false
+  fileVersion:
+    description: The scaler assembly's file version.
+    required: true
+  informationalVersion:
+    description: The scaler assembly's informational version.
+    required: true
+
+runs:
+  using: composite
+  steps:
+  - name: 'Start Azurite'
+    shell: bash
+    run: docker run -p 10000:10000 -p 10001:10001 -p 10002:10002 -d --rm --name azure-storage mcr.microsoft.com/azure-storage/azurite:latest
+
+  - name: 'Start SQL Server'
+    shell: bash
+    run: docker run -e "ACCEPT_EULA=Y" -e "SA_PASSWORD=T3stP@ssw0rd" -p 1433:1433 -d --rm --name sql-server mcr.microsoft.com/mssql/server:2019-latest
+
+  - name: 'Wait for SQL Server'
+    shell: bash
+    run: for i in {1..6}; do docker exec sql-server sh -c "/opt/mssql-tools/bin/sqlcmd -S localhost -U SA -P T3stP@ssw0rd -Q 'SELECT * FROM INFORMATION_SCHEMA.TABLES'" && exit 0 || sleep 5; done; exit 1
+
+  - name: 'Run Integration and E2E Tests'
+    shell: bash
+    run: |
+      dotnet test "./Microsoft.Health.sln" \
+        -c "${{ inputs.buildConfiguration }}" \
+        "-p:ContinuousIntegrationBuild=true;AssemblyVersion=${{ inputs.assemblyVersion }};FileVersion=${{ inputs.fileVersion }};InformationalVersion=${{ inputs.informationalVersion }}" \
+        -warnaserror \
+        --no-build \
+        --filter "FullyQualifiedName~E2E|FullyQualifiedName~Integration"
+    env:
+      AzureWebJobsStorage: 'UseDevelopmentStorage=true'
+      DurableTask__ConnectionName: 'AzureWebJobsStorage'
+      TestSqlConnectionString: 'Server=(local);Persist Security Info=False;User ID=sa;Password=T3stP@ssw0rd;MultipleActiveResultSets=False;Connection Timeout=30;TrustServerCertificate=true'
+
+  - name: 'Stop Azurite'
+    if: ${{ always() }}
+    shell: bash
+    run: docker stop azure-storage
+
+  - name: 'Stop SQL Server'
+    if: ${{ always() }}
+    shell: bash
+    run: docker stop sql-server
