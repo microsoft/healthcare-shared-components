@@ -35,9 +35,15 @@ runs:
         --no-build \
         -o "${{ inputs.packageFolder }}"
 
+  - name: Upload Packages
+    uses: actions/upload-artifact@v4
+    with:
+      name: packages
+      path: ${{ inputs.packageFolder }}
+
   - name: dotnet nuget push
     shell: bash
-    working-directory: './packages'
+    working-directory: '${{ inputs.packageFolder }}'
     run: |
       dotnet nuget push *.nupkg \
         --source "Microsoft Health OSS" \
@@ -51,9 +57,3 @@ runs:
       personalAccessToken: ${{ inputs.symbolsPat }}
       searchPattern: '**/bin/**/*.pdb'
       symbolServiceUrl: 'https://artifacts.dev.azure.com'
-
-  - name: Upload Packages
-    uses: actions/upload-artifact@v4
-    with:
-      name: packages
-      path: ${{ inputs.packageFolder }}
