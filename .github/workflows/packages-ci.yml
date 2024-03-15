@@ -54,8 +54,8 @@ jobs:
       uses: ./.github/actions/dotnet-publish
       with:
         buildConfiguration: Release
-        nugetApiKey: ${{ secrets.PACKAGING_TOKEN }}
         packageFolder: ${{ github.workspace }}/packages
+        packagePat: ${{ secrets.PACKAGING_TOKEN }}
         packageVersion: ${{ steps.version.outputs.nuGetVersion }}
         symbolsPat: ${{ secrets.SYMBOLS_TOKEN }}
 
