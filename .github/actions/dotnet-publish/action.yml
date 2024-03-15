@@ -54,8 +54,7 @@ runs:
 
   - name: dotnet nuget push
     shell: bash
-    run: |
-      dotnet nuget push ${{ inputs.packageFolder }}/*.nupkg --api-key AzureArtifacts
+    run: dotnet nuget push ${{ inputs.packageFolder }}/*.nupkg --api-key AzureArtifacts
 
   - name: Publish Symbols
     uses: microsoft/action-publish-symbols@v2.1.6
