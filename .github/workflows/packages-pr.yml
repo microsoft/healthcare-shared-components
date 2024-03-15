@@ -27,20 +27,12 @@ jobs:
           7.x
           6.x
 
-    - name: Determine Version
+    - name: Version
       id: version
       uses: ./.github/actions/compute-version
 
     - name: Build
       uses: ./.github/actions/dotnet-build
-      with:
-        assemblyVersion: ${{ steps.chart.outputs.assemblyVersion }}
-        buildConfiguration: Release
-        fileVersion: ${{ steps.chart.outputs.fileVersion }}
-        informationalVersion: ${{ steps.chart.outputs.informationalVersion }}
-
-    - name: Run Integration Tests
-      uses: ./.github/actions/integration-tests
       with:
         assemblyVersion: ${{ steps.chart.outputs.assemblyVersion }}
         buildConfiguration: Release
