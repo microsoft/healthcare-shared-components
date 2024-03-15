@@ -54,12 +54,11 @@ runs:
 
   - name: dotnet nuget push
     shell: bash
-    run: dotnet nuget push ${{ inputs.packageFolder }}/*.nupkg --api-key AzureArtifacts
+    run: dotnet nuget push ${{ inputs.packageFolder }}/*.nupkg --api-key AzureArtifacts --skip-duplicate
 
   - name: Publish Symbols
     uses: microsoft/action-publish-symbols@v2.1.6
     with:
       accountName: ${{ inputs.symbolsAccountName }}
       personalAccessToken: ${{ inputs.symbolsPat }}
-      searchPattern: '**/bin/**/*.pdb'
       symbolServiceUrl: 'https://artifacts.dev.azure.com'
