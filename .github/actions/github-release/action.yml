@@ -33,7 +33,7 @@ runs:
         --generate-notes
 
       for pkg in ${{ inputs.packageFolder }}/*.nupkg; do
-          gh release upload "${{ inputs.tag }}" $filename --repo "${{ inputs.repository }}"
+          gh release upload "${{ inputs.tag }}" $pkg --repo "${{ inputs.repository }}" --clobber
       done
     env:
       GITHUB_TOKEN: ${{ inputs.gitHubToken }}
