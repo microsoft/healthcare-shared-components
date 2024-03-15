@@ -3,7 +3,11 @@ description: Pushes the packages to the NuGet feed and the symbols to the Azure 
 inputs:
   buildConfiguration:
     default: Debug
-    description: The dotnet build configuration.
+    description: The dotnet build configuration
+    required: false
+  nugetFeed:
+    default: 'https://microsofthealthoss.pkgs.visualstudio.com/FhirServer/_packaging/Public/nuget/v3/index.json'
+    description: The NuGet feed for the packages
     required: false
   packageFolder:
     description: The folder for generated NuGet packages
@@ -41,19 +45,18 @@ runs:
       name: packages
       path: ${{ inputs.packageFolder }}
 
+  - name: Authenticate NuGet
+    uses: actions/setup-dotnet@v4
+    with:
+      source-url: '${{ inputs.nugetFeed }}'
+    env:
+      NUGET_AUTH_TOKEN: ${{ inputs.packagePat }}
+
   - name: dotnet nuget push
     shell: bash
     working-directory: '${{ inputs.packageFolder }}'
     run: |
-      dotnet nuget update source "Microsoft Health OSS" \
-        --username pat \
-        --password ${{ inputs.packagePat }} \
-        --configfile "${{ github.workspace }}/nuget.config"
-
-      dotnet nuget push *.nupkg \
-        --source "Microsoft Health OSS" \
-        --api-key AZ  \
-        --skip-duplicate
+      dotnet nuget push *.nupkg --source "Microsoft Health OSS" --api-key AzureArtifacts
 
   - name: Publish Symbols
     uses: microsoft/action-publish-symbols@v2.1.6
