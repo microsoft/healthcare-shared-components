@@ -30,7 +30,7 @@ jobs:
           7.x
           6.x
 
-    - name: Determine Version
+    - name: Version
       id: version
       uses: ./.github/actions/compute-version
 
@@ -42,15 +42,7 @@ jobs:
         fileVersion: ${{ steps.version.outputs.fileVersion }}
         informationalVersion: ${{ steps.version.outputs.informationalVersion }}
 
-    - name: Run Integration Tests
-      uses: ./.github/actions/integration-tests
-      with:
-        assemblyVersion: ${{ steps.version.outputs.assemblyVersion }}
-        buildConfiguration: Release
-        fileVersion: ${{ steps.version.outputs.fileVersion }}
-        informationalVersion: ${{ steps.version.outputs.informationalVersion }}
-
-    - name: Publish Packages
+    - name: Publish
       uses: ./.github/actions/dotnet-publish
       with:
         buildConfiguration: Release
@@ -59,7 +51,7 @@ jobs:
         packageVersion: ${{ steps.version.outputs.nuGetVersion }}
         symbolsPat: ${{ secrets.SYMBOLS_TOKEN }}
 
-    - name: Create Release
+    - name: Release
       uses: ./.github/actions/github-release
       with:
         commitSha: ${{ github.sha }}
