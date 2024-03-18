@@ -26,10 +26,13 @@ runs:
   - name: Release
     shell: bash
     run: |
+      # Read first line of title
+      readarray -t lines <<< "${{ inputs.title }}"
+
       gh release create "${{ inputs.tag }}" \
         --repo "${{ inputs.repository }}" \
         --target ${{ inputs.commitSha }} \
-        --title "${{ inputs.title }}" \
+        --title "${lines[0]}" \
         --generate-notes
 
       for pkg in ${{ inputs.packageFolder }}/*.nupkg; do

@@ -57,4 +57,4 @@ jobs:
         packageFolder: ${{ github.workspace }}/packages
         repository: ${{ github.repository }}
         tag: v${{ steps.version.outputs.nuGetVersion }}
-        title: '${{ steps.version.outputs.nuGetVersion }}'
+        title: '${{ steps.version.outputs.nuGetVersion }}: ${{ github.event.head_commit.message }}'
