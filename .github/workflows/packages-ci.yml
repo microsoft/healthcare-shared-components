@@ -20,12 +20,10 @@ jobs:
       with:
         fetch-depth: 0
 
-    - name: Install Latest .NET SDK
-      uses: actions/setup-dotnet@v4
-
-    - name: Install Older .NET SDK
+    - name: Install .NET SDK
       uses: actions/setup-dotnet@v4
       with:
+        global-json-file: 'global.json'
         dotnet-version: |
           7.x
           6.x
@@ -59,4 +57,4 @@ jobs:
         packageFolder: ${{ github.workspace }}/packages
         repository: ${{ github.repository }}
         tag: v${{ steps.version.outputs.nuGetVersion }}
-        title: '${{ steps.version.outputs.nuGetVersion }}: ${{ github.event.head_commit.message }}'
+        title: '${{ steps.version.outputs.nuGetVersion }}'
