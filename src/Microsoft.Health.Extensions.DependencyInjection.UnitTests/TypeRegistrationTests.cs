@@ -377,6 +377,54 @@ public class TypeRegistrationTests
         IComponent instance = componentFactory.Invoke();
 
         Assert.IsType<ComponentB>(instance);
+
+        Assert.Equal(2, provider.GetServices<IComponent>().Count());
+    }
+
+    [Fact]
+    public void GivenATypeBuilder_WhenRegisteringMultipleTimes_ThenNoDuplicatesAreAdded()
+    {
+        _collection.Add<ComponentA>()
+            .Transient()
+            .AsSelf()
+            .AsService<IComponent>();
+
+        _collection.Add<ComponentA>()
+            .Transient()
+            .AsSelf()
+            .AsService<IComponent>();
+
+        var provider = _collection.BuildServiceProvider();
+        var services = provider.GetServices<IComponent>();
+        Assert.Single(services);
+    }
+
+    [Fact]
+    public void GivenATypeBuilder_WhenRegisteringMultipleTimes_ThenErrorWithDifferentScopes()
+    {
+        _collection.Add<ComponentA>()
+            .Transient()
+            .AsSelf()
+            .AsService<IComponent>();
+
+        _collection.Add<ComponentA>()
+            .Singleton()
+            .AsSelf()
+            .AsService<IComponent>();
+
+        _collection.BuildServiceProvider();
+
+        Assert.Collection(_collection, r =>
+        {
+            Assert.Equal(ServiceLifetime.Transient, r.Lifetime);
+            Assert.Equal(typeof(ComponentA), r.ServiceType);
+            Assert.Equal(typeof(ComponentA), r.ImplementationType);
+        }, r =>
+        {
+            Assert.Equal(ServiceLifetime.Transient, r.Lifetime);
+            Assert.Equal(typeof(IComponent), r.ServiceType);
+            Assert.Equal(typeof(ComponentA), r.ImplementationType);
+        });
     }
 
     [Fact]
