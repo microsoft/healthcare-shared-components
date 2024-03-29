@@ -120,7 +120,7 @@ public class SqlSchemaManager : ISchemaManager
                     retryCount: RetryAttempts,
                     sleepDurationProvider: retryCount => TimeSpan.FromSeconds(60),
                     onRetry: (exception, sleepDuration, retryCount, context) =>
-                        _logger.LogWarning(exception, "Attempt {Attempt} of {MaxAttempts} of validating version compatiblity", retryCount, RetryAttempts))
+                        _logger.LogInformation(exception, "Attempt {Attempt} of {MaxAttempts} of validating version compatiblity", retryCount, RetryAttempts))
                 .ExecuteAsync(t => ValidateVersionCompatibility(availableVersions[^1].Id, t), token)
                 .ConfigureAwait(false);
 

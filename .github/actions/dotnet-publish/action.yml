@@ -1,0 +1,64 @@
+name: dotnet publish
+description: Pushes the packages to the NuGet feed and the symbols to the Azure DevOps symbol server.
+inputs:
+  buildConfiguration:
+    default: Debug
+    description: The dotnet build configuration
+    required: false
+  nugetFeed:
+    default: 'https://microsofthealthoss.pkgs.visualstudio.com/FhirServer/_packaging/Public/nuget/v3/index.json'
+    description: The NuGet feed for the packages
+    required: false
+  packageFolder:
+    description: The folder for generated NuGet packages
+    required: true
+  packagePat:
+    description: Personal Access Token (PAT) with permission to write packages
+    required: true
+  packageVersion:
+    description: The NuGet package version
+    required: true
+  symbolsAccountName:
+    default: microsofthealthoss
+    description: The Azure DevOps account name containing the symbol server
+    required: false
+  symbolsPat:
+    description: Personal Access Token (PAT) with permission to write symbols
+    required: true
+
+runs:
+  using: composite
+  steps:
+  - name: dotnet pack
+    shell: bash
+    run: |
+      dotnet pack "./Microsoft.Health.sln" \
+        -c "${{ inputs.buildConfiguration }}" \
+        "-p:ContinuousIntegrationBuild=true" \
+        "-p:PackageVersion=${{ inputs.packageVersion }}" \
+        --no-build \
+        -o "${{ inputs.packageFolder }}"
+
+  - name: Upload Packages
+    uses: actions/upload-artifact@v4
+    with:
+      name: packages
+      path: ${{ inputs.packageFolder }}
+
+  - name: Authenticate NuGet
+    uses: actions/setup-dotnet@v4
+    with:
+      source-url: '${{ inputs.nugetFeed }}'
+    env:
+      NUGET_AUTH_TOKEN: ${{ inputs.packagePat }}
+
+  - name: dotnet nuget push
+    shell: bash
+    run: dotnet nuget push ${{ inputs.packageFolder }}/*.nupkg --api-key AzureArtifacts --skip-duplicate
+
+  - name: Publish Symbols
+    uses: microsoft/action-publish-symbols@v2.1.6
+    with:
+      accountName: ${{ inputs.symbolsAccountName }}
+      personalAccessToken: ${{ inputs.symbolsPat }}
+      symbolServiceUrl: 'https://artifacts.dev.azure.com'

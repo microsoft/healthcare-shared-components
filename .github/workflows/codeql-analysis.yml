@@ -1,4 +1,4 @@
-name: "CodeQL"
+name: CodeQL
 
 on:
   push:
@@ -6,12 +6,15 @@ on:
   pull_request:
     branches: [ main ]
   schedule:
-    - cron: '0 0 * * 0'
+  - cron: '0 0 * * 0'
 
 jobs:
   analyze:
     name: Analyze
     runs-on: ubuntu-latest
+
+    permissions:
+      security-events: write
 
     steps:
     - name: Checkout repository
@@ -21,7 +24,9 @@ jobs:
       uses: actions/setup-dotnet@v4
       with:
         global-json-file: 'global.json'
-        dotnet-version: '6.x'
+        dotnet-version: |
+          7.x
+          6.x
 
     - name: Initialize CodeQL
       uses: github/codeql-action/init@v3

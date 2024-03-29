@@ -1,0 +1,60 @@
+name: Packages CI
+
+on:
+  push:
+    branches: [ main ]
+    paths-ignore:
+    - '**.md'
+
+permissions:
+  contents: write
+
+jobs:
+  validate:
+    name: Validate
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+
+    - name: Install .NET SDK
+      uses: actions/setup-dotnet@v4
+      with:
+        global-json-file: 'global.json'
+        dotnet-version: |
+          7.x
+          6.x
+
+    - name: Version
+      id: version
+      uses: ./.github/actions/compute-version
+
+    - name: Build
+      uses: ./.github/actions/dotnet-build
+      with:
+        assemblyVersion: ${{ steps.version.outputs.assemblyVersion }}
+        buildConfiguration: Release
+        fileVersion: ${{ steps.version.outputs.fileVersion }}
+        informationalVersion: ${{ steps.version.outputs.informationalVersion }}
+
+    - name: Publish
+      uses: ./.github/actions/dotnet-publish
+      with:
+        buildConfiguration: Release
+        packageFolder: ${{ github.workspace }}/packages
+        packagePat: ${{ secrets.PACKAGING_TOKEN }}
+        packageVersion: ${{ steps.version.outputs.nuGetVersion }}
+        symbolsPat: ${{ secrets.SYMBOLS_TOKEN }}
+
+    - name: Release
+      uses: ./.github/actions/github-release
+      with:
+        commitSha: ${{ github.sha }}
+        gitHubToken: ${{ secrets.GITHUB_TOKEN }}
+        packageFolder: ${{ github.workspace }}/packages
+        repository: ${{ github.repository }}
+        tag: v${{ steps.version.outputs.nuGetVersion }}
+        title: '${{ steps.version.outputs.nuGetVersion }}: ${{ github.event.head_commit.message }}'
