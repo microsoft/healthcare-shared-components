@@ -24,7 +24,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\src\Microsoft.Health.Functions.Worker.Extensions\Microsoft.Health.Functions.Worker.Extensions.csproj" />
     <ProjectReference Include="..\Microsoft.Health.Functions.Worker.Examples\Microsoft.Health.Functions.Worker.Examples.csproj" />
   </ItemGroup>
 

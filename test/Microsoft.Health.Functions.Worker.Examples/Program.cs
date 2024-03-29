@@ -3,8 +3,12 @@
 // Licensed under the MIT License (MIT). See LICENSE in the repo root for license information.
 // -------------------------------------------------------------------------------------------------
 
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
-using Microsoft.Health.Functions.Worker.Examples;
 
-IHost host = new ExampleHostBuilder().Build();
+IHost host = new HostBuilder()
+    .ConfigureFunctionsWorkerDefaults()
+    .ConfigureAppConfiguration(builder => builder.AddJsonFile("worker.json", optional: false))
+    .Build();
+
 host.Run();

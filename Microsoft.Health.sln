@@ -107,11 +107,11 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Health.Measuremen
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Health.Operations.Functions.Worker", "src\Microsoft.Health.Operations.Functions.Worker\Microsoft.Health.Operations.Functions.Worker.csproj", "{B17610DE-31EF-49FE-A0A5-05B843C93C43}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.Health.Functions.Worker.Extensions", "src\Microsoft.Health.Functions.Worker.Extensions\Microsoft.Health.Functions.Worker.Extensions.csproj", "{673F5824-F4CE-4A9B-BFAE-1E99F7E9FCB5}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Health.Functions.Worker.Examples", "test\Microsoft.Health.Functions.Worker.Examples\Microsoft.Health.Functions.Worker.Examples.csproj", "{60413AE6-8C05-4C83-8769-71A6BF4DEAFC}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.Health.Functions.Worker.Examples", "test\Microsoft.Health.Functions.Worker.Examples\Microsoft.Health.Functions.Worker.Examples.csproj", "{60413AE6-8C05-4C83-8769-71A6BF4DEAFC}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Health.Functions.Worker.Tests.Integration", "test\Microsoft.Health.Functions.Worker.Tests.Integration\Microsoft.Health.Functions.Worker.Tests.Integration.csproj", "{38338E0D-EAD9-4CA3-9E9C-24A39198D473}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.Health.Functions.Worker.Tests.Integration", "test\Microsoft.Health.Functions.Worker.Tests.Integration\Microsoft.Health.Functions.Worker.Tests.Integration.csproj", "{38338E0D-EAD9-4CA3-9E9C-24A39198D473}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.Health.Operations.Functions.Worker.UnitTests", "src\Microsoft.Health.Operations.Functions.Worker.UnitTests\Microsoft.Health.Operations.Functions.Worker.UnitTests.csproj", "{CEC706E1-BF17-4331-9F58-1E194CD230BF}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -287,10 +287,6 @@ Global
 		{B17610DE-31EF-49FE-A0A5-05B843C93C43}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{B17610DE-31EF-49FE-A0A5-05B843C93C43}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{B17610DE-31EF-49FE-A0A5-05B843C93C43}.Release|Any CPU.Build.0 = Release|Any CPU
-		{673F5824-F4CE-4A9B-BFAE-1E99F7E9FCB5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{673F5824-F4CE-4A9B-BFAE-1E99F7E9FCB5}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{673F5824-F4CE-4A9B-BFAE-1E99F7E9FCB5}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{673F5824-F4CE-4A9B-BFAE-1E99F7E9FCB5}.Release|Any CPU.Build.0 = Release|Any CPU
 		{60413AE6-8C05-4C83-8769-71A6BF4DEAFC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{60413AE6-8C05-4C83-8769-71A6BF4DEAFC}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{60413AE6-8C05-4C83-8769-71A6BF4DEAFC}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -299,6 +295,10 @@ Global
 		{38338E0D-EAD9-4CA3-9E9C-24A39198D473}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{38338E0D-EAD9-4CA3-9E9C-24A39198D473}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{38338E0D-EAD9-4CA3-9E9C-24A39198D473}.Release|Any CPU.Build.0 = Release|Any CPU
+		{CEC706E1-BF17-4331-9F58-1E194CD230BF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{CEC706E1-BF17-4331-9F58-1E194CD230BF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{CEC706E1-BF17-4331-9F58-1E194CD230BF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{CEC706E1-BF17-4331-9F58-1E194CD230BF}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -346,12 +346,12 @@ Global
 		{2369BE93-FF96-4270-AD08-7A45F090BD00} = {8AD2A324-DAB5-4380-94A5-31F7D817C384}
 		{E89B5131-D8C2-4AEC-9762-A123FA4314BC} = {8AD2A324-DAB5-4380-94A5-31F7D817C384}
 		{B17610DE-31EF-49FE-A0A5-05B843C93C43} = {8AD2A324-DAB5-4380-94A5-31F7D817C384}
-		{673F5824-F4CE-4A9B-BFAE-1E99F7E9FCB5} = {8AD2A324-DAB5-4380-94A5-31F7D817C384}
 		{60413AE6-8C05-4C83-8769-71A6BF4DEAFC} = {CCD9FF99-E177-446E-B9E5-9F570FD96A34}
 		{38338E0D-EAD9-4CA3-9E9C-24A39198D473} = {CCD9FF99-E177-446E-B9E5-9F570FD96A34}
+		{CEC706E1-BF17-4331-9F58-1E194CD230BF} = {8AD2A324-DAB5-4380-94A5-31F7D817C384}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
-		RESX_SortFileContentOnSave = True
 		SolutionGuid = {562bbd07-1817-4af5-ab66-8837cf849248}
+		RESX_SortFileContentOnSave = True
 	EndGlobalSection
 EndGlobal

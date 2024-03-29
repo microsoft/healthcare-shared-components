@@ -68,7 +68,7 @@ public static class TaskContextExtensions
         // so this value can be preserved in the input or custom status
         EnsureArg.IsNotNull(context, nameof(context));
 
-        var input = new GetInstanceOptions { GetInputsAndOutputs = false, };
+        var input = new GetInstanceOptions { GetInputsAndOutputs = false };
         OrchestrationMetadata? metadata = await context.CallActivityAsync<OrchestrationMetadata?>(nameof(DurableTaskClientActivity.GetInstanceAsync), input, taskOptions);
 
         return metadata!.CreatedAt;

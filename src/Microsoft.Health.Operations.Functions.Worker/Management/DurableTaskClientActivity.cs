@@ -22,9 +22,9 @@ public static class DurableTaskClientActivity
     /// <summary>
     /// Asynchronously retrieves the status of a given operation ID.
     /// </summary>
-    /// <param name="options">The options for fetching the status.</param>
     /// <param name="context">The context for the activity.</param>
     /// <param name="client">A client for interacting with the durable task framework.</param>
+    /// <param name="options">The options for fetching the status.</param>
     /// <param name="logger">A diagnostic logger.</param>
     /// <param name="cancellationToken">An optional token for cancellation.</param>
     /// <returns>
@@ -34,9 +34,9 @@ public static class DurableTaskClientActivity
     /// </returns>
     [Function(nameof(GetInstanceAsync))]
     public static async Task<OrchestrationInstanceMetadata?> GetInstanceAsync(
-        [ActivityTrigger] GetInstanceOptions options,
         TaskActivityContext context,
         [DurableClient] DurableTaskClient client,
+        [ActivityTrigger] GetInstanceOptions options,
         ILogger logger,
         CancellationToken cancellationToken = default)
     {

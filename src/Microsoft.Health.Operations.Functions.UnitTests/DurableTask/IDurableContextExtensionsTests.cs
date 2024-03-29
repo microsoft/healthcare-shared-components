@@ -155,10 +155,10 @@ public class IDurableContextExtensionsTests
         context.InstanceId.Returns(operationId);
 
         context
-            .CallActivityAsync<DurableOrchestrationStatus>(
-                nameof(DurableOrchestrationClientActivity.GetInstanceStatusAsync),
-                Arg.Any<GetInstanceStatusOptions>())
-            .Returns(new DurableOrchestrationStatus { CreatedTime = expected });
+            .CallActivityAsync<OrchestrationInstanceMetadata>(
+                nameof(DurableOrchestrationClientActivity.GetInstanceAsync),
+                Arg.Any<GetInstanceOptions>())
+            .Returns(new OrchestrationInstanceMetadata("UnitTest", instanceId) { CreatedAt = expected });
 
         // Invoke
         DateTimeOffset actual = await context.GetCreatedAtTimeAsync();
@@ -168,9 +168,9 @@ public class IDurableContextExtensionsTests
 
         await context
             .Received(1)
-            .CallActivityAsync<DurableOrchestrationStatus>(
-                nameof(DurableOrchestrationClientActivity.GetInstanceStatusAsync),
-                Arg.Any<GetInstanceStatusOptions>());
+            .CallActivityAsync<OrchestrationInstanceMetadata>(
+                nameof(DurableOrchestrationClientActivity.GetInstanceAsync),
+                Arg.Any<GetInstanceOptions>());
     }
 
     [Fact]
@@ -187,11 +187,11 @@ public class IDurableContextExtensionsTests
         var options = new RetryOptions(TimeSpan.FromSeconds(5), 3);
 
         context
-            .CallActivityWithRetryAsync<DurableOrchestrationStatus>(
-                nameof(DurableOrchestrationClientActivity.GetInstanceStatusAsync),
+            .CallActivityWithRetryAsync<OrchestrationInstanceMetadata>(
+                nameof(DurableOrchestrationClientActivity.GetInstanceAsync),
                 options,
-                Arg.Any<GetInstanceStatusOptions>())
-            .Returns(new DurableOrchestrationStatus { CreatedTime = expected });
+                Arg.Any<GetInstanceOptions>())
+            .Returns(new OrchestrationInstanceMetadata("UnitTest", instanceId) { CreatedAt = expected });
 
         // Invoke
         DateTimeOffset actual = await context.GetCreatedAtTimeAsync(options);
@@ -201,9 +201,9 @@ public class IDurableContextExtensionsTests
 
         await context
             .Received(1)
-            .CallActivityWithRetryAsync<DurableOrchestrationStatus>(
-                nameof(DurableOrchestrationClientActivity.GetInstanceStatusAsync),
+            .CallActivityWithRetryAsync<OrchestrationInstanceMetadata>(
+                nameof(DurableOrchestrationClientActivity.GetInstanceAsync),
                 options,
-                Arg.Any<GetInstanceStatusOptions>());
+                Arg.Any<GetInstanceOptions>());
     }
 }

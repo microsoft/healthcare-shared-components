@@ -1,5 +1,4 @@
 <Project>
-
   <ItemGroup>
     <PackageVersion Include="Azure.Core" Version="1.38.0" />
     <PackageVersion Include="Azure.Identity" Version="1.10.4" />
@@ -35,6 +34,7 @@
     <PackageVersion Include="Microsoft.CodeAnalysis.CSharp" Version="4.9.2" />
     <PackageVersion Include="Microsoft.CodeAnalysis.CSharp.Workspaces" Version="4.9.2" />
     <PackageVersion Include="Microsoft.Data.SqlClient" Version="5.2.0" />
+    <PackageVersion Include="Microsoft.DurableTask.Abstractions" Version="1.2.2" />
     <PackageVersion Include="Microsoft.DurableTask.Client" Version="1.2.0" />
     <PackageVersion Include="Microsoft.DurableTask.Client.OrchestrationServiceClientShim" Version="1.0.5" />
     <PackageVersion Include="Microsoft.Extensions.Azure" Version="1.7.2" />
@@ -86,5 +86,4 @@
     <PackageVersion Include="xunit.extensibility.core" Version="2.7.0" />
     <PackageVersion Include="xunit.runner.visualstudio" Version="2.5.7" />
   </ItemGroup>
-
 </Project>

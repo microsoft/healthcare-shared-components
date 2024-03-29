@@ -91,7 +91,7 @@ public static class IDurableContextExtensions
         // so this value can be preserved in the input or custom status
         EnsureArg.IsNotNull(context, nameof(context));
 
-        var input = new GetInstanceOptions { GetInputsAndOutputs = false };
+        GetInstanceOptions input = new() { GetInputsAndOutputs = false };
         OrchestrationInstanceMetadata metadata = retryOptions is not null
             ? await context.CallActivityWithRetryAsync<OrchestrationInstanceMetadata>(nameof(DurableOrchestrationClientActivity.GetInstanceAsync), retryOptions, input)
             : await context.CallActivityAsync<OrchestrationInstanceMetadata>(nameof(DurableOrchestrationClientActivity.GetInstanceAsync), input);
