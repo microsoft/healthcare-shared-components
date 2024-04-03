@@ -169,7 +169,7 @@ public sealed class SchemaInitializer : IHostedService
 
         // Ensure to publish the Schema notifications even when schema is up-to date and Schema Initializer is called again (like restarting FHIR server will call this again)
         // There is a dependency on this notification in FHIR server to enable some background jobs
-        if (!schemaUpgradedNotificationSent)
+        if (!schemaUpgradedNotificationSent && _schemaInformation.Current.HasValue)
         {
             await _mediator.NotifySchemaUpgradedAsync((int)_schemaInformation.Current, false).ConfigureAwait(false);
         }
