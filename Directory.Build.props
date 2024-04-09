@@ -16,6 +16,7 @@
     <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <PreviousVersion>net6.0</PreviousVersion>
+    <LegacyVersion>netstandard2.0</LegacyVersion>
     <Product>Microsoft Health</Product>
     <PublishRepositoryUrl>true</PublishRepositoryUrl>
     <RootDirectory>$(MSBuildThisFileDirectory)</RootDirectory>

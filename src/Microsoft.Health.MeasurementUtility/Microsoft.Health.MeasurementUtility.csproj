@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <Description>Common utilities used by Microsoft Health.</Description>
-    <TargetFrameworks>$(SupportedFrameworks)</TargetFrameworks>
+    <TargetFrameworks>$(LegacyVersion)</TargetFrameworks>
   </PropertyGroup>
 
   <ItemGroup>
