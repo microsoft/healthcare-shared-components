@@ -49,8 +49,8 @@ runs:
     uses: azure/login@v2
     with:
       allow-no-subscriptions: true
-      client-id: ${{ secrets.AZURE_CLIENT_ID }}
-      tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+      client-id: ${{ inputs.servicePrincipalClientId }}
+      tenant-id: ${{ inputs.servicePrincipalTenantId }}
   
   # GUID below is for Azure DevOps: https://learn.microsoft.com/en-us/azure/devops/organizations/accounts/manage-personal-access-tokens-via-api?view=azure-devops
   - name: Fetch Token
