@@ -47,7 +47,8 @@ jobs:
         packageFolder: ${{ github.workspace }}/packages
         packagePat: ${{ secrets.PACKAGING_TOKEN }}
         packageVersion: ${{ steps.version.outputs.nuGetVersion }}
-        symbolsPat: ${{ secrets.SYMBOLS_TOKEN }}
+        servicePrincipalClientId: ${{ secrets.CLIENT_ID }}
+        servicePrincipalTenantId: ${{ secrets.TENANT_ID }}
 
     - name: Release
       uses: ./.github/actions/github-release
