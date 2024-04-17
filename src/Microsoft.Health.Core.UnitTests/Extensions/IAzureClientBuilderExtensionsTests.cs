@@ -5,7 +5,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Globalization;
 using System.Linq;
 using System.Reflection;
 using Azure.Core;
@@ -20,6 +19,7 @@ using Xunit;
 
 namespace Microsoft.Health.Core.UnitTests.Extensions;
 
+[Obsolete("The retry behavior for IMDS has been improved in Azure.Identity and prevents overriding MaxRetries.")]
 public class IAzureClientBuilderExtensionsTests
 {
     private static readonly Assembly AzureCoreAssembly = typeof(TokenCredential).Assembly;
@@ -29,15 +29,15 @@ public class IAzureClientBuilderExtensionsTests
     public void GivenNoConfiguration_WhenConfiguringManagedIdentity_ThenUseDefaults()
     {
         string clientId = Guid.NewGuid().ToString();
-        RetryOptions expectedOptions = CreateRetryOptions();
+        RetryOptions expectedOptions = CreateRetryOptions(isManagedIdentity: true);
 
         IConfiguration config = new ConfigurationBuilder()
-            .AddInMemoryCollection(new KeyValuePair<string, string>[]
-            {
+            .AddInMemoryCollection(
+            [
                 new KeyValuePair<string, string>("serviceUri", "https://127.0.0.1:10000/devstoreaccount1"),
                 new KeyValuePair<string, string>("clientId", clientId),
                 new KeyValuePair<string, string>("credential", "managedidentity"),
-            })
+            ])
             .Build();
 
         ManagedIdentityCredential actualCredential = AssertTokenCredential<ManagedIdentityCredential>(config);
@@ -52,21 +52,22 @@ public class IAzureClientBuilderExtensionsTests
         RetryOptions expectedOptions = CreateRetryOptions(
             delay: TimeSpan.FromSeconds(2),
             maxDelay: TimeSpan.FromMinutes(1),
-            maxRetries: 12,
-            networkTimeout: TimeSpan.FromMinutes(5));
+            maxRetries: null, // This value is overridden by Azure.Identity for ManagedIdentityCredential to 5
+            networkTimeout: TimeSpan.FromMinutes(5),
+            isManagedIdentity: true);
 
         IConfiguration config = new ConfigurationBuilder()
-            .AddInMemoryCollection(new KeyValuePair<string, string>[]
-            {
+            .AddInMemoryCollection(
+            [
                 new KeyValuePair<string, string>("serviceUri", "https://127.0.0.1:10000/devstoreaccount1"),
                 new KeyValuePair<string, string>("clientId", clientId),
                 new KeyValuePair<string, string>("credential", "managedidentity"),
                 new KeyValuePair<string, string>($"credentialRetry:{nameof(RetryOptions.Delay)}", expectedOptions.Delay.ToString()),
                 new KeyValuePair<string, string>($"credentialRetry:{nameof(RetryOptions.MaxDelay)}", expectedOptions.MaxDelay.ToString()),
-                new KeyValuePair<string, string>($"credentialRetry:{nameof(RetryOptions.MaxRetries)}", expectedOptions.MaxRetries.ToString(CultureInfo.InvariantCulture)),
+                new KeyValuePair<string, string>($"credentialRetry:{nameof(RetryOptions.MaxRetries)}", "12"),
                 new KeyValuePair<string, string>($"credentialRetry:{nameof(RetryOptions.Mode)}", expectedOptions.Mode.ToString()),
                 new KeyValuePair<string, string>($"credentialRetry:{nameof(RetryOptions.NetworkTimeout)}", expectedOptions.NetworkTimeout.ToString()),
-            })
+            ])
             .Build();
 
         ManagedIdentityCredential actualCredential = AssertTokenCredential<ManagedIdentityCredential>(config);
@@ -77,16 +78,16 @@ public class IAzureClientBuilderExtensionsTests
     [Fact]
     public void GivenOtherCredentialType_WhenConfiguringCredential_ThenSkipAndUseDefaults()
     {
-        RetryOptions expectedOptions = CreateRetryOptions();
+        RetryOptions expectedOptions = CreateRetryOptions(isManagedIdentity: false);
 
         IConfiguration config = new ConfigurationBuilder()
-            .AddInMemoryCollection(new KeyValuePair<string, string>[]
-            {
+            .AddInMemoryCollection(
+            [
                 new KeyValuePair<string, string>("serviceUri", "https://127.0.0.1:10000/devstoreaccount1"),
                 new KeyValuePair<string, string>("clientId", Guid.NewGuid().ToString()),
                 new KeyValuePair<string, string>($"credentialRetry:{nameof(RetryOptions.Delay)}", "00:52:00"),
                 new KeyValuePair<string, string>($"credentialRetry:{nameof(RetryOptions.MaxRetries)}", "17"),
-            })
+            ])
             .Build();
 
         DefaultAzureCredential actualCredential = AssertTokenCredential<DefaultAzureCredential>(config);
@@ -96,14 +97,18 @@ public class IAzureClientBuilderExtensionsTests
     private static RetryOptions CreateRetryOptions(
             TimeSpan? delay = null,
             TimeSpan? maxDelay = null,
-            int maxRetries = 3,
+            int? maxRetries = null,
             RetryMode mode = RetryMode.Exponential,
-            TimeSpan? networkTimeout = null)
+            TimeSpan? networkTimeout = null,
+            bool isManagedIdentity = false)
     {
+        // Note: By default, the Azure.Identity library uses 5 retries for IMDS
+        int defaultRetries = isManagedIdentity ? 5 : 3;
+
         var options = Activator.CreateInstance(typeof(RetryOptions), nonPublic: true) as RetryOptions;
         options.Delay = delay ?? TimeSpan.FromSeconds(0.8);
         options.MaxDelay = maxDelay ?? TimeSpan.FromMinutes(1);
-        options.MaxRetries = maxRetries;
+        options.MaxRetries = maxRetries.HasValue ? maxRetries.GetValueOrDefault() : defaultRetries;
         options.Mode = mode;
         options.NetworkTimeout = networkTimeout ?? TimeSpan.FromSeconds(100);
 
@@ -155,7 +160,7 @@ public class IAzureClientBuilderExtensionsTests
             .GetValue(httpPipeline);
 
         // Validate RetryPolicy
-        var actualRetryPolicy = policies.ToArray().Single(x => x.GetType() == typeof(RetryPolicy)) as RetryPolicy;
+        var actualRetryPolicy = policies.ToArray().Single(x => x.GetType().IsAssignableTo(typeof(RetryPolicy))) as RetryPolicy;
         var delayStrategy = typeof(RetryPolicy)
             .GetField("_delayStrategy", BindingFlags.NonPublic | BindingFlags.Instance)
             .GetValue(actualRetryPolicy) as DelayStrategy;
