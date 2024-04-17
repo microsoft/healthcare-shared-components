@@ -36,6 +36,7 @@ public static class IAzureClientBuilderExtensions
     /// <exception cref="ArgumentNullException">
     /// <paramref name="builder"/> or <paramref name="configuration"/> is <see langword="null"/>.
     /// </exception>
+    [Obsolete("The retry behavior for IMDS has been improved in Azure.Identity and prevents overriding MaxRetries.")]
     public static IAzureClientBuilder<TClient, TOptions> WithRetryableCredential<TClient, TOptions>(
         this IAzureClientBuilder<TClient, TOptions> builder,
         IConfiguration configuration)
