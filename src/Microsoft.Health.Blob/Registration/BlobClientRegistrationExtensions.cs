@@ -17,7 +17,6 @@ using Microsoft.Extensions.Options;
 using Microsoft.Health.Blob.Configs;
 using Microsoft.Health.Blob.Features.Storage;
 using Microsoft.Health.Blob.Registration;
-using Microsoft.Health.Core.Extensions;
 using Microsoft.IO;
 
 namespace Microsoft.Extensions.DependencyInjection;
@@ -125,8 +124,7 @@ public static class BlobClientRegistrationExtensions
                 IAzureClientBuilder<BlobServiceClient, BlobClientOptions> clientBuilder;
                 if (string.IsNullOrWhiteSpace(options.ConnectionString) && options.ServiceUri == null)
                 {
-                    clientBuilder = builder
-                        .AddBlobServiceClient(BlobLocalEmulator.ConnectionString);
+                    clientBuilder = builder.AddBlobServiceClient(BlobLocalEmulator.ConnectionString);
                 }
                 else if (string.Equals(options.Credential, "managedidentity", StringComparison.OrdinalIgnoreCase))
                 {
@@ -138,9 +136,7 @@ public static class BlobClientRegistrationExtensions
                 }
                 else
                 {
-                    clientBuilder = builder
-                        .AddBlobServiceClient(configuration)
-                        .WithRetryableCredential(configuration);
+                    clientBuilder = builder.AddBlobServiceClient(configuration);
                 }
 
                 // Add optional BlobClientOptions
