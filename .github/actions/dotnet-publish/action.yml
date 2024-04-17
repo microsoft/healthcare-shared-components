@@ -15,12 +15,6 @@ inputs:
   packageVersion:
     description: The NuGet package version
     required: true
-  servicePrincipalClientId:
-    description: The client ID for the service principal used to push artifacts.
-    required: true
-  servicePrincipalTenantId:
-    description: The tenant ID for the service principal used to push artifacts.
-    required: true
   symbolsAccountName:
     default: microsofthealthoss
     description: The Azure DevOps account name containing the symbol server
@@ -45,13 +39,6 @@ runs:
       name: packages
       path: ${{ inputs.packageFolder }}
 
-  - name: az login
-    uses: azure/login@v2
-    with:
-      allow-no-subscriptions: true
-      client-id: ${{ inputs.servicePrincipalClientId }}
-      tenant-id: ${{ inputs.servicePrincipalTenantId }}
-  
   # GUID below is for Azure DevOps: https://learn.microsoft.com/en-us/azure/devops/organizations/accounts/manage-personal-access-tokens-via-api?view=azure-devops
   - name: Fetch Token
     id: az-account
