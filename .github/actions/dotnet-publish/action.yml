@@ -12,19 +12,19 @@ inputs:
   packageFolder:
     description: The folder for generated NuGet packages
     required: true
-  packagePat:
-    description: Personal Access Token (PAT) with permission to write packages
-    required: true
   packageVersion:
     description: The NuGet package version
+    required: true
+  servicePrincipalClientId:
+    description: The client ID for the service principal used to push artifacts.
+    required: true
+  servicePrincipalTenantId:
+    description: The tenant ID for the service principal used to push artifacts.
     required: true
   symbolsAccountName:
     default: microsofthealthoss
     description: The Azure DevOps account name containing the symbol server
     required: false
-  symbolsPat:
-    description: Personal Access Token (PAT) with permission to write symbols
-    required: true
 
 runs:
   using: composite
@@ -45,12 +45,30 @@ runs:
       name: packages
       path: ${{ inputs.packageFolder }}
 
+  - name: az login
+    uses: azure/login@v2
+    with:
+      allow-no-subscriptions: true
+      client-id: ${{ inputs.servicePrincipalClientId }}
+      tenant-id: ${{ inputs.servicePrincipalTenantId }}
+  
+  # GUID below is for Azure DevOps: https://learn.microsoft.com/en-us/azure/devops/organizations/accounts/manage-personal-access-tokens-via-api?view=azure-devops
+  - name: Fetch Token
+    id: az-account
+    uses: azure/CLI@v2
+    with:
+      azcliversion: latest
+      inlineScript: |
+        token=$(az account get-access-token --resource 499b84ac-1321-427f-aa17-267ca6975798 --query accessToken --output tsv)
+        echo "::add-mask::$token"
+        echo "access-token=$token" >> "$GITHUB_OUTPUT"
+
   - name: Authenticate NuGet
     uses: actions/setup-dotnet@v4
     with:
       source-url: '${{ inputs.nugetFeed }}'
     env:
-      NUGET_AUTH_TOKEN: ${{ inputs.packagePat }}
+      NUGET_AUTH_TOKEN: ${{ steps.az-account.outputs.access-token }}
 
   - name: dotnet nuget push
     shell: bash
@@ -60,5 +78,5 @@ runs:
     uses: microsoft/action-publish-symbols@v2.1.6
     with:
       accountName: ${{ inputs.symbolsAccountName }}
-      personalAccessToken: ${{ inputs.symbolsPat }}
+      personalAccessToken: ${{ steps.az-account.outputs.access-token }}
       symbolServiceUrl: 'https://artifacts.dev.azure.com'
