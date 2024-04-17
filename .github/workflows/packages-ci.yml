@@ -41,15 +41,19 @@ jobs:
         fileVersion: ${{ steps.version.outputs.fileVersion }}
         informationalVersion: ${{ steps.version.outputs.informationalVersion }}
 
+    - name: Login
+      uses: azure/login@v2
+      with:
+        allow-no-subscriptions: true
+        client-id: ${{ secrets.CLIENT_ID }}
+        tenant-id: ${{ secrets.TENANT_ID }}
+
     - name: Publish
       uses: ./.github/actions/dotnet-publish
       with:
         buildConfiguration: Release
         packageFolder: ${{ github.workspace }}/packages
-        packagePat: ${{ secrets.PACKAGING_TOKEN }}
         packageVersion: ${{ steps.version.outputs.nuGetVersion }}
-        servicePrincipalClientId: ${{ secrets.CLIENT_ID }}
-        servicePrincipalTenantId: ${{ secrets.TENANT_ID }}
 
     - name: Release
       uses: ./.github/actions/github-release
