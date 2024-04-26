@@ -1,9 +1,9 @@
 <Project>
 
   <ItemGroup>
-    <PackageVersion Include="Azure.Core" Version="1.38.0" />
-    <PackageVersion Include="Azure.Identity" Version="1.10.4" />
-    <PackageVersion Include="Azure.Messaging.EventGrid" Version="4.23.0" />
+    <PackageVersion Include="Azure.Core" Version="1.39.0" />
+    <PackageVersion Include="Azure.Identity" Version="1.11.2" />
+    <PackageVersion Include="Azure.Messaging.EventGrid" Version="4.24.0" />
     <PackageVersion Include="Azure.Security.KeyVault.Keys" Version="4.6.0" />
     <PackageVersion Include="Azure.Storage.Blobs" Version="12.19.1" />
     <PackageVersion Include="Azure.Storage.Common" Version="12.18.1" />
@@ -20,14 +20,14 @@
     <PackageVersion Include="Microsoft.AspNetCore.TestHost" Version="$(SdkPackageVersion)" />
     <PackageVersion Include="Microsoft.Azure.DurableTask.Core" Version="2.16.2" />
     <PackageVersion Include="Microsoft.Azure.Functions.Extensions" Version="1.1.0" />
-    <PackageVersion Include="Microsoft.Azure.Functions.Worker" Version="1.21.0" />
-    <PackageVersion Include="Microsoft.Azure.Functions.Worker.Extensions.DurableTask" Version="1.1.1" />
+    <PackageVersion Include="Microsoft.Azure.Functions.Worker" Version="1.22.0" />
+    <PackageVersion Include="Microsoft.Azure.Functions.Worker.Extensions.DurableTask" Version="1.1.2" />
     <PackageVersion Include="Microsoft.Azure.Functions.Worker.Extensions.Timer" Version="4.3.0" />
     <PackageVersion Include="Microsoft.Azure.Functions.Worker.Sdk" Version="1.17.1" />
     <PackageVersion Include="Microsoft.Azure.WebJobs" Version="3.0.39" />
     <PackageVersion Include="Microsoft.Azure.WebJobs.Core" Version="3.0.39" />
     <PackageVersion Include="Microsoft.Azure.WebJobs.Extensions" Version="5.0.0" />
-    <PackageVersion Include="Microsoft.Azure.WebJobs.Extensions.DurableTask" Version="2.13.1" />
+    <PackageVersion Include="Microsoft.Azure.WebJobs.Extensions.DurableTask" Version="2.13.2" />
     <PackageVersion Include="Microsoft.Azure.WebJobs.Host.Storage" Version="5.0.0" />
     <PackageVersion Include="Microsoft.Build.Framework" Version="17.9.5" />
     <PackageVersion Include="Microsoft.Build.Utilities.Core" Version="17.9.5" />
@@ -36,9 +36,9 @@
     <PackageVersion Include="Microsoft.CodeAnalysis.CSharp.Workspaces" Version="4.9.2" />
     <PackageVersion Include="Microsoft.Data.SqlClient" Version="5.2.0" />
     <PackageVersion Include="Microsoft.DurableTask.Abstractions" Version="1.2.2" />
-    <PackageVersion Include="Microsoft.DurableTask.Client" Version="1.2.0" />
+    <PackageVersion Include="Microsoft.DurableTask.Client" Version="1.2.2" />
     <PackageVersion Include="Microsoft.DurableTask.Client.OrchestrationServiceClientShim" Version="1.0.5" />
-    <PackageVersion Include="Microsoft.Extensions.Azure" Version="1.7.2" />
+    <PackageVersion Include="Microsoft.Extensions.Azure" Version="1.7.3" />
     <PackageVersion Include="Microsoft.Extensions.Configuration" Version="$(SdkPackageVersion)" />
     <PackageVersion Include="Microsoft.Extensions.Configuration.Abstractions" Version="$(SdkPackageVersion)" />
     <PackageVersion Include="Microsoft.Extensions.Configuration.CommandLine" Version="$(SdkPackageVersion)" />
@@ -61,9 +61,9 @@
     <PackageVersion Include="Microsoft.Extensions.Options.ConfigurationExtensions" Version="$(SdkPackageVersion)" />
     <PackageVersion Include="Microsoft.Extensions.Primitives" Version="$(SdkPackageVersion)" />
     <PackageVersion Include="Microsoft.Extensions.TimeProvider.Testing" Version="$(SdkPackageVersion)" />
-    <PackageVersion Include="Microsoft.IdentityModel.JsonWebTokens" Version="7.5.0" />
-    <PackageVersion Include="Microsoft.IdentityModel.Protocols.OpenIdConnect" Version="7.5.0" />
-    <PackageVersion Include="Microsoft.IdentityModel.Tokens" Version="7.5.0" />
+    <PackageVersion Include="Microsoft.IdentityModel.JsonWebTokens" Version="7.5.1" />
+    <PackageVersion Include="Microsoft.IdentityModel.Protocols.OpenIdConnect" Version="7.5.1" />
+    <PackageVersion Include="Microsoft.IdentityModel.Tokens" Version="7.5.1" />
     <PackageVersion Include="Microsoft.IO.RecyclableMemoryStream" Version="3.0.0" />
     <PackageVersion Include="Microsoft.NET.Sdk.Functions" Version="4.3.0" />
     <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="17.9.0" />
@@ -81,11 +81,11 @@
     <PackageVersion Include="System.Drawing.Common" Version="$(SdkPackageVersion)" />
     <PackageVersion Include="System.Linq.Async" Version="6.0.1" />
     <PackageVersion Include="System.Text.Json" Version="$(SdkPackageVersion)" />
-    <PackageVersion Include="xunit" Version="2.7.0" />
-    <PackageVersion Include="xunit.assert" Version="2.7.0" />
-    <PackageVersion Include="Xunit.DependencyInjection" Version="9.0.1" />
-    <PackageVersion Include="xunit.extensibility.core" Version="2.7.0" />
-    <PackageVersion Include="xunit.runner.visualstudio" Version="2.5.7" />
+    <PackageVersion Include="xunit" Version="2.7.1" />
+    <PackageVersion Include="xunit.assert" Version="2.7.1" />
+    <PackageVersion Include="Xunit.DependencyInjection" Version="9.2.1" />
+    <PackageVersion Include="xunit.extensibility.core" Version="2.7.1" />
+    <PackageVersion Include="xunit.runner.visualstudio" Version="2.5.8" />
   </ItemGroup>
 
 </Project>
