@@ -12,7 +12,7 @@ using System.Threading.Tasks;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.DurableTask;
 using Microsoft.DurableTask.Client;
-using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Time.Testing;
 using Microsoft.Health.Operations.Functions.Worker.Management;
@@ -27,6 +27,7 @@ public class PurgeOrchestrationInstanceHistoryTests
     private readonly TimerInfo _timer;
     private readonly PurgeHistoryOptions _purgeConfig;
     private readonly DurableTaskClient _durableClient;
+    private readonly FunctionContext _context;
     private readonly PurgeOrchestrationInstanceHistory _purgeTask;
 
     private static readonly DateTimeOffset UtcNow = DateTimeOffset.UtcNow;
@@ -41,6 +42,12 @@ public class PurgeOrchestrationInstanceHistoryTests
         };
         _durableClient = Substitute.For<DurableTaskClient>("TestTaskHub");
         _purgeTask = new PurgeOrchestrationInstanceHistory(Options.Create(_purgeConfig), _timeProvider);
+        _context = Substitute.For<FunctionContext>();
+        _context
+            .InstanceServices
+            .Returns(new ServiceCollection()
+                .AddLogging()
+                .BuildServiceProvider());
     }
 
     [Theory]
@@ -61,15 +68,14 @@ public class PurgeOrchestrationInstanceHistoryTests
             .PurgeInstanceAsync(default!, default, default)
             .ReturnsForAnyArgs(cxt => new PurgeResult(1));
 
-        using CancellationTokenSource cts = new();
-        await _purgeTask.Run(_timer, _durableClient, NullLogger.Instance, cts.Token);
+        await _purgeTask.Run(_timer, _durableClient, _context);
 
         _durableClient
             .Received(1)
             .GetAllInstancesAsync(Arg.Is<OrchestrationQuery?>(x => IsExpectedQuery(x!)));
 
         foreach (string id in instances.Select(x => x.InstanceId))
-            await _durableClient.Received(1).PurgeInstanceAsync(id, Arg.Is<PurgeInstanceOptions>(x => x.Recursive), cts.Token);
+            await _durableClient.Received(1).PurgeInstanceAsync(id, Arg.Is<PurgeInstanceOptions>(x => x.Recursive), _context.CancellationToken);
     }
 
     [Fact]
@@ -96,8 +102,7 @@ public class PurgeOrchestrationInstanceHistoryTests
             .PurgeInstanceAsync(default!, default, default)
             .ReturnsForAnyArgs(cxt => new PurgeResult(1));
 
-        using CancellationTokenSource cts = new();
-        await _purgeTask.Run(_timer, _durableClient, NullLogger.Instance, cts.Token);
+        await _purgeTask.Run(_timer, _durableClient, _context);
 
         _durableClient
             .Received(1)
@@ -105,7 +110,7 @@ public class PurgeOrchestrationInstanceHistoryTests
 
         await _durableClient
             .Received(1)
-            .PurgeInstanceAsync(instanceId1, Arg.Is<PurgeInstanceOptions>(x => x.Recursive), cts.Token);
+            .PurgeInstanceAsync(instanceId1, Arg.Is<PurgeInstanceOptions>(x => x.Recursive), _context.CancellationToken);
 
         await _durableClient
             .DidNotReceive()

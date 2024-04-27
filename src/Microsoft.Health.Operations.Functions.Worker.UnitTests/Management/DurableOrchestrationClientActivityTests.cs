@@ -10,8 +10,6 @@ using Microsoft.Azure.Functions.Worker;
 using Microsoft.DurableTask;
 using Microsoft.DurableTask.Client;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Health.Operations.Functions.Management;
 using Microsoft.Health.Operations.Functions.Worker.Management;
 using NSubstitute;
@@ -29,7 +27,7 @@ public class DurableOrchestrationClientActivityTests
         _context
             .InstanceServices
             .Returns(new ServiceCollection()
-                .AddSingleton<ILoggerFactory>(NullLoggerFactory.Instance)
+                .AddLogging()
                 .BuildServiceProvider());
     }
 
