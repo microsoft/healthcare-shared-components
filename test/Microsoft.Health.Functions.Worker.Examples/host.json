@@ -10,7 +10,7 @@
     "LogLevel": {
       "default": "Information",
       "DurableTask": "Warning",
-      "Function": "Warning",
+      "Function": "Information",
       "Function.*.User": "Information",
       "Host": "Warning"
     }

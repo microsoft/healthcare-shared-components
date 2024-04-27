@@ -1,4 +1,9 @@
 {
+  "Logging": {
+    "LogLevel": {
+      "default": "Information"
+    }
+  },
   "PurgeHistory": {
     "MinimumAgeDays": 7,
     "Statuses": [ "Completed" ]

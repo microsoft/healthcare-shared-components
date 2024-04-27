@@ -2,7 +2,6 @@
   "IsEncrypted": false,
   "Values": {
     "AzureWebJobsStorage": "UseDevelopmentStorage=true",
-    "FUNCTIONS_WORKER_RUNTIME": "dotnet-isolated",
-    "PurgeHistory__Frequency": "0 0 * * *"
+    "FUNCTIONS_WORKER_RUNTIME": "dotnet-isolated"
   }
 }

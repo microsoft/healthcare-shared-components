@@ -37,14 +37,6 @@ public class PurgeHistoryOptions
     public int MinimumAgeDays { get; set; } = 30;
 
     /// <summary>
-    /// Gets or sets the cron expression that indicates how frequently orchestration
-    /// instance metadata should be deleted.
-    /// </summary>
-    /// <value>A value cron expression</value>
-    [Required]
-    public string? Frequency { get; set; }
-
-    /// <summary>
     ///  Gets or sets the collection of orchestration names which should be skipped for cleanup
     /// </summary>
     /// <value>A set of one or more <see cref="string"/></value>
