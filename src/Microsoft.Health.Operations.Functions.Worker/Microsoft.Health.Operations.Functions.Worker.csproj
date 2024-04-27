@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <Description>Common utilities and Azure Functions Isolated Workers for long-running operations used by Microsoft Health.</Description>
+    <Description>Common utilities and isolated worker Azure Functions for long-running operations used by Microsoft Health.</Description>
     <TargetFrameworks>$(LatestVersion)</TargetFrameworks>
     <Nullable>enable</Nullable>
   </PropertyGroup>

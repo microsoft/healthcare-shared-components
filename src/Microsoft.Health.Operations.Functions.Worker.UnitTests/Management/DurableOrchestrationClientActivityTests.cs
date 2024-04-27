@@ -6,8 +6,11 @@
 using System;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Azure.Functions.Worker;
 using Microsoft.DurableTask;
 using Microsoft.DurableTask.Client;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Health.Operations.Functions.Management;
 using Microsoft.Health.Operations.Functions.Worker.Management;
@@ -18,22 +21,32 @@ namespace Microsoft.Health.Operations.Functions.Worker.UnitTests.Management;
 
 public class DurableOrchestrationClientActivityTests
 {
+    private readonly FunctionContext _context;
+
+    public DurableOrchestrationClientActivityTests()
+    {
+        _context = Substitute.For<FunctionContext>();
+        _context
+            .InstanceServices
+            .Returns(new ServiceCollection()
+                .AddSingleton<ILoggerFactory>(NullLoggerFactory.Instance)
+                .BuildServiceProvider());
+    }
+
     [Fact]
     public async Task GivenNoInstance_WhenQueryingInstance_ThenReturnNull()
     {
         // Arrange input
         string instanceId = OperationId.Generate();
-        TaskActivityContext context = Substitute.For<TaskActivityContext>();
-        DurableTaskClient client = Substitute.For<DurableTaskClient>("TestTaskHub");
         GetInstanceOptions options = new() { GetInputsAndOutputs = true };
+        DurableTaskClient client = Substitute.For<DurableTaskClient>("TestTaskHub");
 
         // Note: Returning null shouldn't be possible in practice
-        context.InstanceId.Returns(instanceId);
         client.GetInstanceAsync(default!, default, default).ReturnsForAnyArgs(Task.FromResult<OrchestrationMetadata?>(null));
 
         // Call activity
         using CancellationTokenSource cts = new();
-        OrchestrationInstanceMetadata? actual = await DurableTaskClientActivity.GetInstanceAsync(context, client, options, NullLogger.Instance, cts.Token);
+        OrchestrationInstanceMetadata? actual = await DurableTaskClientActivity.GetInstanceAsync(options, client, _context, instanceId, cts.Token);
 
         // Assert behavior
         Assert.Null(actual);
@@ -68,7 +81,7 @@ public class DurableOrchestrationClientActivityTests
 
         // Call activity
         using CancellationTokenSource cts = new();
-        OrchestrationInstanceMetadata? actual = await DurableTaskClientActivity.GetInstanceAsync(context, client, options, NullLogger.Instance, cts.Token);
+        OrchestrationInstanceMetadata? actual = await DurableTaskClientActivity.GetInstanceAsync(options, client, _context, instanceId, cts.Token);
 
         // Assert behavior
         AssertEqual(expected, actual);

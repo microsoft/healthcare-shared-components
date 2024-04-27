@@ -3,39 +3,65 @@
 // Licensed under the MIT License (MIT). See LICENSE in the repo root for license information.
 // -------------------------------------------------------------------------------------------------
 
+using System;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.DurableTask.Client;
 using Microsoft.Health.Functions.Worker.Examples.Sorting;
 using Microsoft.Health.Operations.Functions.Worker.DurableTask;
+using Polly;
+using Polly.Retry;
+using Polly.Timeout;
 using Xunit;
+using Xunit.Abstractions;
 
 namespace Microsoft.Health.Functions.Worker.Tests.Integration;
 
-public class DurableFunctionsTest()
+public class DurableFunctionsTest : IClassFixture<FunctionsCoreToolsTestFixture>
 {
-    private readonly DurableTaskClient _durableClient = null!;
+    private readonly FunctionsCoreToolsTestFixture _fixture;
+    private readonly ITestOutputHelper _outputHelper;
+    private readonly ResiliencePipeline<OrchestrationMetadata?> _pipeline;
 
-    [Fact(Skip = "The fixture needs to be implemented to run this locally.")]
+    public DurableFunctionsTest(FunctionsCoreToolsTestFixture fixture, ITestOutputHelper outputHelper)
+    {
+        ArgumentNullException.ThrowIfNull(fixture);
+        ArgumentNullException.ThrowIfNull(outputHelper);
+
+        _fixture = fixture;
+        _outputHelper = outputHelper;
+        _pipeline = new ResiliencePipelineBuilder<OrchestrationMetadata?>()
+            .AddTimeout(new TimeoutStrategyOptions { Timeout = TimeSpan.FromSeconds(30) })
+            .AddRetry(new RetryStrategyOptions<OrchestrationMetadata?>
+            {
+                Delay = TimeSpan.FromSeconds(1),
+                MaxRetryAttempts = int.MaxValue,
+                ShouldHandle = new PredicateBuilder<OrchestrationMetadata?>()
+                    .HandleResult(m =>
+                        !_fixture.Host.HasExited &&
+                        m is not null &&
+                        m.RuntimeStatus.IsInProgress()),
+            })
+            .Build();
+    }
+
+    [Fact]
     public async Task GivenOrchestration_WhenStarting_ThenCompleteSuccessfully()
     {
-        string instanceId = await _durableClient
-            .ScheduleNewOrchestrationInstanceAsync(
-                nameof(DistributedSorter.InsertionSortAsync),
-                new SortingInput([3, 4, 1, 5, 4, 2]));
+        _fixture.StartProcess(_outputHelper);
 
-        OrchestrationMetadata? status = await _durableClient.GetInstanceAsync(instanceId);
-        while (status is not null && status.RuntimeStatus.IsInProgress())
-        {
-            await Task.Delay(1000);
-            status = await _durableClient.GetInstanceAsync(instanceId);
-        }
+        string instanceId = await _fixture.DurableClient.ScheduleNewOrchestrationInstanceAsync(
+            nameof(DistributedSorter.InsertionSortAsync),
+            new SortingInput([3, 4, 1, 5, 4, 2]));
 
-        Assert.NotNull(status);
-        Assert.Equal(OrchestrationRuntimeStatus.Completed, status.RuntimeStatus);
+        OrchestrationMetadata? metadata = await _pipeline
+            .ExecuteAsync(async t => await _fixture.DurableClient.GetInstanceAsync(instanceId, getInputsAndOutputs: true, cancellation: t));
 
-        int[]? actual = status.ReadOutputAs<int[]>();
+        Assert.NotNull(metadata);
+        Assert.Equal(OrchestrationRuntimeStatus.Completed, metadata.RuntimeStatus);
+
+        int[]? actual = metadata.ReadOutputAs<int[]>();
         Assert.NotNull(actual);
-        Assert.True(actual!.SequenceEqual([5, 4, 4, 3, 2, 1]));
+        Assert.True(actual!.SequenceEqual([5, 4, 4, 3, 2, 1]), $"Received {string.Join(", ", actual)}");
     }
 }

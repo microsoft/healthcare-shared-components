@@ -59,6 +59,7 @@
     <PackageVersion Include="Microsoft.Extensions.Logging.Console" Version="$(SdkPackageVersion)" />
     <PackageVersion Include="Microsoft.Extensions.Options" Version="$(SdkPackageVersion)" />
     <PackageVersion Include="Microsoft.Extensions.Options.ConfigurationExtensions" Version="$(SdkPackageVersion)" />
+    <PackageVersion Include="Microsoft.Extensions.Options.DataAnnotations" Version="$(SdkPackageVersion)" />
     <PackageVersion Include="Microsoft.Extensions.Primitives" Version="$(SdkPackageVersion)" />
     <PackageVersion Include="Microsoft.Extensions.TimeProvider.Testing" Version="$(SdkPackageVersion)" />
     <PackageVersion Include="Microsoft.IdentityModel.JsonWebTokens" Version="7.5.1" />

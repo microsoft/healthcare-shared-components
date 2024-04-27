@@ -15,12 +15,9 @@ using Microsoft.Health.Operations.Functions.Worker.DurableTask;
 
 namespace Microsoft.Health.Functions.Worker.Examples.Sorting;
 
-public class DistributedSorter
+public class DistributedSorter(IOptions<SortingOptions> options)
 {
-    private readonly SortingOptions _options;
-
-    public DistributedSorter(IOptions<SortingOptions> options)
-        => _options = EnsureArg.IsNotNull(options?.Value, nameof(options));
+    private readonly SortingOptions _options = EnsureArg.IsNotNull(options?.Value, nameof(options));
 
     [Function(nameof(InsertionSortAsync))]
     public async Task<IReadOnlyList<int>> InsertionSortAsync(
@@ -64,10 +61,9 @@ public class DistributedSorter
     }
 
     [Function(nameof(SortRange))]
-    public Task<int[]> SortRange([ActivityTrigger] int[] values, ILogger logger)
+    public Task<int[]> SortRange([ActivityTrigger] int[] values)
     {
         EnsureArg.IsNotNull(values, nameof(values));
-        EnsureArg.IsNotNull(logger, nameof(logger));
 
         Comparer<int> comparer = _options.GetComparer();
 

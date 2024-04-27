@@ -7,7 +7,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using EnsureThat;
 using Microsoft.Azure.Functions.Worker;
-using Microsoft.DurableTask;
 using Microsoft.DurableTask.Client;
 using Microsoft.Extensions.Logging;
 using Microsoft.Health.Operations.Functions.Management;
@@ -22,10 +21,10 @@ public static class DurableTaskClientActivity
     /// <summary>
     /// Asynchronously retrieves the status of a given operation ID.
     /// </summary>
-    /// <param name="context">The context for the activity.</param>
-    /// <param name="client">A client for interacting with the durable task framework.</param>
     /// <param name="options">The options for fetching the status.</param>
-    /// <param name="logger">A diagnostic logger.</param>
+    /// <param name="client">A client for interacting with the durable task framework.</param>
+    /// <param name="context">The context for the activity.</param>
+    /// <param name="instanceId">The instance ID for the orchestration that invoked the activity.</param>
     /// <param name="cancellationToken">An optional token for cancellation.</param>
     /// <returns>
     /// A task representing the <see cref="GetInstanceAsync"/> operation.
@@ -34,19 +33,20 @@ public static class DurableTaskClientActivity
     /// </returns>
     [Function(nameof(GetInstanceAsync))]
     public static async Task<OrchestrationInstanceMetadata?> GetInstanceAsync(
-        TaskActivityContext context,
-        [DurableClient] DurableTaskClient client,
         [ActivityTrigger] GetInstanceOptions options,
-        ILogger logger,
+        [DurableClient] DurableTaskClient client,
+        FunctionContext context,
+        string instanceId,
         CancellationToken cancellationToken = default)
     {
         EnsureArg.IsNotNull(options, nameof(options));
-        EnsureArg.IsNotNull(context, nameof(context));
         EnsureArg.IsNotNull(client, nameof(client));
-        EnsureArg.IsNotNull(logger, nameof(logger));
+        EnsureArg.IsNotNull(context, nameof(context));
+        EnsureArg.IsNotNullOrWhiteSpace(instanceId, nameof(instanceId));
 
-        logger.LogInformation("Fetching status for orchestration instance ID '{InstanceId}'.", context.InstanceId);
-        OrchestrationMetadata? metadata = await client.GetInstanceAsync(context.InstanceId, options.GetInputsAndOutputs, cancellationToken).ConfigureAwait(false);
+        ILogger logger = context.GetLogger(typeof(DurableTaskClientActivity).FullName!);
+        logger.LogInformation("Fetching status for orchestration instance ID '{InstanceId}'.", instanceId);
+        OrchestrationMetadata? metadata = await client.GetInstanceAsync(instanceId, options.GetInputsAndOutputs, cancellationToken).ConfigureAwait(false);
 
         return metadata is null
             ? null

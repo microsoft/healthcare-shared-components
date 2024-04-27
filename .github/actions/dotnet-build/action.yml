@@ -26,6 +26,10 @@ runs:
         "-p:ContinuousIntegrationBuild=true;AssemblyVersion=${{ inputs.assemblyVersion }};FileVersion=${{ inputs.fileVersion }};InformationalVersion=${{ inputs.informationalVersion }}" \
         -warnaserror
 
+  - name: 'Install Azure Functions Core Tools'
+    shell: bash
+    run: npm i -g azure-functions-core-tools@4 --unsafe-perm true
+
   - name: 'Start Azurite'
     shell: bash
     run: docker run -p 10000:10000 -p 10001:10001 -p 10002:10002 -d --rm --name azure-storage mcr.microsoft.com/azure-storage/azurite:latest

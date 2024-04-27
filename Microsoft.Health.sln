@@ -111,7 +111,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Health.Functions.
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Health.Functions.Worker.Tests.Integration", "test\Microsoft.Health.Functions.Worker.Tests.Integration\Microsoft.Health.Functions.Worker.Tests.Integration.csproj", "{38338E0D-EAD9-4CA3-9E9C-24A39198D473}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.Health.Operations.Functions.Worker.UnitTests", "src\Microsoft.Health.Operations.Functions.Worker.UnitTests\Microsoft.Health.Operations.Functions.Worker.UnitTests.csproj", "{CEC706E1-BF17-4331-9F58-1E194CD230BF}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Health.Operations.Functions.Worker.UnitTests", "src\Microsoft.Health.Operations.Functions.Worker.UnitTests\Microsoft.Health.Operations.Functions.Worker.UnitTests.csproj", "{CEC706E1-BF17-4331-9F58-1E194CD230BF}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.Health.Operations.Functions.Worker.Testing", "Microsoft.Health.Operations.Functions.Worker.Testing\Microsoft.Health.Operations.Functions.Worker.Testing.csproj", "{932F18C6-83BE-43D7-9959-14364CF3D8F3}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -299,6 +301,10 @@ Global
 		{CEC706E1-BF17-4331-9F58-1E194CD230BF}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{CEC706E1-BF17-4331-9F58-1E194CD230BF}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{CEC706E1-BF17-4331-9F58-1E194CD230BF}.Release|Any CPU.Build.0 = Release|Any CPU
+		{932F18C6-83BE-43D7-9959-14364CF3D8F3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{932F18C6-83BE-43D7-9959-14364CF3D8F3}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{932F18C6-83BE-43D7-9959-14364CF3D8F3}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{932F18C6-83BE-43D7-9959-14364CF3D8F3}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -349,9 +355,10 @@ Global
 		{60413AE6-8C05-4C83-8769-71A6BF4DEAFC} = {CCD9FF99-E177-446E-B9E5-9F570FD96A34}
 		{38338E0D-EAD9-4CA3-9E9C-24A39198D473} = {CCD9FF99-E177-446E-B9E5-9F570FD96A34}
 		{CEC706E1-BF17-4331-9F58-1E194CD230BF} = {8AD2A324-DAB5-4380-94A5-31F7D817C384}
+		{932F18C6-83BE-43D7-9959-14364CF3D8F3} = {8AD2A324-DAB5-4380-94A5-31F7D817C384}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
-		SolutionGuid = {562bbd07-1817-4af5-ab66-8837cf849248}
 		RESX_SortFileContentOnSave = True
+		SolutionGuid = {562bbd07-1817-4af5-ab66-8837cf849248}
 	EndGlobalSection
 EndGlobal
