@@ -11,8 +11,8 @@
       "default": "Information",
       "DurableTask": "Warning",
       "Function": "Information",
-      "Function.*.User": "Information",
-      "Host": "Warning"
+      "Host": "Warning",
+      "Worker": "Information"
     }
   },
   "PurgeHistory": {
