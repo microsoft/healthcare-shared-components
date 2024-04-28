@@ -90,10 +90,10 @@ public class IDurableContextExtensionsTests
         context.InstanceId.Returns(operationId);
 
         context
-            .CallActivityAsync<DurableOrchestrationStatus>(
+            .CallActivityAsync<DurableOrchestrationMetadata>(
                 nameof(DurableOrchestrationClientActivity.GetInstanceStatusAsync),
                 Arg.Any<GetInstanceStatusOptions>())
-            .Returns(new DurableOrchestrationStatus { CreatedTime = expected });
+            .Returns(new DurableOrchestrationMetadata { CreatedTime = expected });
 
         // Invoke
         DateTime actual = await context.GetCreatedTimeAsync();
@@ -103,7 +103,7 @@ public class IDurableContextExtensionsTests
 
         await context
             .Received(1)
-            .CallActivityAsync<DurableOrchestrationStatus>(
+            .CallActivityAsync<DurableOrchestrationMetadata>(
                 nameof(DurableOrchestrationClientActivity.GetInstanceStatusAsync),
                 Arg.Any<GetInstanceStatusOptions>());
     }
@@ -123,11 +123,11 @@ public class IDurableContextExtensionsTests
         var options = new RetryOptions(TimeSpan.FromSeconds(5), 3);
 
         context
-            .CallActivityWithRetryAsync<DurableOrchestrationStatus>(
+            .CallActivityWithRetryAsync<DurableOrchestrationMetadata>(
                 nameof(DurableOrchestrationClientActivity.GetInstanceStatusAsync),
                 options,
                 Arg.Any<GetInstanceStatusOptions>())
-            .Returns(new DurableOrchestrationStatus { CreatedTime = expected });
+            .Returns(new DurableOrchestrationMetadata { CreatedTime = expected });
 
         // Invoke
         DateTime actual = await context.GetCreatedTimeAsync(options);
@@ -137,7 +137,7 @@ public class IDurableContextExtensionsTests
 
         await context
             .Received(1)
-            .CallActivityWithRetryAsync<DurableOrchestrationStatus>(
+            .CallActivityWithRetryAsync<DurableOrchestrationMetadata>(
                 nameof(DurableOrchestrationClientActivity.GetInstanceStatusAsync),
                 options,
                 Arg.Any<GetInstanceStatusOptions>());

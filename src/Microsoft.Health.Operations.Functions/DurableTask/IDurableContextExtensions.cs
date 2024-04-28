@@ -68,12 +68,12 @@ public static class IDurableContextExtensions
         // so this value can be preserved in the input or custom status
         EnsureArg.IsNotNull(context, nameof(context));
 
-        var input = new GetInstanceStatusOptions { ShowHistory = false, ShowHistoryOutput = false, ShowInput = false };
-        DurableOrchestrationStatus status = retryOptions is not null
-            ? await context.CallActivityWithRetryAsync<DurableOrchestrationStatus>(nameof(DurableOrchestrationClientActivity.GetInstanceStatusAsync), retryOptions, input)
-            : await context.CallActivityAsync<DurableOrchestrationStatus>(nameof(DurableOrchestrationClientActivity.GetInstanceStatusAsync), input);
+        var input = new GetInstanceStatusOptions { ShowHistory = false, GetInputsAndOutputs = false };
+        DurableOrchestrationMetadata metadata = retryOptions is not null
+            ? await context.CallActivityWithRetryAsync<DurableOrchestrationMetadata>(nameof(DurableOrchestrationClientActivity.GetInstanceStatusAsync), retryOptions, input)
+            : await context.CallActivityAsync<DurableOrchestrationMetadata>(nameof(DurableOrchestrationClientActivity.GetInstanceStatusAsync), input);
 
-        return status.CreatedTime;
+        return metadata.CreatedTime;
     }
 
     /// <summary>
@@ -100,7 +100,9 @@ public static class IDurableContextExtensions
     }
 
     private static Guid GetOperationId(string instanceId)
-        => Guid.TryParseExact(instanceId, OperationId.FormatSpecifier, out Guid operationId)
+    {
+        return Guid.TryParseExact(instanceId, OperationId.FormatSpecifier, out Guid operationId)
             ? operationId
             : throw new FormatException(string.Format(CultureInfo.CurrentCulture, FormatResources.InvalidInstanceId, instanceId));
+    }
 }

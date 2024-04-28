@@ -6,7 +6,7 @@
 namespace Microsoft.Health.Operations.Functions.Management;
 
 /// <summary>
-/// Represents the input to the <c>GetInstanceAsync</c> method as part of the new isolated worker APIs.
+/// Represents the input to the <see cref="DurableOrchestrationClientActivity.GetInstanceAsync" /> method as part of the new isolated worker APIs.
 /// </summary>
 public class GetInstanceOptions
 {

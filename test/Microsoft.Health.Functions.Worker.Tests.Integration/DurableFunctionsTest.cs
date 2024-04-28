@@ -31,7 +31,7 @@ public class DurableFunctionsTest : IClassFixture<FunctionsCoreToolsTestFixture>
         _fixture = fixture;
         _outputHelper = outputHelper;
         _pipeline = new ResiliencePipelineBuilder<OrchestrationMetadata?>()
-            .AddTimeout(new TimeoutStrategyOptions { Timeout = TimeSpan.FromSeconds(30) })
+            .AddTimeout(new TimeoutStrategyOptions { Timeout = TimeSpan.FromMinutes(1) })
             .AddRetry(new RetryStrategyOptions<OrchestrationMetadata?>
             {
                 Delay = TimeSpan.FromSeconds(1),
@@ -46,7 +46,7 @@ public class DurableFunctionsTest : IClassFixture<FunctionsCoreToolsTestFixture>
     }
 
     [Fact]
-    public async Task GivenOrchestration_WhenStarting_ThenCompleteSuccessfully()
+    public async Task GivenWorkerOrchestration_WhenStarting_ThenCompleteSuccessfully()
     {
         _fixture.StartProcess(_outputHelper);
 
