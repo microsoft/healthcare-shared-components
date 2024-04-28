@@ -6,14 +6,12 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.IO;
 using System.Reflection;
 using System.Threading.Tasks;
 using DurableTask.AzureStorage;
 using DurableTask.Core;
-using MartinCostello.Logging.XUnit;
 using Microsoft.DurableTask.Client;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -27,13 +25,10 @@ namespace Microsoft.Health.Functions.Worker.Tests.Integration;
 
 public class FunctionsCoreToolsTestFixture : IAsyncLifetime
 {
-    private readonly XUnitLogger _logger;
     private readonly IServiceProvider _serviceProvider;
 
     public FunctionsCoreToolsTestFixture(IMessageSink sink)
     {
-        _logger = new XUnitLogger(typeof(FunctionsCoreToolsTestFixture).FullName!, sink, new XUnitLoggerOptions());
-
         // Create the Durable Client
         IServiceCollection services = new ServiceCollection()
             .AddSingleton<IConfiguration>(new ConfigurationBuilder()
@@ -77,18 +72,10 @@ public class FunctionsCoreToolsTestFixture : IAsyncLifetime
 
     public Process Host { get; }
 
-    [SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "Skip any exceptions exiting the process.")]
     public Task DisposeAsync()
     {
-        try
-        {
-            if (!Host.HasExited)
-                Host.Kill(entireProcessTree: true);
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Caught exception while killing host process.");
-        }
+        if (!Host.HasExited)
+            Host.Kill(entireProcessTree: true);
 
         return Task.CompletedTask;
     }
@@ -102,8 +89,8 @@ public class FunctionsCoreToolsTestFixture : IAsyncLifetime
         // pass a proper ITestOutputHelper instance that will output in VS.
         ArgumentNullException.ThrowIfNull(outputHelper);
 
-        Host.OutputDataReceived += (sender, args) => outputHelper.WriteLine(args.Data);
-        Host.ErrorDataReceived += (sender, args) => outputHelper.WriteLine(args.Data);
+        Host.OutputDataReceived += OnDataReceived;
+        Host.ErrorDataReceived += OnDataReceived;
 
         // Attempt to start the process
         if (!Host.Start())
@@ -114,6 +101,12 @@ public class FunctionsCoreToolsTestFixture : IAsyncLifetime
         // Begin reading the redirected I/O
         Host.BeginOutputReadLine();
         Host.BeginErrorReadLine();
+
+        void OnDataReceived(object sender, DataReceivedEventArgs args)
+        {
+            if (args.Data is not null)
+                outputHelper.WriteLine(args.Data);
+        }
     }
 
     private static DirectoryInfo FindParentDirectory(string path, string name)
