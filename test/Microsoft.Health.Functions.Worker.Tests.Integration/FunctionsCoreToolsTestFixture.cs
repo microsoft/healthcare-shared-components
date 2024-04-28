@@ -6,12 +6,14 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.IO;
 using System.Reflection;
 using System.Threading.Tasks;
 using DurableTask.AzureStorage;
 using DurableTask.Core;
+using MartinCostello.Logging.XUnit;
 using Microsoft.DurableTask.Client;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -25,10 +27,13 @@ namespace Microsoft.Health.Functions.Worker.Tests.Integration;
 
 public class FunctionsCoreToolsTestFixture : IAsyncLifetime
 {
+    private readonly XUnitLogger _logger;
     private readonly IServiceProvider _serviceProvider;
 
     public FunctionsCoreToolsTestFixture(IMessageSink sink)
     {
+        _logger = new XUnitLogger(typeof(FunctionsCoreToolsTestFixture).FullName!, sink, new XUnitLoggerOptions());
+
         // Create the Durable Client
         IServiceCollection services = new ServiceCollection()
             .AddSingleton<IConfiguration>(new ConfigurationBuilder()
@@ -72,10 +77,18 @@ public class FunctionsCoreToolsTestFixture : IAsyncLifetime
 
     public Process Host { get; }
 
+    [SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "Skip any exceptions exiting the process.")]
     public Task DisposeAsync()
     {
-        if (!Host.HasExited)
-            Host.Kill(entireProcessTree: true);
+        try
+        {
+            if (!Host.HasExited)
+                Host.Kill(entireProcessTree: true);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Caught exception while killing host process.");
+        }
 
         return Task.CompletedTask;
     }
