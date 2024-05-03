@@ -47,4 +47,9 @@ public enum OperationStatus
     /// Specifies a status where the operation has successfully completed execution.
     /// </summary>
     Succeeded,
+
+    /// <summary>
+    /// Specifies a status where the operation is suspended and may be later resumed.
+    /// </summary>
+    Paused,
 }

@@ -1,4 +1,4 @@
-﻿// -------------------------------------------------------------------------------------------------
+// -------------------------------------------------------------------------------------------------
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License (MIT). See LICENSE in the repo root for license information.
 // -------------------------------------------------------------------------------------------------
@@ -39,11 +39,15 @@ public class BlobContainerInitializerTests
     }
 
     [Fact]
-    public async void GivenCancelation_WhenInitializingContainer_ThenOperationCanceledExceptionIsThrown()
+    public async Task GivenCancelation_WhenInitializingContainer_ThenOperationCanceledExceptionIsThrown()
     {
         var blobContainerInitializer = new BlobContainerInitializer(TestContainerName, _logger);
         using var cancellationTokenSource = new CancellationTokenSource();
+#if NET8_0_OR_GREATER
+        await cancellationTokenSource.CancelAsync();
+#else
         cancellationTokenSource.Cancel();
+#endif
 
         await Assert.ThrowsAsync<OperationCanceledException>(() => blobContainerInitializer.InitializeContainerAsync(_blobClient, cancellationTokenSource.Token));
     }

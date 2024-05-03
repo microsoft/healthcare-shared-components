@@ -1,0 +1,21 @@
+{
+  "version": "2.0",
+  "Extensions": {
+    "DurableTask": {
+      "HubName": "WorkerIntegrationTests"
+    }
+  },
+  "Logging": {
+    "FileLoggingMode": "never",
+    "LogLevel": {
+      "default": "Information",
+      "DurableTask": "Warning",
+      "Function": "Information",
+      "Host": "Warning",
+      "Worker": "Information"
+    }
+  },
+  "PurgeHistory": {
+    "Frequency": "0 0 * * *"
+  }
+}

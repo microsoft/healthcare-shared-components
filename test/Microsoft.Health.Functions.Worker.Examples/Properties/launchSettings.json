@@ -1,0 +1,9 @@
+{
+  "profiles": {
+    "Microsoft.Health.Functions.Worker.Examples": {
+      "commandName": "Project",
+      "commandLineArgs": "--port 7096",
+      "launchBrowser": false
+    }
+  }
+}

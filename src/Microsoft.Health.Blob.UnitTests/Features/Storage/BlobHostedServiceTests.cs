@@ -1,4 +1,4 @@
-﻿// -------------------------------------------------------------------------------------------------
+// -------------------------------------------------------------------------------------------------
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License (MIT). See LICENSE in the repo root for license information.
 // -------------------------------------------------------------------------------------------------
@@ -39,11 +39,15 @@ public class BlobHostedServiceTests
     }
 
     [Fact]
-    public async void GivenCancelation_WhenStartingService_ThenOperationCanceledExceptionIsThrown()
+    public async Task GivenCancelation_WhenStartingService_ThenOperationCanceledExceptionIsThrown()
     {
         var blobHostedService = new BlobHostedService(_blobInitializer, _collectionInitializers, _options, NullLogger<BlobHostedService>.Instance);
         using var cancellationTokenSource = new CancellationTokenSource();
+#if NET8_0_OR_GREATER
+        await cancellationTokenSource.CancelAsync();
+#else
         cancellationTokenSource.Cancel();
+#endif
 
         await Assert.ThrowsAsync<OperationCanceledException>(() => blobHostedService.StartAsync(cancellationTokenSource.Token));
     }

@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>$(SupportedFrameworks)</TargetFrameworks>
+    <TargetFrameworks>net6.0</TargetFrameworks>
     <Nullable>enable</Nullable>
     <XunitStartupFullName>Microsoft.Health.Functions.Tests.Integration.TestStartup</XunitStartupFullName>
   </PropertyGroup>

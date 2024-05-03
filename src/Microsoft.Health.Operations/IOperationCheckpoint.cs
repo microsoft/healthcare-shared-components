@@ -1,4 +1,4 @@
-﻿// -------------------------------------------------------------------------------------------------
+// -------------------------------------------------------------------------------------------------
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License (MIT). See LICENSE in the repo root for license information.
 // -------------------------------------------------------------------------------------------------
@@ -20,7 +20,17 @@ public interface IOperationCheckpoint
     /// The <see cref="DateTime"/> when the operation was started, or <see langword="null"/> if the date and
     /// time may be found outside of the checkpoint.
     /// </value>
+    [Obsolete("Please use CreatedAtTime as it always include time zone information.")]
     DateTime? CreatedTime { get; }
+
+    /// <summary>
+    /// Gets the optional date and time the operation was started.
+    /// </summary>
+    /// <value>
+    /// The <see cref="DateTimeOffset"/> when the operation was started, or <see langword="null"/> if the date and
+    /// time may be found outside of the checkpoint.
+    /// </value>
+    DateTimeOffset? CreatedAtTime { get; }
 
     /// <summary>
     /// Gets the optional percentage of work that has been completed by the operation.

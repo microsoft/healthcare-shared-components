@@ -1,0 +1,9 @@
+# Global AnalyzerConfig file
+# For details: https://docs.microsoft.com/en-us/dotnet/fundamentals/code-analysis/configuration-files
+# For rules: https://docs.microsoft.com/en-us/visualstudio/ide/editorconfig-code-style-settings-reference
+is_global = true
+global_level = 2
+
+# For the DurableTask Framework (DTFx), do not use ConfigureAwait(false) when calling activities
+# See: https://docs.microsoft.com/en-us/azure/azure-functions/durable/durable-functions-orchestrations?tabs=csharp#orchestrator-code-constraints
+dotnet_diagnostic.CA2007.severity = none

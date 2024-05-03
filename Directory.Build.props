@@ -12,6 +12,7 @@
     <HighEntropyVA>true</HighEntropyVA>
     <IsPackable>true</IsPackable>
     <LangVersion>latest</LangVersion>
+    <LatestVersion>net8.0</LatestVersion>
     <LtsVersion>net8.0</LtsVersion>
     <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>

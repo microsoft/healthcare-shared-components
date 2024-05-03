@@ -57,7 +57,7 @@ public class DistributedSorter
                 new SortingCheckpoint(
                     Concat(sorted, checkpoint.Values[sortedLength..]),
                     sortedLength,
-                    checkpoint.CreatedTime ?? await context.GetCreatedTimeAsync(_options.Retry)));
+                    checkpoint.CreatedAtTime ?? await context.GetCreatedAtTimeAsync(_options.Retry)));
         }
         else
         {

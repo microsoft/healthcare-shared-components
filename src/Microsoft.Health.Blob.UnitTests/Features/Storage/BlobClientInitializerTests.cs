@@ -5,6 +5,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using Azure.Storage.Blobs;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Health.Blob.Features.Storage;
@@ -42,7 +43,7 @@ public class BlobClientInitializerTests
     }
 
     [Fact]
-    public async void GivenMultipleCollections_WhenInitializing_ThenEachContainerInitializeMethodIsCalled()
+    public async Task GivenMultipleCollections_WhenInitializing_ThenEachContainerInitializeMethodIsCalled()
     {
         await _blobInitializer.InitializeDataStoreAsync(_collectionInitializers);
 
@@ -51,7 +52,7 @@ public class BlobClientInitializerTests
     }
 
     [Fact]
-    public async void GivenAConfiguration_WhenInitializing_ThenCreateContainerIfNotExistsIsCalled()
+    public async Task GivenAConfiguration_WhenInitializing_ThenCreateContainerIfNotExistsIsCalled()
     {
         await _blobInitializer.InitializeDataStoreAsync(_collectionInitializers);
 

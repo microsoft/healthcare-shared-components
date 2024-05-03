@@ -4,6 +4,7 @@
 // -------------------------------------------------------------------------------------------------
 
 using System;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Primitives;
 using Microsoft.Health.Api.Features.Security;
@@ -14,13 +15,11 @@ namespace Microsoft.Health.Api.UnitTests.Features.Security;
 public class SecurityHeadersHelperTests
 {
     [Fact]
-    public async void GivenANullContext_WhenSettingSecurityHeaders_ThenExceptionIsThrown()
-    {
-        await Assert.ThrowsAsync<ArgumentNullException>(() => SecurityHeadersHelper.SetSecurityHeaders(null));
-    }
+    public async Task GivenANullContext_WhenSettingSecurityHeaders_ThenExceptionIsThrown()
+        => await Assert.ThrowsAsync<ArgumentNullException>(() => SecurityHeadersHelper.SetSecurityHeaders(null));
 
     [Fact]
-    public async void GivenAnIncorrectType_WhenSettingSecurityHeaders_ThenExceptionIsThrown()
+    public async Task GivenAnIncorrectType_WhenSettingSecurityHeaders_ThenExceptionIsThrown()
     {
         int notAContext = 1;
 
@@ -28,7 +27,7 @@ public class SecurityHeadersHelperTests
     }
 
     [Fact]
-    public async void GivenAContext_WhenSettingSecurityHeaders_TheXContentTypeOptionsHeaderIsSet()
+    public async Task GivenAContext_WhenSettingSecurityHeaders_TheXContentTypeOptionsHeaderIsSet()
     {
         var defaultHttpContext = new DefaultHttpContext();
         await SecurityHeadersHelper.SetSecurityHeaders(defaultHttpContext);
@@ -41,7 +40,7 @@ public class SecurityHeadersHelperTests
     }
 
     [Fact]
-    public async void GivenAContext_WhenSettingSecurityHeaders_TheXFrameOptionsHeaderIsSet()
+    public async Task GivenAContext_WhenSettingSecurityHeaders_TheXFrameOptionsHeaderIsSet()
     {
         var defaultHttpContext = new DefaultHttpContext();
         await SecurityHeadersHelper.SetSecurityHeaders(defaultHttpContext);
@@ -54,7 +53,7 @@ public class SecurityHeadersHelperTests
     }
 
     [Fact]
-    public async void GivenAContext_WhenSettingSecurityHeaders_TheContentSecurityPolicyHeaderIsSet()
+    public async Task GivenAContext_WhenSettingSecurityHeaders_TheContentSecurityPolicyHeaderIsSet()
     {
         var defaultHttpContext = new DefaultHttpContext();
         await SecurityHeadersHelper.SetSecurityHeaders(defaultHttpContext);

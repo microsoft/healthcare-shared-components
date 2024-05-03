@@ -1,0 +1,54 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFrameworks>$(LatestVersion)</TargetFrameworks>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Ensure.That" />
+    <PackageReference Include="MartinCostello.Logging.XUnit" />
+    <PackageReference Include="Microsoft.Azure.Functions.Extensions" />
+    <PackageReference Include="Microsoft.Azure.WebJobs" />
+    <PackageReference Include="Microsoft.Azure.WebJobs.Extensions.DurableTask" />
+    <PackageReference Include="Microsoft.DurableTask.Client" />
+    <PackageReference Include="Microsoft.DurableTask.Client.OrchestrationServiceClientShim" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" />
+    <PackageReference Include="Newtonsoft.Json" />
+    <PackageReference Include="Polly" />
+    <PackageReference Include="xunit" />
+    <PackageReference Include="xunit.runner.visualstudio" PrivateAssets="All" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\Microsoft.Health.Operations.Functions.Worker.Testing\Microsoft.Health.Operations.Functions.Worker.Testing.csproj" />
+    <ProjectReference Include="..\Microsoft.Health.Functions.Worker.Examples\Microsoft.Health.Functions.Worker.Examples.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="appsettings.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
+  <!-- Azure Functions Core Tools requires running out of /bin/output when "no build" is specified -->
+  <Target Name="CopyCoreToolsOutput" AfterTargets="AfterBuild">
+    <PropertyGroup>
+      <FunctionWorkerFolder>$(RootDirectory)test\Microsoft.Health.Functions.Worker.Examples\</FunctionWorkerFolder>
+      <FunctionWorkerOutputFolder>$(FunctionWorkerFolder)bin\$(Configuration)\$(TargetFramework)</FunctionWorkerOutputFolder>
+      <CoreToolsOutputFolder>$(FunctionWorkerFolder)bin\output</CoreToolsOutputFolder>
+    </PropertyGroup>
+    <ItemGroup>
+      <FunctionAppFiles Include="$(FunctionWorkerOutputFolder)\**\*.*" />
+    </ItemGroup>
+    <Copy
+      DestinationFolder="$(CoreToolsOutputFolder)\%(RecursiveDir)"
+      SkipUnchangedFiles="true"
+      SourceFiles="@(FunctionAppFiles)" />
+  </Target>
+
+</Project>

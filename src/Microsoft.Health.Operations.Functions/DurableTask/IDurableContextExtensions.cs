@@ -61,22 +61,48 @@ public static class IDurableContextExtensions
     /// A task that represents the asynchronous retrieval operation. The value of the <see cref="Task{TResult}.Result"/>
     /// property represents the date and time that the orchestration was created in UTC.
     /// </returns>
+    [Obsolete("Please use GetCreatedAtTimeAsync instead to help prepare for an isolated worker migration.")]
     public static async Task<DateTime> GetCreatedTimeAsync(this IDurableOrchestrationContext context, RetryOptions? retryOptions = null)
     {
         // CreatedTime is not preserved between restarts from ContinueAsNew,
         // so this value can be preserved in the input or custom status
         EnsureArg.IsNotNull(context, nameof(context));
 
-        var input = new GetInstanceStatusOptions { ShowHistory = false, ShowHistoryOutput = false, ShowInput = false };
-        DurableOrchestrationStatus status = retryOptions is not null
-            ? await context.CallActivityWithRetryAsync<DurableOrchestrationStatus>(nameof(DurableOrchestrationClientActivity.GetInstanceStatusAsync), retryOptions, input)
-            : await context.CallActivityAsync<DurableOrchestrationStatus>(nameof(DurableOrchestrationClientActivity.GetInstanceStatusAsync), input);
+        var input = new GetInstanceStatusOptions { ShowHistory = false, GetInputsAndOutputs = false };
+        DurableOrchestrationMetadata metadata = retryOptions is not null
+            ? await context.CallActivityWithRetryAsync<DurableOrchestrationMetadata>(nameof(DurableOrchestrationClientActivity.GetInstanceStatusAsync), retryOptions, input)
+            : await context.CallActivityAsync<DurableOrchestrationMetadata>(nameof(DurableOrchestrationClientActivity.GetInstanceStatusAsync), input);
 
-        return status.CreatedTime;
+        return metadata.CreatedTime;
+    }
+
+    /// <summary>
+    /// Asynchronously gets the date and time that the orchestration instance was created in UTC.
+    /// </summary>
+    /// <param name="context">An orchestration context.</param>
+    /// <param name="retryOptions">Optional settings for allowing multiple attempts.</param>
+    /// <returns>
+    /// A task that represents the asynchronous retrieval operation. The value of the <see cref="Task{TResult}.Result"/>
+    /// property represents the date and time that the orchestration was created in UTC.
+    /// </returns>
+    public static async Task<DateTimeOffset> GetCreatedAtTimeAsync(this IDurableOrchestrationContext context, RetryOptions? retryOptions = null)
+    {
+        // CreatedTime is not preserved between restarts from ContinueAsNew,
+        // so this value can be preserved in the input or custom status
+        EnsureArg.IsNotNull(context, nameof(context));
+
+        GetInstanceOptions input = new() { GetInputsAndOutputs = false };
+        OrchestrationInstanceMetadata metadata = retryOptions is not null
+            ? await context.CallActivityWithRetryAsync<OrchestrationInstanceMetadata>(nameof(DurableOrchestrationClientActivity.GetInstanceAsync), retryOptions, input)
+            : await context.CallActivityAsync<OrchestrationInstanceMetadata>(nameof(DurableOrchestrationClientActivity.GetInstanceAsync), input);
+
+        return metadata.CreatedAt;
     }
 
     private static Guid GetOperationId(string instanceId)
-        => Guid.TryParseExact(instanceId, OperationId.FormatSpecifier, out Guid operationId)
+    {
+        return Guid.TryParseExact(instanceId, OperationId.FormatSpecifier, out Guid operationId)
             ? operationId
             : throw new FormatException(string.Format(CultureInfo.CurrentCulture, FormatResources.InvalidInstanceId, instanceId));
+    }
 }
