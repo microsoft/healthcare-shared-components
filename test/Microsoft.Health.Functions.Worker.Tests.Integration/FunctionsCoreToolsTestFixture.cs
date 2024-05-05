@@ -79,11 +79,11 @@ public class FunctionsCoreToolsTestFixture : IAsyncLifetime
             Scheme = "http://",
             Host = "localhost",
             Port = options.Port,
-            Path = "api"
+            Path = "api/"
         };
 
         using HttpClient client = new() { BaseAddress = builder.Uri };
-        Uri healthCheck = new("/healthz", UriKind.Relative);
+        Uri healthCheck = new("healthz", UriKind.Relative);
         await HealthCheckPipeline.ExecuteAsync(async t => await client.GetAsync(healthCheck, t));
     }
 }

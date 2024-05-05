@@ -18,5 +18,5 @@ internal sealed class FunctionWorkerOptions
     public int Port { get; set; } = 7071;
 
     [Required]
-    public AzureStorageDurableTaskClientOptions DurableTask { get; set; } = default!;
+    public AzureStorageDurableTaskClientOptions DurableTask { get; set; } = new();
 }
