@@ -71,8 +71,8 @@ runs:
       try {
           & dotnet test "./Microsoft.Health.Functions.Worker.Tests.Integration/Microsoft.Health.Functions.Worker.Tests.Integration.csproj" `
               -c "${{ inputs.buildConfiguration }}" `
-              "-p:ContinuousIntegrationBuild=true;AssemblyVersion=${{ inputs.assemblyVersion }};FileVersion=${{ inputs.fileVersion }};InformationalVersion=${{ inputs.informationalVersion }}" \
-              -warnaserror \
+              "-p:ContinuousIntegrationBuild=true;AssemblyVersion=${{ inputs.assemblyVersion }};FileVersion=${{ inputs.fileVersion }};InformationalVersion=${{ inputs.informationalVersion }}" `
+              -warnaserror `
               --no-build
       }
       finally {
@@ -84,9 +84,9 @@ runs:
       AzureWebJobsStorage: 'UseDevelopmentStorage=true'
       AzureFunctionsJobHost__Extensions__DurableTask__StorageProvider__ConnectionName: 'AzureWebJobsStorage'
       AzureFunctionsJobHost__Extensions__DurableTask__HubName: 'WorkerIntegrationTests'
-      FunctionWorker__DurableTask__ConnectionString: 'UseDevelopmentStorage=true'
-      FunctionWorker__DurableTask__TaskHubName: 'WorkerIntegrationTests'
-      FunctionWorker__Port: '7071'
+      FunctionWorkerTest__DurableTask__ConnectionString: 'UseDevelopmentStorage=true'
+      FunctionWorkerTest__DurableTask__TaskHubName: 'WorkerIntegrationTests'
+      FunctionWorkerTest__Port: '7071'
 
   - name: 'Stop Azurite'
     if: ${{ always() }}
