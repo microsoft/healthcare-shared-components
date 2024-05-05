@@ -70,7 +70,7 @@ public class FunctionsCoreToolsTestFixture : IAsyncLifetime
     public Task DisposeAsync()
         => Task.CompletedTask;
 
-    public Task InitializeAsync()
+    public async Task InitializeAsync()
     {
         // Wait for host to start at an address like http://localhost:7071/api/healthz
         FunctionWorkerOptions options = _serviceProvider.GetRequiredService<IOptions<FunctionWorkerOptions>>().Value;
@@ -84,6 +84,6 @@ public class FunctionsCoreToolsTestFixture : IAsyncLifetime
 
         using HttpClient client = new() { BaseAddress = builder.Uri };
         Uri healthCheck = new("/healthz", UriKind.Relative);
-        return HealthCheckPipeline.ExecuteAsync(async t => await client.GetAsync(healthCheck, t)).AsTask();
+        await HealthCheckPipeline.ExecuteAsync(async t => await client.GetAsync(healthCheck, t));
     }
 }
