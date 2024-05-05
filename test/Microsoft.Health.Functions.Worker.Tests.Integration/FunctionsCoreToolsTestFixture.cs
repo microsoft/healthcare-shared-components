@@ -15,7 +15,6 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Polly;
 using Polly.Retry;
-using Polly.Timeout;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -26,12 +25,13 @@ public class FunctionsCoreToolsTestFixture : IAsyncLifetime
     private readonly IServiceProvider _serviceProvider;
 
     private static readonly ResiliencePipeline<HttpResponseMessage> HealthCheckPipeline = new ResiliencePipelineBuilder<HttpResponseMessage>()
-        .AddTimeout(new TimeoutStrategyOptions { Timeout = TimeSpan.FromMinutes(3) })
+        .AddTimeout(TimeSpan.FromMinutes(3))
         .AddRetry(new RetryStrategyOptions<HttpResponseMessage>
         {
             Delay = TimeSpan.FromSeconds(1),
             MaxRetryAttempts = int.MaxValue,
             ShouldHandle = new PredicateBuilder<HttpResponseMessage>()
+                .Handle<OperationCanceledException>()
                 .Handle<HttpRequestException>()
                 .HandleInner<HttpRequestException>()
                 .HandleResult(m => !m.IsSuccessStatusCode),
