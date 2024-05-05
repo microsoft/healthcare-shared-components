@@ -4,11 +4,7 @@
 // -------------------------------------------------------------------------------------------------
 
 using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Globalization;
-using System.IO;
-using System.Reflection;
+using System.Net.Http;
 using System.Threading.Tasks;
 using DurableTask.AzureStorage;
 using DurableTask.Core;
@@ -17,7 +13,9 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using Microsoft.Health.Operations.Functions.Worker.Testing;
+using Polly;
+using Polly.Retry;
+using Polly.Timeout;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -26,6 +24,18 @@ namespace Microsoft.Health.Functions.Worker.Tests.Integration;
 public class FunctionsCoreToolsTestFixture : IAsyncLifetime
 {
     private readonly IServiceProvider _serviceProvider;
+
+    private static readonly ResiliencePipeline<HttpResponseMessage> HealthCheckPipeline = new ResiliencePipelineBuilder<HttpResponseMessage>()
+        .AddTimeout(new TimeoutStrategyOptions { Timeout = TimeSpan.FromMinutes(3) })
+        .AddRetry(new RetryStrategyOptions<HttpResponseMessage>
+        {
+            Delay = TimeSpan.FromSeconds(1),
+            MaxRetryAttempts = int.MaxValue,
+            ShouldHandle = new PredicateBuilder<HttpResponseMessage>()
+                .HandleResult(m => !m.IsSuccessStatusCode)
+                .Handle<HttpRequestException>(),
+        })
+        .Build();
 
     public FunctionsCoreToolsTestFixture(IMessageSink sink)
     {
@@ -36,87 +46,43 @@ public class FunctionsCoreToolsTestFixture : IAsyncLifetime
                 .Build());
 
         _ = services
-            .AddOptions<AzureStorageDurableTaskClientOptions>()
-            .BindConfiguration(AzureStorageDurableTaskClientOptions.DefaultSectionName)
+            .AddOptions<FunctionWorkerOptions>()
+            .BindConfiguration(FunctionWorkerOptions.DefaultSectionName)
             .ValidateDataAnnotations();
 
         _serviceProvider = services
             .AddLogging(b => b.AddXUnit(sink))
             .AddSingleton(sp => sp
-                .GetRequiredService<IOptions<AzureStorageDurableTaskClientOptions>>()
+                .GetRequiredService<IOptions<FunctionWorkerOptions>>()
                 .Value
+                .DurableTask
                 .ToOrchestrationServiceSettings())
             .AddSingleton<IOrchestrationServiceClient>(sp => new AzureStorageOrchestrationService(sp.GetRequiredService<AzureStorageOrchestrationServiceSettings>()))
             .AddDurableTaskClient(b => b.UseOrchestrationService())
         .BuildServiceProvider();
 
         DurableClient = _serviceProvider.GetRequiredService<DurableTaskClient>();
-
-        // Create the host process
-        DirectoryInfo testFolder = FindParentDirectory(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)!, "test");
-        string projectFolder = Path.Combine(testFolder.FullName, "Microsoft.Health.Functions.Worker.Examples");
-
-        AzureStorageDurableTaskClientOptions options = _serviceProvider.GetRequiredService<IOptions<AzureStorageDurableTaskClientOptions>>().Value;
-        Host = AzureFunctionsProcess.Create(
-            projectFolder,
-            environment: new Dictionary<string, string?>
-            {
-                { "AzureWebJobsStorage", options.ConnectionString },
-                { "AzureFunctionsJobHost__Extensions__DurableTask__HubName", options.TaskHubName },
-                { "AzureFunctionsJobHost__Extensions__DurableTask__StorageProvider__PartitionCount", options.PartitionCount.ToString(CultureInfo.InvariantCulture) },
-            },
-            enableRaisingEvents: true);
     }
 
     public DurableTaskClient DurableClient { get; }
 
-    public Process Host { get; }
-
     public Task DisposeAsync()
-    {
-        if (!Host.HasExited)
-            Host.Kill(entireProcessTree: true);
-
-        return Task.CompletedTask;
-    }
-
-    public Task InitializeAsync()
         => Task.CompletedTask;
 
-    public void StartProcess(ITestOutputHelper outputHelper)
+    public Task InitializeAsync()
     {
-        // StartProcess is separate from InitializeAsync so that callers can
-        // pass a proper ITestOutputHelper instance that will output in VS.
-        ArgumentNullException.ThrowIfNull(outputHelper);
-
-        Host.OutputDataReceived += OnDataReceived;
-        Host.ErrorDataReceived += OnDataReceived;
-
-        // Attempt to start the process
-        if (!Host.Start())
-            throw new InvalidOperationException($"Failed to start process '{Host.StartInfo.FileName}'");
-
-        outputHelper.WriteLine("Started Isolated Azure Functions host with PID {0}.", Host.Id);
-
-        // Begin reading the redirected I/O
-        Host.BeginOutputReadLine();
-        Host.BeginErrorReadLine();
-
-        void OnDataReceived(object sender, DataReceivedEventArgs args)
+        // Wait for host to start at an address like http://localhost:7071/api/healthz
+        FunctionWorkerOptions options = _serviceProvider.GetRequiredService<IOptions<FunctionWorkerOptions>>().Value;
+        UriBuilder builder = new()
         {
-            if (args.Data is not null)
-                outputHelper.WriteLine(args.Data);
-        }
-    }
+            Scheme = "http://",
+            Host = "localhost",
+            Port = options.Port,
+            Path = "api"
+        };
 
-    private static DirectoryInfo FindParentDirectory(string path, string name)
-    {
-        DirectoryInfo? current = new(path);
-
-        // Search by exact name, regardless of file system
-        while (current is not null && current.Name != name)
-            current = current.Parent;
-
-        return current ?? throw new DirectoryNotFoundException($"Could not find directory '{name}' in '{path}'.");
+        using HttpClient client = new() { BaseAddress = builder.Uri };
+        Uri healthCheck = new("/healthz", UriKind.Relative);
+        return HealthCheckPipeline.ExecuteAsync(async t => await client.GetAsync(healthCheck, t)).AsTask();
     }
 }

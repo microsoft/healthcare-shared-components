@@ -48,12 +48,45 @@ runs:
       dotnet test "./Microsoft.Health.sln" \
         -c "${{ inputs.buildConfiguration }}" \
         "-p:ContinuousIntegrationBuild=true;AssemblyVersion=${{ inputs.assemblyVersion }};FileVersion=${{ inputs.fileVersion }};InformationalVersion=${{ inputs.informationalVersion }}" \
+        --filter FullyQualifiedName!~Microsoft.Health.Functions.Worker.Tests.Integration \
         -warnaserror \
         --no-build
     env:
       AzureWebJobsStorage: 'UseDevelopmentStorage=true'
       DurableTask__ConnectionName: 'AzureWebJobsStorage'
       TestSqlConnectionString: 'Server=(local);Persist Security Info=False;User ID=sa;Password=T3stP@ssw0rd;MultipleActiveResultSets=False;Connection Timeout=30;TrustServerCertificate=true'
+
+  - name: Test Isolated Worker
+    shell: pwsh
+    run: |
+      // Copy the contents of the bin folder to the special "bin/output" folder used by "func start --no-build"
+      Copy-Item "./Microsoft.Health.Functions.Worker.Examples/bin/${{ inputs.buildConfiguration }}/net8.0/" -Destination "./Microsoft.Health.Functions.Worker.Examples/bin/output" -Recurse
+
+      // Run the "func start" command as a job
+      $funcHost = Start-Job -Name AzFuncStart `
+          -ScriptBlock { & func start --port 7071 --no-build --prefix bin/output } `
+          -WorkingDirectory "${{ github.workspace }}/test/Microsoft.Health.Functions.Worker.Examples"
+
+      // Run the integration tests
+      try {
+          & dotnet test "./Microsoft.Health.Functions.Worker.Tests.Integration/Microsoft.Health.Functions.Worker.Tests.Integration.csproj" `
+              -c "${{ inputs.buildConfiguration }}" `
+              "-p:ContinuousIntegrationBuild=true;AssemblyVersion=${{ inputs.assemblyVersion }};FileVersion=${{ inputs.fileVersion }};InformationalVersion=${{ inputs.informationalVersion }}" \
+              -warnaserror \
+              --no-build
+      }
+      finally {
+        Receive-Job -Id $funcHost.Id
+        Stop-Job -Id $funcHost.Id
+      }
+    working-directory: test
+    env:
+      AzureWebJobsStorage: 'UseDevelopmentStorage=true'
+      AzureFunctionsJobHost__Extensions__DurableTask__StorageProvider__ConnectionName: 'AzureWebJobsStorage'
+      AzureFunctionsJobHost__Extensions__DurableTask__HubName: 'WorkerIntegrationTests'
+      FunctionWorker__DurableTask__ConnectionString: 'UseDevelopmentStorage=true'
+      FunctionWorker__DurableTask__TaskHubName: 'WorkerIntegrationTests'
+      FunctionWorker__Port: '7071'
 
   - name: 'Stop Azurite'
     if: ${{ always() }}

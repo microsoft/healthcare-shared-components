@@ -4,32 +4,28 @@
 // -------------------------------------------------------------------------------------------------
 
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.DurableTask.Client;
-using Microsoft.Health.Functions.Worker.Examples.Sorting;
 using Microsoft.Health.Operations.Functions.Worker.DurableTask;
 using Polly;
 using Polly.Retry;
 using Polly.Timeout;
 using Xunit;
-using Xunit.Abstractions;
 
 namespace Microsoft.Health.Functions.Worker.Tests.Integration;
 
 public class DurableFunctionsTest : IClassFixture<FunctionsCoreToolsTestFixture>
 {
-    private readonly FunctionsCoreToolsTestFixture _fixture;
-    private readonly ITestOutputHelper _outputHelper;
+    private readonly DurableTaskClient _client;
     private readonly ResiliencePipeline<OrchestrationMetadata?> _pipeline;
 
-    public DurableFunctionsTest(FunctionsCoreToolsTestFixture fixture, ITestOutputHelper outputHelper)
+    public DurableFunctionsTest(FunctionsCoreToolsTestFixture fixture)
     {
         ArgumentNullException.ThrowIfNull(fixture);
-        ArgumentNullException.ThrowIfNull(outputHelper);
 
-        _fixture = fixture;
-        _outputHelper = outputHelper;
+        _client = fixture.DurableClient;
         _pipeline = new ResiliencePipelineBuilder<OrchestrationMetadata?>()
             .AddTimeout(new TimeoutStrategyOptions { Timeout = TimeSpan.FromMinutes(1) })
             .AddRetry(new RetryStrategyOptions<OrchestrationMetadata?>
@@ -37,10 +33,7 @@ public class DurableFunctionsTest : IClassFixture<FunctionsCoreToolsTestFixture>
                 Delay = TimeSpan.FromSeconds(1),
                 MaxRetryAttempts = int.MaxValue,
                 ShouldHandle = new PredicateBuilder<OrchestrationMetadata?>()
-                    .HandleResult(m =>
-                        !_fixture.Host.HasExited &&
-                        m is not null &&
-                        m.RuntimeStatus.IsInProgress()),
+                    .HandleResult(m => m is not null && m.RuntimeStatus.IsInProgress()),
             })
             .Build();
     }
@@ -48,14 +41,12 @@ public class DurableFunctionsTest : IClassFixture<FunctionsCoreToolsTestFixture>
     [Fact]
     public async Task GivenWorkerOrchestration_WhenStarting_ThenCompleteSuccessfully()
     {
-        _fixture.StartProcess(_outputHelper);
-
-        string instanceId = await _fixture.DurableClient.ScheduleNewOrchestrationInstanceAsync(
-            nameof(DistributedSorter.InsertionSortAsync),
-            new SortingInput([3, 4, 1, 5, 4, 2]));
+        string instanceId = await _client.ScheduleNewOrchestrationInstanceAsync(
+            "InsertionSortAsync",
+            new { Value = new List<int> { 3, 4, 1, 5, 4, 2 } });
 
         OrchestrationMetadata? metadata = await _pipeline
-            .ExecuteAsync(async t => await _fixture.DurableClient.GetInstanceAsync(instanceId, getInputsAndOutputs: true, cancellation: t));
+            .ExecuteAsync(async t => await _client.GetInstanceAsync(instanceId, getInputsAndOutputs: true, cancellation: t));
 
         Assert.NotNull(metadata);
         Assert.Equal(OrchestrationRuntimeStatus.Completed, metadata.RuntimeStatus);

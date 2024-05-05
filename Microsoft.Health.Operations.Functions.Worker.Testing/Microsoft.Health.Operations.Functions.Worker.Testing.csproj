@@ -1,9 +1,0 @@
-<Project Sdk="Microsoft.NET.Sdk">
-
-  <PropertyGroup>
-    <Description>Utilities for testing Azure Functions using the isolated worker model.</Description>
-    <TargetFrameworks>$(LatestVersion)</TargetFrameworks>
-    <Nullable>enable</Nullable>
-  </PropertyGroup>
-
-</Project>
