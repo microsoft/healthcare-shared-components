@@ -43,7 +43,7 @@ public class DurableFunctionsTest : IClassFixture<FunctionsCoreToolsTestFixture>
     {
         string instanceId = await _client.ScheduleNewOrchestrationInstanceAsync(
             "InsertionSortAsync",
-            new { Value = new List<int> { 3, 4, 1, 5, 4, 2 } });
+            new { Values = new List<int> { 3, 4, 1, 5, 4, 2 } });
 
         OrchestrationMetadata? metadata = await _pipeline
             .ExecuteAsync(async t => await _client.GetInstanceAsync(instanceId, getInputsAndOutputs: true, cancellation: t));
