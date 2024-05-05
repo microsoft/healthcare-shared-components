@@ -32,8 +32,9 @@ public class FunctionsCoreToolsTestFixture : IAsyncLifetime
             Delay = TimeSpan.FromSeconds(1),
             MaxRetryAttempts = int.MaxValue,
             ShouldHandle = new PredicateBuilder<HttpResponseMessage>()
-                .HandleResult(m => !m.IsSuccessStatusCode)
-                .Handle<HttpRequestException>(),
+                .Handle<HttpRequestException>()
+                .HandleInner<HttpRequestException>()
+                .HandleResult(m => !m.IsSuccessStatusCode),
         })
         .Build();
 
