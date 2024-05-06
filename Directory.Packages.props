@@ -74,7 +74,7 @@
     <PackageVersion Include="Microsoft.SqlServer.DacFx" Version="162.2.111" />
     <PackageVersion Include="Microsoft.SqlServer.SqlManagementObjects" Version="171.30.0" />
     <PackageVersion Include="Newtonsoft.Json" Version="13.0.3" />
-    <PackageVersion Include="Newtonsoft.Json.Schema" Version="3.0.15" />
+    <PackageVersion Include="Newtonsoft.Json.Schema" Version="3.0.16" />
     <PackageVersion Include="NSubstitute" Version="5.1.0" />
     <PackageVersion Include="Polly" Version="8.3.1" />
     <PackageVersion Include="Polly.Contrib.WaitAndRetry" Version="1.1.1" />
