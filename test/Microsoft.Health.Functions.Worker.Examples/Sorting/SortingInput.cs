@@ -8,11 +8,8 @@ using EnsureThat;
 
 namespace Microsoft.Health.Functions.Worker.Examples.Sorting;
 
-public class SortingInput
+public class SortingInput(int[] values)
 {
     [SuppressMessage("Performance", "CA1819:Properties should not return arrays", Justification = "Used as input to orchestrastion.")]
-    public int[] Values { get; }
-
-    public SortingInput(int[] values)
-        => Values = EnsureArg.IsNotNull(values, nameof(values));
+    public int[] Values { get; } = EnsureArg.IsNotNull(values, nameof(values));
 }

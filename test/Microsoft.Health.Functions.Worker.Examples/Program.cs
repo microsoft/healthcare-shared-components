@@ -11,7 +11,7 @@ using Microsoft.Health.Functions.Worker.Examples.Sorting;
 using Microsoft.Health.Operations.Functions.Worker.Management;
 
 IHost host = new HostBuilder()
-    .ConfigureFunctionsWorkerDefaults(options => options.EnableUserCodeException = true)
+    .ConfigureFunctionsWebApplication()
     .ConfigureServices(services =>
     {
         _ = services.AddSingleton(TimeProvider.System);

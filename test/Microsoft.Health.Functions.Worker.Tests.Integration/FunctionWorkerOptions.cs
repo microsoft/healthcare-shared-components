@@ -6,29 +6,17 @@
 using System;
 using System.ComponentModel.DataAnnotations;
 using System.Diagnostics.CodeAnalysis;
-using DurableTask.AzureStorage;
 
 namespace Microsoft.Health.Functions.Worker.Tests.Integration;
 
 [SuppressMessage("Microsoft.Performance", "CA1812:Avoid uninstantiated internal classes.", Justification = "This class is instantiated via dependency injection.")]
-internal sealed class AzureStorageDurableTaskClientOptions
+internal sealed class FunctionWorkerOptions
 {
+    public const string DefaultSectionName = "FunctionWorkerTest";
+
+    [Range(1, int.MaxValue)]
+    public int Port { get; set; } = 7071;
+
     [Required]
-    public string ConnectionString { get; set; } = "UseDevelopmentStorage=true";
-
-    [Range(1, 16)]
-    public int PartitionCount { get; set; } = 4;
-
-    [Required]
-    public string TaskHubName { get; set; } = "WorkerIntegrationTests";
-
-    public AzureStorageOrchestrationServiceSettings ToOrchestrationServiceSettings()
-    {
-        return new()
-        {
-            PartitionCount = PartitionCount,
-            TaskHubName = TaskHubName,
-            StorageConnectionString = ConnectionString,
-        };
-    }
+    public AzureStorageDurableTaskClientOptions DurableTask { get; set; } = new();
 }
