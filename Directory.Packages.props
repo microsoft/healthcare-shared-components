@@ -68,7 +68,7 @@
     <PackageVersion Include="Microsoft.IdentityModel.Protocols.OpenIdConnect" Version="7.5.1" />
     <PackageVersion Include="Microsoft.IdentityModel.Tokens" Version="7.5.1" />
     <PackageVersion Include="Microsoft.IO.RecyclableMemoryStream" Version="3.0.0" />
-    <PackageVersion Include="Microsoft.NET.Sdk.Functions" Version="4.3.0" />
+    <PackageVersion Include="Microsoft.NET.Sdk.Functions" Version="4.4.0" />
     <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="17.9.0" />
     <PackageVersion Include="Microsoft.SourceLink.GitHub" Version="8.0.0" />
     <PackageVersion Include="Microsoft.SqlServer.DacFx" Version="162.2.111" />
