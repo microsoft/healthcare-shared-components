@@ -5,8 +5,8 @@
     <PackageVersion Include="Azure.Identity" Version="1.11.3" />
     <PackageVersion Include="Azure.Messaging.EventGrid" Version="4.24.0" />
     <PackageVersion Include="Azure.Security.KeyVault.Keys" Version="4.6.0" />
-    <PackageVersion Include="Azure.Storage.Blobs" Version="12.19.1" />
-    <PackageVersion Include="Azure.Storage.Common" Version="12.18.1" />
+    <PackageVersion Include="Azure.Storage.Blobs" Version="12.20.0" />
+    <PackageVersion Include="Azure.Storage.Common" Version="12.19.0" />
     <PackageVersion Include="coverlet.collector" Version="6.0.2" />
     <PackageVersion Include="DistributedLock.SqlServer" Version="1.0.4" />
     <PackageVersion Include="Ensure.That" Version="10.1.0" />
