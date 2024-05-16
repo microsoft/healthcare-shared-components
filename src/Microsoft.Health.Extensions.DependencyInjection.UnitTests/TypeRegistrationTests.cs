@@ -400,7 +400,7 @@ public class TypeRegistrationTests
     }
 
     [Fact]
-    public void GivenATypeBuilder_WhenRegisteringMultipleTimes_ThenErrorWithDifferentScopes()
+    public void GivenATypeBuilder_WhenRegisteringMultipleTimes_ThenSecondRegistrationIsIgnored()
     {
         _collection.Add<ComponentA>()
             .Transient()
