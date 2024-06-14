@@ -40,7 +40,7 @@
     <PackageVersion Include="Microsoft.DurableTask.Abstractions" Version="1.2.4" />
     <PackageVersion Include="Microsoft.DurableTask.Client" Version="1.2.4" />
     <PackageVersion Include="Microsoft.DurableTask.Client.OrchestrationServiceClientShim" Version="1.0.5" />
-    <PackageVersion Include="Microsoft.Extensions.Azure" Version="1.7.3" />
+    <PackageVersion Include="Microsoft.Extensions.Azure" Version="1.7.4" />
     <PackageVersion Include="Microsoft.Extensions.Configuration" Version="$(SdkPackageVersion)" />
     <PackageVersion Include="Microsoft.Extensions.Configuration.Abstractions" Version="$(SdkPackageVersion)" />
     <PackageVersion Include="Microsoft.Extensions.Configuration.CommandLine" Version="$(SdkPackageVersion)" />
