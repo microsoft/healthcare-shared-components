@@ -1,0 +1,8 @@
+{
+    "instanceUrl": "https://microsofthealth.visualstudio.com",
+    "projectName": "Health",
+    "areaPath": "Health\\Healthcare APIs\\Shared",
+    "ppe": "false",
+    "template": "TFSMSAZHEALTH",
+    "codebaseName": "TFSMSAZHEALTH_HealthcareSharedComponents"
+}

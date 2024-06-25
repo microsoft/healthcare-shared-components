@@ -1,9 +1,6 @@
 mode: Mainline
-# assembly-version: If this number changes, other assemblies have to update references to the assembly
-assembly-versioning-scheme: Major
 assembly-file-versioning-scheme: MajorMinorPatch
-ignore:
-  sha: []
+assembly-versioning-scheme: Major
 branches:
   main:
     regex: ^master$|^main$
@@ -38,3 +35,6 @@ branches:
     track-merge-target: false
     tracks-release-branches: false
     is-release-branch: false
+ignore:
+  sha: []
+update-build-number: true

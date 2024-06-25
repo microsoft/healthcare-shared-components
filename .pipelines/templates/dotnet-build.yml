@@ -1,0 +1,37 @@
+parameters:
+  assemblyVersion: ''
+  buildConfiguration: 'Release'
+  fileVersion: ''
+  informationalVersion: ''
+
+steps:
+- task: UseDotNet@2
+  displayName: 'Install Latest .NET sdk'
+  inputs:
+    useGlobalJson: true
+
+- task: UseDotNet@2
+  displayName: 'Install .NET 7.0 sdk'
+  inputs:
+    version: 7.x
+
+- task: UseDotNet@2
+  displayName: 'Install .NET 6.0 sdk'
+  inputs:
+    version: 6.x
+
+- task: DotNetCoreCLI@2
+  displayName: 'dotnet restore'
+  inputs:
+    command: restore
+    feedsToUse: config
+    nugetConfigPath: 'nuget.config'
+    projects: '**\*.csproj'
+    verbosityRestore: Normal
+
+- task: DotNetCoreCLI@2
+  displayName: 'dotnet build'
+  inputs:
+    command: 'build'
+    projects: '**\*.csproj'
+    arguments: '--configuration ${{ parameters.buildConfiguration }} -p:AssemblyVersion="${{ parameters.assemblyVersion }}" -p:FileVersion="${{ parameters.fileVersion }}" -p:InformationalVersion="${{ parameters.informationalVersion }}" -p:ContinuousIntegrationBuild=true -p:CopySymbols=true -warnaserror'

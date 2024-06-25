@@ -1,0 +1,58 @@
+pr:
+  branches:
+    include:
+    - main
+  paths:
+    exclude:
+    - '**/*.md'
+
+trigger: none
+
+resources:
+  repositories:
+  - repository: 1ESPipelineTemplates
+    type: git
+    name: 1ESPipelineTemplates/1ESPipelineTemplates
+    ref: refs/tags/release
+
+extends:
+  template: v1/1ES.Unofficial.PipelineTemplate.yml@1ESPipelineTemplates
+  parameters:
+    featureFlags:
+      incrementalSDLBinaryAnalysis: true
+      incrementalSDLSourceAnalysis: true
+    pool:
+      # TODO: Use Linux?
+      name: OneESHostedPool
+      image: HostedPoolWindowsImage
+      os: windows
+    sdl:
+      credscan:
+        suppressionsFile: '$(Build.SourcesDirectory)\.config\CredScanSuppressions.json'
+      sourceAnalysisPool:
+        name: OneESHostedPool
+        image: HostedPoolWindowsImage
+        os: windows
+
+    stages:
+    - stage: Validate
+      jobs:
+
+      - job: Version
+        steps:
+        - template: /.pipelines/templates/gitversion.yml@self
+
+      - job: Test
+        dependsOn:
+        - Version
+        steps:
+        - template: /.pipelines/templates/dotnet-build.yml@self
+          parameters:
+            assemblyVersion: $[ dependencies.Version.outputs['Metadata.GitVersion.AssemblySemVer'] ]
+            fileVersion: $[ dependencies.Version.outputs['Metadata.GitVersion.AssemblySemFileVer'] ]
+            informationalVersion: $[ dependencies.Version.outputs['Metadata.GitVersion.InformationalVersion'] ]
+        - template: /.pipelines/templates/dotnet-test.yml@self
+          parameters:
+            assemblyVersion: $[ dependencies.Version.outputs['Metadata.GitVersion.AssemblySemVer'] ]
+            fileVersion: $[ dependencies.Version.outputs['Metadata.GitVersion.AssemblySemFileVer'] ]
+            informationalVersion: $[ dependencies.Version.outputs['Metadata.GitVersion.InformationalVersion'] ]

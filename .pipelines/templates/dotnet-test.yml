@@ -1,0 +1,90 @@
+parameters:
+  assemblyVersion: ''
+  buildConfiguration: 'Release'
+  fileVersion: ''
+  informationalVersion: ''
+
+steps:
+- task: Bash@3
+  displayName: 'Install Azure Functions Core Tools'
+  inputs:
+    targetType: 'inline'
+    script: npm i -g azure-functions-core-tools@4 --unsafe-perm true
+
+- task: Bash@3
+  displayName: 'Start Azurite'
+  inputs:
+    targetType: 'inline'
+    script: docker run -p 10000:10000 -p 10001:10001 -p 10002:10002 -d --rm --name azure-storage mcr.microsoft.com/azure-storage/azurite:latest
+
+- task: Bash@3
+  displayName: 'Start SQL Server'
+  inputs:
+    targetType: 'inline'
+    script: docker run -e "ACCEPT_EULA=Y" -e "SA_PASSWORD=T3stP@ssw0rd" -p 1433:1433 -d --rm --name sql-server mcr.microsoft.com/mssql/server:2019-latest
+
+- task: Bash@3
+  displayName: 'Wait for SQL Server'
+  inputs:
+    targetType: 'inline'
+    script: for i in {1..6}; do docker exec sql-server sh -c "/opt/mssql-tools/bin/sqlcmd -S localhost -U SA -P T3stP@ssw0rd -Q 'SELECT * FROM INFORMATION_SCHEMA.TABLES'" && exit 0 || sleep 5; done; exit 1
+
+- task: DotNetCoreCLI@2
+  displayName: 'dotnet test'
+  inputs:
+    command: 'test'
+    projects: '**\*.csproj'
+    arguments: '--configuration ${{ parameters.buildConfiguration }} -p:AssemblyVersion="${{ parameters.assemblyVersion }}" -p:FileVersion="${{ parameters.fileVersion }}" -p:InformationalVersion="${{ parameters.informationalVersion }}" -p:ContinuousIntegrationBuild=true --filter FullyQualifiedName!~Microsoft.Health.Functions.Worker.Tests.Integration -warnaserror --no-build'
+  env:
+    AzureWebJobsStorage: 'UseDevelopmentStorage=true'
+    DurableTask__ConnectionName: 'AzureWebJobsStorage'
+    TestSqlConnectionString: 'Server=(local);Persist Security Info=False;User ID=sa;Password=T3stP@ssw0rd;MultipleActiveResultSets=False;Connection Timeout=30;TrustServerCertificate=true'
+
+- task: PowerShell@2
+  displayName: 'Test Isolated Worker'
+  inputs:
+    pwsh: true
+    script: |
+      # Copy the contents of the bin folder to the special "bin/output" folder used by "func start --no-build"
+      Copy-Item "./Microsoft.Health.Functions.Worker.Examples/bin/${{ inputs.buildConfiguration }}/net8.0/" -Destination "./Microsoft.Health.Functions.Worker.Examples/bin/output" -Recurse
+
+      # Run the "func start" command as a job
+      $funcHost = Start-Job -Name AzFuncStart `
+          -ScriptBlock { & func start --port 7071 --no-build --prefix bin/output } `
+          -WorkingDirectory "${{ github.workspace }}/test/Microsoft.Health.Functions.Worker.Examples"
+
+      # Run the integration tests
+      try {
+          & dotnet test "./Microsoft.Health.Functions.Worker.Tests.Integration/Microsoft.Health.Functions.Worker.Tests.Integration.csproj" `
+              -c "${{ inputs.buildConfiguration }}" `
+              "-p:ContinuousIntegrationBuild=true;AssemblyVersion=${{ inputs.assemblyVersion }};FileVersion=${{ inputs.fileVersion }};InformationalVersion=${{ inputs.informationalVersion }}" `
+              -warnaserror `
+              --no-build
+      }
+      finally {
+        Receive-Job -Id $funcHost.Id
+        Stop-Job -Id $funcHost.Id
+      }
+    targetType: 'inline'
+    workingDirectory: test
+  env:
+    AzureWebJobsStorage: 'UseDevelopmentStorage=true'
+    AzureFunctionsJobHost__Extensions__DurableTask__StorageProvider__ConnectionName: 'AzureWebJobsStorage'
+    AzureFunctionsJobHost__Extensions__DurableTask__HubName: 'WorkerIntegrationTests'
+    FunctionWorkerTest__DurableTask__ConnectionString: 'UseDevelopmentStorage=true'
+    FunctionWorkerTest__DurableTask__TaskHubName: 'WorkerIntegrationTests'
+    FunctionWorkerTest__Port: '7071'
+
+- task: Bash@3
+  displayName: 'Stop Azurite'
+  condition: always()
+  inputs:
+    targetType: 'inline'
+    script: docker stop azure-storage
+
+- task: Bash@3
+  displayName: 'Stop SQL Server'
+  condition: always()
+  inputs:
+    targetType: 'inline'
+    script: docker stop sql-server
