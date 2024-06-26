@@ -57,7 +57,7 @@ steps:
               "-p:ContinuousIntegrationBuild=true" `
               -warnaserror `
               --no-build `
-              -o $(Agent.TempDirectory)/test/worker
+              --results-directory "$(Agent.TempDirectory)/test/worker"
       }
       finally {
         Receive-Job -Id $funcHost.Id
