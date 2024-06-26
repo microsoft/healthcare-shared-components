@@ -22,16 +22,15 @@ extends:
       incrementalSDLBinaryAnalysis: true
       incrementalSDLSourceAnalysis: true
     pool:
-      # TODO: Use Linux?
-      name: OneESHostedPool
-      image: HostedPoolWindowsImage
-      os: windows
+      name: mshealthagents
+      image: MMSUbuntu20.04-1ESPT
+      os: linux
     sdl:
       credscan:
         suppressionsFile: '$(Build.SourcesDirectory)\.config\CredScanSuppressions.json'
       sourceAnalysisPool:
-        name: OneESHostedPool
-        image: HostedPoolWindowsImage
+        name: mshealthagents
+        image: MMSWindows2022-1ESPT
         os: windows
 
     stages:
@@ -40,6 +39,9 @@ extends:
 
       - job: Version
         steps:
+        - checkout: self
+          fetchDepth: 0
+          submodules: false
         - template: /.pipelines/templates/gitversion.yml@self
 
       - job: Test
