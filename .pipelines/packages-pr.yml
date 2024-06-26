@@ -54,7 +54,3 @@ extends:
             fileVersion: $[ dependencies.Version.outputs['Metadata.GitVersion.AssemblySemFileVer'] ]
             informationalVersion: $[ dependencies.Version.outputs['Metadata.GitVersion.InformationalVersion'] ]
         - template: /.pipelines/templates/dotnet-test.yml@self
-          parameters:
-            assemblyVersion: $[ dependencies.Version.outputs['Metadata.GitVersion.AssemblySemVer'] ]
-            fileVersion: $[ dependencies.Version.outputs['Metadata.GitVersion.AssemblySemFileVer'] ]
-            informationalVersion: $[ dependencies.Version.outputs['Metadata.GitVersion.InformationalVersion'] ]
