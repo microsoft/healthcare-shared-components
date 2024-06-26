@@ -2,6 +2,10 @@ parameters:
   configFilePath: '.config/GitVersion.yml'
 
 steps:
+- checkout: self
+  fetchDepth: 0
+  submodules: false
+
 - task: gitversion/setup@0
   displayName: 'Setup GitVersion'
   inputs:

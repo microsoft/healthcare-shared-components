@@ -34,20 +34,14 @@ extends:
     - stage: Validate
       jobs:
 
-      - job: Version
-        steps:
-        - checkout: self
-          fetchDepth: 0
-          submodules: false
-        - template: /.pipelines/templates/gitversion.yml@self
-
       - job: Test
-        dependsOn:
-        - Version
         steps:
+        - template: /.pipelines/templates/checkout.yml@self
+
         - template: /.pipelines/templates/dotnet-build.yml@self
           parameters:
-            assemblyVersion: $[ dependencies.Version.outputs['Metadata.GitVersion.AssemblySemVer'] ]
-            fileVersion: $[ dependencies.Version.outputs['Metadata.GitVersion.AssemblySemFileVer'] ]
-            informationalVersion: $[ dependencies.Version.outputs['Metadata.GitVersion.InformationalVersion'] ]
+            assemblyVersion: '$(GitVersion.AssemblySemVer)'
+            fileVersion: '$(GitVersion.AssemblySemFileVer)'
+            informationalVersion: '$(GitVersion.InformationalVersion)'
+
         - template: /.pipelines/templates/dotnet-test.yml@self
