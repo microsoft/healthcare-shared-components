@@ -48,7 +48,7 @@ steps:
       # Run the "func start" command as a job
       $funcHost = Start-Job -Name AzFuncStart `
           -ScriptBlock { & func start --port 7071 --no-build --prefix bin/output } `
-          -WorkingDirectory "${{ github.workspace }}/test/Microsoft.Health.Functions.Worker.Examples"
+          -WorkingDirectory "$(Build.SourcesDirectory)/test/Microsoft.Health.Functions.Worker.Examples"
 
       # Run the integration tests
       try {
