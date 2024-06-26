@@ -26,12 +26,12 @@ steps:
     command: restore
     feedsToUse: config
     nugetConfigPath: 'nuget.config'
-    projects: '**\*.csproj'
+    projects: '**/*.csproj'
     verbosityRestore: Normal
 
 - task: DotNetCoreCLI@2
   displayName: 'dotnet build'
   inputs:
     command: 'build'
-    projects: '**\*.csproj'
+    projects: '**/*.csproj'
     arguments: '--configuration ${{ parameters.buildConfiguration }} -p:AssemblyVersion="${{ parameters.assemblyVersion }}" -p:FileVersion="${{ parameters.fileVersion }}" -p:InformationalVersion="${{ parameters.informationalVersion }}" -p:ContinuousIntegrationBuild=true -p:CopySymbols=true -warnaserror'

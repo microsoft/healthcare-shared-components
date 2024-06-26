@@ -18,9 +18,6 @@ resources:
 extends:
   template: v1/1ES.Unofficial.PipelineTemplate.yml@1ESPipelineTemplates
   parameters:
-    featureFlags:
-      incrementalSDLBinaryAnalysis: true
-      incrementalSDLSourceAnalysis: true
     pool:
       name: mshealthagents
       image: MMSUbuntu20.04-1ESPT

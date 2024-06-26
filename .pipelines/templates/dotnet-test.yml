@@ -30,7 +30,7 @@ steps:
   displayName: 'dotnet test'
   inputs:
     command: 'test'
-    projects: '**\*.csproj'
+    projects: '**/*.csproj'
     arguments: '--configuration ${{ parameters.buildConfiguration }} -p:ContinuousIntegrationBuild=true --filter FullyQualifiedName!~Microsoft.Health.Functions.Worker.Tests.Integration -warnaserror --no-build'
   env:
     AzureWebJobsStorage: 'UseDevelopmentStorage=true'
