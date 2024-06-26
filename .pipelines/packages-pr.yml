@@ -35,6 +35,7 @@ extends:
       jobs:
 
       - job: Test
+        displayName: 'Build + Test'
         steps:
         - template: /.pipelines/templates/checkout.yml@self
 

@@ -56,7 +56,8 @@ steps:
               -c "${{ parameters.buildConfiguration }}" `
               "-p:ContinuousIntegrationBuild=true" `
               -warnaserror `
-              --no-build
+              --no-build `
+              -o $(Agent.TempDirectory)/test/worker
       }
       finally {
         Receive-Job -Id $funcHost.Id
@@ -71,6 +72,16 @@ steps:
     FunctionWorkerTest__DurableTask__ConnectionString: 'UseDevelopmentStorage=true'
     FunctionWorkerTest__DurableTask__TaskHubName: 'WorkerIntegrationTests'
     FunctionWorkerTest__Port: '7071'
+
+- task: PublishTestResults@2
+  displayName: 'Publish Test Results'
+  condition: always()
+  inputs:
+    failTaskOnFailedTests: true
+    failTaskOnMissingResultsFile: true
+    searchFolder: '$(Agent.TempDirectory)/test/worker'
+    testResultsFiles: '**/*.trx'
+    testRunner: VSTest
 
 - task: Bash@3
   displayName: 'Stop Azurite'
