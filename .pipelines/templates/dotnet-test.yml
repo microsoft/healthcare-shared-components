@@ -57,6 +57,7 @@ steps:
               "-p:ContinuousIntegrationBuild=true" `
               -warnaserror `
               --no-build `
+              --logger trx `
               --results-directory "$(Agent.TempDirectory)/test/worker"
       }
       finally {
