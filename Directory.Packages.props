@@ -8,7 +8,7 @@
     <PackageVersion Include="Azure.Storage.Blobs" Version="12.20.0" />
     <PackageVersion Include="Azure.Storage.Common" Version="12.19.0" />
     <PackageVersion Include="coverlet.collector" Version="6.0.2" />
-    <PackageVersion Include="DistributedLock.SqlServer" Version="1.0.4" />
+    <PackageVersion Include="DistributedLock.SqlServer" Version="1.0.5" />
     <PackageVersion Include="Ensure.That" Version="10.1.0" />
     <PackageVersion Include="Google.Protobuf" Version="3.27.2" />
     <PackageVersion Include="IdentityServer4" Version="4.1.2" />
