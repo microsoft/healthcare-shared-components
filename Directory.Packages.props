@@ -84,11 +84,11 @@
     <PackageVersion Include="System.Drawing.Common" Version="$(SdkPackageVersion)" />
     <PackageVersion Include="System.Linq.Async" Version="6.0.1" />
     <PackageVersion Include="System.Text.Json" Version="$(SdkPackageVersion)" />
-    <PackageVersion Include="xunit" Version="2.8.1" />
-    <PackageVersion Include="xunit.assert" Version="2.8.1" />
+    <PackageVersion Include="xunit" Version="2.9.0" />
+    <PackageVersion Include="xunit.assert" Version="2.9.0" />
     <PackageVersion Include="Xunit.DependencyInjection" Version="9.3.0" />
-    <PackageVersion Include="xunit.extensibility.core" Version="2.8.1" />
-    <PackageVersion Include="xunit.runner.visualstudio" Version="2.8.1" />
+    <PackageVersion Include="xunit.extensibility.core" Version="2.9.0" />
+    <PackageVersion Include="xunit.runner.visualstudio" Version="2.8.2" />
   </ItemGroup>
 
 </Project>
