@@ -1,4 +1,4 @@
-﻿// -------------------------------------------------------------------------------------------------
+// -------------------------------------------------------------------------------------------------
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License (MIT). See LICENSE in the repo root for license information.
 // -------------------------------------------------------------------------------------------------
@@ -27,7 +27,8 @@ public static class OperationId
     /// <summary>
     /// Parses the given value as an operation ID.
     /// </summary>
-    /// <returns>A new operation ID.</returns>
+    /// <param name="value">The operation ID to parse.</param>
+    /// <returns>The parsed operation ID.</returns>
     /// <exception cref="ArgumentNullException"><paramref name="value"/> is <see langword="null"/>.</exception>
     /// <exception cref="FormatException">The value cannot be parsed as an operation ID.</exception>
     public static Guid ParseExact(string value)
