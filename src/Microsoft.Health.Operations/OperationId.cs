@@ -23,4 +23,13 @@ public static class OperationId
     /// <returns>A new operation ID.</returns>
     public static string Generate()
         => Guid.NewGuid().ToString(FormatSpecifier);
+
+    /// <summary>
+    /// Parses the given value as an operation ID.
+    /// </summary>
+    /// <returns>A new operation ID.</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="value"/> is <see langword="null"/>.</exception>
+    /// <exception cref="FormatException">The value cannot be parsed as an operation ID.</exception>
+    public static Guid ParseExact(string value)
+        => Guid.ParseExact(value, FormatSpecifier);
 }

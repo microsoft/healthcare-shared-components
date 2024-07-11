@@ -34,12 +34,14 @@
       <PropertyGroup>
         <MediatRVersion>12.1.1</MediatRVersion>
         <SdkPackageVersion>6.0.0</SdkPackageVersion>
+        <SystemTextJsonVersion>$(SdkPackageVersion)</SystemTextJsonVersion>
       </PropertyGroup>
     </When>
     <When Condition="'$(TargetFramework)' == '$(StsVersion)'">
       <PropertyGroup>
         <MediatRVersion>12.1.1</MediatRVersion>
         <SdkPackageVersion>7.0.0</SdkPackageVersion>
+        <SystemTextJsonVersion>$(SdkPackageVersion)</SystemTextJsonVersion>
       </PropertyGroup>
     </When>
     <Otherwise>
@@ -47,6 +49,7 @@
         <!-- >= 12.2.0 MediatR started depending on 8.x Microsoft.Extension.* libraries -->
         <MediatRVersion>12.2.0</MediatRVersion>
         <SdkPackageVersion>8.0.0</SdkPackageVersion>
+        <SystemTextJsonVersion>8.0.4</SystemTextJsonVersion>
       </PropertyGroup>
     </Otherwise>
   </Choose>
