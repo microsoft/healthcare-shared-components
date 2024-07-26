@@ -5,6 +5,8 @@
 
 using System;
 using System.Collections.Generic;
+using System.Text.Json.Serialization;
+using Microsoft.Health.Operations.Serialization;
 
 namespace Microsoft.Health.Operations;
 
@@ -18,6 +20,7 @@ public interface IOperationState<T>
     /// Gets the operation ID.
     /// </summary>
     /// <value>The unique ID that denotes a particular operation.</value>
+    [JsonConverter(typeof(OperationIdJsonConverter))]
     Guid OperationId { get; }
 
     /// <summary>
@@ -29,14 +32,16 @@ public interface IOperationState<T>
     /// <summary>
     /// Gets the date and time the operation was started.
     /// </summary>
-    /// <value>The <see cref="DateTime"/> when the operation was started.</value>
-    DateTime CreatedTime { get; }
+    /// <value>The <see cref="DateTimeOffset"/> when the operation was started.</value>
+    [JsonConverter(typeof(UtcCompatibilityJsonConverter))]
+    DateTimeOffset CreatedTime { get; }
 
     /// <summary>
     /// Gets the last date and time the state was updated.
     /// </summary>
-    /// <value>The last <see cref="DateTime"/> when the operation state was updated.</value>
-    DateTime LastUpdatedTime { get; }
+    /// <value>The last <see cref="DateTimeOffset"/> when the operation state was updated.</value>
+    [JsonConverter(typeof(UtcCompatibilityJsonConverter))]
+    DateTimeOffset LastUpdatedTime { get; }
 
     /// <summary>
     /// Gets the execution status of the operation.
