@@ -56,9 +56,9 @@
     <PackageVersion Include="Microsoft.Extensions.Hosting" Version="$(SdkPackageVersion)" />
     <PackageVersion Include="Microsoft.Extensions.Hosting.Abstractions" Version="$(SdkPackageVersion)" />
     <PackageVersion Include="Microsoft.Extensions.Http" Version="$(SdkPackageVersion)" />
-    <PackageVersion Include="Microsoft.Extensions.Logging" Version="$(SdkPackageVersion)" />
-    <PackageVersion Include="Microsoft.Extensions.Logging.Abstractions" Version="$(SdkPackageVersion)" />
-    <PackageVersion Include="Microsoft.Extensions.Logging.Console" Version="$(SdkPackageVersion)" />
+    <PackageVersion Include="Microsoft.Extensions.Logging" Version="$(LoggingVersion)" />
+    <PackageVersion Include="Microsoft.Extensions.Logging.Abstractions" Version="$(LoggingVersion)" />
+    <PackageVersion Include="Microsoft.Extensions.Logging.Console" Version="$(LoggingVersion)" />
     <PackageVersion Include="Microsoft.Extensions.Options" Version="$(SdkPackageVersion)" />
     <PackageVersion Include="Microsoft.Extensions.Options.ConfigurationExtensions" Version="$(SdkPackageVersion)" />
     <PackageVersion Include="Microsoft.Extensions.Options.DataAnnotations" Version="$(SdkPackageVersion)" />
