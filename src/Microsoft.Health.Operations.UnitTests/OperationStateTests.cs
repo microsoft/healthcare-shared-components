@@ -7,6 +7,8 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
+using System.Text.Json.Serialization;
+using Microsoft.Health.Operations.Serialization;
 using Xunit;
 
 namespace Microsoft.Health.Operations.UnitTests;
@@ -63,6 +65,7 @@ public class OperationStateTests
 
     private sealed class LegacyOperationState
     {
+        [JsonConverter(typeof(OperationIdJsonConverter))]
         public Guid OperationId { get; set; }
 
         public int Type { get; set; }
