@@ -36,10 +36,10 @@ public class OperationStateTests
     [Fact]
     public void GivenDateTimeRepresentations_WhenSerializing_ThenBothAreEquivalent()
     {
-        LegacyOperationState before = new()
+        IOperationState<int> after = new LatestOperationState()
         {
-            CreatedTime = DateTime.UtcNow.AddMinutes(-5),
-            LastUpdatedTime = DateTime.UtcNow,
+            CreatedTime = DateTimeOffset.UtcNow.AddMinutes(-5),
+            LastUpdatedTime = DateTimeOffset.UtcNow,
             OperationId = Guid.NewGuid(),
             PercentComplete = 50,
             Resources = [new Uri("https://example.com")],
@@ -48,16 +48,16 @@ public class OperationStateTests
             Type = 42,
         };
 
-        IOperationState<int> after = new LatestOperationState()
+        LegacyOperationState before = new()
         {
-            CreatedTime = before.CreatedTime,
-            LastUpdatedTime = before.LastUpdatedTime,
-            OperationId = before.OperationId,
-            PercentComplete = before.PercentComplete,
-            Resources = before.Resources,
-            Results = before.Results,
-            Status = before.Status,
-            Type = before.Type,
+            CreatedTime = after.CreatedTime.UtcDateTime,
+            LastUpdatedTime = after.LastUpdatedTime.UtcDateTime,
+            OperationId = after.OperationId,
+            PercentComplete = after.PercentComplete,
+            Resources = after.Resources,
+            Results = after.Results,
+            Status = after.Status,
+            Type = after.Type,
         };
 
         Assert.Equal(JsonSerializer.Serialize(before), JsonSerializer.Serialize(after));
