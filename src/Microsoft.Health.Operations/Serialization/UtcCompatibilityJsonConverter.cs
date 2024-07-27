@@ -26,11 +26,7 @@ public sealed class UtcCompatibilityJsonConverter : JsonConverter<DateTimeOffset
     /// <returns>The <see cref="DateTimeOffset"/> represented by the JSON string.</returns>
     /// <exception cref="JsonException">The current token cannot be read as a <see cref="DateTimeOffset"/>.</exception>
     public override DateTimeOffset Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
-    {
-        return reader.TokenType is JsonTokenType.String && DateTimeOffset.TryParse(reader.GetString(), out DateTimeOffset value)
-            ? value
-            : throw new JsonException();
-    }
+        => JsonSerializer.Deserialize<DateTimeOffset>(ref reader);
 
     /// <summary>
     /// Writes the specified <paramref name="value"/> as a JSON string that is equivalent to <see cref="DateTime"/>
@@ -45,8 +41,8 @@ public sealed class UtcCompatibilityJsonConverter : JsonConverter<DateTimeOffset
         EnsureArg.IsNotNull(writer, nameof(writer));
 
         if (value.Offset == TimeSpan.Zero)
-            writer.WriteStringValue(value.UtcDateTime.ToString("O"));
+            JsonSerializer.Serialize(writer, value.UtcDateTime);
         else
-            writer.WriteStringValue(value.ToString("O"));
+            JsonSerializer.Serialize(writer, value);
     }
 }
