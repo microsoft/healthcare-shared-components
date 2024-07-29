@@ -24,10 +24,12 @@ public sealed class OperationState<T> : IOperationState<T>
     public T? Type { get; init; }
 
     /// <inheritdoc cref="IOperationState{T}.CreatedTime"/>
-    public DateTime CreatedTime { get; init; }
+    [JsonConverter(typeof(UtcCompatibilityJsonConverter))]
+    public DateTimeOffset CreatedTime { get; init; }
 
     /// <inheritdoc cref="IOperationState{T}.LastUpdatedTime"/>
-    public DateTime LastUpdatedTime { get; init; }
+    [JsonConverter(typeof(UtcCompatibilityJsonConverter))]
+    public DateTimeOffset LastUpdatedTime { get; init; }
 
     /// <inheritdoc cref="IOperationState{T}.Status"/>
     public OperationStatus Status { get; init; }
@@ -57,10 +59,10 @@ public sealed class OperationState<TType, TResults> : IOperationState<TType>
     public TType? Type { get; init; }
 
     /// <inheritdoc cref="IOperationState{T}.CreatedTime"/>
-    public DateTime CreatedTime { get; init; }
+    public DateTimeOffset CreatedTime { get; init; }
 
     /// <inheritdoc cref="IOperationState{T}.LastUpdatedTime"/>
-    public DateTime LastUpdatedTime { get; init; }
+    public DateTimeOffset LastUpdatedTime { get; init; }
 
     /// <inheritdoc cref="IOperationState{T}.Status"/>
     public OperationStatus Status { get; init; }

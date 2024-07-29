@@ -20,8 +20,6 @@ public sealed class NullOrchestrationCheckpoint : IOrchestrationCheckpoint
     /// <value>The singleton instance.</value>
     public static NullOrchestrationCheckpoint Value { get; } = new NullOrchestrationCheckpoint();
 
-    DateTime? IOperationCheckpoint.CreatedTime => null;
-
     /// <inheritdoc cref="IOperationCheckpoint.CreatedAtTime" />
     public DateTimeOffset? CreatedAtTime => null;
 

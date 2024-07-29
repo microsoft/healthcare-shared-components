@@ -17,16 +17,6 @@ public interface IOperationCheckpoint
     /// Gets the optional date and time the operation was started.
     /// </summary>
     /// <value>
-    /// The <see cref="DateTime"/> when the operation was started, or <see langword="null"/> if the date and
-    /// time may be found outside of the checkpoint.
-    /// </value>
-    [Obsolete("Please use CreatedAtTime as it always include time zone information.")]
-    DateTime? CreatedTime { get; }
-
-    /// <summary>
-    /// Gets the optional date and time the operation was started.
-    /// </summary>
-    /// <value>
     /// The <see cref="DateTimeOffset"/> when the operation was started, or <see langword="null"/> if the date and
     /// time may be found outside of the checkpoint.
     /// </value>
