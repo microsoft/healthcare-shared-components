@@ -29,7 +29,15 @@ public class OperationIdJsonConverterTests
         Assert.Throws<JsonException>(() =>
         {
             Utf8JsonReader jsonReader = new(Encoding.UTF8.GetBytes(json));
-            Assert.True(jsonReader.Read());
+            try
+            {
+                Assert.True(jsonReader.Read());
+            }
+            catch (JsonException)
+            {
+                Assert.Fail();
+            }
+
             new OperationIdJsonConverter().Read(ref jsonReader, typeof(Guid), DefaultOptions);
         });
     }
