@@ -59,9 +59,11 @@ public sealed class OperationState<TType, TResults> : IOperationState<TType>
     public TType? Type { get; init; }
 
     /// <inheritdoc cref="IOperationState{T}.CreatedTime"/>
+    [JsonConverter(typeof(UtcCompatibilityJsonConverter))]
     public DateTimeOffset CreatedTime { get; init; }
 
     /// <inheritdoc cref="IOperationState{T}.LastUpdatedTime"/>
+    [JsonConverter(typeof(UtcCompatibilityJsonConverter))]
     public DateTimeOffset LastUpdatedTime { get; init; }
 
     /// <inheritdoc cref="IOperationState{T}.Status"/>
