@@ -11,8 +11,6 @@
     <PackageVersion Include="DistributedLock.SqlServer" Version="1.0.5" />
     <PackageVersion Include="Ensure.That" Version="10.1.0" />
     <PackageVersion Include="Google.Protobuf" Version="3.27.3" />
-    <PackageVersion Include="IdentityServer4" Version="4.1.2" />
-    <PackageVersion Include="IdentityServer4.Storage" Version="4.1.2" />
     <PackageVersion Include="MartinCostello.Logging.XUnit" Version="0.4.0" />
     <PackageVersion Include="MediatR" Version="$(MediatRVersion)" />
     <PackageVersion Include="Microsoft.ApplicationInsights" Version="2.22.0" />
