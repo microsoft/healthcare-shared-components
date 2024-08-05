@@ -62,9 +62,9 @@
     <PackageVersion Include="Microsoft.Extensions.Options.DataAnnotations" Version="$(SdkPackageVersion)" />
     <PackageVersion Include="Microsoft.Extensions.Primitives" Version="$(SdkPackageVersion)" />
     <PackageVersion Include="Microsoft.Extensions.TimeProvider.Testing" Version="$(SdkPackageVersion)" />
-    <PackageVersion Include="Microsoft.IdentityModel.JsonWebTokens" Version="7.6.3" />
-    <PackageVersion Include="Microsoft.IdentityModel.Protocols.OpenIdConnect" Version="7.6.3" />
-    <PackageVersion Include="Microsoft.IdentityModel.Tokens" Version="7.6.3" />
+    <PackageVersion Include="Microsoft.IdentityModel.JsonWebTokens" Version="8.0.1" />
+    <PackageVersion Include="Microsoft.IdentityModel.Protocols.OpenIdConnect" Version="8.0.1" />
+    <PackageVersion Include="Microsoft.IdentityModel.Tokens" Version="8.0.1" />
     <PackageVersion Include="Microsoft.IO.RecyclableMemoryStream" Version="3.0.1" />
     <PackageVersion Include="Microsoft.NET.Sdk.Functions" Version="4.4.1" />
     <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="17.10.0" />
