@@ -117,6 +117,12 @@ internal class SqlServerSchemaDataStore : ISchemaDataStore
                 throw;
             }
 
+            if (sqlEx.IsCMKError())
+            {
+                // do not log error if it is a CMK error, since it is the customer's issue and not a system issue
+                throw;
+            }
+
             _logger.LogError(sqlEx, "Error from SQL database on upserting InstanceSchema information");
             throw;
         }
