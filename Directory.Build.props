@@ -52,7 +52,7 @@
         <!-- >= 12.2.0 MediatR started depending on 8.x Microsoft.Extension.* libraries -->
         <MediatRVersion>12.2.0</MediatRVersion>
         <SdkPackageVersion>8.0.0</SdkPackageVersion>
-        <SystemTextJsonVersion>8.0.4</SystemTextJsonVersion>
+        <SystemTextJsonVersion>8.0.5</SystemTextJsonVersion>
       </PropertyGroup>
     </Otherwise>
   </Choose>
