@@ -192,7 +192,7 @@ public class SqlSchemaManager : ISchemaManager
             List<AvailableVersion> availableVersions = await _schemaClient.GetAvailabilityAsync(cancellationToken).ConfigureAwait(false);
 
             // To ensure that schema version null/0 is not printed
-            if (availableVersions[0].Id == 0)
+            if (availableVersions != null && availableVersions.Count > 0 && availableVersions[0].Id == 0)
             {
                 availableVersions.RemoveAt(0);
             }
