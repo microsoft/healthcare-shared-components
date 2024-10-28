@@ -214,12 +214,8 @@ public class IAzureClientBuilderExtensionsTests
             .GetProperty("Client", BindingFlags.NonPublic | BindingFlags.Instance)
             .GetValue(credential);
 
-        ManagedIdentityId identityId = managedIdentityClientType
-            .GetProperty("ManagedIdentityId", BindingFlags.NonPublic | BindingFlags.Instance)
-            .GetValue(client) as ManagedIdentityId;
-
-        return typeof(ManagedIdentityId)
-            .GetField("_userAssignedId", BindingFlags.Instance | BindingFlags.NonPublic)
-            .GetValue(identityId) as string;
+        return managedIdentityClientType
+            .GetProperty("ClientId", BindingFlags.NonPublic | BindingFlags.Instance)
+            .GetValue(client) as string;
     }
 }
