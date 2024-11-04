@@ -30,10 +30,13 @@ public class HealthCheckCachingTests
     private readonly HealthCheckCachingOptions _options = new HealthCheckCachingOptions();
 
     [Theory]
-    [InlineData(HealthStatus.Unhealthy)]
-    [InlineData(HealthStatus.Degraded)]
-    [InlineData(HealthStatus.Healthy)]
-    public async Task GivenTheHealthCheckCache_WhenCacheFresh_ThenDoNotRefresh(HealthStatus status)
+    [InlineData(HealthStatus.Unhealthy, HealthStatus.Unhealthy)]
+    [InlineData(HealthStatus.Degraded, HealthStatus.Unhealthy)]
+    [InlineData(HealthStatus.Healthy, HealthStatus.Unhealthy)]
+    [InlineData(HealthStatus.Degraded, HealthStatus.Degraded)]
+    [InlineData(HealthStatus.Healthy, HealthStatus.Degraded)]
+    [InlineData(HealthStatus.Healthy, HealthStatus.Healthy)]
+    public async Task GivenTheHealthCheckCache_WhenCacheFresh_ThenDoNotRefresh(HealthStatus status, HealthStatus minimumCachedStatus)
     {
         using CancellationTokenSource tokenSource = new CancellationTokenSource();
 
@@ -43,6 +46,7 @@ public class HealthCheckCachingTests
 
         _options.Expiry = TimeSpan.FromDays(1);
         _options.MaxRefreshThreads = 1;
+        _options.MinimumCachedHealthStatus = minimumCachedStatus;
 
         using CachedHealthCheck cache = CreateHealthCheck();
 
@@ -53,6 +57,34 @@ public class HealthCheckCachingTests
             cache.CheckHealthAsync(_context, tokenSource.Token));
 
         await _healthCheck.Received(1).CheckHealthAsync(_context, tokenSource.Token);
+        Assert.All(actual, x => Assert.Equal(status, x.Status));
+    }
+
+    [Theory]
+    [InlineData(HealthStatus.Unhealthy, HealthStatus.Degraded)]
+    [InlineData(HealthStatus.Unhealthy, HealthStatus.Healthy)]
+    [InlineData(HealthStatus.Degraded, HealthStatus.Healthy)]
+    public async Task GivenTheHealthCheckCache_WhenCacheFreshButUncacheableStatus_ThenAlwaysRefresh(HealthStatus status, HealthStatus minimumCachedStatus)
+    {
+        using CancellationTokenSource tokenSource = new CancellationTokenSource();
+
+        _healthCheck
+            .CheckHealthAsync(_context, tokenSource.Token)
+            .Returns(Task.FromResult(new HealthCheckResult(status)));
+
+        _options.Expiry = TimeSpan.FromDays(1);
+        _options.MaxRefreshThreads = 1;
+        _options.MinimumCachedHealthStatus = minimumCachedStatus;
+
+        using CachedHealthCheck cache = CreateHealthCheck();
+
+        HealthCheckResult[] actual = await Task.WhenAll(
+            cache.CheckHealthAsync(_context, tokenSource.Token),
+            cache.CheckHealthAsync(_context, tokenSource.Token),
+            cache.CheckHealthAsync(_context, tokenSource.Token),
+            cache.CheckHealthAsync(_context, tokenSource.Token));
+
+        await _healthCheck.Received(4).CheckHealthAsync(_context, tokenSource.Token);
         Assert.All(actual, x => Assert.Equal(status, x.Status));
     }
 

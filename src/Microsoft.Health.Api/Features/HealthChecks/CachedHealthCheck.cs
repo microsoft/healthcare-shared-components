@@ -23,8 +23,8 @@ internal sealed class CachedHealthCheck : IHealthCheck, IDisposable
     private readonly ILogger _logger;
     private readonly SemaphoreSlim _semaphore;
 
-    // By default, the times are DateTimeOffset.MinValue such that they are always considered invalid
-    private CachedHealthCheckResult _cache = new CachedHealthCheckResult();
+    // By default, the times are DateTimeOffset.MinValue such that they are always considered expired
+    private CachedHealthCheckResult _cache = new CachedHealthCheckResult { Result = new HealthCheckResult(HealthStatus.Unhealthy) };
 
 #if NET8_0_OR_GREATER
     private readonly TimeProvider _timeProvider;
@@ -139,7 +139,12 @@ internal sealed class CachedHealthCheck : IHealthCheck, IDisposable
         => timestamp >= _cache.ExpireTime;
 
     private bool IsUpToDate(DateTimeOffset timestamp)
-        => timestamp < _cache.StaleTime;
+    {
+        // While we will store results whose status is < MinimumCachedHealthStatus, it will effectively
+        // have no caching as IsUpToDate will return false
+        CachedHealthCheckResult currentCache = _cache;
+        return timestamp < currentCache.StaleTime && currentCache.Result.Status >= _options.MinimumCachedHealthStatus;
+    }
 
     private async Task<bool> TryGetSemaphoreAsync(TimeSpan timeout, CancellationToken cancellationToken)
     {
