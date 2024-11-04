@@ -1,4 +1,4 @@
-﻿// -------------------------------------------------------------------------------------------------
+// -------------------------------------------------------------------------------------------------
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License (MIT). See LICENSE in the repo root for license information.
 // -------------------------------------------------------------------------------------------------
@@ -28,4 +28,10 @@ public class HealthCheckCachingOptions
     /// Gets or sets the maximum number of threads that can refresh the cache concurrently.
     /// </summary>
     public int MaxRefreshThreads { get; set; } = 2;
+
+    /// <summary>
+    /// Gets or sets the minimum <see cref="HealthStatus"/> that should be cached.
+    /// </summary>
+    /// <remarks>By default, all values are cached.</remarks>
+    public HealthStatus MinimumCachedHealthStatus { get; set; } = HealthStatus.Unhealthy;
 }
