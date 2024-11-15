@@ -3,7 +3,6 @@
 // Licensed under the MIT License (MIT). See LICENSE in the repo root for license information.
 // -------------------------------------------------------------------------------------------------
 
-using System.Collections.Concurrent;
 using EnsureThat;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
@@ -20,9 +19,7 @@ public class HealthCheckModule : IStartupModule
         EnsureArg.IsNotNull(services, nameof(services));
 
         services.AddOptions();
-
-        // A single cache is used to preserve the values across multiple IHealthCheck activations
-        services.AddSingleton<ConcurrentDictionary<string, HealthCheckResultCache>>();
+        services.AddSingleton<HealthCheckCache>();
 
         services.Add<HealthCheckCachingOptionsValidation>()
             .Singleton()
