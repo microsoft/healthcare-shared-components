@@ -4,7 +4,6 @@
 // -------------------------------------------------------------------------------------------------
 
 using System;
-using System.Diagnostics.CodeAnalysis;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
@@ -21,15 +20,13 @@ public class CachedHealthCheckTests
 {
     public CachedHealthCheckTests()
     {
-        TestHealthCheck.Implementation.ClearReceivedCalls();
-        TestHealthCheck.Implementation
-            .CheckHealthAsync(default, default)
-            .ReturnsForAnyArgs(HealthCheckResult.Healthy());
+        _healthCheck = Substitute.For<IHealthCheck>();
+        _healthCheck.CheckHealthAsync(default, default).ReturnsForAnyArgs(HealthCheckResult.Healthy());
 
-        ServiceCollection services = new();
+        ServiceCollection services = [];
         services
             .AddHealthChecks()
-            .AddCheck<TestHealthCheck>(HealthCheckName);
+            .AddCheck(HealthCheckName, _healthCheck, default, default);
 
         services
             .AddLogging()
@@ -45,6 +42,7 @@ public class CachedHealthCheckTests
     }
 
     private const string HealthCheckName = "unit-test";
+    private readonly IHealthCheck _healthCheck;
     private readonly ServiceProvider _serviceProvider;
 
     [Fact]
@@ -55,7 +53,7 @@ public class CachedHealthCheckTests
         using CancellationTokenSource cts = new();
 
         AssertHealthReport(await service.CheckHealthAsync(cts.Token));
-        await TestHealthCheck.Implementation.ReceivedWithAnyArgs(1).CheckHealthAsync(default, default);
+        await _healthCheck.ReceivedWithAnyArgs(1).CheckHealthAsync(default, default);
 
         // Attempt to concurrent invoke it multiple times
         HealthReport[] reports = await Task.WhenAll(
@@ -64,16 +62,7 @@ public class CachedHealthCheckTests
             service.CheckHealthAsync(cts.Token));
 
         Assert.All(reports, AssertHealthReport);
-        await TestHealthCheck.Implementation.ReceivedWithAnyArgs(1).CheckHealthAsync(default, default);
-    }
-
-    [SuppressMessage("Performance", "CA1812:Avoid uninstantiated internal classes", Justification = "Type is registered in test service collection.")]
-    private sealed class TestHealthCheck : IHealthCheck
-    {
-        public static readonly IHealthCheck Implementation = Substitute.For<IHealthCheck>();
-
-        public Task<HealthCheckResult> CheckHealthAsync(HealthCheckContext context, CancellationToken cancellationToken = default)
-            => Implementation.CheckHealthAsync(context, cancellationToken);
+        await _healthCheck.ReceivedWithAnyArgs(1).CheckHealthAsync(default, default);
     }
 
     private static void AssertHealthReport(HealthReport actual)
