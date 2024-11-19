@@ -1,4 +1,4 @@
-﻿// -------------------------------------------------------------------------------------------------
+// -------------------------------------------------------------------------------------------------
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License (MIT). See LICENSE in the repo root for license information.
 // -------------------------------------------------------------------------------------------------
@@ -19,6 +19,7 @@ public class HealthCheckModule : IStartupModule
         EnsureArg.IsNotNull(services, nameof(services));
 
         services.AddOptions();
+        services.AddSingleton<HealthCheckCache>();
 
         services.Add<HealthCheckCachingOptionsValidation>()
             .Singleton()

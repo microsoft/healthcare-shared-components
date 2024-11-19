@@ -8,7 +8,6 @@ using System.Linq;
 using EnsureThat;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
-using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
 namespace Microsoft.Health.Api.Features.HealthChecks;
@@ -25,14 +24,16 @@ internal sealed class HealthCheckCachingPostConfigure : IPostConfigureOptions<He
         foreach (HealthCheckRegistration registration in list)
         {
             // Wrap health checks with a caching wrapper.
+            string registrationName = registration.Name;
             Func<IServiceProvider, IHealthCheck> healthCheckFactory = registration.Factory;
             var newRegistration = new HealthCheckRegistration(
                 registration.Name,
                 provider =>
                 {
-                    IOptions<HealthCheckCachingOptions> options = provider.GetRequiredService<IOptions<HealthCheckCachingOptions>>();
-                    ILoggerFactory loggerFactory = provider.GetRequiredService<ILoggerFactory>();
-                    return new CachedHealthCheck(healthCheckFactory(provider), options, loggerFactory);
+                    return new CachedHealthCheck(
+                        healthCheckFactory(provider),
+                        registrationName,
+                        provider.GetRequiredService<HealthCheckCache>());
                 },
                 registration.FailureStatus,
                 registration.Tags,
