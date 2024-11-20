@@ -35,7 +35,7 @@ public class SchemaInitializerTests : SqlIntegrationTestBase
     [Fact]
     public async Task DatabaseExists_DoesDatabaseExistAsync_ReturnsTrue()
     {
-        const string dbName = "willexist";
+        string dbName = $"Db_{Guid.NewGuid():N}";
 
         try
         {
