@@ -157,7 +157,7 @@ public class CredentialProviderTests
         byte[] x5CBytes = Convert.FromBase64String(token.Header.X5c);
 
 #if NET9_0_OR_GREATER
-        using X509Certificate2 x5CCertificate = X509CertificateLoader.LoadPkcs12(x5CBytes, default);
+        using X509Certificate2 x5CCertificate = X509CertificateLoader.LoadCertificate(x5CBytes);
 #else
         using var x5CCertificate = new X509Certificate2(x5CBytes);
 #endif
