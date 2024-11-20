@@ -32,25 +32,34 @@
   <Choose>
     <When Condition="'$(TargetFramework)' == '$(PreviousVersion)'">
       <PropertyGroup>
+        <ConfigurationBinderVersion>6.0.0</ConfigurationBinderVersion>
+        <DependencyInjectionVersion>6.0.0</DependencyInjectionVersion>
         <LoggingVersion>6.0.0</LoggingVersion>
         <MediatRVersion>12.1.1</MediatRVersion>
+        <OptionsVersion>6.0.0</OptionsVersion>
         <SdkPackageVersion>6.0.0</SdkPackageVersion>
         <SystemTextJsonVersion>$(SdkPackageVersion)</SystemTextJsonVersion>
       </PropertyGroup>
     </When>
     <When Condition="'$(TargetFramework)' == '$(StsVersion)'">
       <PropertyGroup>
+        <ConfigurationBinderVersion>7.0.0</ConfigurationBinderVersion>
+        <DependencyInjectionVersion>7.0.0</DependencyInjectionVersion>
         <LoggingVersion>7.0.0</LoggingVersion>
         <MediatRVersion>12.1.1</MediatRVersion>
+        <OptionsVersion>7.0.0</OptionsVersion>
         <SdkPackageVersion>7.0.0</SdkPackageVersion>
         <SystemTextJsonVersion>$(SdkPackageVersion)</SystemTextJsonVersion>
       </PropertyGroup>
     </When>
     <Otherwise>
       <PropertyGroup>
-        <LoggingVersion>8.0.0</LoggingVersion>
+        <ConfigurationBinderVersion>8.0.2</ConfigurationBinderVersion>
+        <DependencyInjectionVersion>8.0.2</DependencyInjectionVersion>
+        <LoggingVersion>8.0.2</LoggingVersion>
         <!-- >= 12.2.0 MediatR started depending on 8.x Microsoft.Extension.* libraries -->
         <MediatRVersion>12.2.0</MediatRVersion>
+        <OptionsVersion>8.0.2</OptionsVersion>
         <SdkPackageVersion>8.0.0</SdkPackageVersion>
         <SystemTextJsonVersion>8.0.5</SystemTextJsonVersion>
       </PropertyGroup>

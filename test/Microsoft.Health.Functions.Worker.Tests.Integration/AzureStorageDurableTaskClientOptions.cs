@@ -28,7 +28,7 @@ internal sealed class AzureStorageDurableTaskClientOptions
         {
             PartitionCount = PartitionCount,
             TaskHubName = TaskHubName,
-            StorageConnectionString = ConnectionString,
+            StorageAccountClientProvider = new StorageAccountClientProvider(ConnectionString),
         };
     }
 }
