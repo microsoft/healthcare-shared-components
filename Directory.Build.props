@@ -34,6 +34,7 @@
       <PropertyGroup>
         <ConfigurationBinderVersion>6.0.0</ConfigurationBinderVersion>
         <DependencyInjectionVersion>6.0.0</DependencyInjectionVersion>
+        <FormatsAsn1Version>6.0.1</FormatsAsn1Version>
         <IOPackagingVersion>6.0.2</IOPackagingVersion>
         <LoggingVersion>6.0.0</LoggingVersion>
         <MediatRVersion>12.1.1</MediatRVersion>
@@ -46,6 +47,7 @@
       <PropertyGroup>
         <ConfigurationBinderVersion>8.0.2</ConfigurationBinderVersion>
         <DependencyInjectionVersion>8.0.2</DependencyInjectionVersion>
+        <FormatsAsn1Version>8.0.1</FormatsAsn1Version>
         <IOPackagingVersion>8.0.1</IOPackagingVersion>
         <LoggingVersion>8.0.2</LoggingVersion>
         <!-- >= 12.2.0 MediatR started depending on 8.x Microsoft.Extension.* libraries -->
@@ -59,6 +61,7 @@
       <PropertyGroup>
         <ConfigurationBinderVersion>9.0.0</ConfigurationBinderVersion>
         <DependencyInjectionVersion>9.0.0</DependencyInjectionVersion>
+        <FormatsAsn1Version>9.0.0</FormatsAsn1Version>
         <IOPackagingVersion>9.0.0</IOPackagingVersion>
         <LoggingVersion>9.0.0</LoggingVersion>
         <MediatRVersion>12.4.1</MediatRVersion>

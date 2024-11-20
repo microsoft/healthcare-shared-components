@@ -20,6 +20,7 @@
     <PackageReference Include="Microsoft.Extensions.Options" />
     <PackageReference Include="System.CommandLine.Experimental" />
     <PackageReference Include="System.CommandLine.Rendering" />
+    <PackageReference Include="System.Text.Json" />
   </ItemGroup>
 
   <ItemGroup>

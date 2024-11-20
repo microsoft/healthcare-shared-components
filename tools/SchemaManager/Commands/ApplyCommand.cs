@@ -17,7 +17,7 @@ using SchemaManager.Validators;
 
 namespace SchemaManager.Commands;
 
-public class ApplyCommand : Command
+internal sealed class ApplyCommand : Command
 {
     private readonly ISchemaManager _schemaManager;
     private readonly ILogger<ApplyCommand> _logger;

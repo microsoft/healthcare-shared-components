@@ -10,6 +10,7 @@
     <PackageReference Include="Microsoft.Build.Framework" />
     <PackageReference Include="Microsoft.Build.Utilities.Core" />
     <PackageReference Include="Microsoft.SqlServer.DacFx" />
+    <PackageReference Include="System.IO.Packaging" />
   </ItemGroup>
 
   <PropertyGroup>

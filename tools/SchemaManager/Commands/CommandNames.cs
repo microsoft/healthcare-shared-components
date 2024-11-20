@@ -5,7 +5,7 @@
 
 namespace SchemaManager.Commands;
 
-public static class CommandNames
+internal static class CommandNames
 {
     public const string Apply = "apply";
     public const string Available = "available";

@@ -1,4 +1,4 @@
-﻿// -------------------------------------------------------------------------------------------------
+// -------------------------------------------------------------------------------------------------
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License (MIT). See LICENSE in the repo root for license information.
 // -------------------------------------------------------------------------------------------------
@@ -17,7 +17,7 @@ namespace Microsoft.Health.Functions.Tests.Integration;
 
 [SuppressMessage("Maintainability", "CA1515:Consider making public types internal", Justification = "Used by test framework.")]
 [SuppressMessage("Performance", "CA1812:Avoid uninstantiated internal classes", Justification = "Used by test framework.")]
-public class class WebJobsTestFixture<T> : IAsyncLifetime where T : FunctionsStartup, new()
+public class WebJobsTestFixture<T> : IAsyncLifetime where T : FunctionsStartup, new()
 {
     private readonly IHost _jobHost;
 

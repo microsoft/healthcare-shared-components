@@ -177,9 +177,11 @@ public class AuditEventTypeMappingTests : IAsyncLifetime
         public OkResult MultipleRoutes() => new OkResult();
 
         [AuditEventType(AuditEventType)]
+        [SuppressMessage("Style", "IDE0060:Remove unused parameter", Justification = "Example method")]
         public OkResult SameName(int x) => new OkResult();
 
         [AuditEventType(AnotherAuditEventType)]
+        [SuppressMessage("Style", "IDE0060:Remove unused parameter", Justification = "Example method")]
         public OkResult SameName(string y) => new OkResult();
 
         public OkResult NoAttribute() => new OkResult();

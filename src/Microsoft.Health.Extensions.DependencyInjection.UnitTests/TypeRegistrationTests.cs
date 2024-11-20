@@ -1,4 +1,4 @@
-﻿// -------------------------------------------------------------------------------------------------
+// -------------------------------------------------------------------------------------------------
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License (MIT). See LICENSE in the repo root for license information.
 // -------------------------------------------------------------------------------------------------
@@ -382,6 +382,6 @@ public class TypeRegistrationTests
     [Fact]
     public void GivenADelegateWithIncompatibleType_WhenResolvingComponent_ThenExceptionIsThrown()
     {
-        Assert.Throws<InvalidOperationException>(() => _collection.AddDelegate<ComponentB.Factory, int>());
+        Assert.Throws<InvalidOperationException>(_collection.AddDelegate<ComponentB.Factory, int>);
     }
 }

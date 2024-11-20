@@ -3,6 +3,7 @@
 // Licensed under the MIT License (MIT). See LICENSE in the repo root for license information.
 // -------------------------------------------------------------------------------------------------
 
+using System.Diagnostics.CodeAnalysis;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -16,7 +17,8 @@ using Microsoft.Health.SqlServer.Web.Features.Schema;
 
 namespace Microsoft.Health.SqlServer.Web;
 
-public class Startup
+[SuppressMessage("Maintainability", "CA1515:Consider making public types internal", Justification = "Used by others.")]
+public sealed class Startup
 {
     public Startup(IConfiguration configuration)
     {
@@ -26,7 +28,7 @@ public class Startup
     public IConfiguration Configuration { get; }
 
     // This method gets called by the runtime. Use this method to add services to the container.
-    public virtual void ConfigureServices(IServiceCollection services)
+    public void ConfigureServices(IServiceCollection services)
     {
         services.AddMvc(options => options.EnableEndpointRouting = false);
 
@@ -45,7 +47,8 @@ public class Startup
     }
 
     // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-    public virtual void Configure(IApplicationBuilder app)
+    [SuppressMessage("Performance", "CA1822:Mark members as static", Justification = "Startup method.")]
+    public void Configure(IApplicationBuilder app)
     {
         app.UseMvc();
     }

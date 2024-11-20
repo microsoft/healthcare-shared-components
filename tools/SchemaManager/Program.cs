@@ -19,9 +19,11 @@ using Microsoft.Health.SqlServer.Features.Client;
 using Microsoft.Health.SqlServer.Features.Schema.Manager;
 using Microsoft.Health.SqlServer.Features.Storage;
 using Microsoft.Health.SqlServer.Features.Schema.Messages.Notifications;
+using System.Diagnostics.CodeAnalysis;
 
 namespace SchemaManager;
 
+[SuppressMessage("Maintainability", "CA1515:Consider making public types internal", Justification = "Program entry point.")]
 public static class Program
 {
     public static async Task<int> Main(string[] args)

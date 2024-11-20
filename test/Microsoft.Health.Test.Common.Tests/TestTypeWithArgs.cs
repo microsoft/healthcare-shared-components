@@ -3,9 +3,12 @@
 // Licensed under the MIT License (MIT). See LICENSE in the repo root for license information.
 // -------------------------------------------------------------------------------------------------
 
+using System.Diagnostics.CodeAnalysis;
+
 namespace Microsoft.Health.Test.Utilities.UnitTests;
 
-public class TestTypeWithArgs
+[SuppressMessage("Performance", "CA1812:Avoid uninstantiated internal classes", Justification = "Type loaded via reflection.")]
+internal sealed class TestTypeWithArgs
 {
     public TestTypeWithArgs(TestType oneArg)
         : this(oneArg, null)

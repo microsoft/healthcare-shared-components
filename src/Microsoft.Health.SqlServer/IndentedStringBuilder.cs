@@ -184,7 +184,7 @@ public partial class IndentedStringBuilder
 
     [SuppressMessage("Microsoft.Design", "CA1034: Nested types should not be visible", Justification = "Type is only useful in context of IndentedStringBuilder.")]
     [SuppressMessage("Microsoft.Performance", "CA1815: Override equals and operator equals on value types", Justification = "Instances are not compared.")]
-    public struct IndentedScope : IDisposable
+    public readonly struct IndentedScope : IDisposable
     {
         private readonly IndentedStringBuilder _sb;
 
@@ -196,7 +196,7 @@ public partial class IndentedStringBuilder
             _sb.IndentLevel++;
         }
 
-        public void Dispose()
+        public readonly void Dispose()
         {
             _sb.IndentLevel--;
         }

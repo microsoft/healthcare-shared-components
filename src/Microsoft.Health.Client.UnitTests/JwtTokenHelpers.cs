@@ -1,4 +1,4 @@
-﻿// -------------------------------------------------------------------------------------------------
+// -------------------------------------------------------------------------------------------------
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License (MIT). See LICENSE in the repo root for license information.
 // -------------------------------------------------------------------------------------------------
@@ -9,7 +9,7 @@ using Microsoft.IdentityModel.Tokens;
 
 namespace Microsoft.Health.Client.UnitTests;
 
-public static class JwtTokenHelpers
+internal static class JwtTokenHelpers
 {
     internal static string GenerateToken(DateTime expiration)
     {

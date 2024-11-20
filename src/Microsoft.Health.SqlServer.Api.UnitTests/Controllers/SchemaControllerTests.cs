@@ -46,7 +46,7 @@ public sealed class SchemaControllerTests : IDisposable
         Assert.NotNull(jsonResult);
 
         var jArrayResult = JArray.FromObject(jsonResult.Value);
-        Assert.Equal(Enum.GetNames(typeof(TestSchemaVersion)).Length - 1, jArrayResult.Count);
+        Assert.Equal(Enum.GetNames<TestSchemaVersion>().Length - 1, jArrayResult.Count);
 
         JToken firstResult = jArrayResult.First;
         Assert.Equal(1, firstResult["id"]);
@@ -73,7 +73,7 @@ public sealed class SchemaControllerTests : IDisposable
         Assert.NotNull(jsonResult);
 
         var jArrayResult = JArray.FromObject(jsonResult.Value);
-        Assert.Equal(Enum.GetNames(typeof(TestSchemaVersion)).Length - 2, jArrayResult.Count);
+        Assert.Equal(Enum.GetNames<TestSchemaVersion>().Length - 2, jArrayResult.Count);
 
         JToken firstResult = jArrayResult.First;
         Assert.Equal(2, firstResult["id"]);

@@ -10,7 +10,7 @@ using EnsureThat;
 
 namespace SchemaManager.Validators;
 
-public static class MutuallyExclusiveOptionValidator
+internal static class MutuallyExclusiveOptionValidator
 {
     /// <summary>
     /// Validates that only one of the option from given options is present in the symbol
@@ -29,7 +29,7 @@ public static class MutuallyExclusiveOptionValidator
 
         foreach (Option mutuallyExclusiveOption in mutuallyExclusiveOptions)
         {
-            if (mutuallyExclusiveOption.Aliases.Any(alias => symbol.Children.Contains(alias)))
+            if (mutuallyExclusiveOption.Aliases.Any(symbol.Children.Contains))
             {
                 count++;
             }

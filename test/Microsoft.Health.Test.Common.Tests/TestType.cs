@@ -8,7 +8,7 @@ using System.Diagnostics.CodeAnalysis;
 namespace Microsoft.Health.Test.Utilities.UnitTests;
 
 [SuppressMessage("Performance", "CA1822:Mark members as static", Justification = "Type metadata is read via reflection.")]
-public class TestType
+internal class TestType
 {
     public string Property1 { get; set; }
 

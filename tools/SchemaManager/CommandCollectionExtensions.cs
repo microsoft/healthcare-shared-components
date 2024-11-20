@@ -16,7 +16,7 @@ namespace SchemaManager;
 /// <summary>
 /// Contains the collection extensions for adding the CLI commands.
 /// </summary>
-public static class CommandCollectionExtensions
+internal static class CommandCollectionExtensions
 {
     /// <summary>
     /// Adds the CLI commands to the DI container. These are resolved when the commands are registered with the

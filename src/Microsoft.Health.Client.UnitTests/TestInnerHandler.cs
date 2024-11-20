@@ -11,7 +11,7 @@ using System.Threading.Tasks;
 
 namespace Microsoft.Health.Client.UnitTests;
 
-public class TestInnerHandler : DelegatingHandler
+internal sealed class TestInnerHandler : DelegatingHandler
 {
     [SuppressMessage("Reliability", "CA2000:Dispose objects before losing scope", Justification = "Caller is responsible for disposal.")]
     protected override Task<HttpResponseMessage> SendAsync(

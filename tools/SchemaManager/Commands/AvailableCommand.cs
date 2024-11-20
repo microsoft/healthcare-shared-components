@@ -17,7 +17,7 @@ using SchemaManager.Validators;
 
 namespace SchemaManager.Commands;
 
-public class AvailableCommand : Command
+internal sealed class AvailableCommand : Command
 {
     private readonly ISchemaManager _schemaManager;
 

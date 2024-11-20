@@ -187,7 +187,7 @@ public class RoleLoaderTests
     [Fact]
     public async Task GivenValidDataActions_WhenSpecifiedAsRoleActions_AreRecognized()
     {
-        IEnumerable<DataActions> actionNames = Enum.GetValues(typeof(DataActions))
+        IEnumerable<DataActions> actionNames = Enum.GetValues<DataActions>()
             .Cast<DataActions>()
             .Where(a => a != DataActions.All && a != DataActions.None);
 

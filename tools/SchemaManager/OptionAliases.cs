@@ -5,7 +5,7 @@
 
 namespace SchemaManager;
 
-public static class OptionAliases
+internal static class OptionAliases
 {
     public const string Version = "--version";
     public const string ShortVersion = "-v";

@@ -117,7 +117,7 @@ public class PurgeOrchestrationInstanceHistoryTests
             .PurgeInstanceAsync(instanceId2, Arg.Any<PurgeInstanceOptions>(), Arg.Any<CancellationToken>());
     }
 
-    private static AsyncPageable<T> CreatePaginatedResults<T>(IList<T> data, int pageSize)
+    private static AsyncPageable<T> CreatePaginatedResults<T>(List<T> data, int pageSize)
         where T : notnull
     {
         return Pageable.Create((string? continuation, CancellationToken token) =>

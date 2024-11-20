@@ -42,13 +42,13 @@ public class StorageCheckpointClient : ICheckpointClient
         var blobName = GetBlobName(partition, checkpointIdentifier);
 
         IAsyncEnumerable<Page<BlobItem>> resultSegment = _storageClient.GetBlobsAsync(
-                                traits: BlobTraits.Metadata,
-                                states: BlobStates.All,
-                                prefix: blobName,
-                                cancellationToken: token)
-                                .AsPages();
+            traits: BlobTraits.Metadata,
+            states: BlobStates.All,
+            prefix: blobName,
+            cancellationToken: token)
+            .AsPages();
 
-        await foreach (Page<BlobItem> blobPage in resultSegment)
+        await foreach (Page<BlobItem> blobPage in resultSegment.ConfigureAwait(false))
         {
             if (blobPage.Values.Count == 0)
             {

@@ -31,18 +31,18 @@ internal sealed class HttpExceptionFilterAttribute : ActionFilterAttribute
 
             switch (context.Exception)
             {
-                case NotImplementedException _:
+                case NotImplementedException:
                     context.Result = new JsonResult(resultJson) { StatusCode = (int)HttpStatusCode.NotImplemented };
                     context.ExceptionHandled = true;
                     break;
 
-                case SqlRecordNotFoundException _:
-                case FileNotFoundException _:
+                case SqlRecordNotFoundException:
+                case FileNotFoundException:
                     context.Result = new JsonResult(resultJson) { StatusCode = (int)HttpStatusCode.NotFound };
                     context.ExceptionHandled = true;
                     break;
 
-                case SqlOperationFailedException _:
+                case SqlOperationFailedException:
                     context.Result = new JsonResult(resultJson) { StatusCode = (int)HttpStatusCode.InternalServerError };
                     context.ExceptionHandled = true;
                     break;
