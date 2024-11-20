@@ -12,7 +12,7 @@
     <HighEntropyVA>true</HighEntropyVA>
     <IsPackable>true</IsPackable>
     <LangVersion>latest</LangVersion>
-    <LatestVersion>net8.0</LatestVersion>
+    <LatestVersion>net9.0</LatestVersion>
     <LtsVersion>net8.0</LtsVersion>
     <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
@@ -21,7 +21,7 @@
     <PublishRepositoryUrl>true</PublishRepositoryUrl>
     <RootDirectory>$(MSBuildThisFileDirectory)</RootDirectory>
     <RunSettingsFilePath>$(RootDirectory)CodeCoverage.runsettings</RunSettingsFilePath>
-    <StsVersion>net7.0</StsVersion>
+    <StsVersion>net9.0</StsVersion>
     <SupportedFrameworks>$(LtsVersion);$(StsVersion);$(PreviousVersion)</SupportedFrameworks>
     <TargetLatestRuntimePatch>true</TargetLatestRuntimePatch>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
@@ -34,34 +34,37 @@
       <PropertyGroup>
         <ConfigurationBinderVersion>6.0.0</ConfigurationBinderVersion>
         <DependencyInjectionVersion>6.0.0</DependencyInjectionVersion>
+        <IOPackagingVersion>6.0.2</IOPackagingVersion>
         <LoggingVersion>6.0.0</LoggingVersion>
         <MediatRVersion>12.1.1</MediatRVersion>
         <OptionsVersion>6.0.0</OptionsVersion>
         <SdkPackageVersion>6.0.0</SdkPackageVersion>
-        <SystemTextJsonVersion>$(SdkPackageVersion)</SystemTextJsonVersion>
+        <SystemTextJsonVersion>6.0.11</SystemTextJsonVersion>
       </PropertyGroup>
     </When>
-    <When Condition="'$(TargetFramework)' == '$(StsVersion)'">
+    <When Condition="'$(TargetFramework)' == '$(LtsVersion)'">
       <PropertyGroup>
-        <ConfigurationBinderVersion>7.0.0</ConfigurationBinderVersion>
-        <DependencyInjectionVersion>7.0.0</DependencyInjectionVersion>
-        <LoggingVersion>7.0.0</LoggingVersion>
-        <MediatRVersion>12.1.1</MediatRVersion>
-        <OptionsVersion>7.0.0</OptionsVersion>
-        <SdkPackageVersion>7.0.0</SdkPackageVersion>
-        <SystemTextJsonVersion>$(SdkPackageVersion)</SystemTextJsonVersion>
+        <ConfigurationBinderVersion>8.0.2</ConfigurationBinderVersion>
+        <DependencyInjectionVersion>8.0.2</DependencyInjectionVersion>
+        <IOPackagingVersion>8.0.1</IOPackagingVersion>
+        <LoggingVersion>8.0.2</LoggingVersion>
+        <!-- >= 12.2.0 MediatR started depending on 8.x Microsoft.Extension.* libraries -->
+        <MediatRVersion>12.4.1</MediatRVersion>
+        <OptionsVersion>8.0.2</OptionsVersion>
+        <SdkPackageVersion>8.0.0</SdkPackageVersion>
+        <SystemTextJsonVersion>8.0.5</SystemTextJsonVersion>
       </PropertyGroup>
     </When>
     <Otherwise>
       <PropertyGroup>
-        <ConfigurationBinderVersion>8.0.2</ConfigurationBinderVersion>
-        <DependencyInjectionVersion>8.0.2</DependencyInjectionVersion>
-        <LoggingVersion>8.0.2</LoggingVersion>
-        <!-- >= 12.2.0 MediatR started depending on 8.x Microsoft.Extension.* libraries -->
-        <MediatRVersion>12.2.0</MediatRVersion>
-        <OptionsVersion>8.0.2</OptionsVersion>
-        <SdkPackageVersion>8.0.0</SdkPackageVersion>
-        <SystemTextJsonVersion>8.0.5</SystemTextJsonVersion>
+        <ConfigurationBinderVersion>9.0.0</ConfigurationBinderVersion>
+        <DependencyInjectionVersion>9.0.0</DependencyInjectionVersion>
+        <IOPackagingVersion>9.0.0</IOPackagingVersion>
+        <LoggingVersion>9.0.0</LoggingVersion>
+        <MediatRVersion>12.4.1</MediatRVersion>
+        <OptionsVersion>9.0.0</OptionsVersion>
+        <SdkPackageVersion>9.0.0</SdkPackageVersion>
+        <SystemTextJsonVersion>9.0.0</SystemTextJsonVersion>
       </PropertyGroup>
     </Otherwise>
   </Choose>

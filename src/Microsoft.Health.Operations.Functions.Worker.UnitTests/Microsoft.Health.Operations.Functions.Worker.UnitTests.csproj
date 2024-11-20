@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>$(LatestVersion)</TargetFrameworks>
+    <TargetFrameworks>$(LatestVersion);$(LtsVersion)</TargetFrameworks>
     <Nullable>enable</Nullable>
   </PropertyGroup>
 

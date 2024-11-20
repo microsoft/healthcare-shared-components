@@ -27,7 +27,7 @@ public class DistributedSorter(IOptions<SortingOptions> options)
         EnsureArg.IsNotNull(context, nameof(context)).ThrowIfInvalidOperationId();
         EnsureArg.IsNotNull(checkpoint, nameof(context));
 
-        ILogger logger = context.CreateReplaySafeLogger(typeof(DistributedSorter));
+        ILogger logger = context.CreateReplaySafeLogger<DistributedSorter>();
 
         if (checkpoint.SortedLength is 1)
             logger.LogInformation("Sorting [{Values}]", string.Join(", ", checkpoint.Values));

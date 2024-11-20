@@ -13,6 +13,8 @@ using Microsoft.Health.Operations.Functions.DurableTask;
 
 namespace Microsoft.Health.Functions.Tests.Integration;
 
+[SuppressMessage("Maintainability", "CA1515:Consider making public types internal", Justification = "Used by test framework.")]
+[SuppressMessage("Performance", "CA1812:Avoid uninstantiated internal classes", Justification = "Used by test framework.")]
 [SuppressMessage("Performance", "CA1822:Mark members as static", Justification = "Used by test framework.")]
 public class TestStartup
 {

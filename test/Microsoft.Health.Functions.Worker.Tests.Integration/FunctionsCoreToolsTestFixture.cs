@@ -4,6 +4,7 @@
 // -------------------------------------------------------------------------------------------------
 
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Net.Http;
 using System.Threading.Tasks;
 using DurableTask.AzureStorage;
@@ -20,6 +21,7 @@ using Xunit.Abstractions;
 
 namespace Microsoft.Health.Functions.Worker.Tests.Integration;
 
+[SuppressMessage("Maintainability", "CA1515:Consider making public types internal", Justification = "Used by test framework.")]
 public class FunctionsCoreToolsTestFixture : IAsyncLifetime
 {
     private readonly IServiceProvider _serviceProvider;

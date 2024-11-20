@@ -3,6 +3,7 @@
 // Licensed under the MIT License (MIT). See LICENSE in the repo root for license information.
 // -------------------------------------------------------------------------------------------------
 
+using System.Diagnostics.CodeAnalysis;
 using System.Threading.Tasks;
 using Microsoft.Azure.Functions.Extensions.DependencyInjection;
 using Microsoft.Azure.WebJobs.Extensions.DurableTask;
@@ -14,7 +15,9 @@ using Xunit.Abstractions;
 
 namespace Microsoft.Health.Functions.Tests.Integration;
 
-public class WebJobsTestFixture<T> : IAsyncLifetime where T : FunctionsStartup, new()
+[SuppressMessage("Maintainability", "CA1515:Consider making public types internal", Justification = "Used by test framework.")]
+[SuppressMessage("Performance", "CA1812:Avoid uninstantiated internal classes", Justification = "Used by test framework.")]
+public class class WebJobsTestFixture<T> : IAsyncLifetime where T : FunctionsStartup, new()
 {
     private readonly IHost _jobHost;
 
