@@ -69,7 +69,7 @@
     <PackageVersion Include="Microsoft.NET.Sdk.Functions" Version="4.6.0" />
     <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="17.12.0" />
     <PackageVersion Include="Microsoft.SourceLink.GitHub" Version="8.0.0" />
-    <PackageVersion Include="Microsoft.SqlServer.DacFx" Version="162.4.92" />
+    <PackageVersion Include="Microsoft.SqlServer.DacFx" Version="162.5.57" />
     <PackageVersion Include="Microsoft.SqlServer.SqlManagementObjects" Version="172.52.0" />
     <PackageVersion Include="Newtonsoft.Json" Version="13.0.3" />
     <PackageVersion Include="Newtonsoft.Json.Schema" Version="4.0.1" />
