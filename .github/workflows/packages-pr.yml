@@ -22,7 +22,7 @@ jobs:
       with:
         global-json-file: 'global.json'
         dotnet-version: |
-          7.x
+          6.x
           8.x
 
     - name: Version
