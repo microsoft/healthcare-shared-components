@@ -38,7 +38,6 @@ public sealed class SchemaJobWorkerTests : IDisposable
         _processTerminator = Substitute.For<IProcessTerminator>();
         _logger = NullLogger<SchemaJobWorker>.Instance;
         _schemaDataStore = Substitute.For<ISchemaDataStore>();
-        IServiceScope scope = Substitute.For<IServiceScope>();
         var collection = new ServiceCollection();
         collection.AddSingleton<ISchemaDataStore>(_schemaDataStore);
         _serviceProvider = collection.BuildServiceProvider();

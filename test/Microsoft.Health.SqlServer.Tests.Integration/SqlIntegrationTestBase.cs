@@ -18,6 +18,7 @@ using Xunit.Abstractions;
 
 namespace Microsoft.Health.SqlServer.Tests.Integration;
 
+[SuppressMessage("Maintainability", "CA1515:Consider making public types internal", Justification = "Used by test framework.")]
 public abstract class SqlIntegrationTestBase : IAsyncLifetime
 {
     protected SqlIntegrationTestBase(ITestOutputHelper outputHelper)

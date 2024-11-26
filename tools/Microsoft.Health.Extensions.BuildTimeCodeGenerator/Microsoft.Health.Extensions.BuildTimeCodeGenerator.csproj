@@ -15,6 +15,7 @@
     <PackageReference Include="Microsoft.Data.SqlClient" />
     <PackageReference Include="Microsoft.SqlServer.DacFx" />
     <PackageReference Include="System.CommandLine.DragonFruit" />
+    <PackageReference Include="System.IO.Packaging" />
   </ItemGroup>
 
   <!-- Pack settings -->

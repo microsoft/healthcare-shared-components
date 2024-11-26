@@ -18,6 +18,7 @@ using Newtonsoft.Json.Linq;
 
 namespace Microsoft.Health.SqlServer.Tests.E2E.Rest;
 
+[SuppressMessage("Maintainability", "CA1515:Consider making public types internal", Justification = "Used by test framework.")]
 public class HttpIntegrationTestFixture<TStartup> : IDisposable
 {
     private readonly string _environmentUrl;

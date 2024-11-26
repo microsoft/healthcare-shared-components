@@ -56,11 +56,11 @@ public class CredentialProviderTests
         using var httpClient = new HttpClient(mockHandler);
 
         var credentialConfiguration = new OAuth2ClientCredentialOptions(
-                    new Uri("https://fakehost/connect/token"),
-                    "invalid resource",
-                    "invalid scope",
-                    "invalid client id",
-                    "invalid client secret");
+            new Uri("https://fakehost/connect/token"),
+            "invalid resource",
+            "invalid scope",
+            "invalid client id",
+            "invalid client secret");
 
         var credentialProvider = new OAuth2ClientCredentialProvider(GetOptionsMonitor(credentialConfiguration), httpClient);
         await Assert.ThrowsAsync<FailToRetrieveTokenException>(() => credentialProvider.GetBearerTokenAsync(cancellationToken: default));
@@ -83,13 +83,13 @@ public class CredentialProviderTests
         using var httpClient = new HttpClient(mockHandler);
 
         var credentialConfiguration = new OAuth2UserPasswordCredentialOptions(
-                    new Uri("https://fakehost/connect/token"),
-                    "invalid resource",
-                    "invalid scope",
-                    "invalid client id",
-                    "invalid client secret",
-                    "invalid username",
-                    "invalid password");
+            new Uri("https://fakehost/connect/token"),
+            "invalid resource",
+            "invalid scope",
+            "invalid client id",
+            "invalid client secret",
+            "invalid username",
+            "invalid password");
 
         var credentialProvider = new OAuth2UserPasswordCredentialProvider(GetOptionsMonitor(credentialConfiguration), httpClient);
         await Assert.ThrowsAsync<FailToRetrieveTokenException>(() => credentialProvider.GetBearerTokenAsync(cancellationToken: default));
@@ -144,7 +144,7 @@ public class CredentialProviderTests
     public void GivenACertificateWithAPrivateKey_WhenGeneratingClientAssertion_ThenPrivateKeyNotIncludedInX5c()
     {
         string clientId = Guid.NewGuid().ToString();
-        using var certificate = BuildSelfSignedServerCertificate(clientId);
+        using var certificate = BuildSelfSignedServerPfxCertificate(clientId);
 
         Assert.True(certificate.HasPrivateKey);
 
@@ -154,14 +154,18 @@ public class CredentialProviderTests
         var token = handler.ReadToken(assertion) as JwtSecurityToken;
 
         Assert.NotNull(token?.Header.X5c);
-
         byte[] x5CBytes = Convert.FromBase64String(token.Header.X5c);
+
+#if NET9_0_OR_GREATER
+        using X509Certificate2 x5CCertificate = X509CertificateLoader.LoadCertificate(x5CBytes);
+#else
         using var x5CCertificate = new X509Certificate2(x5CBytes);
+#endif
 
         Assert.Equal($"CN={clientId}", x5CCertificate.SubjectName.Name);
         Assert.False(x5CCertificate.HasPrivateKey);
 
-        static X509Certificate2 BuildSelfSignedServerCertificate(string certificateName)
+        static X509Certificate2 BuildSelfSignedServerPfxCertificate(string certificateName)
         {
             var sanBuilder = new SubjectAlternativeNameBuilder();
             sanBuilder.AddIpAddress(IPAddress.Loopback);
@@ -180,7 +184,11 @@ public class CredentialProviderTests
 
             X509Certificate2 certificate = request.CreateSelfSigned(new DateTimeOffset(DateTime.UtcNow.AddDays(-1)), new DateTimeOffset(DateTime.UtcNow.AddDays(1)));
 
+#if NET9_0_OR_GREATER
+            return X509CertificateLoader.LoadPkcs12(certificate.Export(X509ContentType.Pfx, "exampleString"), "exampleString", X509KeyStorageFlags.Exportable);
+#else
             return new X509Certificate2(certificate.Export(X509ContentType.Pfx, "exampleString"), "exampleString", X509KeyStorageFlags.Exportable);
+#endif
         }
     }
 

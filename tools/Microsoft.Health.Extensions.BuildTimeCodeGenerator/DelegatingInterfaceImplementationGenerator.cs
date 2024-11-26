@@ -1,4 +1,4 @@
-﻿// -------------------------------------------------------------------------------------------------
+// -------------------------------------------------------------------------------------------------
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License (MIT). See LICENSE in the repo root for license information.
 // -------------------------------------------------------------------------------------------------
@@ -136,8 +136,8 @@ internal class DelegatingInterfaceImplementationGenerator : ICodeGenerator
                             .GetParameters()
                             .Select(p => Parameter(Identifier(p.Name))
                                 .WithType(p.ParameterType.ToTypeSyntax())
-                                .WithModifiers(p.IsDefined(typeof(ParamArrayAttribute), false) ? TokenList(Token(SyntaxKind.ParamsKeyword)) : TokenList())
-                                .WithOptionalAttributeLists(p.CustomAttributes))
+                                .WithModifiers(ParamsTokenList(p))
+                                .WithOptionalAttributeLists(CustomAttributeList(p)))
                             .ToArray())
                     .AddAttributeLists(ExcludeFromCodeCoverageAttributeSyntax)
                     .WithBody(Block())
@@ -173,5 +173,35 @@ internal class DelegatingInterfaceImplementationGenerator : ICodeGenerator
                 yield return method;
             }
         }
+    }
+
+    private static SyntaxTokenList ParamsTokenList(ParameterInfo p)
+    {
+        if (p.IsDefined(typeof(ParamArrayAttribute), false))
+            return TokenList(Token(SyntaxKind.ParamsKeyword));
+
+#if NET9_0_OR_GREATER
+        if (p.IsDefined(typeof(System.Runtime.CompilerServices.ParamCollectionAttribute), false) &&
+            p.IsDefined(typeof(System.Runtime.CompilerServices.ScopedRefAttribute), false))
+        {
+            return TokenList(Token(SyntaxKind.ParamsKeyword), Token(SyntaxKind.ScopedKeyword));
+        }
+#endif
+
+        return TokenList();
+    }
+
+    private static IEnumerable<CustomAttributeData> CustomAttributeList(ParameterInfo p)
+    {
+#if NET9_0_OR_GREATER
+        if (p.IsDefined(typeof(System.Runtime.CompilerServices.ParamCollectionAttribute), false) &&
+            p.IsDefined(typeof(System.Runtime.CompilerServices.ScopedRefAttribute), false))
+        {
+            return p
+                .CustomAttributes
+                .Where(a => a.AttributeType != typeof(System.Runtime.CompilerServices.ParamCollectionAttribute) && a.AttributeType != typeof(System.Runtime.CompilerServices.ScopedRefAttribute));
+        }
+#endif
+        return p.CustomAttributes;
     }
 }

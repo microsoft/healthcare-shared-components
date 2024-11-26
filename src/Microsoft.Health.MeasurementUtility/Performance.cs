@@ -34,15 +34,15 @@ public static class Performance
 
         public Action<double> Handler { get; set; }
 
-        public TimeSpan Elapsed => Stopwatch.Elapsed;
+        public readonly TimeSpan Elapsed => Stopwatch.Elapsed;
 
-        public ITimed Record()
+        public readonly ITimed Record()
         {
             Handler(Elapsed.TotalMilliseconds);
             return this;
         }
 
-        public void Dispose()
+        public readonly void Dispose()
         {
             Stopwatch.Stop();
             Record();

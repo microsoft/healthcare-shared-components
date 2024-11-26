@@ -180,7 +180,7 @@ internal class SqlServerSchemaDataStore : ISchemaDataStore
 
                             // To combine the complete and completed version since earlier status was marked in 'complete' status and now the fix has made to mark the status in completed state
                             status = string.Equals(status, "complete", StringComparison.OrdinalIgnoreCase) ? "completed" : status;
-                            var schemaVersionStatus = (SchemaVersionStatus)Enum.Parse(typeof(SchemaVersionStatus), status, true);
+                            var schemaVersionStatus = Enum.Parse<SchemaVersionStatus>(status, ignoreCase: true);
                             var currentVersion = new CurrentVersionInformation((int)dataReader.GetValue(0), schemaVersionStatus, instanceNames);
                             currentVersions.Add(currentVersion);
                         }

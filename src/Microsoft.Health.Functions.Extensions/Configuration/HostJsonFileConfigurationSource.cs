@@ -189,13 +189,5 @@ internal sealed class HostJsonFileConfigurationSource : IConfigurationSource
             catch
             { }
         }
-
-        private static JObject TryAddBundleConfiguration(JObject content, string bundleId, string bundleVersion)
-        {
-            string bundleConfiguration = "{ 'id': '" + bundleId + "', 'version': '" + bundleVersion + "'}";
-            content.Add("extensionBundle", JToken.Parse(bundleConfiguration));
-
-            return content;
-        }
     }
 }

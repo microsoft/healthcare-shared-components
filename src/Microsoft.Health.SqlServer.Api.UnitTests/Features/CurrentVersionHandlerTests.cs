@@ -44,8 +44,8 @@ public class CurrentVersionHandlerTests
 
         var mockCurrentVersions = new List<CurrentVersionInformation>()
         {
-            new CurrentVersionInformation(1, (SchemaVersionStatus)Enum.Parse(typeof(SchemaVersionStatus), status, true), new List<string>() { "server1", "server2" }),
-            new CurrentVersionInformation(2, (SchemaVersionStatus)Enum.Parse(typeof(SchemaVersionStatus), status, true), new List<string>()),
+            new CurrentVersionInformation(1, Enum.Parse<SchemaVersionStatus>(status, true), new List<string>() { "server1", "server2" }),
+            new CurrentVersionInformation(2, Enum.Parse<SchemaVersionStatus>(status, true), new List<string>()),
         };
 
         _schemaDataStore.GetCurrentVersionAsync(Arg.Any<CancellationToken>())

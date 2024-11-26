@@ -2,9 +2,10 @@
 
   <PropertyGroup>
     <AzureFunctionsVersion>v4</AzureFunctionsVersion>
+    <NoWarn>$(NoWarn);CA1515</NoWarn>
     <Nullable>enable</Nullable>
     <OutputType>Exe</OutputType>
-    <TargetFrameworks>$(LatestVersion)</TargetFrameworks>
+    <TargetFrameworks>$(LatestVersion);$(LtsVersion)</TargetFrameworks>
   </PropertyGroup>
 
   <ItemGroup>

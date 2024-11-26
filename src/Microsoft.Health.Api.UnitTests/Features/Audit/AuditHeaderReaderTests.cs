@@ -22,7 +22,7 @@ namespace Microsoft.Health.Api.UnitTests.Features.Audit;
 [SuppressMessage("Security", "CA5394:Do not use insecure randomness", Justification = "Values do not need to be cryptographically secure.")]
 public class AuditHeaderReaderTests
 {
-    private readonly HttpContext _httpContext;
+    private readonly DefaultHttpContext _httpContext;
     private readonly IOptions<AuditConfiguration> _optionsAuditConfiguration;
     private const string CustomAuditHeaderPrefix = "X-MS-AZUREHEALTH-AUDIT-";
 

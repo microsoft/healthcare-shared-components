@@ -17,7 +17,7 @@ namespace Microsoft.Health.SqlServer.UnitTests;
 /// Because SqlException is marked as sealed with no public constructor, we need to
 /// use reflection to be able to create an instance of it for unit testing.
 /// </remarks>
-public static class SqlExceptionFactory
+internal static class SqlExceptionFactory
 {
     private static readonly Func<SqlErrorCollection> SqlErrorCollectionConstructorDelegate = CreateSqlCollectionFactory();
     private static readonly Action<SqlErrorCollection, SqlError> SqlErrorCollectionAddDelegate = CreateAddErrorMethod();

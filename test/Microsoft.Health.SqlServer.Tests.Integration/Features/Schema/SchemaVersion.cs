@@ -5,7 +5,7 @@
 
 namespace Microsoft.Health.SqlServer.Tests.Integration.Features.Schema;
 
-public enum SchemaVersion
+internal enum SchemaVersion
 {
     Unknown = 0,
     Version1 = 1,

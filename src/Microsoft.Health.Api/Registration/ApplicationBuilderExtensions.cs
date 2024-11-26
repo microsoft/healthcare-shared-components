@@ -44,14 +44,14 @@ public static class ApplicationBuilderExtensions
             Predicate = predicate,
             ResponseWriter = async (httpContext, healthReport) =>
             {
-                var response = JsonConvert.SerializeObject(
+                string response = JsonConvert.SerializeObject(
                     new
                     {
                         overallStatus = healthReport.Status.ToString(),
                         details = healthReport.Entries.Select(entry => new
                         {
                             name = entry.Key,
-                            status = Enum.GetName(typeof(HealthStatus), entry.Value.Status),
+                            status = Enum.GetName(entry.Value.Status),
                             description = entry.Value.Description,
                             data = entry.Value.Data,
                         }),
@@ -76,11 +76,8 @@ public static class ApplicationBuilderExtensions
         app.ApplicationServices.GetRequiredService<ValueCache<HealthReport>>();
 
         // only match on exact healthCheckPathString
-        Func<HttpContext, bool> predicate = c =>
-        {
-            return (c.Request.Path.StartsWithSegments(path, out var remaining) && string.IsNullOrEmpty(remaining));
-        };
-
-        app.MapWhen(predicate, b => b.UseMiddleware<CachedHealthCheckMiddleware>());
+        app.MapWhen(
+            c => c.Request.Path.StartsWithSegments(path, out PathString remaining) && string.IsNullOrEmpty(remaining),
+            b => b.UseMiddleware<CachedHealthCheckMiddleware>());
     }
 }

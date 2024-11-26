@@ -22,6 +22,6 @@ public static class StringExtensions
         EnsureArg.IsNotNull(data, nameof(data));
 
         byte[] hash = SHA256.HashData(Encoding.UTF8.GetBytes(data));
-        return BitConverter.ToString(hash).Replace("-", string.Empty, StringComparison.Ordinal);
+        return Convert.ToHexString(hash);
     }
 }

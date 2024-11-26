@@ -8,7 +8,7 @@ using System.CommandLine;
 
 namespace SchemaManager;
 
-public static class CommandOptions
+internal static class CommandOptions
 {
     public static Option ServerOption()
     {

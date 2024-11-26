@@ -7,7 +7,7 @@ using System;
 
 namespace SchemaManager;
 
-public class CommandLineOptions
+internal sealed class CommandLineOptions
 {
     public Uri Server { get; set; }
 

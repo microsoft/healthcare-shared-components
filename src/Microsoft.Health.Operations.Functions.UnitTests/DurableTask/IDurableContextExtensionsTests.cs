@@ -23,7 +23,7 @@ public class IDurableContextExtensionsTests
         IDurableOrchestrationContext context = Substitute.For<IDurableOrchestrationContext>();
         context.InstanceId.Returns(instanceId);
 
-        Assert.Throws<FormatException>(() => context.ThrowIfInvalidOperationId());
+        Assert.Throws<FormatException>(context.ThrowIfInvalidOperationId);
     }
 
     [Fact]

@@ -1,4 +1,4 @@
-﻿// -------------------------------------------------------------------------------------------------
+// -------------------------------------------------------------------------------------------------
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License (MIT). See LICENSE in the repo root for license information.
 // -------------------------------------------------------------------------------------------------
@@ -9,7 +9,7 @@ using Microsoft.Health.Client.Authentication;
 
 namespace Microsoft.Health.Client.UnitTests;
 
-public class TestCredentialProvider : CredentialProvider
+internal sealed class TestCredentialProvider : CredentialProvider
 {
     public TestCredentialProvider(string encodedToken = null)
     {

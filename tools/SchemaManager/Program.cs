@@ -7,6 +7,7 @@ using System;
 using System.CommandLine;
 using System.CommandLine.Builder;
 using System.CommandLine.Invocation;
+using System.Diagnostics.CodeAnalysis;
 using System.Threading.Tasks;
 using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.DependencyInjection;
@@ -17,11 +18,12 @@ using Microsoft.Health.SqlServer;
 using Microsoft.Health.SqlServer.Configs;
 using Microsoft.Health.SqlServer.Features.Client;
 using Microsoft.Health.SqlServer.Features.Schema.Manager;
-using Microsoft.Health.SqlServer.Features.Storage;
 using Microsoft.Health.SqlServer.Features.Schema.Messages.Notifications;
+using Microsoft.Health.SqlServer.Features.Storage;
 
 namespace SchemaManager;
 
+[SuppressMessage("Maintainability", "CA1515:Consider making public types internal", Justification = "Program entry point.")]
 public static class Program
 {
     public static async Task<int> Main(string[] args)

@@ -9,7 +9,7 @@ using EnsureThat;
 
 namespace SchemaManager.Validators;
 
-public static class RequiredOptionValidator
+internal static class RequiredOptionValidator
 {
     /// <summary>
     /// Validates that the option specified is present once in the symbol
@@ -23,7 +23,7 @@ public static class RequiredOptionValidator
         EnsureArg.IsNotNull(symbol, nameof(symbol));
         EnsureArg.IsNotNull(requiredOption, nameof(requiredOption));
 
-        if (requiredOption.Aliases.Any(alias => symbol.Children.Contains(alias)))
+        if (requiredOption.Aliases.Any(symbol.Children.Contains))
         {
             return null;
         }

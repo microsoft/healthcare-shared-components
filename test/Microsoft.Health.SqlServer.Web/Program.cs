@@ -5,20 +5,13 @@
 
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Health.SqlServer.Web;
 
-namespace Microsoft.Health.SqlServer.Web;
+using IHost host = Host
+    .CreateDefaultBuilder(args)
+    .ConfigureWebHostDefaults(b => b.UseStartup<Startup>())
+    .Build();
 
-public static class Program
-{
-    public static void Main(string[] args)
-    {
-        using (var host = CreateHostBuilder(args).Build())
-        {
-            host.Run();
-        }
-    }
-
-    public static IHostBuilder CreateHostBuilder(string[] args) =>
-        Host.CreateDefaultBuilder(args)
-            .ConfigureWebHostDefaults(webBuilder => { webBuilder.UseStartup<Startup>(); });
-}
+await host
+    .RunAsync()
+    .ConfigureAwait(false);
