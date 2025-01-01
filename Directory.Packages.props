@@ -7,7 +7,7 @@
     <PackageVersion Include="Azure.Security.KeyVault.Keys" Version="4.7.0" />
     <PackageVersion Include="Azure.Storage.Blobs" Version="12.23.0" />
     <PackageVersion Include="Azure.Storage.Common" Version="12.22.0" />
-    <PackageVersion Include="coverlet.collector" Version="6.0.2" />
+    <PackageVersion Include="coverlet.collector" Version="6.0.3" />
     <PackageVersion Include="DistributedLock.SqlServer" Version="1.0.6" />
     <PackageVersion Include="Ensure.That" Version="10.1.0" />
     <PackageVersion Include="Google.Protobuf" Version="3.29.2" />
