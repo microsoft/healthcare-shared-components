@@ -32,6 +32,7 @@
   <Choose>
     <When Condition="'$(TargetFramework)' == '$(PreviousVersion)'">
       <PropertyGroup>
+        <AzureExtensionsVersion>1.8.0</AzureExtensionsVersion>
         <ConfigurationBinderVersion>6.0.0</ConfigurationBinderVersion>
         <DependencyInjectionVersion>6.0.0</DependencyInjectionVersion>
         <FormatsAsn1Version>6.0.1</FormatsAsn1Version>
@@ -45,6 +46,7 @@
     </When>
     <When Condition="'$(TargetFramework)' == '$(LtsVersion)'">
       <PropertyGroup>
+        <AzureExtensionsVersion>1.9.0</AzureExtensionsVersion>
         <ConfigurationBinderVersion>8.0.2</ConfigurationBinderVersion>
         <DependencyInjectionVersion>8.0.2</DependencyInjectionVersion>
         <FormatsAsn1Version>8.0.1</FormatsAsn1Version>
@@ -59,6 +61,7 @@
     </When>
     <Otherwise>
       <PropertyGroup>
+        <AzureExtensionsVersion>1.9.0</AzureExtensionsVersion>
         <ConfigurationBinderVersion>9.0.0</ConfigurationBinderVersion>
         <DependencyInjectionVersion>9.0.0</DependencyInjectionVersion>
         <FormatsAsn1Version>9.0.0</FormatsAsn1Version>
