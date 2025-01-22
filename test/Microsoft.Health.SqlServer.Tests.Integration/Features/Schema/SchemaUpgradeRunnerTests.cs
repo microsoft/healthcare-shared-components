@@ -15,7 +15,6 @@ using Microsoft.Health.SqlServer.Features.Client;
 using Microsoft.Health.SqlServer.Features.Schema;
 using Microsoft.Health.SqlServer.Features.Schema.Manager;
 using Microsoft.Health.SqlServer.Features.Storage;
-using Microsoft.SqlServer.Management.Common;
 using NSubstitute;
 using Xunit;
 using Xunit.Abstractions;
@@ -96,7 +95,7 @@ public sealed class SchemaUpgradeRunnerTests : SqlIntegrationTestBase, IDisposab
         await _schemaDataStore.ExecuteScriptAsync("Insert into SchemaVersion values (2, 'started')", CancellationToken.None);
 
         // attempt 1 : To apply schemaVersion-2 fails
-        await Assert.ThrowsAsync<ExecutionFailureException>(() => _runner.ApplySchemaAsync(2, applyFullSchemaSnapshot: true, CancellationToken.None));
+        await Assert.ThrowsAsync<SqlException>(() => _runner.ApplySchemaAsync(2, applyFullSchemaSnapshot: true, CancellationToken.None));
 
         // attempt 2 : To apply schemaVersion-2 passes
         await _runner.ApplySchemaAsync(2, applyFullSchemaSnapshot: true, CancellationToken.None);
