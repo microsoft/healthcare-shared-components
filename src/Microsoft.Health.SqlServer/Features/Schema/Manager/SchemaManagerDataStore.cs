@@ -122,8 +122,11 @@ public class SchemaManagerDataStore : ISchemaManagerDataStore
         await ExecuteWithGoSupport(script, sqlCommandWrapper, cancellationToken).ConfigureAwait(false);
     }
 
-    private static async Task ExecuteWithGoSupport(string script, SqlCommandWrapper sqlCommandWrapper, CancellationToken cancellationToken)
+    private async Task ExecuteWithGoSupport(string script, SqlCommandWrapper sqlCommandWrapper, CancellationToken cancellationToken)
     {
+        sqlCommandWrapper.CommandTimeout = (int)_sqlServerDataStoreConfiguration.StatementTimeout.TotalSeconds;
+        _logger.LogInformation("SqlCommandWrapper timeout sets to {StatementTimeout} seconds", sqlCommandWrapper.CommandTimeout);
+
         foreach (string statement in script.Split(["\nGO"], StringSplitOptions.RemoveEmptyEntries))
         {
             sqlCommandWrapper.CommandText = statement;
