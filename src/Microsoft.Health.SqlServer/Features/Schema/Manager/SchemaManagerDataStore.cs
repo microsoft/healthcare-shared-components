@@ -14,8 +14,6 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.Health.SqlServer.Configs;
 using Microsoft.Health.SqlServer.Features.Client;
-using Microsoft.SqlServer.Management.Common;
-using Microsoft.SqlServer.Management.Smo;
 
 namespace Microsoft.Health.SqlServer.Features.Schema.Manager;
 
@@ -44,8 +42,6 @@ public class SchemaManagerDataStore : ISchemaManagerDataStore
         using SqlConnectionWrapper sqlConnectionWrapper = await _sqlConnectionWrapperFactory.ObtainSqlConnectionWrapperAsync(cancellationToken: cancellationToken).ConfigureAwait(false);
         using SqlCommandWrapper sqlCommandWrapper = sqlConnectionWrapper.CreateRetrySqlCommand();
 
-        var serverConnection = GetServerConnectionWithTimeout(sqlCommandWrapper.Connection);
-
         try
         {
             // FullSchemaSnapshot script(x.sql) inserts 'started' status into the SchemaVersion table itself.
@@ -54,17 +50,16 @@ public class SchemaManagerDataStore : ISchemaManagerDataStore
                 await UpsertSchemaVersionAsync(sqlCommandWrapper.Connection, version, SchemaVersionStatus.started.ToString(), cancellationToken).ConfigureAwait(false);
             }
 
-            var server = new Server(serverConnection);
             var watch = Stopwatch.StartNew();
             _logger.LogInformation("Script execution started at {UtcTime}", DateTime.UtcNow);
 
-            server.ConnectionContext.ExecuteNonQuery(script);
+            await ExecuteWithGoSupport(script, sqlCommandWrapper, cancellationToken).ConfigureAwait(false);
 
             watch.Stop();
             _logger.LogInformation("Script execution time is {ElapsedTime}", watch.Elapsed);
             await UpsertSchemaVersionAsync(sqlCommandWrapper.Connection, version, SchemaVersionStatus.completed.ToString(), cancellationToken).ConfigureAwait(false);
         }
-        catch (Exception e) when (e is SqlException || e is ExecutionFailureException)
+        catch (Exception e) when (e is SqlException)
         {
             await UpsertSchemaVersionAsync(sqlCommandWrapper.Connection, version, SchemaVersionStatus.failed.ToString(), cancellationToken).ConfigureAwait(false);
             throw;
@@ -124,8 +119,19 @@ public class SchemaManagerDataStore : ISchemaManagerDataStore
         using SqlConnectionWrapper sqlConnectionWrapper = await _sqlConnectionWrapperFactory.ObtainSqlConnectionWrapperAsync(cancellationToken: cancellationToken).ConfigureAwait(false);
         using SqlCommandWrapper sqlCommandWrapper = sqlConnectionWrapper.CreateRetrySqlCommand();
 
-        var server = new Server(GetServerConnectionWithTimeout(sqlCommandWrapper.Connection));
-        server.ConnectionContext.ExecuteNonQuery(script);
+        await ExecuteWithGoSupport(script, sqlCommandWrapper, cancellationToken).ConfigureAwait(false);
+    }
+
+    private async Task ExecuteWithGoSupport(string script, SqlCommandWrapper sqlCommandWrapper, CancellationToken cancellationToken)
+    {
+        sqlCommandWrapper.CommandTimeout = (int)_sqlServerDataStoreConfiguration.StatementTimeout.TotalSeconds;
+        _logger.LogInformation("SqlCommandWrapper timeout sets to {StatementTimeout} seconds", sqlCommandWrapper.CommandTimeout);
+
+        foreach (string statement in script.Split(["\nGO"], StringSplitOptions.RemoveEmptyEntries))
+        {
+            sqlCommandWrapper.CommandText = statement;
+            await sqlCommandWrapper.ExecuteNonQueryAsync(cancellationToken).ConfigureAwait(false);
+        }
     }
 
     /// <inheritdoc />
@@ -156,13 +162,5 @@ public class SchemaManagerDataStore : ISchemaManagerDataStore
         sqlCommandWrapper.CommandText = "SELECT COUNT(*) FROM dbo.InstanceSchema";
 
         return (int)await sqlCommandWrapper.ExecuteScalarAsync(cancellationToken).ConfigureAwait(false) != 0;
-    }
-
-    private ServerConnection GetServerConnectionWithTimeout(SqlConnection sqlConnection)
-    {
-        var serverConnection = new ServerConnection(sqlConnection);
-        serverConnection.StatementTimeout = (int)_sqlServerDataStoreConfiguration.StatementTimeout.TotalSeconds;
-        _logger.LogInformation("ServerConnection timeout sets to {TimeoutSeconds} seconds", serverConnection.StatementTimeout);
-        return serverConnection;
     }
 }

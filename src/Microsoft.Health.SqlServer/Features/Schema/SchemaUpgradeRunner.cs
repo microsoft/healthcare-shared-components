@@ -12,7 +12,6 @@ using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.Logging;
 using Microsoft.Health.SqlServer.Features.Client;
 using Microsoft.Health.SqlServer.Features.Schema.Manager;
-using Microsoft.SqlServer.Management.Common;
 
 namespace Microsoft.Health.SqlServer.Features.Schema;
 
@@ -63,7 +62,7 @@ public class SchemaUpgradeRunner
 
             _logger.LogInformation("Completed applying schema {Version}", version);
         }
-        catch (Exception e) when (e is SqlException || e is ExecutionFailureException)
+        catch (Exception e) when (e is SqlException)
         {
             _logger.LogError(e, "Failed applying schema {Version}", version);
             await FailSchemaVersionAsync(version, cancellationToken).ConfigureAwait(false);

@@ -17,7 +17,6 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Health.SqlServer.Features.Schema.Extensions;
 using Microsoft.Health.SqlServer.Features.Schema.Manager.Exceptions;
 using Microsoft.Health.SqlServer.Features.Schema.Manager.Model;
-using Microsoft.SqlServer.Management.Common;
 using Polly;
 
 namespace Microsoft.Health.SqlServer.Features.Schema.Manager;
@@ -175,7 +174,7 @@ public class SqlSchemaManager : ISchemaManager
         }
         catch (Exception ex)
         {
-            if (ex is SqlException || ex is ExecutionFailureException)
+            if (ex is SqlException)
             {
                 _logger.LogError(ex, "Script execution has failed.");
             }
