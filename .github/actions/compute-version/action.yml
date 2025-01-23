@@ -23,13 +23,13 @@ runs:
   using: composite
   steps:
   - name: Install GitVersion
-    uses: gittools/actions/gitversion/setup@v3.1.2
+    uses: gittools/actions/gitversion/setup@v3.1.11
     with:
       versionSpec: '5.x'
 
   - name: Determine Version
     id: version
-    uses: gittools/actions/gitversion/execute@v3.1.2
+    uses: gittools/actions/gitversion/execute@v3.1.11
     with:
       configFilePath: ${{ inputs.configFilePath }}
       targetPath: ${{ github.workspace }}
