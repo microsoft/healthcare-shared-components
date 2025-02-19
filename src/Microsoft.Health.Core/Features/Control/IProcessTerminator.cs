@@ -13,5 +13,5 @@ public interface IProcessTerminator
     /// Terminates the current process.
     /// </summary>
     /// <param name="cancellationToken">A cancellation token.</param>
-    public void Terminate(CancellationToken cancellationToken);
+    void Terminate(CancellationToken cancellationToken);
 }

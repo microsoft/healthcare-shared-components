@@ -1,4 +1,4 @@
-﻿// -------------------------------------------------------------------------------------------------
+// -------------------------------------------------------------------------------------------------
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License (MIT). See LICENSE in the repo root for license information.
 // -------------------------------------------------------------------------------------------------
@@ -22,9 +22,7 @@ public interface IEventGridPublisher
     /// <param name="eventGridEvent">EventGridEvent</param>
     /// <param name="cancellationToken">CancellationToken</param>
     /// <returns>Task</returns>
-    public Task<Response> SendEventAsync(
-        EventGridEvent eventGridEvent,
-        CancellationToken cancellationToken = default);
+    Task<Response> SendEventAsync(EventGridEvent eventGridEvent, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// SendEventsAsync
@@ -32,7 +30,5 @@ public interface IEventGridPublisher
     /// <param name="eventGridEvents">EventGridEvent</param>
     /// <param name="cancellationToken">CancellationToken</param>
     /// <returns>Task</returns>
-    public Task<Response> SendEventsAsync(
-        IEnumerable<EventGridEvent> eventGridEvents,
-        CancellationToken cancellationToken = default);
+    Task<Response> SendEventsAsync(IEnumerable<EventGridEvent> eventGridEvents, CancellationToken cancellationToken = default);
 }

@@ -19,26 +19,26 @@ public interface ISchemaManager
     /// <param name="force">Forces the apply schema</param>
     /// <param name="token">A cancellation token.</param>
     /// <returns>A task.</returns>
-    public Task ApplySchema(MutuallyExclusiveType type, bool force = false, CancellationToken token = default);
+    Task ApplySchema(MutuallyExclusiveType type, bool force = false, CancellationToken token = default);
 
     /// <summary>
     /// Gets a list of available schema versions.
     /// </summary>
     /// <param name="cancellationToken">A cancellation token.</param>
     /// <returns>A list of available schema versions from the service.</returns>
-    public Task<IReadOnlyList<AvailableVersion>> GetAvailableSchema(CancellationToken cancellationToken = default);
+    Task<IReadOnlyList<AvailableVersion>> GetAvailableSchema(CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Gets the current schema version of the service.
     /// </summary>
     /// <param name="cancellationToken">A cancellation token.</param>
     /// <returns>A list of the current schema versions from the service.</returns>
-    public Task<IReadOnlyList<CurrentVersion>> GetCurrentSchema(CancellationToken cancellationToken = default);
+    Task<IReadOnlyList<CurrentVersion>> GetCurrentSchema(CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Gets the latest schema version of the db.
     /// </summary>
     /// <param name="cancellationToken">A cancellation token.</param>
     /// <returns>The latest version on the server</returns>
-    public Task<int> GetLatestSchema(CancellationToken cancellationToken = default);
+    Task<int> GetLatestSchema(CancellationToken cancellationToken = default);
 }

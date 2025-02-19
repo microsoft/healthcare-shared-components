@@ -7,5 +7,5 @@ namespace Microsoft.Health.Extensions.DependencyInjection.UnitTests.TestObjects;
 
 internal interface IComponent
 {
-    public string Name { get; }
+    string Name { get; }
 }
