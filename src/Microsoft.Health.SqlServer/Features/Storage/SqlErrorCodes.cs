@@ -88,5 +88,5 @@ public static class SqlErrorCodes
     /// <summary>
     /// The incoming request has too many parameters. The server supports a maximum of %d parameters.
     /// </summary>
-    public const int TooManyParameters = 8003;
+    public const short TooManyParameters = 8003;
 }
