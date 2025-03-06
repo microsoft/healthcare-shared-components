@@ -84,4 +84,9 @@ public static class SqlErrorCodes
     /// Can not connect to the database in its current state.
     /// </summary>
     public const int CannotConnectToDBInCurrentState = 40925;
+
+    /// <summary>
+    /// The incoming request has too many parameters. The server supports a maximum of %d parameters.
+    /// </summary>
+    public const short TooManyParameters = 8003;
 }
