@@ -43,11 +43,8 @@ public class BlobHostedServiceTests
     {
         var blobHostedService = new BlobHostedService(_blobInitializer, _collectionInitializers, _options, NullLogger<BlobHostedService>.Instance);
         using var cancellationTokenSource = new CancellationTokenSource();
-#if NET8_0_OR_GREATER
+
         await cancellationTokenSource.CancelAsync();
-#else
-        cancellationTokenSource.Cancel();
-#endif
 
         await Assert.ThrowsAsync<OperationCanceledException>(() => blobHostedService.StartAsync(cancellationTokenSource.Token));
     }
