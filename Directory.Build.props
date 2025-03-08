@@ -16,13 +16,12 @@
     <LtsVersion>net8.0</LtsVersion>
     <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
-    <PreviousVersion>net6.0</PreviousVersion>
     <Product>Microsoft Health</Product>
     <PublishRepositoryUrl>true</PublishRepositoryUrl>
     <RootDirectory>$(MSBuildThisFileDirectory)</RootDirectory>
     <RunSettingsFilePath>$(RootDirectory)CodeCoverage.runsettings</RunSettingsFilePath>
     <StsVersion>net9.0</StsVersion>
-    <SupportedFrameworks>$(LtsVersion);$(StsVersion);$(PreviousVersion)</SupportedFrameworks>
+    <SupportedFrameworks>$(LtsVersion);$(StsVersion)</SupportedFrameworks>
     <TargetLatestRuntimePatch>true</TargetLatestRuntimePatch>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <WarningsAsErrors />
@@ -30,20 +29,6 @@
 
   <!-- SDK Packages -->
   <Choose>
-    <When Condition="'$(TargetFramework)' == '$(PreviousVersion)'">
-      <PropertyGroup>
-        <AzureExtensionsVersion>1.8.0</AzureExtensionsVersion>
-        <ConfigurationBinderVersion>6.0.0</ConfigurationBinderVersion>
-        <DependencyInjectionVersion>6.0.0</DependencyInjectionVersion>
-        <FormatsAsn1Version>6.0.1</FormatsAsn1Version>
-        <IOPackagingVersion>6.0.2</IOPackagingVersion>
-        <LoggingVersion>6.0.0</LoggingVersion>
-        <MediatRVersion>12.1.1</MediatRVersion>
-        <OptionsVersion>6.0.0</OptionsVersion>
-        <SdkPackageVersion>6.0.0</SdkPackageVersion>
-        <SystemTextJsonVersion>6.0.11</SystemTextJsonVersion>
-      </PropertyGroup>
-    </When>
     <When Condition="'$(TargetFramework)' == '$(LtsVersion)'">
       <PropertyGroup>
         <AzureExtensionsVersion>1.9.0</AzureExtensionsVersion>
