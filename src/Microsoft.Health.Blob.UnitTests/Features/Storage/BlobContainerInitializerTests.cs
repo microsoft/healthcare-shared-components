@@ -43,11 +43,8 @@ public class BlobContainerInitializerTests
     {
         var blobContainerInitializer = new BlobContainerInitializer(TestContainerName, _logger);
         using var cancellationTokenSource = new CancellationTokenSource();
-#if NET8_0_OR_GREATER
+
         await cancellationTokenSource.CancelAsync();
-#else
-        cancellationTokenSource.Cancel();
-#endif
 
         await Assert.ThrowsAsync<OperationCanceledException>(() => blobContainerInitializer.InitializeContainerAsync(_blobClient, cancellationTokenSource.Token));
     }

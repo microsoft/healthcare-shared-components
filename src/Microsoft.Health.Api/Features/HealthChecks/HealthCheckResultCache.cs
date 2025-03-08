@@ -10,23 +10,18 @@ using EnsureThat;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-#if !NET8_0_OR_GREATER
-using Microsoft.Health.Core;
-#endif
 
 namespace Microsoft.Health.Api.Features.HealthChecks;
 
 internal sealed class HealthCheckResultCache : IDisposable
 {
+    private readonly TimeProvider _timeProvider;
     private readonly SemaphoreSlim _semaphore;
     private readonly HealthCheckCachingOptions _options;
     private readonly ILoggerFactory _loggerFactory;
 
     // By default, the times are DateTimeOffset.MinValue such that they are always considered expired
     private CachedHealthCheckResult _cache = new CachedHealthCheckResult { Result = new HealthCheckResult(HealthStatus.Unhealthy) };
-
-#if NET8_0_OR_GREATER
-    private readonly TimeProvider _timeProvider;
 
     public HealthCheckResultCache(IOptions<HealthCheckCachingOptions> options, ILoggerFactory loggerFactory)
         : this(TimeProvider.System, options, loggerFactory)
@@ -35,10 +30,6 @@ internal sealed class HealthCheckResultCache : IDisposable
     internal HealthCheckResultCache(TimeProvider timeProvider, IOptions<HealthCheckCachingOptions> options, ILoggerFactory loggerFactory)
     {
         _timeProvider = EnsureArg.IsNotNull(timeProvider, nameof(timeProvider));
-#else
-    public HealthCheckResultCache(IOptions<HealthCheckCachingOptions> options, ILoggerFactory loggerFactory)
-    {
-#endif
         _options = EnsureArg.IsNotNull(options?.Value, nameof(options));
         _loggerFactory = EnsureArg.IsNotNull(loggerFactory, nameof(loggerFactory));
         _semaphore = new SemaphoreSlim(_options.MaxRefreshThreads, _options.MaxRefreshThreads);
@@ -48,11 +39,7 @@ internal sealed class HealthCheckResultCache : IDisposable
     {
         EnsureArg.IsNotNull(healthCheck, nameof(healthCheck));
 
-#if NET8_0_OR_GREATER
         DateTimeOffset currentTime = _timeProvider.GetUtcNow();
-#else
-        DateTimeOffset currentTime = Clock.UtcNow;
-#endif
         if (!IsUpToDate(currentTime))
         {
             await RefreshCacheAsync(healthCheck, context, !HasExpired(currentTime), cancellationToken).ConfigureAwait(false);
@@ -82,21 +69,13 @@ internal sealed class HealthCheckResultCache : IDisposable
         try
         {
             // Once we've entered the semaphore, check the cache again for its freshness
-#if NET8_0_OR_GREATER
             if (!IsUpToDate(_timeProvider.GetUtcNow()))
-#else
-            if (!IsUpToDate(Clock.UtcNow))
-#endif
             {
                 HealthCheckResult result = await healthCheck.CheckHealthAsync(context, cancellationToken).ConfigureAwait(false);
                 RefreshCache(result, logger);
             }
         }
-#if NET8_0_OR_GREATER
         catch (Exception ex) when (!HasExpired(_timeProvider.GetUtcNow()))
-#else
-        catch (Exception ex) when (!HasExpired(Clock.UtcNow))
-#endif
         {
             if (ex is OperationCanceledException oce)
             {
@@ -116,11 +95,7 @@ internal sealed class HealthCheckResultCache : IDisposable
     private void RefreshCache(HealthCheckResult newResult, ILogger logger)
     {
         // The cache if it's not up-to-date or we found a better status
-#if NET8_0_OR_GREATER
         DateTimeOffset currentTime = _timeProvider.GetUtcNow();
-#else
-        DateTimeOffset currentTime = Clock.UtcNow;
-#endif
         CachedHealthCheckResult currentCache = _cache;
 
         if (currentTime >= currentCache.StaleTime || newResult.Status > currentCache.Result.Status)
@@ -158,11 +133,7 @@ internal sealed class HealthCheckResultCache : IDisposable
             //       If the token is canceled, the method throws instead an OperationCanceledException.
             return await _semaphore.WaitAsync(timeout, cancellationToken).ConfigureAwait(false);
         }
-#if NET8_0_OR_GREATER
         catch (OperationCanceledException oce) when (!HasExpired(_timeProvider.GetUtcNow()))
-#else
-        catch (OperationCanceledException oce) when (!HasExpired(Clock.UtcNow))
-#endif
         {
             logger.LogWarning(oce, "Health check was canceled. Falling back to cache.");
             return false;
