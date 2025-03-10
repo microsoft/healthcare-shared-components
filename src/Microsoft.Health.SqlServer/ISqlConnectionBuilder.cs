@@ -41,6 +41,15 @@ public interface ISqlConnectionBuilder
     Task<SqlConnection> GetSqlConnectionAsync(string initialCatalog = null, int? maxPoolSize = null, CancellationToken cancellationToken = default);
 
     /// <summary>
+    /// Get unopened SqlConnection object.
+    /// </summary>
+    /// <param name="isReadOnly">Flag indicating whether application has read only intent.</param>
+    /// <param name="applicationName">Application name</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>SqlConnection object.</returns>
+    Task<SqlConnection> GetSqlConnectionAsync(bool isReadOnly, string applicationName, CancellationToken cancellationToken);
+
+    /// <summary>
     /// Fetches an an unopened SQL connection.
     /// </summary>
     /// <param name="initialCatalog">An optional initial catalog that may be used to override the default value.</param>
