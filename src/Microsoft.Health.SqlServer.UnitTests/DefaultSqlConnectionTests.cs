@@ -4,6 +4,7 @@
 // -------------------------------------------------------------------------------------------------
 
 using System;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.Options;
@@ -45,6 +46,20 @@ public class DefaultSqlConnectionTests
         Assert.Equal(DatabaseName, connectionBuilder.DefaultDatabase);
 
         using SqlConnection connection = await connectionBuilder.GetSqlConnectionAsync();
+        Assert.Equal(ServerName, connection.DataSource);
+        Assert.Equal(DatabaseName, connection.Database);
+        Assert.Same(_retryProvider, connection.RetryLogicProvider);
+    }
+
+    [Fact]
+    public async Task GivenDefaultSettings_WhenSqlConnectionAsyncWithAppNameRequested_ThenReturnSameValue()
+    {
+        IOptions<SqlServerDataStoreConfiguration> options = Options.Create(new SqlServerDataStoreConfiguration { ConnectionString = DefaultConnectionString });
+        var connectionBuilder = new DefaultSqlConnectionBuilder(options, _retryProvider);
+
+        Assert.Equal(DatabaseName, connectionBuilder.DefaultDatabase);
+
+        using SqlConnection connection = await connectionBuilder.GetSqlConnectionAsync(false, "test", CancellationToken.None);
         Assert.Equal(ServerName, connection.DataSource);
         Assert.Equal(DatabaseName, connection.Database);
         Assert.Same(_retryProvider, connection.RetryLogicProvider);
