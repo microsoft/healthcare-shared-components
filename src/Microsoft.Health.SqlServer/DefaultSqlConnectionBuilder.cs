@@ -83,7 +83,7 @@ public class DefaultSqlConnectionBuilder : ISqlConnectionBuilder
     }
 
     [SuppressMessage("Reliability", "CA2000:Dispose objects before losing scope", Justification = "Caller must dispose result.")]
-    public async Task<SqlConnection> GetSqlConnectionAsync(bool isReadOnly, string applicationName, CancellationToken cancellationToken)
+    public async Task<SqlConnection> GetSqlConnectionAsync(bool isReadOnly, string applicationName)
     {
         SqlConnectionStringBuilder builder = await GetConnectionStringBuilderAsync(null, null).ConfigureAwait(false);
         if (isReadOnly)

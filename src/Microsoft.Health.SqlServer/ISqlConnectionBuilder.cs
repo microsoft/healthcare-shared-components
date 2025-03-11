@@ -45,9 +45,8 @@ public interface ISqlConnectionBuilder
     /// </summary>
     /// <param name="isReadOnly">Flag indicating whether application has read only intent.</param>
     /// <param name="applicationName">Application name</param>
-    /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>SqlConnection object.</returns>
-    Task<SqlConnection> GetSqlConnectionAsync(bool isReadOnly, string applicationName, CancellationToken cancellationToken);
+    Task<SqlConnection> GetSqlConnectionAsync(bool isReadOnly, string applicationName);
 
     /// <summary>
     /// Fetches an an unopened SQL connection.
