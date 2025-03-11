@@ -51,14 +51,14 @@ public class DefaultSqlConnectionTests
     }
 
     [Fact]
-    public async Task GivenDefaultSettings_WhenReadOnlySqlConnectionAsyncRequested_ThenReturnSameValue()
+    public async Task GivenDefaultSettings_WhenSqlConnectionAsyncWithAppNameRequested_ThenReturnSameValue()
     {
         IOptions<SqlServerDataStoreConfiguration> options = Options.Create(new SqlServerDataStoreConfiguration { ConnectionString = DefaultConnectionString });
         var connectionBuilder = new DefaultSqlConnectionBuilder(options, _retryProvider);
 
         Assert.Equal(DatabaseName, connectionBuilder.DefaultDatabase);
 
-        using SqlConnection connection = await connectionBuilder.GetReadOnlySqlConnectionAsync();
+        using SqlConnection connection = await connectionBuilder.GetSqlConnectionAsync(false, "test");
         Assert.Equal(ServerName, connection.DataSource);
         Assert.Equal(DatabaseName, connection.Database);
         Assert.Same(_retryProvider, connection.RetryLogicProvider);

@@ -82,6 +82,23 @@ public class DefaultSqlConnectionBuilder : ISqlConnectionBuilder
         return new SqlConnection(builder.ToString()) { RetryLogicProvider = _retryProvider };
     }
 
+    [SuppressMessage("Reliability", "CA2000:Dispose objects before losing scope", Justification = "Caller must dispose result.")]
+    public async Task<SqlConnection> GetSqlConnectionAsync(bool isReadOnly, string applicationName)
+    {
+        SqlConnectionStringBuilder builder = await GetConnectionStringBuilderAsync(null, null).ConfigureAwait(false);
+        if (isReadOnly)
+        {
+            builder.ApplicationIntent = ApplicationIntent.ReadOnly;
+        }
+
+        if (!string.IsNullOrEmpty(applicationName))
+        {
+            builder.ApplicationName = applicationName;
+        }
+
+        return new SqlConnection(builder.ToString()) { RetryLogicProvider = _retryProvider };
+    }
+
     /// <summary>
     /// Creates a <see cref="SqlConnectionStringBuilder"/> using the configured connection string and modified based on the input.
     /// </summary>
