@@ -59,7 +59,7 @@ public class DefaultSqlConnectionTests
 
         Assert.Equal(DatabaseName, connectionBuilder.DefaultDatabase);
 
-        using SqlConnection connection = await connectionBuilder.GetSqlConnectionAsync(false, "test", CancellationToken.None);
+        using SqlConnection connection = await connectionBuilder.GetSqlConnectionAsync(false, "test");
         Assert.Equal(ServerName, connection.DataSource);
         Assert.Equal(DatabaseName, connection.Database);
         Assert.Same(_retryProvider, connection.RetryLogicProvider);
