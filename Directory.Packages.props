@@ -22,7 +22,7 @@
     <PackageVersion Include="Microsoft.Azure.Functions.Worker.Extensions.Http" Version="3.3.0" />
     <PackageVersion Include="Microsoft.Azure.Functions.Worker.Extensions.Http.AspNetCore" Version="2.0.1" />
     <PackageVersion Include="Microsoft.Azure.Functions.Worker.Extensions.Timer" Version="4.3.1" />
-    <PackageVersion Include="Microsoft.Azure.Functions.Worker.Sdk" Version="2.0.1" />
+    <PackageVersion Include="Microsoft.Azure.Functions.Worker.Sdk" Version="2.0.2" />
     <PackageVersion Include="Microsoft.Azure.WebJobs" Version="3.0.41" />
     <PackageVersion Include="Microsoft.Azure.WebJobs.Extensions.DurableTask" Version="3.0.4" />
     <PackageVersion Include="Microsoft.Build.Framework" Version="17.13.9" />
