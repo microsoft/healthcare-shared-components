@@ -3,6 +3,7 @@
 // Licensed under the MIT License (MIT). See LICENSE in the repo root for license information.
 // -------------------------------------------------------------------------------------------------
 
+using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Threading;
 using System.Threading.Tasks;
@@ -40,6 +41,15 @@ public class SqlConnectionWrapperFactory
     public string DefaultDatabase => _sqlConnectionBuilder.DefaultDatabase;
 
     [SuppressMessage("Reliability", "CA2000:Dispose objects before losing scope", Justification = "Callers are responsible for disposal.")]
+    public virtual async Task<SqlConnectionWrapper> GetConnectionWrapperAsync(Action<SqlConnectionStringBuilder> configure = null, bool enlistInTransaction = false, CancellationToken cancellationToken = default)
+    {
+        var sqlConnectionWrapper = new SqlConnectionWrapper(_sqlTransactionHandler, _sqlConnectionBuilder, _sqlRetryLogicBaseProvider, enlistInTransaction, _sqlServerDataStoreConfiguration);
+        await sqlConnectionWrapper.InitializeAsync(configure, cancellationToken: cancellationToken).ConfigureAwait(false);
+
+        return sqlConnectionWrapper;
+    }
+
+    [SuppressMessage("Reliability", "CA2000:Dispose objects before losing scope", Justification = "Callers are responsible for disposal.")]
     public virtual async Task<SqlConnectionWrapper> ObtainSqlConnectionWrapperAsync(CancellationToken cancellationToken, bool enlistInTransaction = false)
     {
         var sqlConnectionWrapper = new SqlConnectionWrapper(_sqlTransactionHandler, _sqlConnectionBuilder, _sqlRetryLogicBaseProvider, enlistInTransaction, _sqlServerDataStoreConfiguration);
@@ -52,7 +62,9 @@ public class SqlConnectionWrapperFactory
     public async Task<SqlConnectionWrapper> ObtainSqlConnectionWrapperAsync(string initialCatalog, CancellationToken cancellationToken, bool enlistInTransaction = false)
     {
         var sqlConnectionWrapper = new SqlConnectionWrapper(_sqlTransactionHandler, _sqlConnectionBuilder, _sqlRetryLogicBaseProvider, enlistInTransaction, _sqlServerDataStoreConfiguration);
-        await sqlConnectionWrapper.InitializeAsync(initialCatalog, cancellationToken: cancellationToken).ConfigureAwait(false);
+        await sqlConnectionWrapper.InitializeAsync(
+            initialCatalog is not null ? b => b.InitialCatalog = initialCatalog : null,
+            cancellationToken: cancellationToken).ConfigureAwait(false);
 
         return sqlConnectionWrapper;
     }

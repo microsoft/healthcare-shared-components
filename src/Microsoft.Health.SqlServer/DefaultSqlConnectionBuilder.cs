@@ -59,6 +59,26 @@ public class DefaultSqlConnectionBuilder : ISqlConnectionBuilder
 
     /// <inheritdoc />
     [SuppressMessage("Reliability", "CA2000:Dispose objects before losing scope", Justification = "Caller must dispose result.")]
+    public SqlConnection CreateConnection(Action<SqlConnectionStringBuilder> configure = null)
+    {
+        SqlConnectionStringBuilder builder = GetConnectionStringBuilder();
+        configure?.Invoke(builder);
+
+        return new SqlConnection(builder.ToString()) { RetryLogicProvider = _retryProvider };
+    }
+
+    /// <inheritdoc />
+    [SuppressMessage("Reliability", "CA2000:Dispose objects before losing scope", Justification = "Caller must dispose result.")]
+    public async ValueTask<SqlConnection> CreateConnectionAsync(Action<SqlConnectionStringBuilder> configure = null, CancellationToken cancellationToken = default)
+    {
+        SqlConnectionStringBuilder builder = await GetConnectionStringBuilderAsync().ConfigureAwait(false);
+        configure?.Invoke(builder);
+
+        return new SqlConnection(builder.ToString()) { RetryLogicProvider = _retryProvider };
+    }
+
+    /// <inheritdoc />
+    [SuppressMessage("Reliability", "CA2000:Dispose objects before losing scope", Justification = "Caller must dispose result.")]
     public SqlConnection GetSqlConnection(string initialCatalog = null, int? maxPoolSize = null)
     {
         SqlConnectionStringBuilder builder = GetConnectionStringBuilder(initialCatalog, maxPoolSize);
