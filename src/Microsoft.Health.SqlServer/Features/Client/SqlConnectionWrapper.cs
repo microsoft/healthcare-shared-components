@@ -54,7 +54,7 @@ public class SqlConnectionWrapper : IDisposable
     public SqlTransaction SqlTransaction { get; private set; }
 
     [SuppressMessage("Performance", "CA1849:Call async methods when in an async method", Justification = "BeginTransactionAsync is only implemented by base class.")]
-    internal async Task InitializeAsync(string initialCatalog = null, CancellationToken cancellationToken = default)
+    internal async Task InitializeAsync(Action<SqlConnectionStringBuilder> configure = null, CancellationToken cancellationToken = default)
     {
         if (_enlistInTransactionIfPresent && _sqlTransactionHandler.SqlTransactionScope?.SqlConnection != null)
         {
@@ -62,7 +62,15 @@ public class SqlConnectionWrapper : IDisposable
         }
         else
         {
-            SqlConnection = await _sqlConnectionBuilder.GetSqlConnectionAsync(initialCatalog, _sqlServerDataStoreConfiguration.MaxPoolSize, cancellationToken).ConfigureAwait(false);
+            Action<SqlConnectionStringBuilder> configureBuilder = b =>
+            {
+                if (_sqlServerDataStoreConfiguration.MaxPoolSize.HasValue)
+                    b.MaxPoolSize = _sqlServerDataStoreConfiguration.MaxPoolSize.GetValueOrDefault();
+
+                configure?.Invoke(b);
+            };
+
+            SqlConnection = await _sqlConnectionBuilder.CreateConnectionAsync(configureBuilder, cancellationToken).ConfigureAwait(false);
         }
 
         if (_enlistInTransactionIfPresent && _sqlTransactionHandler.SqlTransactionScope != null && _sqlTransactionHandler.SqlTransactionScope.SqlConnection == null)

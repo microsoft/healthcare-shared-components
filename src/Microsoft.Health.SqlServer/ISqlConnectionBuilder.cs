@@ -3,6 +3,7 @@
 // Licensed under the MIT License (MIT). See LICENSE in the repo root for license information.
 // -------------------------------------------------------------------------------------------------
 
+using System;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Data.SqlClient;
@@ -19,6 +20,25 @@ public interface ISqlConnectionBuilder
     /// </summary>
     /// <value>The default initial catalog if specified; otherwise <see langword="null"/>.</value>
     string DefaultDatabase { get; }
+
+    /// <summary>
+    /// Gets a SQL connection as additionally configured by the caller.
+    /// </summary>
+    /// <param name="configure">An optional delegate for configuring the connection.</param>
+    /// <returns>The SQL connection.</returns>
+    SqlConnection CreateConnection(Action<SqlConnectionStringBuilder> configure = null);
+
+    /// <summary>
+    /// Gets a SQL connection as additionally configured by the caller.
+    /// </summary>
+    /// <param name="configure">An optional delegate for configuring the connection.</param>
+    /// <param name="cancellationToken">The optional cancellation token for suspending the asynchronous operation.</param>
+    /// <returns>
+    /// A <see cref="ValueTask"/> representing the create operation. The value of the
+    /// <see cref="ValueTask{TResult}.Result"/> property is the connection.
+    /// </returns>
+    /// <exception cref="OperationCanceledException">The operation was canceled.</exception>
+    ValueTask<SqlConnection> CreateConnectionAsync(Action<SqlConnectionStringBuilder> configure = null, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Gets unopened sql connection with setting application intent to read only
