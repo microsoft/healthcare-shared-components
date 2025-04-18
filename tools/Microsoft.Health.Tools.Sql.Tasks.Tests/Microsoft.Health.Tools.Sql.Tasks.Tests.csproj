@@ -39,7 +39,7 @@
   </Target>
 
   <Target Name="PublishSqlTasksFull" BeforeTargets="CoreCompile" Condition=" '$(MSBuildRuntimeType)' == 'Full' ">
-    <MSBuild Projects="..\Microsoft.Health.Tools.Sql.Tasks\Microsoft.Health.Tools.Sql.Tasks.csproj" Targets="Publish" Properties="TargetFramework=net462" />
+    <MSBuild Projects="..\Microsoft.Health.Tools.Sql.Tasks\Microsoft.Health.Tools.Sql.Tasks.csproj" Targets="Publish" Properties="TargetFramework=net472" />
   </Target>
 
   <Import Project="..\Microsoft.Health.Tools.Sql.Tasks\Sql.test.targets" />
