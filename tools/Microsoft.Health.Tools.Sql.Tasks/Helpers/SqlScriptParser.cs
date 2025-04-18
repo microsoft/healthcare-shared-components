@@ -22,10 +22,14 @@ public static class SqlScriptParser
     /// <returns>Sql object</returns>
     public static TSqlFragment ParseSqlFile(string sqlFile, TaskLoggingHelper taskLoggingHelper)
     {
+#if NETFRAMEWORK
         if (taskLoggingHelper == null)
         {
             throw new ArgumentNullException(nameof(taskLoggingHelper));
         }
+#else
+        ArgumentNullException.ThrowIfNull(taskLoggingHelper);
+#endif
 
         TSqlFragment sqlFragment = null;
         using (var stream = File.OpenRead(sqlFile))
@@ -39,7 +43,11 @@ public static class SqlScriptParser
                 StringBuilder sb = new StringBuilder();
                 foreach (var error in errors)
                 {
+#if NETFRAMEWORK
                     sb.AppendLine($"Line: {error.Line}, Number: {error.Number}, Message: {error.Message}");
+#else
+                    sb.AppendLine(System.Globalization.CultureInfo.InvariantCulture, $"Line: {error.Line}, Number: {error.Number}, Message: {error.Message}");
+#endif
                 }
 
                 taskLoggingHelper.LogError("Failed to parse the Sql file: {0}, Error: {1}", sqlFile, sb.ToString());

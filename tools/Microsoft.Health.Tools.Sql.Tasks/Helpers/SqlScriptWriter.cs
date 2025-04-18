@@ -55,10 +55,14 @@ public class SqlScriptWriter : IDisposable
 
     public void Write(IReadOnlyCollection<TSqlFragment> sqlObjects)
     {
+#if NETFRAMEWORK
         if (sqlObjects == null)
         {
             throw new ArgumentNullException(nameof(sqlObjects));
         }
+#else
+        ArgumentNullException.ThrowIfNull(sqlObjects);
+#endif
 
         foreach (var sqlObject in sqlObjects)
         {
