@@ -29,6 +29,6 @@
   </Target>
 
   <UsingTask TaskName="GenerateFullScript" AssemblyFile="netstandard2.1\Microsoft.Health.Tools.Sql.Tasks.dll" Condition="'$(MSBuildRuntimeType)' == 'Core' Or '$(MSBuildRuntimeType)' == 'Mono'"/>
-  <UsingTask TaskName="GenerateFullScript" AssemblyFile="net462\Microsoft.Health.Tools.Sql.Tasks.dll" Condition="'$(MSBuildRuntimeType)' == 'Full'"/>
+  <UsingTask TaskName="GenerateFullScript" AssemblyFile="net472\Microsoft.Health.Tools.Sql.Tasks.dll" Condition="'$(MSBuildRuntimeType)' == 'Full'"/>
 
 </Project>
