@@ -19,6 +19,10 @@
     <GenerateFullScriptsOutputs Include="$(GeneratedFullScriptPath)" />
   </ItemGroup>
 
+  <Target Name="GenerateFullSqlScriptMono" Condition="'$(MSBuildRuntimeType)' == 'Mono'">
+    <Error Text="Mono is not supported." />
+  </Target>
+
   <Target Name="GenerateFullSqlScript" BeforeTargets="CollectGenerateFilesInputs" Inputs="@(GenerateFullScriptsInputs)" Outputs="@(GenerateFullScriptsOutputs)">
     <GenerateFullScript
         IntermediateOutputPath="$(IntermediateOutputPath)"
@@ -28,7 +32,7 @@
         SqlScript="@(SqlScript)" />
   </Target>
 
-  <UsingTask TaskName="GenerateFullScript" AssemblyFile="netstandard2.1\Microsoft.Health.Tools.Sql.Tasks.dll" Condition="'$(MSBuildRuntimeType)' == 'Core' Or '$(MSBuildRuntimeType)' == 'Mono'"/>
+  <UsingTask TaskName="GenerateFullScript" AssemblyFile="net8.0\Microsoft.Health.Tools.Sql.Tasks.dll" Condition="'$(MSBuildRuntimeType)' == 'Core'"/>
   <UsingTask TaskName="GenerateFullScript" AssemblyFile="net472\Microsoft.Health.Tools.Sql.Tasks.dll" Condition="'$(MSBuildRuntimeType)' == 'Full'"/>
 
 </Project>

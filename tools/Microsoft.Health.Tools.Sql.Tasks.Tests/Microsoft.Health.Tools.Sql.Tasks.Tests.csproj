@@ -34,8 +34,12 @@
     <GeneratedFullScriptPath>Schema\$(LatestSchemaVersion).sql</GeneratedFullScriptPath>
   </PropertyGroup>
 
-  <Target Name="PublishSqlTasksCoreOrMono" BeforeTargets="CoreCompile" Condition=" '$(MSBuildRuntimeType)' == 'Core' Or '$(MSBuildRuntimeType)' == 'Mono'">
-    <MSBuild Projects="..\Microsoft.Health.Tools.Sql.Tasks\Microsoft.Health.Tools.Sql.Tasks.csproj" Targets="Publish" Properties="TargetFramework=netstandard2.1" />
+  <Target Name="PublishSqlTasksMono" Condition="'$(MSBuildRuntimeType)' == 'Mono'">
+    <Error Text="Mono is not supported." />
+  </Target>
+
+  <Target Name="PublishSqlTasksCore" BeforeTargets="CoreCompile" Condition=" '$(MSBuildRuntimeType)' == 'Core'">
+    <MSBuild Projects="..\Microsoft.Health.Tools.Sql.Tasks\Microsoft.Health.Tools.Sql.Tasks.csproj" Targets="Publish" Properties="TargetFramework=net8.0" />
   </Target>
 
   <Target Name="PublishSqlTasksFull" BeforeTargets="CoreCompile" Condition=" '$(MSBuildRuntimeType)' == 'Full' ">

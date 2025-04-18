@@ -11,7 +11,7 @@
   </metadata>
   <files>
     <file src="Sql.targets" target="build" />
-    <file src="$publishDir$\netstandard2.1\**\*" target="build/netstandard2.1/" />
+    <file src="$publishDir$\net8.0\**\*" target="build/net8.0/" />
     <file src="$publishDir$\net472\**\*" target="build/net472/" />
   </files>
 </package>
