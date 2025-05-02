@@ -31,31 +31,28 @@
   <Choose>
     <When Condition="'$(TargetFramework)' == '$(LtsVersion)'">
       <PropertyGroup>
-        <AzureExtensionsVersion>1.9.0</AzureExtensionsVersion>
         <ConfigurationBinderVersion>8.0.2</ConfigurationBinderVersion>
         <DependencyInjectionVersion>8.0.2</DependencyInjectionVersion>
         <FormatsAsn1Version>8.0.1</FormatsAsn1Version>
         <IOPackagingVersion>8.0.1</IOPackagingVersion>
         <LoggingVersion>8.0.2</LoggingVersion>
-        <!-- >= 12.2.0 MediatR started depending on 8.x Microsoft.Extension.* libraries -->
-        <MediatRVersion>12.4.1</MediatRVersion>
         <OptionsVersion>8.0.2</OptionsVersion>
+        <R9PackageVersion>8.0.0</R9PackageVersion>
         <SdkPackageVersion>8.0.0</SdkPackageVersion>
         <SystemTextJsonVersion>8.0.5</SystemTextJsonVersion>
       </PropertyGroup>
     </When>
     <Otherwise>
       <PropertyGroup>
-        <AzureExtensionsVersion>1.9.0</AzureExtensionsVersion>
-        <ConfigurationBinderVersion>9.0.0</ConfigurationBinderVersion>
-        <DependencyInjectionVersion>9.0.0</DependencyInjectionVersion>
-        <FormatsAsn1Version>9.0.0</FormatsAsn1Version>
-        <IOPackagingVersion>9.0.0</IOPackagingVersion>
-        <LoggingVersion>9.0.0</LoggingVersion>
-        <MediatRVersion>12.4.1</MediatRVersion>
-        <OptionsVersion>9.0.0</OptionsVersion>
-        <SdkPackageVersion>9.0.0</SdkPackageVersion>
-        <SystemTextJsonVersion>9.0.0</SystemTextJsonVersion>
+        <ConfigurationBinderVersion>9.0.4</ConfigurationBinderVersion>
+        <DependencyInjectionVersion>9.0.4</DependencyInjectionVersion>
+        <FormatsAsn1Version>9.0.4</FormatsAsn1Version>
+        <IOPackagingVersion>9.0.4</IOPackagingVersion>
+        <LoggingVersion>9.0.4</LoggingVersion>
+        <OptionsVersion>9.0.4</OptionsVersion>
+        <R9PackageVersion>9.4.0</R9PackageVersion>
+        <SdkPackageVersion>9.0.4</SdkPackageVersion>
+        <SystemTextJsonVersion>9.0.4</SystemTextJsonVersion>
       </PropertyGroup>
     </Otherwise>
   </Choose>
