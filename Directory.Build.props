@@ -35,7 +35,7 @@
         <DependencyInjectionVersion>8.0.2</DependencyInjectionVersion>
         <FormatsAsn1Version>8.0.1</FormatsAsn1Version>
         <IOPackagingVersion>8.0.1</IOPackagingVersion>
-        <LoggingVersion>8.0.2</LoggingVersion>
+        <LoggingVersion>8.0.3</LoggingVersion>
         <OptionsVersion>8.0.2</OptionsVersion>
         <R9PackageVersion>8.0.0</R9PackageVersion>
         <SdkPackageVersion>8.0.0</SdkPackageVersion>
