@@ -72,6 +72,21 @@ public class EventGridPublisher : IEventGridPublisher
     /// <summary>
     /// Initializes a new instance of the <see cref="EventGridPublisher"/> class.
     /// </summary>
+    /// <param name="endpoint">Uri of topic</param>
+    /// <param name="credential">credential with permission to write to event grid endpoint</param>
+    /// <param name="options">event grid publisher options</param>
+    public EventGridPublisher(Uri endpoint, TokenCredential credential, EventGridPublisherClientOptions options)
+    {
+        EnsureArg.IsNotNull(endpoint, nameof(endpoint));
+        EnsureArg.IsNotNull(credential, nameof(credential));
+        EnsureArg.IsNotNull(options, nameof(options));
+
+        _client = new EventGridPublisherClient(endpoint, credential, options);
+    }
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="EventGridPublisher"/> class.
+    /// </summary>
     /// <param name="endpoint">Uri</param>
     /// <param name="keyCredentialName">Key Vault credential name</param>
     /// <param name="options">Options that configure the Event Grid client</param>
