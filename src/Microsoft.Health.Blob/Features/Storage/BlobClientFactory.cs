@@ -1,4 +1,4 @@
-﻿// -------------------------------------------------------------------------------------------------
+// -------------------------------------------------------------------------------------------------
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License (MIT). See LICENSE in the repo root for license information.
 // -------------------------------------------------------------------------------------------------
@@ -18,16 +18,20 @@ internal static class BlobClientFactory
         EnsureArg.IsNotNull(configuration, nameof(configuration));
 
         // Configure the blob client default request options and retry logic
-        var blobClientOptions = new BlobClientOptions();
-        blobClientOptions.Retry.MaxRetries = configuration.RequestOptions.ExponentialRetryMaxAttempts;
-        blobClientOptions.Retry.Mode = Azure.Core.RetryMode.Exponential;
-        blobClientOptions.Retry.Delay = TimeSpan.FromSeconds(configuration.RequestOptions.ExponentialRetryBackoffDeltaInSeconds);
-        blobClientOptions.Retry.NetworkTimeout = TimeSpan.FromMinutes(configuration.RequestOptions.ServerTimeoutInMinutes);
+        BlobClientOptions blobClientOptions = new()
+        {
+            Retry =
+            {
+                MaxRetries = configuration.RequestOptions.ExponentialRetryMaxAttempts,
+                Mode = Azure.Core.RetryMode.Exponential,
+                Delay = TimeSpan.FromSeconds(configuration.RequestOptions.ExponentialRetryBackoffDeltaInSeconds),
+                NetworkTimeout = TimeSpan.FromMinutes(configuration.RequestOptions.ServerTimeoutInMinutes),
+            }
+        };
 
         if (configuration.AuthenticationType == BlobDataStoreAuthenticationType.ManagedIdentity)
         {
-            DefaultAzureCredential credential = new DefaultAzureCredential(configuration.Credentials);
-
+            ManagedIdentityCredential credential = new(configuration.ManagedIdentityClientId, configuration.Credentials);
             return new BlobServiceClient(new Uri(configuration.ConnectionString), credential, blobClientOptions);
         }
 

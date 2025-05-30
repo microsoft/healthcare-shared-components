@@ -23,7 +23,7 @@ namespace Microsoft.Health.Core.UnitTests.Extensions;
 public class IAzureClientBuilderExtensionsTests
 {
     private static readonly Assembly AzureCoreAssembly = typeof(TokenCredential).Assembly;
-    private static readonly Assembly AzureIdentityAssembly = typeof(DefaultAzureCredential).Assembly;
+    private static readonly Assembly AzureIdentityAssembly = typeof(ManagedIdentityCredential).Assembly;
 
     [Fact]
     public void GivenNoConfiguration_WhenConfiguringManagedIdentity_ThenUseDefaults()

@@ -11,5 +11,5 @@ namespace Microsoft.Health.Core.Features.Identity;
 internal sealed class DefaultExternalCredentialProvider : IExternalCredentialProvider
 {
     public TokenCredential GetTokenCredential()
-        => new DefaultAzureCredential(includeInteractiveCredentials: false);
+        => new DefaultAzureCredential(includeInteractiveCredentials: false); // CodeQL [SM05137] Default implementation not used in production
 }

@@ -33,22 +33,11 @@ public class ManagedIdentityCredentialProvider : CredentialProvider
 
     protected override async Task<string> BearerTokenFunction(CancellationToken cancellationToken)
     {
-        ManagedIdentityCredentialOptions managedIdentityCredentialOptions = _managedIdentityCredentialOptionsMonitor.Get(_optionsName);
+        ManagedIdentityCredentialOptions options = _managedIdentityCredentialOptionsMonitor.Get(_optionsName);
+        ManagedIdentityCredential credential = new(options.ClientId);
 
-        var defaultAzureCredentialOptions = new DefaultAzureCredentialOptions();
-
-        if (!string.IsNullOrEmpty(managedIdentityCredentialOptions.ClientId))
-        {
-            defaultAzureCredentialOptions.ManagedIdentityClientId = managedIdentityCredentialOptions.ClientId;
-        }
-
-        var defaultAzureCredential = new DefaultAzureCredential(defaultAzureCredentialOptions);
-
-        var tokenRequestContext = new TokenRequestContext(
-            scopes: new[] { managedIdentityCredentialOptions.Resource },
-            tenantId: managedIdentityCredentialOptions.TenantId);
-
-        AccessToken accessToken = await defaultAzureCredential.GetTokenAsync(tokenRequestContext, cancellationToken).ConfigureAwait(false);
+        TokenRequestContext requestContext = new(scopes: [options.Resource], tenantId: options.TenantId);
+        AccessToken accessToken = await credential.GetTokenAsync(requestContext, cancellationToken).ConfigureAwait(false);
         return accessToken.Token;
     }
 }
