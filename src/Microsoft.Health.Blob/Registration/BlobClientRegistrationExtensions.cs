@@ -6,7 +6,6 @@
 using System;
 using System.Linq;
 using Azure.Core.Extensions;
-using Azure.Identity;
 using Azure.Storage.Blobs;
 using EnsureThat;
 using Microsoft.Extensions.Azure;
@@ -111,7 +110,7 @@ public static class BlobClientRegistrationExtensions
 
         // TODO: The underlying AddBlobServiceClient method should allow for the ConnectionString and credentials
         // to be bound later using options rather than reading them directly from the configuration object.
-        var options = new BlobServiceClientOptions();
+        BlobServiceClientOptions options = new();
         configuration.Bind(options);
 
         services.AddAzureClients(
@@ -121,30 +120,14 @@ public static class BlobClientRegistrationExtensions
                 // are all from the underlying library's source code. These fields would be used
                 // if the configuration was passed directly to the AddBlobServiceClient call.
                 // However, the logic is more similar to BlobClientFactory to provide better compatibility.
-                IAzureClientBuilder<BlobServiceClient, BlobClientOptions> clientBuilder;
-                if (string.IsNullOrWhiteSpace(options.ConnectionString) && options.ServiceUri == null)
-                {
-                    clientBuilder = builder.AddBlobServiceClient(BlobLocalEmulator.ConnectionString);
-                }
-                else if (string.Equals(options.Credential, "managedidentity", StringComparison.OrdinalIgnoreCase))
-                {
-                    // This is done for backwards compatability.
-                    // TODO: This may be removed in the future where local scenarios are be configured separately
-                    clientBuilder = builder
-                        .AddBlobServiceClient(new Uri(options.ConnectionString))
-                        .WithCredential(new DefaultAzureCredential(options.Credentials));
-                }
-                else
-                {
-                    clientBuilder = builder.AddBlobServiceClient(configuration);
-                }
+                IAzureClientBuilder<BlobServiceClient, BlobClientOptions> clientBuilder = string.IsNullOrWhiteSpace(options.ConnectionString) && options.ServiceUri is null
+                    ? builder.AddBlobServiceClient(BlobLocalEmulator.ConnectionString)
+                    : builder.AddBlobServiceClient(configuration);
 
                 // Add optional BlobClientOptions
                 clientBuilder = clientBuilder.ConfigureOptions(x => configuration.Bind(x));
                 if (configure != null)
-                {
                     clientBuilder = clientBuilder.ConfigureOptions(configure);
-                }
             });
 
         // While users can configure the Transport using the "configure" parameter,

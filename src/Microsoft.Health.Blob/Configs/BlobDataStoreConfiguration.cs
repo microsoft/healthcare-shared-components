@@ -1,4 +1,4 @@
-﻿// -------------------------------------------------------------------------------------------------
+// -------------------------------------------------------------------------------------------------
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License (MIT). See LICENSE in the repo root for license information.
 // -------------------------------------------------------------------------------------------------
@@ -20,15 +20,11 @@ public class BlobDataStoreConfiguration
     /// <summary>
     /// If set, the client id of the managed identity to use when connecting to azure storage, if AuthenticationType == ManagedIdentity.
     /// </summary>
-    public string ManagedIdentityClientId
-    {
-        get => Credentials.ManagedIdentityClientId;
-        set => Credentials.ManagedIdentityClientId = value;
-    }
+    public string ManagedIdentityClientId { get; set; }
 
     /// <summary>
-    /// Gets or sets the options for configuring DefaultAzureCredential
+    /// Gets or sets the options for configuring token credentials.
     /// </summary>
     /// <value>The settings for configuring the default azure credential</value>
-    public DefaultAzureCredentialOptions Credentials { get; set; } = new DefaultAzureCredentialOptions();
+    public TokenCredentialOptions Credentials { get; set; } = new TokenCredentialOptions();
 }

@@ -4,7 +4,6 @@
 // -------------------------------------------------------------------------------------------------
 
 using System;
-using Azure.Identity;
 using Azure.Storage.Blobs;
 
 namespace Microsoft.Health.Blob.Configs;
@@ -61,34 +60,9 @@ public class BlobServiceClientOptions : BlobClientOptions
     public string Credential { get; set; }
 
     /// <summary>
-    /// Gets or sets the managed identity client identifier.
-    /// </summary>
-    /// <remarks>
-    /// This setting should only be set if <see cref="Credential"/> contains the value <c>"managedidentity"</c>.
-    /// </remarks>
-    /// <value>The client id if using managed identity to authenticate; otherwise, <see langword="null"/>.</value>
-    public string ClientId
-    {
-        get => Credentials.ManagedIdentityClientId;
-        set => Credentials.ManagedIdentityClientId = value;
-    }
-
-    /// <summary>
-    /// Gets or sets the options for <see cref="BlobServiceClient"/> operations.
-    /// </summary>
-    /// <value>The operation settings.</value>
-    public BlobOperationOptions Operations { get; set; }
-
-    /// <summary>
     /// Gets or sets the options for configuring the <see cref="Azure.Core.ClientOptions.Transport"/>
     /// via a collection of settings.
     /// </summary>
     /// <value>The settings for configuring the underlying HTTP transport.</value>
     public TransportOverrideOptions TransportOverride { get; set; }
-
-    /// <summary>
-    /// Gets or sets the options for configuring DefaultAzureCredential
-    /// </summary>
-    /// <value>The settings for configuring the default azure credential</value>
-    public DefaultAzureCredentialOptions Credentials { get; set; } = new DefaultAzureCredentialOptions();
 }
