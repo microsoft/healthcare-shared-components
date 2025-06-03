@@ -60,6 +60,12 @@ public class BlobServiceClientOptions : BlobClientOptions
     public string Credential { get; set; }
 
     /// <summary>
+    /// Gets or sets the options for <see cref="BlobServiceClient"/> operations.
+    /// </summary>
+    /// <value>The operation settings.</value>
+    public BlobOperationOptions Operations { get; set; }
+
+    /// <summary>
     /// Gets or sets the options for configuring the <see cref="Azure.Core.ClientOptions.Transport"/>
     /// via a collection of settings.
     /// </summary>
