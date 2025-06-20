@@ -70,4 +70,9 @@ public class SqlServerDataStoreConfiguration
     /// If set, the maximum number of connections allowed in the pool to use when connecting to SQL.
     /// </summary>
     public int? MaxPoolSize { get; set; }
+
+    /// <summary>
+    /// Indicates whether the SQL Server data store should use Queueclient Jobs for Reindexing
+    /// </summary>
+    public bool UseQueueClientJobsForReindexing { get; set; }
 }
