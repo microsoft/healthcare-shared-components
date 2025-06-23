@@ -32,10 +32,12 @@
     <When Condition="'$(TargetFramework)' == '$(LtsVersion)'">
       <PropertyGroup>
         <ConfigurationBinderVersion>8.0.2</ConfigurationBinderVersion>
-        <DependencyInjectionVersion>8.0.2</DependencyInjectionVersion>
+        <DependencyInjectionAbstractionsVersion>8.0.2</DependencyInjectionAbstractionsVersion>
+        <DependencyInjectionVersion>8.0.1</DependencyInjectionVersion>
         <FormatsAsn1Version>8.0.1</FormatsAsn1Version>
         <IOPackagingVersion>8.0.1</IOPackagingVersion>
-        <LoggingVersion>8.0.3</LoggingVersion>
+        <LoggingAbstractionsVersion>8.0.3</LoggingAbstractionsVersion>
+        <LoggingVersion>8.0.1</LoggingVersion>
         <OptionsVersion>8.0.2</OptionsVersion>
         <R9PackageVersion>8.0.0</R9PackageVersion>
         <SdkPackageVersion>8.0.0</SdkPackageVersion>
@@ -44,15 +46,17 @@
     </When>
     <Otherwise>
       <PropertyGroup>
-        <ConfigurationBinderVersion>9.0.4</ConfigurationBinderVersion>
-        <DependencyInjectionVersion>9.0.4</DependencyInjectionVersion>
-        <FormatsAsn1Version>9.0.4</FormatsAsn1Version>
-        <IOPackagingVersion>9.0.4</IOPackagingVersion>
-        <LoggingVersion>9.0.4</LoggingVersion>
-        <OptionsVersion>9.0.4</OptionsVersion>
-        <R9PackageVersion>9.4.0</R9PackageVersion>
-        <SdkPackageVersion>9.0.4</SdkPackageVersion>
-        <SystemTextJsonVersion>9.0.4</SystemTextJsonVersion>
+        <ConfigurationBinderVersion>9.0.6</ConfigurationBinderVersion>
+        <DependencyInjectionAbstractionsVersion>9.0.6</DependencyInjectionAbstractionsVersion>
+        <DependencyInjectionVersion>9.0.6</DependencyInjectionVersion>
+        <FormatsAsn1Version>9.0.6</FormatsAsn1Version>
+        <IOPackagingVersion>9.0.6</IOPackagingVersion>
+        <LoggingAbstractionsVersion>9.0.6</LoggingAbstractionsVersion>
+        <LoggingVersion>9.0.6</LoggingVersion>
+        <OptionsVersion>9.0.6</OptionsVersion>
+        <R9PackageVersion>9.6.0</R9PackageVersion>
+        <SdkPackageVersion>9.0.6</SdkPackageVersion>
+        <SystemTextJsonVersion>9.0.6</SystemTextJsonVersion>
       </PropertyGroup>
     </Otherwise>
   </Choose>

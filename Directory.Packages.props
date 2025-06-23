@@ -35,7 +35,7 @@
     <PackageVersion Include="Microsoft.DurableTask.Abstractions" Version="1.11.0" />
     <PackageVersion Include="Microsoft.DurableTask.Client" Version="1.11.0" />
     <PackageVersion Include="Microsoft.DurableTask.Client.OrchestrationServiceClientShim" Version="1.11.0" />
-    <PackageVersion Include="Microsoft.Extensions.Azure" Version="1.11.0" />
+    <PackageVersion Include="Microsoft.Extensions.Azure" Version="1.12.0" />
     <PackageVersion Include="Microsoft.Extensions.Configuration" Version="$(SdkPackageVersion)" />
     <PackageVersion Include="Microsoft.Extensions.Configuration.Abstractions" Version="$(SdkPackageVersion)" />
     <PackageVersion Include="Microsoft.Extensions.Configuration.CommandLine" Version="$(SdkPackageVersion)" />
@@ -43,17 +43,17 @@
     <PackageVersion Include="Microsoft.Extensions.Configuration.Binder" Version="$(ConfigurationBinderVersion)" />
     <PackageVersion Include="Microsoft.Extensions.Configuration.FileExtensions" Version="$(SdkPackageVersion)" />
     <PackageVersion Include="Microsoft.Extensions.Configuration.Json" Version="$(SdkPackageVersion)" />
-    <PackageVersion Include="Microsoft.Extensions.DependencyInjection" Version="$(SdkPackageVersion)" />
-    <PackageVersion Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="$(DependencyInjectionVersion)" />
+    <PackageVersion Include="Microsoft.Extensions.DependencyInjection" Version="$(DependencyInjectionVersion)" />
+    <PackageVersion Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="$(DependencyInjectionAbstractionsVersion)" />
     <PackageVersion Include="Microsoft.Extensions.Diagnostics.HealthChecks" Version="$(SdkPackageVersion)" />
     <PackageVersion Include="Microsoft.Extensions.Diagnostics.HealthChecks.Abstractions" Version="$(SdkPackageVersion)" />
     <PackageVersion Include="Microsoft.Extensions.FileProviders.Abstractions" Version="$(SdkPackageVersion)" />
     <PackageVersion Include="Microsoft.Extensions.Hosting" Version="$(SdkPackageVersion)" />
     <PackageVersion Include="Microsoft.Extensions.Hosting.Abstractions" Version="$(SdkPackageVersion)" />
     <PackageVersion Include="Microsoft.Extensions.Http" Version="$(SdkPackageVersion)" />
-    <PackageVersion Include="Microsoft.Extensions.Logging" Version="$(SdkPackageVersion)" />
-    <PackageVersion Include="Microsoft.Extensions.Logging.Abstractions" Version="$(LoggingVersion)" />
-    <PackageVersion Include="Microsoft.Extensions.Logging.Console" Version="$(SdkPackageVersion)" />
+    <PackageVersion Include="Microsoft.Extensions.Logging" Version="$(LoggingVersion)" />
+    <PackageVersion Include="Microsoft.Extensions.Logging.Abstractions" Version="$(LoggingAbstractionsVersion)" />
+    <PackageVersion Include="Microsoft.Extensions.Logging.Console" Version="$(LoggingVersion)" />
     <PackageVersion Include="Microsoft.Extensions.Options" Version="$(OptionsVersion)" />
     <PackageVersion Include="Microsoft.Extensions.Options.ConfigurationExtensions" Version="$(SdkPackageVersion)" />
     <PackageVersion Include="Microsoft.Extensions.Options.DataAnnotations" Version="$(SdkPackageVersion)" />
