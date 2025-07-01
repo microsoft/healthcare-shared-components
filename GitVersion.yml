@@ -17,8 +17,8 @@ branches:
     is-release-branch: true
   pull-request:
     mode: ContinuousDelivery
-    regex: ^(pull|pull\-requests|pr)[/-](?<number>\d+)[-/]
-    label: pr
+    regex: ^(pull|pull\-requests|pr)[/-](?<Number>\d+)[-/]
+    label: pr-{Number}
     increment: Inherit
     prevent-increment:
       of-merged-branch: false
