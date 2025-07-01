@@ -33,4 +33,3 @@ runs:
     with:
       configFilePath: ${{ inputs.configFilePath }}
       targetPath: ${{ github.workspace }}
-      useConfigFile: true
