@@ -17,7 +17,7 @@ outputs:
     value: ${{ steps.version.outputs.GitVersion_InformationalVersion }}
   nugetVersion:
     description: The NuGet package version for the shared components
-    value: ${{ steps.version.outputs.GitVersion_SemVer }}
+    value: ${{ steps.version.outputs.GitVersion_MajorMinorPatch }}${{ steps.version.outputs.GitVersion_PreReleaseLabelWithDash }}
 
 runs:
   using: composite
