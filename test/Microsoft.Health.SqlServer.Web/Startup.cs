@@ -8,7 +8,6 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Health.Extensions.DependencyInjection;
-using Microsoft.Health.SqlServer.Api.Features;
 using Microsoft.Health.SqlServer.Api.Registration;
 using Microsoft.Health.SqlServer.Configs;
 using Microsoft.Health.SqlServer.Features.Schema;
@@ -36,8 +35,6 @@ public sealed class Startup
             .AddSqlServerConnection(c => Configuration.GetSection(SqlServerDataStoreConfiguration.SectionName).Bind(c))
             .AddSqlServerManagement<SchemaVersion>()
             .AddSqlServerApi();
-
-        services.AddMediatR(c => c.RegisterServicesFromAssembly(typeof(CompatibilityVersionHandler).Assembly));
 
         services
             .Add(provider => new SchemaInformation((int)SchemaVersion.Version1, (int)SchemaVersion.Version2))

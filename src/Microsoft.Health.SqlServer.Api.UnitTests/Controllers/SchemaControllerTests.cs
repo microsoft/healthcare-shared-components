@@ -1,10 +1,9 @@
-﻿// -------------------------------------------------------------------------------------------------
+// -------------------------------------------------------------------------------------------------
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License (MIT). See LICENSE in the repo root for license information.
 // -------------------------------------------------------------------------------------------------
 
 using System;
-using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Routing;
 using Microsoft.Extensions.Logging.Abstractions;
@@ -19,13 +18,13 @@ namespace Microsoft.Health.SqlServer.Api.UnitTests.Controllers;
 public sealed class SchemaControllerTests : IDisposable
 {
     private readonly SchemaController _schemaController;
+    private readonly ISchemaDataStore _schemaDataStore;
     private readonly SchemaInformation _schemaInformation;
-    private readonly IMediator _mediator;
 
     public SchemaControllerTests()
     {
+        _schemaDataStore = Substitute.For<ISchemaDataStore>();
         _schemaInformation = new SchemaInformation((int)TestSchemaVersion.Version1, (int)TestSchemaVersion.Version3);
-        _mediator = Substitute.For<IMediator>();
 
         var urlHelperFactory = Substitute.For<IUrlHelperFactory>();
         var urlHelper = Substitute.For<IUrlHelper>();
@@ -34,7 +33,7 @@ public sealed class SchemaControllerTests : IDisposable
 
         var scriptProvider = Substitute.For<IScriptProvider>();
 
-        _schemaController = new SchemaController(_schemaInformation, scriptProvider, urlHelperFactory, _mediator, NullLogger<SchemaController>.Instance);
+        _schemaController = new SchemaController(_schemaDataStore, _schemaInformation, scriptProvider, urlHelperFactory, NullLogger<SchemaController>.Instance);
     }
 
     [Fact]

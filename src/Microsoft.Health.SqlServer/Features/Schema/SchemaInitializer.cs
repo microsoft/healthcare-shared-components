@@ -10,7 +10,6 @@ using System.Threading.Tasks;
 using EnsureThat;
 using Medallion.Threading;
 using Medallion.Threading.SqlServer;
-using MediatR;
 using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -18,7 +17,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.Health.SqlServer.Configs;
 using Microsoft.Health.SqlServer.Features.Client;
-using Microsoft.Health.SqlServer.Features.Schema.Extensions;
+using Microsoft.Health.SqlServer.Features.Schema.Eventing;
 using Microsoft.Health.SqlServer.Features.Schema.Manager;
 using Microsoft.Health.SqlServer.Features.Storage;
 
@@ -32,24 +31,24 @@ public sealed class SchemaInitializer : IHostedService
 {
     private const string MasterDatabase = "master";
     private readonly IServiceProvider _serviceProvider;
+    private readonly ISchemaEventPublisher _eventPublisher;
     private readonly SqlServerDataStoreConfiguration _options;
     private readonly SchemaInformation _schemaInformation;
     private readonly ILogger<SchemaInitializer> _logger;
-    private readonly IMediator _mediator;
     private bool _canCallGetCurrentSchema;
     public const string SchemaUpgradeLockName = "SchemaUpgrade";
 
     public SchemaInitializer(
         IServiceProvider services,
+        ISchemaEventPublisher eventPublisher,
         IOptions<SqlServerDataStoreConfiguration> options,
         SchemaInformation schemaInformation,
-        IMediator mediator,
         ILogger<SchemaInitializer> logger)
     {
         _serviceProvider = EnsureArg.IsNotNull(services, nameof(services));
+        _eventPublisher = EnsureArg.IsNotNull(eventPublisher, nameof(eventPublisher));
         _options = EnsureArg.IsNotNull(options?.Value, nameof(options));
         _schemaInformation = EnsureArg.IsNotNull(schemaInformation, nameof(schemaInformation));
-        _mediator = EnsureArg.IsNotNull(mediator, nameof(mediator));
         _logger = EnsureArg.IsNotNull(logger, nameof(logger));
     }
 
@@ -131,7 +130,7 @@ public sealed class SchemaInitializer : IHostedService
 
                         await GetCurrentSchemaVersionAsync(cancellationToken).ConfigureAwait(false);
 
-                        await _mediator.NotifySchemaUpgradedAsync((int)_schemaInformation.Current, true).ConfigureAwait(false);
+                        _eventPublisher.OnSchemaUpgraded((int)_schemaInformation.Current, true);
 
                         schemaUpgradedNotificationSent = true;
                     }
@@ -148,7 +147,7 @@ public sealed class SchemaInitializer : IHostedService
                             // we need to ensure that the schema upgrade notification is sent after updating the _schemaInformation.Current for each upgraded version
                             await GetCurrentSchemaVersionAsync(cancellationToken).ConfigureAwait(false);
 
-                            await _mediator.NotifySchemaUpgradedAsync((int)_schemaInformation.Current, false).ConfigureAwait(false);
+                            _eventPublisher.OnSchemaUpgraded((int)_schemaInformation.Current, false);
                         }
 
                         schemaUpgradedNotificationSent = true;
@@ -171,7 +170,7 @@ public sealed class SchemaInitializer : IHostedService
         // There is a dependency on this notification in FHIR server to enable some background jobs
         if (!schemaUpgradedNotificationSent && _schemaInformation.Current.HasValue)
         {
-            await _mediator.NotifySchemaUpgradedAsync((int)_schemaInformation.Current, false).ConfigureAwait(false);
+            _eventPublisher.OnSchemaUpgraded((int)_schemaInformation.Current, false);
         }
     }
 

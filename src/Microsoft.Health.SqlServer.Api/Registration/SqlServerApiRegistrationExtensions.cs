@@ -6,9 +6,7 @@
 using EnsureThat;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Health.Encryption.Customer.Extensions;
-using Microsoft.Health.Extensions.DependencyInjection;
 using Microsoft.Health.SqlServer.Api.Controllers;
-using Microsoft.Health.SqlServer.Api.Features;
 using Microsoft.Health.SqlServer.Api.Features.Schema;
 using Microsoft.Health.SqlServer.Features.Health;
 
@@ -28,14 +26,6 @@ public static class SqlServerApiRegistrationExtensions
         services
             .AddHealthChecks()
             .AddCheck<SqlServerHealthCheck>("DataStoreHealthCheck");
-
-        services.Add<CompatibilityVersionHandler>()
-            .Transient()
-            .AsImplementedInterfaces();
-
-        services.Add<CurrentVersionHandler>()
-            .Transient()
-            .AsImplementedInterfaces();
 
         services.AddHostedService<SchemaJobWorkerBackgroundService>();
 
