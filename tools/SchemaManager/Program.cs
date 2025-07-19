@@ -18,7 +18,6 @@ using Microsoft.Health.SqlServer;
 using Microsoft.Health.SqlServer.Configs;
 using Microsoft.Health.SqlServer.Features.Client;
 using Microsoft.Health.SqlServer.Features.Schema.Manager;
-using Microsoft.Health.SqlServer.Features.Schema.Messages.Notifications;
 using Microsoft.Health.SqlServer.Features.Storage;
 
 namespace SchemaManager;
@@ -89,7 +88,6 @@ public static class Program
         services.AddScoped<SqlTransactionHandler>();
         services.AddScoped<ISchemaManagerDataStore, SchemaManagerDataStore>();
         services.AddSingleton<ISchemaManager, SqlSchemaManager>();
-        services.AddMediatR(c => c.RegisterServicesFromAssembly(typeof(SchemaUpgradedNotification).Assembly));
         services.AddLogging(configure => configure.AddConsole());
         return services.BuildServiceProvider();
     }

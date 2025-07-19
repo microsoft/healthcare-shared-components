@@ -8,14 +8,13 @@ using System.Diagnostics.CodeAnalysis;
 using System.Threading;
 using System.Threading.Tasks;
 using EnsureThat;
-using MediatR;
 using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.Health.Core.Features.Control;
 using Microsoft.Health.SqlServer.Configs;
-using Microsoft.Health.SqlServer.Features.Schema.Extensions;
+using Microsoft.Health.SqlServer.Features.Schema.Eventing;
 using Microsoft.Health.SqlServer.Features.Storage;
 
 namespace Microsoft.Health.SqlServer.Features.Schema;
@@ -29,28 +28,22 @@ public class SchemaJobWorker
 {
     private readonly IServiceProvider _serviceProvider;
     private readonly SqlServerDataStoreConfiguration _sqlServerDataStoreConfiguration;
-    private readonly IMediator _mediator;
+    private readonly ISchemaEventPublisher _eventPublisher;
     private readonly IProcessTerminator _processTerminator;
     private readonly ILogger _logger;
 
     public SchemaJobWorker(
         IServiceProvider services,
         IOptions<SqlServerDataStoreConfiguration> sqlServerDataStoreConfiguration,
-        IMediator mediator,
+        ISchemaEventPublisher eventPublisher,
         IProcessTerminator processTerminator,
         ILogger<SchemaJobWorker> logger)
     {
-        EnsureArg.IsNotNull(services, nameof(services));
-        EnsureArg.IsNotNull(sqlServerDataStoreConfiguration?.Value, nameof(sqlServerDataStoreConfiguration));
-        EnsureArg.IsNotNull(mediator, nameof(mediator));
-        EnsureArg.IsNotNull(logger, nameof(logger));
-        EnsureArg.IsNotNull(processTerminator, nameof(processTerminator));
-
-        _serviceProvider = services;
-        _sqlServerDataStoreConfiguration = sqlServerDataStoreConfiguration.Value;
-        _mediator = mediator;
-        _processTerminator = processTerminator;
-        _logger = logger;
+        _serviceProvider = EnsureArg.IsNotNull(services, nameof(services));
+        _sqlServerDataStoreConfiguration = EnsureArg.IsNotNull(sqlServerDataStoreConfiguration?.Value, nameof(sqlServerDataStoreConfiguration));
+        _eventPublisher = EnsureArg.IsNotNull(eventPublisher, nameof(eventPublisher));
+        _processTerminator = EnsureArg.IsNotNull(processTerminator, nameof(processTerminator));
+        _logger = EnsureArg.IsNotNull(logger, nameof(logger));
     }
 
     [SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "Continue trying despite errors.")]
@@ -75,7 +68,7 @@ public class SchemaJobWorker
                 {
                     var isFullSchemaSnapshot = previous == 0;
 
-                    await _mediator.NotifySchemaUpgradedAsync((int)schemaInformation.Current, isFullSchemaSnapshot).ConfigureAwait(false);
+                    _eventPublisher.OnSchemaUpgraded((int)schemaInformation.Current, isFullSchemaSnapshot);
                 }
 
                 await schemaDataStore.DeleteExpiredInstanceSchemaAsync(cancellationToken).ConfigureAwait(false);
