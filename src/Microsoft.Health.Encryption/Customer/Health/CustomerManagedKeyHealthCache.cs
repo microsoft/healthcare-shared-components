@@ -7,7 +7,7 @@ using Microsoft.Health.Core.Features.Health;
 
 namespace Microsoft.Health.Encryption.Customer.Health;
 
-internal static class CustomerManagedKeyHealthCache
+public static class CustomerManagedKeyHealthCache
 {
     public static ValueCache<CustomerKeyHealth> Instance { get; } = new();
 }
