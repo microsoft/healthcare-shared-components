@@ -20,9 +20,7 @@ namespace Microsoft.Health.Encryption.UnitTests;
 public class CustomerKeyValidationBackgroundServiceTests : IDisposable
 {
     private readonly IKeyTestProvider _keyWrapUnwrapTestProvider = Substitute.For<IKeyTestProvider>();
-
     private readonly CustomerManagedKeyOptions _customerManagedKeyOptions = new CustomerManagedKeyOptions { KeyName = "test" };
-
     private readonly ValueCache<CustomerKeyHealth> _customerKeyHealthCache = new ValueCache<CustomerKeyHealth>();
     private readonly CustomerKeyValidationBackgroundService _validationService;
     private bool _disposedValue;
@@ -92,6 +90,39 @@ public class CustomerKeyValidationBackgroundServiceTests : IDisposable
         Assert.True(cmkHealth.IsHealthy);
         Assert.Null(cmkHealth.Exception);
         Assert.Equal(HealthStatusReason.None, cmkHealth.Reason);
+    }
+
+    [Fact]
+    public async Task GivenKeyIsAccessible_WhenHealthIsChecked_SingletonCacheShouldBeHealthy()
+    {
+        // Act
+        await _validationService.CheckHealth(CancellationToken.None);
+
+        // Assert
+        CustomerKeyHealth cmkHealth = await CustomerManagedKeyHealthCache.Instance.GetAsync();
+        Assert.True(cmkHealth.IsHealthy);
+        Assert.Null(cmkHealth.Exception);
+        Assert.Equal(HealthStatusReason.None, cmkHealth.Reason);
+    }
+
+    [Fact]
+    public async Task GivenKeyAccessFails_WhenHealthIsChecked_SingletonCacheShouldBeUnhealthy()
+    {
+        var rfe = new RequestFailedException("key request failed");
+        _keyWrapUnwrapTestProvider.AssertHealthAsync(Arg.Any<CancellationToken>()).Returns(new CustomerKeyHealth()
+        {
+            IsHealthy = false,
+            Reason = HealthStatusReason.CustomerManagedKeyAccessLost,
+            Exception = rfe,
+        });
+
+        await _validationService.CheckHealth(CancellationToken.None);
+
+        CustomerKeyHealth cmkHealth = await CustomerManagedKeyHealthCache.Instance.GetAsync();
+
+        Assert.False(cmkHealth.IsHealthy);
+        Assert.Equal(rfe, cmkHealth.Exception);
+        Assert.Equal(HealthStatusReason.CustomerManagedKeyAccessLost, cmkHealth.Reason);
     }
 
     protected virtual void Dispose(bool disposing)

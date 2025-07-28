@@ -53,6 +53,9 @@ internal class CustomerKeyValidationBackgroundService : BackgroundService
         {
             CustomerKeyHealth customerKeyHealth = await _keyWrapUnwrapTestProvider.AssertHealthAsync(cancellationToken).ConfigureAwait(false);
             _customerManagedKeyHealth.Set(customerKeyHealth);
+
+            // Singleton cache for the customer key health
+            CustomerManagedKeyHealthCache.Instance.Set(customerKeyHealth);
         }
         catch (Exception ex)
         {
@@ -60,6 +63,9 @@ internal class CustomerKeyValidationBackgroundService : BackgroundService
 
             // reset to healthy so unexpected errors are not categorized as a customer misconfiguration
             _customerManagedKeyHealth.Set(new CustomerKeyHealth());
+
+            // Singleton cache for the customer key health
+            CustomerManagedKeyHealthCache.Instance.Set(new CustomerKeyHealth());
         }
     }
 }
