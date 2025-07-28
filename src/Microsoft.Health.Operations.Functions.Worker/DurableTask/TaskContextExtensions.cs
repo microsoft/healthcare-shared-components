@@ -8,7 +8,7 @@ using System.Globalization;
 using System.Threading.Tasks;
 using EnsureThat;
 using Microsoft.DurableTask;
-using Microsoft.DurableTask.Client;
+using Microsoft.Health.Operations.Functions.Management;
 using Microsoft.Health.Operations.Functions.Worker.Management;
 
 namespace Microsoft.Health.Operations.Functions.Worker.DurableTask;
@@ -69,7 +69,7 @@ public static class TaskContextExtensions
         EnsureArg.IsNotNull(context, nameof(context));
 
         var input = new GetInstanceOptions { GetInputsAndOutputs = false };
-        OrchestrationMetadata? metadata = await context.CallActivityAsync<OrchestrationMetadata?>(nameof(DurableTaskClientActivity.GetInstanceAsync), input, taskOptions);
+        OrchestrationInstanceMetadata? metadata = await context.CallActivityAsync<OrchestrationInstanceMetadata?>(nameof(DurableTaskClientActivity.GetInstanceAsync), input, taskOptions);
 
         return metadata!.CreatedAt;
     }
