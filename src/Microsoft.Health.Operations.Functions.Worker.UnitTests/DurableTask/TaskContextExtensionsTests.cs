@@ -6,7 +6,7 @@
 using System;
 using System.Threading.Tasks;
 using Microsoft.DurableTask;
-using Microsoft.DurableTask.Client;
+using Microsoft.Health.Operations.Functions.Management;
 using Microsoft.Health.Operations.Functions.Worker.DurableTask;
 using Microsoft.Health.Operations.Functions.Worker.Management;
 using NSubstitute;
@@ -90,8 +90,8 @@ public class TaskContextExtensionsTests
         context.InstanceId.Returns(operationId);
 
         context
-            .CallActivityAsync<OrchestrationMetadata?>(default, default, default)
-            .ReturnsForAnyArgs(new OrchestrationMetadata("MyOrchestration", operationId) { CreatedAt = expected });
+            .CallActivityAsync<OrchestrationInstanceMetadata?>(default, default, default)
+            .ReturnsForAnyArgs(new OrchestrationInstanceMetadata("MyOrchestration", operationId) { CreatedAt = expected });
 
         // Invoke
         DateTimeOffset actual = await context.GetCreatedAtTimeAsync(taskOptions);
@@ -101,7 +101,7 @@ public class TaskContextExtensionsTests
 
         await context
             .Received(1)
-            .CallActivityAsync<OrchestrationMetadata?>(
+            .CallActivityAsync<OrchestrationInstanceMetadata?>(
                 nameof(DurableTaskClientActivity.GetInstanceAsync),
                 Arg.Is<GetInstanceOptions>(x => !x.GetInputsAndOutputs),
                 Arg.Is(taskOptions));
