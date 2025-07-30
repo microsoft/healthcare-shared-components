@@ -4,7 +4,6 @@
 // -------------------------------------------------------------------------------------------------
 
 using System;
-using System.Text.Json.Serialization;
 using EnsureThat;
 using Microsoft.DurableTask.Client;
 
@@ -14,7 +13,6 @@ namespace Microsoft.Health.Operations.Functions.Management;
 public sealed class OrchestrationInstanceMetadata
 {
     /// <inheritdoc cref="OrchestrationMetadata(string, string)" />
-    [JsonConstructor]
     public OrchestrationInstanceMetadata(string name, string instanceId)
     {
         Name = EnsureArg.IsNotNullOrWhiteSpace(name, nameof(name));
