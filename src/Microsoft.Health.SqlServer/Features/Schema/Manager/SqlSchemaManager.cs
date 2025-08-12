@@ -11,10 +11,9 @@ using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using EnsureThat;
-using MediatR;
 using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.Logging;
-using Microsoft.Health.SqlServer.Features.Schema.Extensions;
+using Microsoft.Health.SqlServer.Features.Schema.Eventing;
 using Microsoft.Health.SqlServer.Features.Schema.Manager.Exceptions;
 using Microsoft.Health.SqlServer.Features.Schema.Manager.Model;
 using Polly;
@@ -26,8 +25,8 @@ public class SqlSchemaManager : ISchemaManager
     private readonly IBaseSchemaRunner _baseSchemaRunner;
     private readonly ISchemaManagerDataStore _schemaManagerDataStore;
     private readonly ISchemaClient _schemaClient;
+    private readonly ISchemaEventPublisher _eventPublisher;
     private readonly ILogger<SqlSchemaManager> _logger;
-    private readonly IMediator _mediator;
 
     private const int RetryAttempts = 3;
 
@@ -35,13 +34,13 @@ public class SqlSchemaManager : ISchemaManager
         IBaseSchemaRunner baseSchemaRunner,
         ISchemaManagerDataStore schemaManagerDataStore,
         ISchemaClient schemaClient,
-        IMediator mediator,
+        ISchemaEventPublisher eventPublisher,
         ILogger<SqlSchemaManager> logger)
     {
         _baseSchemaRunner = EnsureArg.IsNotNull(baseSchemaRunner, nameof(baseSchemaRunner));
         _schemaManagerDataStore = EnsureArg.IsNotNull(schemaManagerDataStore, nameof(schemaManagerDataStore));
         _schemaClient = EnsureArg.IsNotNull(schemaClient, nameof(schemaClient));
-        _mediator = EnsureArg.IsNotNull(mediator, nameof(mediator));
+        _eventPublisher = EnsureArg.IsNotNull(eventPublisher, nameof(eventPublisher));
         _logger = EnsureArg.IsNotNull(logger, nameof(logger));
     }
 
@@ -272,7 +271,7 @@ public class SqlSchemaManager : ISchemaManager
 
         // It is to publish the SchemaUpgraded event to notify the service that schema initialization or upgrade is completed to this version
         // for e.g. fhir service listents to this event and initialize its dictionaries after schema is initialized.
-        await _mediator.NotifySchemaUpgradedAsync(version, applyFullSchemaSnapshot).ConfigureAwait(false);
+        _eventPublisher.OnSchemaUpgraded(version, applyFullSchemaSnapshot);
         _logger.LogInformation("Schema upgrade notification sent for version: {Version}, applyFullSchemaSnapshot: {ApplyFullSchemaSnapshot}", version, applyFullSchemaSnapshot);
     }
 
