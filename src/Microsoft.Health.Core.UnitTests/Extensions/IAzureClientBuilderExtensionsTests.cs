@@ -171,22 +171,36 @@ public class IAzureClientBuilderExtensionsTests
 
         Assert.Equal(expected.MaxRetries, maxRetries);
 
-        Type expectedStrategyType = expected.Mode switch
+        if (typeof(T) == typeof(ManagedIdentityCredential))
         {
-            RetryMode.Exponential => AzureCoreAssembly.GetType("Azure.Core.ExponentialDelayStrategy", throwOnError: true),
-            RetryMode.Fixed => AzureCoreAssembly.GetType("Azure.Core.FixedDelayStrategy", throwOnError: true),
-            _ => null,
-        };
+            Type expectedStrategyType = AzureIdentityAssembly.GetType("Azure.Identity.ImdsRetryDelayStrategy", throwOnError: true);
+            Assert.IsType(expectedStrategyType, delayStrategy);
 
-        if (expectedStrategyType is null)
-            Assert.Fail($"Unexpected retry mode: {expected.Mode}");
+            var delay = (TimeSpan)expectedStrategyType
+                .GetField("_defaultDelay", BindingFlags.NonPublic | BindingFlags.Instance)
+                .GetValue(delayStrategy);
 
-        Assert.IsType(expectedStrategyType, delayStrategy);
-        var delay = (TimeSpan)expectedStrategyType
-            .GetField("_delay", BindingFlags.NonPublic | BindingFlags.Instance)
-            .GetValue(delayStrategy);
+            Assert.Equal(expected.Delay, delay);
+        }
+        else
+        {
+            Type expectedStrategyType = expected.Mode switch
+            {
+                RetryMode.Exponential => AzureCoreAssembly.GetType("Azure.Core.ExponentialDelayStrategy", throwOnError: true),
+                RetryMode.Fixed => AzureCoreAssembly.GetType("Azure.Core.FixedDelayStrategy", throwOnError: true),
+                _ => null,
+            };
 
-        Assert.Equal(expected.Delay, delay);
+            if (expectedStrategyType is null)
+                Assert.Fail($"Unexpected retry mode: {expected.Mode}");
+
+            Assert.IsType(expectedStrategyType, delayStrategy);
+            var delay = (TimeSpan)expectedStrategyType
+                .GetField("_delay", BindingFlags.NonPublic | BindingFlags.Instance)
+                .GetValue(delayStrategy);
+
+            Assert.Equal(expected.Delay, delay);
+        }
 
         if (expected.Mode == RetryMode.Exponential)
         {
