@@ -6,7 +6,6 @@
 using System;
 using System.Threading;
 using System.Threading.Tasks;
-using MediatR;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
@@ -14,6 +13,7 @@ using Microsoft.Extensions.Options;
 using Microsoft.Health.Core.Features.Control;
 using Microsoft.Health.SqlServer.Configs;
 using Microsoft.Health.SqlServer.Features.Schema;
+using Microsoft.Health.SqlServer.Features.Schema.Eventing;
 using NSubstitute;
 using Xunit;
 
@@ -23,7 +23,6 @@ public sealed class SchemaJobWorkerTests : IDisposable
 {
     private readonly IServiceProvider _serviceProvider;
     private readonly SqlServerDataStoreConfiguration _sqlServerDataStoreConfiguration;
-    private readonly IMediator _mediator;
     private readonly IProcessTerminator _processTerminator;
     private readonly ILogger<SchemaJobWorker> _logger;
     private readonly ISchemaDataStore _schemaDataStore;
@@ -34,17 +33,16 @@ public sealed class SchemaJobWorkerTests : IDisposable
     public SchemaJobWorkerTests()
     {
         _serviceProvider = Substitute.For<IServiceProvider>();
-        _mediator = Substitute.For<IMediator>();
         _processTerminator = Substitute.For<IProcessTerminator>();
         _logger = NullLogger<SchemaJobWorker>.Instance;
         _schemaDataStore = Substitute.For<ISchemaDataStore>();
         var collection = new ServiceCollection();
-        collection.AddSingleton<ISchemaDataStore>(_schemaDataStore);
+        collection.AddSingleton(_schemaDataStore);
         _serviceProvider = collection.BuildServiceProvider();
         _schemaDataStore.DeleteExpiredInstanceSchemaAsync(default).ReturnsForAnyArgs(Task.CompletedTask);
 
         _sqlServerDataStoreConfiguration = new SqlServerDataStoreConfiguration { TerminateWhenSchemaVersionUpdatedTo = 2, SchemaOptions = new SqlServerSchemaOptions { JobPollingFrequencyInSeconds = 0 } };
-        _worker = new SchemaJobWorker(_serviceProvider, Options.Create(_sqlServerDataStoreConfiguration), _mediator, _processTerminator, _logger);
+        _worker = new SchemaJobWorker(_serviceProvider, Options.Create(_sqlServerDataStoreConfiguration), Substitute.For<ISchemaEventPublisher>(), _processTerminator, _logger);
     }
 
     [Fact]
