@@ -1,4 +1,4 @@
-﻿// -------------------------------------------------------------------------------------------------
+// -------------------------------------------------------------------------------------------------
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License (MIT). See LICENSE in the repo root for license information.
 // -------------------------------------------------------------------------------------------------
@@ -7,7 +7,6 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Net;
-using MediatR;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Abstractions;
@@ -33,10 +32,10 @@ public sealed class HttpExceptionFilterTests : IDisposable
     public HttpExceptionFilterTests()
     {
         _controller = new SchemaController(
+            Substitute.For<ISchemaDataStore>(),
             new SchemaInformation((int)TestSchemaVersion.Version1, (int)TestSchemaVersion.Version3),
             Substitute.For<IScriptProvider>(),
             Substitute.For<IUrlHelperFactory>(),
-            Substitute.For<IMediator>(),
             NullLogger<SchemaController>.Instance);
         _context = new ActionExecutedContext(
             new ActionContext(new DefaultHttpContext(), new RouteData(), new ActionDescriptor()),

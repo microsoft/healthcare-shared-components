@@ -6,7 +6,6 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using EnsureThat;
-using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Routing;
@@ -14,8 +13,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Health.SqlServer.Api.Features.Filters;
 using Microsoft.Health.SqlServer.Features.Routing;
 using Microsoft.Health.SqlServer.Features.Schema;
-using Microsoft.Health.SqlServer.Features.Schema.Extensions;
-using Microsoft.Health.SqlServer.Features.Schema.Messages.Get;
+using Microsoft.Health.SqlServer.Features.Schema.Model;
 
 namespace Microsoft.Health.SqlServer.Api.Controllers;
 
@@ -23,25 +21,19 @@ namespace Microsoft.Health.SqlServer.Api.Controllers;
 [Route(KnownRoutes.SchemaRoot)]
 public class SchemaController : Controller
 {
+    private readonly ISchemaDataStore _schemaDataStore;
     private readonly SchemaInformation _schemaInformation;
     private readonly IScriptProvider _scriptProvider;
     private readonly IUrlHelperFactory _urlHelperFactory;
     private readonly ILogger<SchemaController> _logger;
-    private readonly IMediator _mediator;
 
-    public SchemaController(SchemaInformation schemaInformation, IScriptProvider scriptProvider, IUrlHelperFactory urlHelperFactoryFactory, IMediator mediator, ILogger<SchemaController> logger)
+    public SchemaController(ISchemaDataStore schemaDataStore, SchemaInformation schemaInformation, IScriptProvider scriptProvider, IUrlHelperFactory urlHelperFactoryFactory, ILogger<SchemaController> logger)
     {
-        EnsureArg.IsNotNull(schemaInformation, nameof(schemaInformation));
-        EnsureArg.IsNotNull(scriptProvider, nameof(scriptProvider));
-        EnsureArg.IsNotNull(urlHelperFactoryFactory, nameof(urlHelperFactoryFactory));
-        EnsureArg.IsNotNull(mediator, nameof(mediator));
-        EnsureArg.IsNotNull(logger, nameof(logger));
-
-        _schemaInformation = schemaInformation;
-        _scriptProvider = scriptProvider;
-        _urlHelperFactory = urlHelperFactoryFactory;
-        _mediator = mediator;
-        _logger = logger;
+        _schemaDataStore = EnsureArg.IsNotNull(schemaDataStore, nameof(schemaDataStore));
+        _schemaInformation = EnsureArg.IsNotNull(schemaInformation, nameof(schemaInformation));
+        _scriptProvider = EnsureArg.IsNotNull(scriptProvider, nameof(scriptProvider));
+        _urlHelperFactory = EnsureArg.IsNotNull(urlHelperFactoryFactory, nameof(urlHelperFactoryFactory));
+        _logger = EnsureArg.IsNotNull(logger, nameof(logger));
     }
 
     [HttpGet]
@@ -76,8 +68,11 @@ public class SchemaController : Controller
     public async Task<JsonResult> CurrentVersionAsync()
     {
         _logger.LogInformation("Attempting to get current schemas");
-        GetCurrentVersionResponse currentVersionResponse = await _mediator.GetCurrentVersionAsync(HttpContext.RequestAborted).ConfigureAwait(false);
-        return new JsonResult(currentVersionResponse.CurrentVersions);
+        List<CurrentVersionInformation> currentVersions = await _schemaDataStore
+            .GetCurrentVersionAsync(HttpContext.RequestAborted)
+            .ConfigureAwait(false);
+
+        return new JsonResult(currentVersions);
     }
 
     [HttpGet]
@@ -106,7 +101,10 @@ public class SchemaController : Controller
     public async Task<ActionResult> CompatibilityAsync()
     {
         _logger.LogInformation("Attempting to get compatibility");
-        GetCompatibilityVersionResponse compatibleResponse = await _mediator.GetCompatibleVersionAsync(HttpContext.RequestAborted).ConfigureAwait(false);
-        return new JsonResult(compatibleResponse.CompatibleVersions);
+        CompatibleVersions compatibleVersions = await _schemaDataStore
+            .GetLatestCompatibleVersionsAsync(HttpContext.RequestAborted)
+            .ConfigureAwait(false);
+
+        return new JsonResult(compatibleVersions);
     }
 }
