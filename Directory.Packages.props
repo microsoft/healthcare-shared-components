@@ -32,9 +32,9 @@
     <PackageVersion Include="Microsoft.CodeAnalysis.CSharp" Version="4.14.0" />
     <PackageVersion Include="Microsoft.CodeAnalysis.CSharp.Workspaces" Version="4.14.0" />
     <PackageVersion Include="Microsoft.Data.SqlClient" Version="6.1.1" />
-    <PackageVersion Include="Microsoft.DurableTask.Abstractions" Version="1.13.0" />
-    <PackageVersion Include="Microsoft.DurableTask.Client" Version="1.13.0" />
-    <PackageVersion Include="Microsoft.DurableTask.Client.OrchestrationServiceClientShim" Version="1.13.0" />
+    <PackageVersion Include="Microsoft.DurableTask.Abstractions" Version="1.14.0" />
+    <PackageVersion Include="Microsoft.DurableTask.Client" Version="1.14.0" />
+    <PackageVersion Include="Microsoft.DurableTask.Client.OrchestrationServiceClientShim" Version="1.14.0" />
     <PackageVersion Include="Microsoft.Extensions.Azure" Version="1.12.0" />
     <PackageVersion Include="Microsoft.Extensions.Configuration" Version="$(SdkPackageVersion)" />
     <PackageVersion Include="Microsoft.Extensions.Configuration.Abstractions" Version="$(SdkPackageVersion)" />
