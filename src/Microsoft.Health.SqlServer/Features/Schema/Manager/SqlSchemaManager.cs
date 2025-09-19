@@ -85,9 +85,9 @@ public class SqlSchemaManager : ISchemaManager
                 .ExecuteAsync(FetchUpdatedAvailableVersionsAsync, token)
                 .ConfigureAwait(false);
 
-            if (availableVersions.Count == 1)
+            if (availableVersions == null || availableVersions.Count == 0 || availableVersions.Count == 1)
             {
-                _logger.LogError("There are no available versions.");
+                _logger.LogInformation("There are no available versions.");
                 return;
             }
 
@@ -240,6 +240,11 @@ public class SqlSchemaManager : ISchemaManager
     private async Task<List<AvailableVersion>> FetchUpdatedAvailableVersionsAsync(CancellationToken cancellationToken)
     {
         List<AvailableVersion> availableVersions = await _schemaClient.GetAvailabilityAsync(cancellationToken).ConfigureAwait(false);
+
+        if (availableVersions == null || availableVersions.Count == 0)
+        {
+            return availableVersions;
+        }
 
         availableVersions.Sort((x, y) => x.Id.CompareTo(y.Id));
 
