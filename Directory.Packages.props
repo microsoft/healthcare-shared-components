@@ -1,7 +1,7 @@
 <Project>
 
   <ItemGroup>
-    <PackageVersion Include="Azure.Core" Version="1.48.0" />
+    <PackageVersion Include="Azure.Core" Version="1.49.0" />
     <PackageVersion Include="Azure.Identity" Version="1.16.0" />
     <PackageVersion Include="Azure.Messaging.EventGrid" Version="5.0.0" />
     <PackageVersion Include="Azure.Security.KeyVault.Keys" Version="4.8.0" />
@@ -35,7 +35,7 @@
     <PackageVersion Include="Microsoft.DurableTask.Abstractions" Version="1.15.0" />
     <PackageVersion Include="Microsoft.DurableTask.Client" Version="1.15.0" />
     <PackageVersion Include="Microsoft.DurableTask.Client.OrchestrationServiceClientShim" Version="1.15.0" />
-    <PackageVersion Include="Microsoft.Extensions.Azure" Version="1.12.0" />
+    <PackageVersion Include="Microsoft.Extensions.Azure" Version="1.13.0" />
     <PackageVersion Include="Microsoft.Extensions.Configuration" Version="$(SdkPackageVersion)" />
     <PackageVersion Include="Microsoft.Extensions.Configuration.Abstractions" Version="$(SdkPackageVersion)" />
     <PackageVersion Include="Microsoft.Extensions.Configuration.CommandLine" Version="$(SdkPackageVersion)" />
