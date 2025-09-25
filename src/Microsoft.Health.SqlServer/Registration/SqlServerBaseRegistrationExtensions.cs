@@ -18,6 +18,7 @@ using Microsoft.Health.Core.Features.Control;
 using Microsoft.Health.SqlServer.Configs;
 using Microsoft.Health.SqlServer.Features.Client;
 using Microsoft.Health.SqlServer.Features.Schema;
+using Microsoft.Health.SqlServer.Features.Schema.Eventing;
 using Microsoft.Health.SqlServer.Features.Schema.Manager;
 using Microsoft.Health.SqlServer.Features.Storage;
 
@@ -115,6 +116,10 @@ public static class SqlServerBaseRegistrationExtensions
         where TVersion : Enum
     {
         EnsureArg.IsNotNull(services, nameof(services));
+
+        services.TryAddSingleton<SchemaEventManager>();
+        services.TryAddSingleton<ISchemaEventPublisher>(x => x.GetRequiredService<SchemaEventManager>());
+        services.TryAddSingleton<ISchemaEventSubscriber>(x => x.GetRequiredService<SchemaEventManager>());
 
         services.TryAddScoped<ISchemaDataStore, SqlServerSchemaDataStore>();
         services.TryAddSingleton<SchemaJobWorker>();
