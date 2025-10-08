@@ -1,4 +1,4 @@
-﻿// -------------------------------------------------------------------------------------------------
+// -------------------------------------------------------------------------------------------------
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License (MIT). See LICENSE in the repo root for license information.
 // -------------------------------------------------------------------------------------------------
@@ -240,6 +240,40 @@ public static class SqlDataReaderRowExtensions
             reader.Read(column9, 9),
             reader.Read(column10, 10),
             reader.Read(column11, 11));
+    }
+
+    public static (T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13) ReadRow<T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13>(
+        this SqlDataReader reader,
+        Column<T0> column0,
+        Column<T1> column1,
+        Column<T2> column2,
+        Column<T3> column3,
+        Column<T4> column4,
+        Column<T5> column5,
+        Column<T6> column6,
+        Column<T7> column7,
+        Column<T8> column8,
+        Column<T9> column9,
+        Column<T10> column10,
+        Column<T11> column11,
+        Column<T12> column12,
+        Column<T13> column13)
+    {
+        return (
+            reader.Read(column0, 0),
+            reader.Read(column1, 1),
+            reader.Read(column2, 2),
+            reader.Read(column3, 3),
+            reader.Read(column4, 4),
+            reader.Read(column5, 5),
+            reader.Read(column6, 6),
+            reader.Read(column7, 7),
+            reader.Read(column8, 8),
+            reader.Read(column9, 9),
+            reader.Read(column10, 10),
+            reader.Read(column11, 11),
+            reader.Read(column12, 12),
+            reader.Read(column13, 13));
     }
 
     public static T Read<T>(this SqlDataReader reader, Column<T> column, int ordinal)
