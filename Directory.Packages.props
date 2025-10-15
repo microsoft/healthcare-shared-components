@@ -34,6 +34,7 @@
     <PackageVersion Include="Microsoft.Data.SqlClient" Version="6.1.2" />
     <PackageVersion Include="Microsoft.DurableTask.Abstractions" Version="1.16.0" />
     <PackageVersion Include="Microsoft.DurableTask.Client" Version="1.16.0" />
+    <PackageVersion Include="Microsoft.DurableTask.Client.Grpc" Version="1.16.0" />
     <PackageVersion Include="Microsoft.DurableTask.Client.OrchestrationServiceClientShim" Version="1.16.0" />
     <PackageVersion Include="Microsoft.Extensions.Azure" Version="1.13.0" />
     <PackageVersion Include="Microsoft.Extensions.Configuration" Version="$(SdkPackageVersion)" />
