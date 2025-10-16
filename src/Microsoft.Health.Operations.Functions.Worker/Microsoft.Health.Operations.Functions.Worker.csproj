@@ -15,6 +15,7 @@
     <PackageReference Include="Microsoft.Azure.Functions.Worker.Extensions.Timer" />
     <PackageReference Include="Microsoft.DurableTask.Abstractions" />
     <PackageReference Include="Microsoft.DurableTask.Client" />
+    <PackageReference Include="Microsoft.DurableTask.Client.Grpc" />
     <PackageReference Include="Microsoft.Extensions.Configuration.Abstractions" />
     <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" />
     <PackageReference Include="Microsoft.Extensions.Options" />
