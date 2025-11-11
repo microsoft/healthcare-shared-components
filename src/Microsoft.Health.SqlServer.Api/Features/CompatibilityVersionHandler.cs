@@ -6,7 +6,7 @@
 using System.Threading;
 using System.Threading.Tasks;
 using EnsureThat;
-using MediatR;
+using Medino;
 using Microsoft.Health.SqlServer.Features.Schema;
 using Microsoft.Health.SqlServer.Features.Schema.Messages.Get;
 using Microsoft.Health.SqlServer.Features.Schema.Model;
@@ -23,7 +23,7 @@ public class CompatibilityVersionHandler : IRequestHandler<GetCompatibilityVersi
         _schemaDataStore = schemaDataStore;
     }
 
-    public async Task<GetCompatibilityVersionResponse> Handle(GetCompatibilityVersionRequest request, CancellationToken cancellationToken)
+    public async Task<GetCompatibilityVersionResponse> HandleAsync(GetCompatibilityVersionRequest request, CancellationToken cancellationToken)
     {
         EnsureArg.IsNotNull(request, nameof(request));
 

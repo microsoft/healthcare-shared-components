@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 using EnsureThat;
 using Medallion.Threading;
 using Medallion.Threading.SqlServer;
-using MediatR;
+using Medino;
 using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -131,7 +131,7 @@ public sealed class SchemaInitializer : IHostedService
 
                         await GetCurrentSchemaVersionAsync(cancellationToken).ConfigureAwait(false);
 
-                        await _mediator.NotifySchemaUpgradedAsync((int)_schemaInformation.Current, true).ConfigureAwait(false);
+                        await _mediator.NotifySchemaUpgradedAsync((int)_schemaInformation.Current, true, cancellationToken).ConfigureAwait(false);
 
                         schemaUpgradedNotificationSent = true;
                     }
@@ -148,7 +148,7 @@ public sealed class SchemaInitializer : IHostedService
                             // we need to ensure that the schema upgrade notification is sent after updating the _schemaInformation.Current for each upgraded version
                             await GetCurrentSchemaVersionAsync(cancellationToken).ConfigureAwait(false);
 
-                            await _mediator.NotifySchemaUpgradedAsync((int)_schemaInformation.Current, false).ConfigureAwait(false);
+                            await _mediator.NotifySchemaUpgradedAsync((int)_schemaInformation.Current, false, cancellationToken).ConfigureAwait(false);
                         }
 
                         schemaUpgradedNotificationSent = true;
@@ -171,7 +171,7 @@ public sealed class SchemaInitializer : IHostedService
         // There is a dependency on this notification in FHIR server to enable some background jobs
         if (!schemaUpgradedNotificationSent && _schemaInformation.Current.HasValue)
         {
-            await _mediator.NotifySchemaUpgradedAsync((int)_schemaInformation.Current, false).ConfigureAwait(false);
+            await _mediator.NotifySchemaUpgradedAsync((int)_schemaInformation.Current, false, cancellationToken).ConfigureAwait(false);
         }
     }
 

@@ -6,7 +6,7 @@
 using System.Threading;
 using System.Threading.Tasks;
 using EnsureThat;
-using MediatR;
+using Medino;
 using Microsoft.Health.SqlServer.Features.Schema.Messages.Get;
 using Microsoft.Health.SqlServer.Features.Schema.Messages.Notifications;
 
@@ -14,28 +14,28 @@ namespace Microsoft.Health.SqlServer.Features.Schema.Extensions;
 
 public static class SchemaMediatorExtensions
 {
-    public static Task<GetCompatibilityVersionResponse> GetCompatibleVersionAsync(this IMediator mediator, CancellationToken cancellationToken)
+    public static Task<GetCompatibilityVersionResponse> GetCompatibleVersionAsync(this IMediator mediator, CancellationToken cancellationToken = default)
     {
         EnsureArg.IsNotNull(mediator, nameof(mediator));
 
         var request = new GetCompatibilityVersionRequest();
 
-        return mediator.Send(request, cancellationToken);
+        return mediator.SendAsync(request, cancellationToken);
     }
 
-    public static Task<GetCurrentVersionResponse> GetCurrentVersionAsync(this IMediator mediator, CancellationToken cancellationToken)
+    public static Task<GetCurrentVersionResponse> GetCurrentVersionAsync(this IMediator mediator, CancellationToken cancellationToken = default)
     {
         EnsureArg.IsNotNull(mediator, nameof(mediator));
 
         var request = new GetCurrentVersionRequest();
 
-        return mediator.Send(request, cancellationToken);
+        return mediator.SendAsync(request, cancellationToken);
     }
 
-    public static Task NotifySchemaUpgradedAsync(this IMediator mediator, int version, bool isFullSchemaSnapshotUpgrade)
+    public static Task NotifySchemaUpgradedAsync(this IMediator mediator, int version, bool isFullSchemaSnapshotUpgrade, CancellationToken cancellationToken = default)
     {
         EnsureArg.IsNotNull(mediator, nameof(mediator));
 
-        return mediator.Publish(new SchemaUpgradedNotification(version, isFullSchemaSnapshotUpgrade));
+        return mediator.PublishAsync(new SchemaUpgradedNotification(version, isFullSchemaSnapshotUpgrade), cancellationToken);
     }
 }

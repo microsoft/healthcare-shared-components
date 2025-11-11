@@ -11,7 +11,7 @@
 
   <ItemGroup>
     <PackageReference Include="Ensure.That" />
-    <PackageReference Include="MediatR" />
+    <PackageReference Include="Medino" />
     <PackageReference Include="Newtonsoft.Json" />
   </ItemGroup>
 

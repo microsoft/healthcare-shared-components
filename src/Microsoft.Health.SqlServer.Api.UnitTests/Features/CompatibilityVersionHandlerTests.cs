@@ -5,9 +5,7 @@
 
 using System.Threading;
 using System.Threading.Tasks;
-using MediatR;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Health.Extensions.DependencyInjection;
+using Medino;
 using Microsoft.Health.SqlServer.Api.Features;
 using Microsoft.Health.SqlServer.Features.Schema;
 using Microsoft.Health.SqlServer.Features.Schema.Extensions;
@@ -22,24 +20,25 @@ public class CompatibilityVersionHandlerTests
 {
     private readonly ISchemaDataStore _schemaMigrationDataStore;
     private readonly IMediator _mediator;
-    private readonly CancellationToken _cancellationToken;
 
     public CompatibilityVersionHandlerTests()
     {
+        IMediatorServiceProvider sp = Substitute.For<IMediatorServiceProvider>();
         _schemaMigrationDataStore = Substitute.For<ISchemaDataStore>();
-        var collection = new ServiceCollection();
-        collection.Add(_ => new CompatibilityVersionHandler(_schemaMigrationDataStore)).Singleton().AsSelf().AsImplementedInterfaces();
+        _mediator = new Mediator(sp);
 
-        _mediator = new Mediator(collection.BuildServiceProvider());
-        _cancellationToken = new CancellationTokenSource().Token;
+        sp.GetService<CompatibilityVersionHandler>().Returns(new CompatibilityVersionHandler(_schemaMigrationDataStore));
     }
 
     [Fact]
     public async Task GivenAMediator_WhenCompatibleRequest_ThenReturnsCompatibleVersions()
     {
-        _schemaMigrationDataStore.GetLatestCompatibleVersionsAsync(Arg.Any<CancellationToken>())
-                .Returns(new CompatibleVersions(1, 3));
-        GetCompatibilityVersionResponse response = await _mediator.GetCompatibleVersionAsync(_cancellationToken);
+        _schemaMigrationDataStore
+            .GetLatestCompatibleVersionsAsync(Arg.Any<CancellationToken>())
+            .Returns(new CompatibleVersions(1, 3));
+
+        using CancellationTokenSource cts = new();
+        GetCompatibilityVersionResponse response = await _mediator.GetCompatibleVersionAsync(cts.Token);
 
         Assert.Equal(1, response.CompatibleVersions.Min);
         Assert.Equal(3, response.CompatibleVersions.Max);

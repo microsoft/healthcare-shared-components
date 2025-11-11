@@ -7,7 +7,7 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using EnsureThat;
-using MediatR;
+using Medino;
 using Microsoft.Health.SqlServer.Features.Schema;
 using Microsoft.Health.SqlServer.Features.Schema.Messages.Get;
 using Microsoft.Health.SqlServer.Features.Schema.Model;
@@ -24,7 +24,7 @@ public class CurrentVersionHandler : IRequestHandler<GetCurrentVersionRequest, G
         _schemaDataStore = schemaMigrationDataStore;
     }
 
-    public async Task<GetCurrentVersionResponse> Handle(GetCurrentVersionRequest request, CancellationToken cancellationToken)
+    public async Task<GetCurrentVersionResponse> HandleAsync(GetCurrentVersionRequest request, CancellationToken cancellationToken)
     {
         EnsureArg.IsNotNull(request, nameof(request));
 

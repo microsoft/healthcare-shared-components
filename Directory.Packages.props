@@ -12,7 +12,8 @@
     <PackageVersion Include="Ensure.That" Version="10.1.0" />
     <PackageVersion Include="Google.Protobuf" Version="3.33.0" />
     <PackageVersion Include="MartinCostello.Logging.XUnit" Version="0.6.0" />
-    <PackageVersion Include="MediatR" Version="12.5.0" />
+    <PackageVersion Include="Medino" Version="2.0.7" />
+    <PackageVersion Include="Medino.Extensions.DependencyInjection" Version="2.0.7" />
     <PackageVersion Include="Microsoft.ApplicationInsights" Version="2.23.0" />
     <PackageVersion Include="Microsoft.AspNetCore.Mvc.Testing" Version="$(SdkPackageVersion)" />
     <PackageVersion Include="Microsoft.AspNetCore.TestHost" Version="$(SdkPackageVersion)" />

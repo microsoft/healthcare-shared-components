@@ -4,6 +4,7 @@
 // -------------------------------------------------------------------------------------------------
 
 using System.Diagnostics.CodeAnalysis;
+using Medino.Extensions.DependencyInjection;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -37,7 +38,7 @@ public sealed class Startup
             .AddSqlServerManagement<SchemaVersion>()
             .AddSqlServerApi();
 
-        services.AddMediatR(c => c.RegisterServicesFromAssembly(typeof(CompatibilityVersionHandler).Assembly));
+        services.AddMedino(c => c.RegisterServicesFromAssemblyContaining<CompatibilityVersionHandler>());
 
         services
             .Add(provider => new SchemaInformation((int)SchemaVersion.Version1, (int)SchemaVersion.Version2))
