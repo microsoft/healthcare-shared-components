@@ -11,10 +11,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="System.Formats.Asn1" />
-  </ItemGroup>
-
-  <ItemGroup>
     <ProjectReference Include="..\Microsoft.Health.Tools.Sql.Tasks\Microsoft.Health.Tools.Sql.Tasks.csproj" />
   </ItemGroup>
 

@@ -78,12 +78,9 @@
     <PackageVersion Include="System.CommandLine.Experimental" Version="0.2.0-alpha.19174.3" />
     <PackageVersion Include="System.CommandLine.Rendering" Version="0.2.0-alpha.19174.3" />
     <PackageVersion Include="System.Drawing.Common" Version="$(SdkPackageVersion)" />
-    <PackageVersion Include="System.Formats.Asn1" Version="$(FormatsAsn1Version)" />
     <PackageVersion Include="System.IO.Packaging" Version="$(IOPackagingVersion)" />
     <PackageVersion Include="System.Linq.Async" Version="6.0.3" />
-    <PackageVersion Include="System.Net.Http" Version="4.3.4" />
     <PackageVersion Include="System.Text.Json" Version="$(SystemTextJsonVersion)" />
-    <PackageVersion Include="System.Text.RegularExpressions" Version="4.3.1" />
     <PackageVersion Include="xunit" Version="2.9.3" />
     <PackageVersion Include="xunit.assert" Version="2.9.3" />
     <PackageVersion Include="Xunit.DependencyInjection" Version="11.1.0" />

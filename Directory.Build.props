@@ -34,7 +34,6 @@
         <ConfigurationBinderVersion>8.0.2</ConfigurationBinderVersion>
         <DependencyInjectionAbstractionsVersion>8.0.2</DependencyInjectionAbstractionsVersion>
         <DependencyInjectionVersion>8.0.1</DependencyInjectionVersion>
-        <FormatsAsn1Version>8.0.1</FormatsAsn1Version>
         <IOPackagingVersion>8.0.1</IOPackagingVersion>
         <LoggingAbstractionsVersion>8.0.3</LoggingAbstractionsVersion>
         <LoggingVersion>8.0.1</LoggingVersion>
@@ -49,7 +48,6 @@
         <ConfigurationBinderVersion>9.0.11</ConfigurationBinderVersion>
         <DependencyInjectionAbstractionsVersion>9.0.11</DependencyInjectionAbstractionsVersion>
         <DependencyInjectionVersion>9.0.11</DependencyInjectionVersion>
-        <FormatsAsn1Version>9.0.11</FormatsAsn1Version>
         <IOPackagingVersion>9.0.11</IOPackagingVersion>
         <LoggingAbstractionsVersion>9.0.11</LoggingAbstractionsVersion>
         <LoggingVersion>9.0.11</LoggingVersion>
@@ -64,7 +62,6 @@
         <ConfigurationBinderVersion>10.0.0</ConfigurationBinderVersion>
         <DependencyInjectionAbstractionsVersion>10.0.0</DependencyInjectionAbstractionsVersion>
         <DependencyInjectionVersion>10.0.0</DependencyInjectionVersion>
-        <FormatsAsn1Version>10.0.0</FormatsAsn1Version>
         <IOPackagingVersion>10.0.0</IOPackagingVersion>
         <LoggingAbstractionsVersion>10.0.0</LoggingAbstractionsVersion>
         <LoggingVersion>10.0.0</LoggingVersion>
