@@ -26,6 +26,7 @@ jobs:
         global-json-file: 'global.json'
         dotnet-version: |
           8.x
+          9.x
 
     - name: Initialize CodeQL
       uses: github/codeql-action/init@v4
