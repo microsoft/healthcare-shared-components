@@ -15,5 +15,6 @@
     <file src="Microsoft.Health.Extensions.BuildTimeCodeGenerator.targets" target="tools/" />
     <file src="$publishdir$\net8.0\**\*" target="tools/net8.0/" />
     <file src="$publishdir$\net9.0\**\*" target="tools/net9.0/" />
+    <file src="$publishdir$\net10.0\**\*" target="tools/net10.0/" />
   </files>
 </package>

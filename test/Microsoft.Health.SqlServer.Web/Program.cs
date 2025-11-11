@@ -3,15 +3,13 @@
 // Licensed under the MIT License (MIT). See LICENSE in the repo root for license information.
 // -------------------------------------------------------------------------------------------------
 
-using Microsoft.AspNetCore.Hosting;
-using Microsoft.Extensions.Hosting;
-using Microsoft.Health.SqlServer.Web;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.Health.SqlServer.Web.Hosting;
 
-using IHost host = Host
-    .CreateDefaultBuilder(args)
-    .ConfigureWebHostDefaults(b => b.UseStartup<Startup>())
-    .Build();
+WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
+builder.Services.ConfigureSqlServerWebServices();
 
-await host
-    .RunAsync()
-    .ConfigureAwait(false);
+WebApplication app = builder.Build();
+app.ConfigureSqlServerWebApp();
+
+await app.RunAsync().ConfigureAwait(false);

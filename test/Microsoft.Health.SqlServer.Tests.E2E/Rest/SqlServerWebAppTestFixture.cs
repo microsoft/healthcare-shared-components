@@ -9,29 +9,30 @@ using System.IO;
 using System.Linq;
 using System.Net.Http;
 using System.Reflection;
-using Microsoft.AspNetCore;
+using System.Threading.Tasks;
+using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Hosting;
+using Microsoft.Health.SqlServer.Web.Hosting;
 using Microsoft.IO;
 using Newtonsoft.Json.Linq;
 
 namespace Microsoft.Health.SqlServer.Tests.E2E.Rest;
 
 [SuppressMessage("Maintainability", "CA1515:Consider making public types internal", Justification = "Used by test framework.")]
-public class HttpIntegrationTestFixture<TStartup> : IDisposable
+public class SqlServerWebAppTestFixture : IAsyncDisposable
 {
-    private readonly string _environmentUrl;
-    private readonly HttpMessageHandler _messageHandler;
     private bool _isDisposed;
 
-    public HttpIntegrationTestFixture()
+    public SqlServerWebAppTestFixture()
         : this(Path.Combine("test"))
     {
     }
 
     [SuppressMessage("Reliability", "CA2000:Dispose objects before losing scope", Justification = "DelegatingHandler disposes inner handler.")]
-    protected HttpIntegrationTestFixture(string targetProjectParentDirectory)
+    protected SqlServerWebAppTestFixture(string targetProjectParentDirectory)
     {
         string environmentUrl = Environment.GetEnvironmentVariable("TestEnvironmentUrl");
 
@@ -39,9 +40,10 @@ public class HttpIntegrationTestFixture<TStartup> : IDisposable
         {
             environmentUrl = "http://localhost/";
 
-            StartInMemoryServer(targetProjectParentDirectory);
+            WebApplication = CreateLocalWebApp(targetProjectParentDirectory);
+            WebApplication.Start();
 
-            _messageHandler = new SessionMessageHandler(Server.CreateHandler());
+            HttpClient = WebApplication.GetTestClient();
             IsUsingInProcTestServer = true;
         }
         else
@@ -51,12 +53,8 @@ public class HttpIntegrationTestFixture<TStartup> : IDisposable
                 environmentUrl = $"{environmentUrl}/";
             }
 
-            _messageHandler = new SessionMessageHandler(new HttpClientHandler());
+            HttpClient = new HttpClient() { BaseAddress = new Uri(environmentUrl) };
         }
-
-        _environmentUrl = environmentUrl;
-
-        HttpClient = CreateHttpClient();
 
         RecyclableMemoryStreamManager = new RecyclableMemoryStreamManager();
 
@@ -67,32 +65,31 @@ public class HttpIntegrationTestFixture<TStartup> : IDisposable
 
     public HttpClient HttpClient { get; }
 
-    protected TestServer Server { get; private set; }
+    protected WebApplication WebApplication { get; private set; }
 
     public RecyclableMemoryStreamManager RecyclableMemoryStreamManager { get; }
 
     public HttpClient Client { get; }
 
-    [SuppressMessage("Reliability", "CA2000:Dispose objects before losing scope", Justification = "Callers are responsible for disposal.")]
-    public HttpClient CreateHttpClient()
-        => new HttpClient(_messageHandler) { BaseAddress = new Uri(_environmentUrl) };
-
-    public void Dispose()
+    public async ValueTask DisposeAsync()
     {
-        // Do not change this code. Put cleanup code in 'Dispose(bool disposing)' method
-        Dispose(disposing: true);
+        await DisposeAsync(disposing: true);
         GC.SuppressFinalize(this);
     }
 
-    protected virtual void Dispose(bool disposing)
+    protected virtual async ValueTask DisposeAsync(bool disposing)
     {
         if (!_isDisposed)
         {
             if (disposing)
             {
-                _messageHandler.Dispose();
                 HttpClient.Dispose();
-                Server?.Dispose();
+
+                if (WebApplication is not null)
+                {
+                    await WebApplication.StopAsync();
+                    await WebApplication.DisposeAsync();
+                }
             }
 
             _isDisposed = true;
@@ -140,34 +137,27 @@ public class HttpIntegrationTestFixture<TStartup> : IDisposable
         throw new ArgumentException($"Project root could not be located for startup type {startupType.FullName}", nameof(startupType));
     }
 
-    private void StartInMemoryServer(string targetProjectParentDirectory)
+    private static WebApplication CreateLocalWebApp(string targetProjectParentDirectory)
     {
-        var contentRoot = GetProjectPath(targetProjectParentDirectory, typeof(TStartup));
-        var projectDir = GetProjectPath("test", typeof(TStartup));
+        var contentRoot = GetProjectPath(targetProjectParentDirectory, typeof(SqlServerApplicationHostingExtensions));
+        var projectDir = GetProjectPath("test", typeof(SqlServerApplicationHostingExtensions));
 
         var launchSettings = JObject.Parse(File.ReadAllText(Path.Combine(projectDir, "Properties", "launchSettings.json")));
 
         var configuration = launchSettings["profiles"]["Microsoft.Health.SqlServer.Web"]["environmentVariables"].Cast<JProperty>().ToDictionary(p => p.Name, p => p.Value.ToString());
 
-        var builder = WebHost.CreateDefaultBuilder()
-            .UseContentRoot(contentRoot)
-            .ConfigureAppConfiguration(configurationBuilder =>
-            {
-                configurationBuilder.AddInMemoryCollection(configuration);
-            })
-            .UseStartup(typeof(TStartup));
-
-        Server = new TestServer(builder);
-    }
-
-    /// <summary>
-    /// An <see cref="HttpMessageHandler"/> that maintains session consistency between requests.
-    /// </summary>
-    private sealed class SessionMessageHandler : DelegatingHandler
-    {
-        public SessionMessageHandler(HttpMessageHandler innerHandler)
-            : base(innerHandler)
+        var builder = WebApplication.CreateBuilder(new WebApplicationOptions
         {
-        }
+            ContentRootPath = contentRoot,
+        });
+
+        builder.Configuration.AddInMemoryCollection(configuration);
+        builder.Services.ConfigureSqlServerWebServices();
+        builder.WebHost.UseTestServer();
+
+        WebApplication webApp = builder.Build();
+        webApp.ConfigureSqlServerWebApp();
+
+        return webApp;
     }
 }

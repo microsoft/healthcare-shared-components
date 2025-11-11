@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>$(LatestVersion);$(LtsVersion)</TargetFrameworks>
+    <TargetFrameworks>$(SupportedFrameworks)</TargetFrameworks>
     <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
   </PropertyGroup>
 
@@ -39,7 +39,7 @@
   </Target>
 
   <Target Name="PublishSqlTasksCore" BeforeTargets="CoreCompile" Condition=" '$(MSBuildRuntimeType)' == 'Core'">
-    <MSBuild Projects="..\Microsoft.Health.Tools.Sql.Tasks\Microsoft.Health.Tools.Sql.Tasks.csproj" Targets="Publish" Properties="TargetFramework=net8.0" />
+    <MSBuild Projects="..\Microsoft.Health.Tools.Sql.Tasks\Microsoft.Health.Tools.Sql.Tasks.csproj" Targets="Publish" Properties="TargetFramework=net10.0" />
   </Target>
 
   <Target Name="PublishSqlTasksFull" BeforeTargets="CoreCompile" Condition=" '$(MSBuildRuntimeType)' == 'Full' ">

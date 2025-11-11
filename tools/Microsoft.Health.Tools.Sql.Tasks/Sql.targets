@@ -32,7 +32,7 @@
         SqlScript="@(SqlScript)" />
   </Target>
 
-  <UsingTask TaskName="GenerateFullScript" AssemblyFile="net8.0\Microsoft.Health.Tools.Sql.Tasks.dll" Condition="'$(MSBuildRuntimeType)' == 'Core'"/>
+  <UsingTask TaskName="GenerateFullScript" AssemblyFile="net10.0\Microsoft.Health.Tools.Sql.Tasks.dll" Condition="'$(MSBuildRuntimeType)' == 'Core'"/>
   <UsingTask TaskName="GenerateFullScript" AssemblyFile="net472\Microsoft.Health.Tools.Sql.Tasks.dll" Condition="'$(MSBuildRuntimeType)' == 'Full'"/>
 
 </Project>
