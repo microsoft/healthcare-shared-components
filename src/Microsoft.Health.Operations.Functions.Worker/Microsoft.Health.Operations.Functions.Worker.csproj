@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <Description>Common utilities and isolated worker Azure Functions for long-running operations used by Microsoft Health.</Description>
-    <TargetFrameworks>$(SupportedFrameworks)</TargetFrameworks>
+    <TargetFrameworks>$(LatestVersion)</TargetFrameworks>
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
