@@ -8,6 +8,8 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using Medino;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Health.Extensions.DependencyInjection;
 using Microsoft.Health.SqlServer.Api.Features;
 using Microsoft.Health.SqlServer.Features.Schema;
 using Microsoft.Health.SqlServer.Features.Schema.Extensions;
@@ -25,11 +27,11 @@ public class CurrentVersionHandlerTests
 
     public CurrentVersionHandlerTests()
     {
-        IMediatorServiceProvider sp = Substitute.For<IMediatorServiceProvider>();
         _schemaDataStore = Substitute.For<ISchemaDataStore>();
-        _mediator = new Mediator(sp);
+        var collection = new ServiceCollection();
+        collection.Add(sp => new CurrentVersionHandler(_schemaDataStore)).Singleton().AsSelf().AsImplementedInterfaces();
 
-        sp.GetService<CurrentVersionHandler>().Returns(new CurrentVersionHandler(_schemaDataStore));
+        _mediator = new Mediator(collection.BuildServiceProvider());
     }
 
     [Fact]

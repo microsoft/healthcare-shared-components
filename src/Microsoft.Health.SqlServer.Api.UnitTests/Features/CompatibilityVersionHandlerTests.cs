@@ -6,6 +6,9 @@
 using System.Threading;
 using System.Threading.Tasks;
 using Medino;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
+using Microsoft.Health.Extensions.DependencyInjection;
 using Microsoft.Health.SqlServer.Api.Features;
 using Microsoft.Health.SqlServer.Features.Schema;
 using Microsoft.Health.SqlServer.Features.Schema.Extensions;
@@ -23,11 +26,11 @@ public class CompatibilityVersionHandlerTests
 
     public CompatibilityVersionHandlerTests()
     {
-        IMediatorServiceProvider sp = Substitute.For<IMediatorServiceProvider>();
         _schemaMigrationDataStore = Substitute.For<ISchemaDataStore>();
-        _mediator = new Mediator(sp);
+        var collection = new ServiceCollection();
+        collection.Add(_ => new CompatibilityVersionHandler(_schemaMigrationDataStore)).Singleton().AsSelf().AsImplementedInterfaces();
 
-        sp.GetService<CompatibilityVersionHandler>().Returns(new CompatibilityVersionHandler(_schemaMigrationDataStore));
+        _mediator = new Mediator(collection.BuildServiceProvider());
     }
 
     [Fact]
