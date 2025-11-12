@@ -1,11 +1,11 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <AzureFunctionsVersion>v4</AzureFunctionsVersion>
     <NoWarn>$(NoWarn);CA1515</NoWarn>
     <Nullable>enable</Nullable>
     <OutputType>Exe</OutputType>
-    <TargetFrameworks>$(LatestVersion);$(LtsVersion)</TargetFrameworks>
+    <TargetFrameworks>$(LatestVersion)</TargetFrameworks>
   </PropertyGroup>
 
   <ItemGroup>
@@ -16,7 +16,6 @@
     <PackageReference Include="Microsoft.Azure.Functions.Worker.Extensions.Http.AspNetCore" />
     <PackageReference Include="Microsoft.Azure.Functions.Worker.Sdk" PrivateAssets="All" />
     <PackageReference Include="Microsoft.Extensions.Options.DataAnnotations" />
-    <PackageReference Include="System.Linq.Async" />
   </ItemGroup>
 
   <ItemGroup>

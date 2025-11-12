@@ -13,18 +13,17 @@ using EnsureThat;
 using Microsoft.Health.SqlServer.Features.Schema;
 using Microsoft.Health.SqlServer.Features.Schema.Model;
 using Microsoft.Health.SqlServer.Tests.E2E.Rest;
-using Microsoft.Health.SqlServer.Web;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using Xunit;
 
 namespace Microsoft.Health.SqlServer.Tests.E2E;
 
-public class SchemaTests : IClassFixture<HttpIntegrationTestFixture<Startup>>
+public class SchemaTests : IClassFixture<SqlServerWebAppTestFixture>
 {
     private readonly HttpClient _client;
 
-    public SchemaTests(HttpIntegrationTestFixture<Startup> fixture)
+    public SchemaTests(SqlServerWebAppTestFixture fixture)
     {
         _client = EnsureArg.IsNotNull(fixture, nameof(fixture)).HttpClient;
     }

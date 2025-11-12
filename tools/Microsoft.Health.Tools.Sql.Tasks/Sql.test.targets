@@ -33,6 +33,6 @@
   </Target>
 
   <UsingTask TaskName="GenerateFullScript" AssemblyFile="bin\$(Configuration)\publish\net472\Microsoft.Health.Tools.Sql.Tasks.dll" Condition="'$(MSBuildRuntimeType)' == 'Full'"/>
-  <UsingTask TaskName="GenerateFullScript" AssemblyFile="bin\$(Configuration)\publish\net8.0\Microsoft.Health.Tools.Sql.Tasks.dll" Condition="'$(MSBuildRuntimeType)' == 'Core'"/>
+  <UsingTask TaskName="GenerateFullScript" AssemblyFile="bin\$(Configuration)\publish\net10.0\Microsoft.Health.Tools.Sql.Tasks.dll" Condition="'$(MSBuildRuntimeType)' == 'Core'"/>
 
 </Project>

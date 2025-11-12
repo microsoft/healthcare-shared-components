@@ -7,9 +7,8 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
-using MediatR;
+using Medino;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Health.Extensions.DependencyInjection;
 using Microsoft.Health.SqlServer.Api.Features;
 using Microsoft.Health.SqlServer.Features.Schema;
@@ -25,7 +24,6 @@ public class CurrentVersionHandlerTests
 {
     private readonly ISchemaDataStore _schemaDataStore;
     private readonly IMediator _mediator;
-    private readonly CancellationToken _cancellationToken;
 
     public CurrentVersionHandlerTests()
     {
@@ -34,7 +32,6 @@ public class CurrentVersionHandlerTests
         collection.Add(sp => new CurrentVersionHandler(_schemaDataStore)).Singleton().AsSelf().AsImplementedInterfaces();
 
         _mediator = new Mediator(collection.BuildServiceProvider());
-        _cancellationToken = new CancellationTokenSource().Token;
     }
 
     [Fact]
@@ -48,9 +45,12 @@ public class CurrentVersionHandlerTests
             new CurrentVersionInformation(2, Enum.Parse<SchemaVersionStatus>(status, true), new List<string>()),
         };
 
-        _schemaDataStore.GetCurrentVersionAsync(Arg.Any<CancellationToken>())
-                .Returns(mockCurrentVersions);
-        GetCurrentVersionResponse response = await _mediator.GetCurrentVersionAsync(_cancellationToken);
+        _schemaDataStore
+            .GetCurrentVersionAsync(Arg.Any<CancellationToken>())
+            .Returns(mockCurrentVersions);
+
+        using CancellationTokenSource cts = new();
+        GetCurrentVersionResponse response = await _mediator.GetCurrentVersionAsync(cts.Token);
         var currentVersionsResponse = response.CurrentVersions;
 
         Assert.Equal(mockCurrentVersions.Count, currentVersionsResponse.Count);
@@ -64,10 +64,12 @@ public class CurrentVersionHandlerTests
     {
         var mockCurrentVersions = new List<CurrentVersionInformation>();
 
-        _schemaDataStore.GetCurrentVersionAsync(Arg.Any<CancellationToken>())
-                .Returns(mockCurrentVersions);
+        _schemaDataStore
+            .GetCurrentVersionAsync(Arg.Any<CancellationToken>())
+            .Returns(mockCurrentVersions);
 
-        GetCurrentVersionResponse response = await _mediator.GetCurrentVersionAsync(_cancellationToken);
+        using CancellationTokenSource cts = new();
+        GetCurrentVersionResponse response = await _mediator.GetCurrentVersionAsync(cts.Token);
 
         Assert.Empty(response.CurrentVersions);
     }

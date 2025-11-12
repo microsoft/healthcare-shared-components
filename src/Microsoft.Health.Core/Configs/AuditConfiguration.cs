@@ -9,8 +9,6 @@ namespace Microsoft.Health.Core.Configs;
 
 public class AuditConfiguration
 {
-    private string _customAuditHeaderPrefix;
-
     public AuditConfiguration()
     { }
 
@@ -19,7 +17,7 @@ public class AuditConfiguration
 
     public string CustomAuditHeaderPrefix
     {
-        get => _customAuditHeaderPrefix;
-        set => _customAuditHeaderPrefix = !string.IsNullOrEmpty(value) ? value : throw new InvalidDefinitionException(Resources.CustomHeaderPrefixCannotBeEmpty);
+        get => field;
+        set => field = !string.IsNullOrEmpty(value) ? value : throw new InvalidDefinitionException(Resources.CustomHeaderPrefixCannotBeEmpty);
     }
 }

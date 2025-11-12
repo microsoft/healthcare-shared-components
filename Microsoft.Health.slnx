@@ -1,0 +1,54 @@
+<Solution>
+
+  <Folder Name="/Build/">
+    <File Path=".editorconfig" />
+    <File Path=".globalconfig" />
+    <File Path="Directory.Build.props" />
+    <File Path="Directory.Packages.props" />
+    <File Path="global.json" />
+  </Folder>
+
+  <Folder Name="/Lang/">
+    <File Path="lang\IsExternalInit.cs" />
+  </Folder>
+
+  <Project Path="src\Microsoft.Health.Abstractions\Microsoft.Health.Abstractions.csproj" />
+  <Project Path="src\Microsoft.Health.Api\Microsoft.Health.Api.csproj" />
+  <Project Path="src\Microsoft.Health.Api.UnitTests\Microsoft.Health.Api.UnitTests.csproj" />
+  <Project Path="src\Microsoft.Health.Blob\Microsoft.Health.Blob.csproj" />
+  <Project Path="src\Microsoft.Health.Blob.UnitTests\Microsoft.Health.Blob.UnitTests.csproj" />
+  <Project Path="src\Microsoft.Health.Checkpoints\Microsoft.Health.Checkpoints.csproj" />
+  <Project Path="src\Microsoft.Health.Client\Microsoft.Health.Client.csproj" />
+  <Project Path="src\Microsoft.Health.Client.UnitTests\Microsoft.Health.Client.UnitTests.csproj" />
+  <Project Path="src\Microsoft.Health.Core\Microsoft.Health.Core.csproj" />
+  <Project Path="src\Microsoft.Health.Core.UnitTests\Microsoft.Health.Core.UnitTests.csproj" />
+  <Project Path="src\Microsoft.Health.Encryption\Microsoft.Health.Encryption.csproj" />
+  <Project Path="src\Microsoft.Health.Encryption.UnitTests\Microsoft.Health.Encryption.UnitTests.csproj" />
+  <Project Path="src\Microsoft.Health.EventGrid\Microsoft.Health.EventGrid.csproj" />
+  <Project Path="src\Microsoft.Health.EventGrid.UnitTests\Microsoft.Health.EventGrid.UnitTests.csproj" />
+  <Project Path="src\Microsoft.Health.Extensions.DependencyInjection\Microsoft.Health.Extensions.DependencyInjection.csproj" />
+  <Project Path="src\Microsoft.Health.Extensions.DependencyInjection.UnitTests\Microsoft.Health.Extensions.DependencyInjection.UnitTests.csproj" />
+  <Project Path="src\Microsoft.Health.MeasurementUtility\Microsoft.Health.MeasurementUtility.csproj" />
+  <Project Path="src\Microsoft.Health.MeasurementUtility.UnitTests\Microsoft.Health.MeasurementUtility.UnitTests.csproj" />
+  <Project Path="src\Microsoft.Health.Operations\Microsoft.Health.Operations.csproj" />
+  <Project Path="src\Microsoft.Health.Operations.Functions.Worker\Microsoft.Health.Operations.Functions.Worker.csproj" />
+  <Project Path="src\Microsoft.Health.Operations.Functions.Worker.UnitTests\Microsoft.Health.Operations.Functions.Worker.UnitTests.csproj" />
+  <Project Path="src\Microsoft.Health.Operations.UnitTests\Microsoft.Health.Operations.UnitTests.csproj" />
+  <Project Path="src\Microsoft.Health.SqlServer\Microsoft.Health.SqlServer.csproj" />
+  <Project Path="src\Microsoft.Health.SqlServer.Api\Microsoft.Health.SqlServer.Api.csproj" />
+  <Project Path="src\Microsoft.Health.SqlServer.Api.UnitTests\Microsoft.Health.SqlServer.Api.UnitTests.csproj" />
+  <Project Path="src\Microsoft.Health.SqlServer.UnitTests\Microsoft.Health.SqlServer.UnitTests.csproj" />
+  <Project Path="test\Microsoft.Health.Functions.Worker.Examples\Microsoft.Health.Functions.Worker.Examples.csproj" />
+  <Project Path="test\Microsoft.Health.Functions.Worker.Tests.Integration\Microsoft.Health.Functions.Worker.Tests.Integration.csproj" />
+  <Project Path="test\Microsoft.Health.SqlServer.Tests.E2E\Microsoft.Health.SqlServer.Tests.E2E.csproj" />
+  <Project Path="test\Microsoft.Health.SqlServer.Tests.Integration\Microsoft.Health.SqlServer.Tests.Integration.csproj" />
+  <Project Path="test\Microsoft.Health.SqlServer.Web\Microsoft.Health.SqlServer.Web.csproj" />
+  <Project Path="test\Microsoft.Health.Test.Common\Microsoft.Health.Test.Utilities.csproj" />
+  <Project Path="test\Microsoft.Health.Test.Common.Tests\Microsoft.Health.Test.Utilities.UnitTests.csproj" />
+  <Project Path="test\SchemaManager.UnitTests\SchemaManager.UnitTests.csproj" />
+  <Project Path="tools\Microsoft.Health.Extensions.BuildTimeCodeGenerator\Microsoft.Health.Extensions.BuildTimeCodeGenerator.csproj" />
+  <Project Path="tools\Microsoft.Health.Tools.Sql.Tasks\Microsoft.Health.Tools.Sql.Tasks.csproj" />
+  <Project Path="tools\Microsoft.Health.Tools.Sql.Tasks.Tests\Microsoft.Health.Tools.Sql.Tasks.Tests.csproj" />
+  <Project Path="tools\SchemaManager\SchemaManager.csproj" />
+
+</Solution>

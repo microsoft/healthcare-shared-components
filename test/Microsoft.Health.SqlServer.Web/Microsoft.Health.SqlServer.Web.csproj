@@ -8,6 +8,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="Medino.Extensions.DependencyInjection" />
     <PackageReference Include="Microsoft.Data.SqlClient" />
     <PackageReference Include="System.Drawing.Common" PrivateAssets="All" />
   </ItemGroup>

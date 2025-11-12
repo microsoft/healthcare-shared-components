@@ -12,7 +12,7 @@
     <HighEntropyVA>true</HighEntropyVA>
     <IsPackable>true</IsPackable>
     <LangVersion>latest</LangVersion>
-    <LatestVersion>net9.0</LatestVersion>
+    <LatestVersion>net10.0</LatestVersion>
     <LtsVersion>net8.0</LtsVersion>
     <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
@@ -21,7 +21,7 @@
     <RootDirectory>$(MSBuildThisFileDirectory)</RootDirectory>
     <RunSettingsFilePath>$(RootDirectory)CodeCoverage.runsettings</RunSettingsFilePath>
     <StsVersion>net9.0</StsVersion>
-    <SupportedFrameworks>$(LtsVersion);$(StsVersion)</SupportedFrameworks>
+    <SupportedFrameworks>$(LtsVersion);$(StsVersion);$(LatestVersion)</SupportedFrameworks>
     <TargetLatestRuntimePatch>true</TargetLatestRuntimePatch>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <WarningsAsErrors />
@@ -34,7 +34,6 @@
         <ConfigurationBinderVersion>8.0.2</ConfigurationBinderVersion>
         <DependencyInjectionAbstractionsVersion>8.0.2</DependencyInjectionAbstractionsVersion>
         <DependencyInjectionVersion>8.0.1</DependencyInjectionVersion>
-        <FormatsAsn1Version>8.0.1</FormatsAsn1Version>
         <IOPackagingVersion>8.0.1</IOPackagingVersion>
         <LoggingAbstractionsVersion>8.0.3</LoggingAbstractionsVersion>
         <LoggingVersion>8.0.1</LoggingVersion>
@@ -44,19 +43,32 @@
         <SystemTextJsonVersion>8.0.5</SystemTextJsonVersion>
       </PropertyGroup>
     </When>
+    <When Condition="'$(TargetFramework)' == '$(StsVersion)'">
+      <PropertyGroup>
+        <ConfigurationBinderVersion>9.0.11</ConfigurationBinderVersion>
+        <DependencyInjectionAbstractionsVersion>9.0.11</DependencyInjectionAbstractionsVersion>
+        <DependencyInjectionVersion>9.0.11</DependencyInjectionVersion>
+        <IOPackagingVersion>9.0.11</IOPackagingVersion>
+        <LoggingAbstractionsVersion>9.0.11</LoggingAbstractionsVersion>
+        <LoggingVersion>9.0.11</LoggingVersion>
+        <OptionsVersion>9.0.11</OptionsVersion>
+        <R9PackageVersion>9.10.0</R9PackageVersion>
+        <SdkPackageVersion>9.0.11</SdkPackageVersion>
+        <SystemTextJsonVersion>9.0.11</SystemTextJsonVersion>
+      </PropertyGroup>
+    </When>
     <Otherwise>
       <PropertyGroup>
-        <ConfigurationBinderVersion>9.0.6</ConfigurationBinderVersion>
-        <DependencyInjectionAbstractionsVersion>9.0.6</DependencyInjectionAbstractionsVersion>
-        <DependencyInjectionVersion>9.0.6</DependencyInjectionVersion>
-        <FormatsAsn1Version>9.0.6</FormatsAsn1Version>
-        <IOPackagingVersion>9.0.6</IOPackagingVersion>
-        <LoggingAbstractionsVersion>9.0.6</LoggingAbstractionsVersion>
-        <LoggingVersion>9.0.6</LoggingVersion>
-        <OptionsVersion>9.0.6</OptionsVersion>
-        <R9PackageVersion>9.6.0</R9PackageVersion>
-        <SdkPackageVersion>9.0.6</SdkPackageVersion>
-        <SystemTextJsonVersion>9.0.6</SystemTextJsonVersion>
+        <ConfigurationBinderVersion>10.0.0</ConfigurationBinderVersion>
+        <DependencyInjectionAbstractionsVersion>10.0.0</DependencyInjectionAbstractionsVersion>
+        <DependencyInjectionVersion>10.0.0</DependencyInjectionVersion>
+        <IOPackagingVersion>10.0.0</IOPackagingVersion>
+        <LoggingAbstractionsVersion>10.0.0</LoggingAbstractionsVersion>
+        <LoggingVersion>10.0.0</LoggingVersion>
+        <OptionsVersion>10.0.0</OptionsVersion>
+        <R9PackageVersion>10.0.0</R9PackageVersion>
+        <SdkPackageVersion>10.0.0</SdkPackageVersion>
+        <SystemTextJsonVersion>10.0.0</SystemTextJsonVersion>
       </PropertyGroup>
     </Otherwise>
   </Choose>

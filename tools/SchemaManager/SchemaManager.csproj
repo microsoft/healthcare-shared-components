@@ -11,6 +11,7 @@
 
   <ItemGroup>
     <PackageReference Include="Ensure.That" />
+    <PackageReference Include="Medino.Extensions.DependencyInjection" />
     <PackageReference Include="Microsoft.Extensions.Configuration.CommandLine" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" />
@@ -20,7 +21,6 @@
     <PackageReference Include="Microsoft.Extensions.Options" />
     <PackageReference Include="System.CommandLine.Experimental" />
     <PackageReference Include="System.CommandLine.Rendering" />
-    <PackageReference Include="System.Text.Json" />
   </ItemGroup>
 
   <ItemGroup>

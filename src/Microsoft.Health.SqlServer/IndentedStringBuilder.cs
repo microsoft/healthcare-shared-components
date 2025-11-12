@@ -24,13 +24,12 @@ public partial class IndentedStringBuilder
     private const int CharCountPerIndent = 4;
 
     private bool _indentPending;
-    private int _indentLevel;
     private readonly List<bool> _delimitedScopes = new List<bool>();
 
     internal int IndentLevel
     {
-        get => _indentLevel;
-        set => _indentLevel = EnsureArg.IsGte(value, 0);
+        get => field;
+        set => field = EnsureArg.IsGte(value, 0);
     }
 
     /// <summary>

@@ -9,6 +9,7 @@ using System.CommandLine.Builder;
 using System.CommandLine.Invocation;
 using System.Diagnostics.CodeAnalysis;
 using System.Threading.Tasks;
+using Medino.Extensions.DependencyInjection;
 using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
@@ -89,7 +90,7 @@ public static class Program
         services.AddScoped<SqlTransactionHandler>();
         services.AddScoped<ISchemaManagerDataStore, SchemaManagerDataStore>();
         services.AddSingleton<ISchemaManager, SqlSchemaManager>();
-        services.AddMediatR(c => c.RegisterServicesFromAssembly(typeof(SchemaUpgradedNotification).Assembly));
+        services.AddMedino(c => c.RegisterServicesFromAssemblyContaining<SchemaUpgradedNotification>());
         services.AddLogging(configure => configure.AddConsole());
         return services.BuildServiceProvider();
     }

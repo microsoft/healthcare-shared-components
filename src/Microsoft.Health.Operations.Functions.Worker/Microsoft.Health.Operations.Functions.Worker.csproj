@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <Description>Common utilities and isolated worker Azure Functions for long-running operations used by Microsoft Health.</Description>
-    <TargetFrameworks>$(LatestVersion);$(LtsVersion)</TargetFrameworks>
+    <TargetFrameworks>$(LatestVersion)</TargetFrameworks>
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
@@ -19,7 +19,6 @@
     <PackageReference Include="Microsoft.Extensions.Configuration.Abstractions" />
     <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" />
     <PackageReference Include="Microsoft.Extensions.Options" />
-    <PackageReference Include="System.Linq.Async" />
   </ItemGroup>
 
   <ItemGroup>

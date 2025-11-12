@@ -26,21 +26,22 @@ jobs:
         global-json-file: 'global.json'
         dotnet-version: |
           8.x
+          9.x
 
+    # Note that CodeQL does not officially support .NET 10 yet, so we have to use a nightly build
     - name: Initialize CodeQL
       uses: github/codeql-action/init@v4
       with:
         languages: 'csharp'
+        tools: https://github.com/dsp-testing/codeql-cli-nightlies/releases/download/codeql-bundle-20251112/codeql-bundle.tar.zst
 
     - name: dotnet restore
       shell: bash
       run: dotnet restore
 
     - name: dotnet build
-      continue-on-error: true
       shell: bash
       run: dotnet build -c Release -p:ContinuousIntegrationBuild=true
 
     - name: Perform CodeQL Analysis
-      continue-on-error: true
       uses: github/codeql-action/analyze@v4
