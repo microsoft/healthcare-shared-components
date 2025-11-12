@@ -38,10 +38,8 @@ jobs:
       run: dotnet restore
 
     - name: dotnet build
-      continue-on-error: true
       shell: bash
       run: dotnet build -c Release -p:ContinuousIntegrationBuild=true
 
     - name: Perform CodeQL Analysis
-      continue-on-error: true
       uses: github/codeql-action/analyze@v4
