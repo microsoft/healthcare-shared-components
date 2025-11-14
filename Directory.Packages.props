@@ -10,7 +10,7 @@
     <PackageVersion Include="coverlet.collector" Version="6.0.4" />
     <PackageVersion Include="DistributedLock.SqlServer" Version="1.0.6" />
     <PackageVersion Include="Ensure.That" Version="10.1.0" />
-    <PackageVersion Include="Google.Protobuf" Version="3.33.0" />
+    <PackageVersion Include="Google.Protobuf" Version="3.33.1" />
     <PackageVersion Include="MartinCostello.Logging.XUnit" Version="0.7.0" />
     <PackageVersion Include="Medino" Version="3.0.2" />
     <PackageVersion Include="Medino.Extensions.DependencyInjection" Version="3.0.2" />
