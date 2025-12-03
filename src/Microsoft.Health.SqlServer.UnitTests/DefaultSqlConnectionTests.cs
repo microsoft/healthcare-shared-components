@@ -3,6 +3,7 @@
 // Licensed under the MIT License (MIT). See LICENSE in the repo root for license information.
 // -------------------------------------------------------------------------------------------------
 
+using System;
 using System.Threading.Tasks;
 using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.Options;
@@ -145,5 +146,57 @@ public class DefaultSqlConnectionTests
         Assert.Equal(DatabaseName, connection.Database);
         Assert.Equal(maxPoolSize, new SqlConnectionStringBuilder(connection.ConnectionString).MaxPoolSize);
         Assert.Same(_retryProvider, connection.RetryLogicProvider);
+    }
+
+    [Fact]
+    [Obsolete("Test should be removed when AuthenticationType is removed.")]
+    public void GivenManagedIdentity_WhenSqlConnectionRequested_ThenReturnModifiedValue()
+    {
+        IOptionsMonitor<SqlServerDataStoreConfiguration> monitor = Substitute.For<IOptionsMonitor<SqlServerDataStoreConfiguration>>();
+        monitor.Get(Arg.Any<string>()).Returns(new SqlServerDataStoreConfiguration
+        {
+            AuthenticationType = SqlServerAuthenticationType.ManagedIdentity,
+            ConnectionString = DefaultConnectionString,
+            ManagedIdentityClientId = Guid.NewGuid().ToString(),
+        });
+
+        var connectionBuilder = new DefaultSqlConnectionBuilder(monitor, _retryProvider);
+
+        Assert.Equal(DatabaseName, connectionBuilder.DefaultDatabase);
+
+        using SqlConnection connection = connectionBuilder.GetSqlConnection();
+        Assert.Equal(ServerName, connection.DataSource);
+        Assert.Equal(DatabaseName, connection.Database);
+        Assert.Same(_retryProvider, connection.RetryLogicProvider);
+
+        var actual = new SqlConnectionStringBuilder(connection.ConnectionString);
+        Assert.Equal(SqlAuthenticationMethod.ActiveDirectoryManagedIdentity, actual.Authentication);
+        Assert.Equal(monitor.Get(Options.DefaultName).ManagedIdentityClientId, actual.UserID);
+    }
+
+    [Fact]
+    [Obsolete("Test should be removed when AuthenticationType is removed.")]
+    public async Task GivenManagedIdentity_WhenSqlConnectionAsyncRequested_ThenReturnModifiedValue()
+    {
+        IOptionsMonitor<SqlServerDataStoreConfiguration> monitor = Substitute.For<IOptionsMonitor<SqlServerDataStoreConfiguration>>();
+        monitor.Get(Arg.Any<string>()).Returns(new SqlServerDataStoreConfiguration
+        {
+            AuthenticationType = SqlServerAuthenticationType.ManagedIdentity,
+            ConnectionString = DefaultConnectionString,
+            ManagedIdentityClientId = Guid.NewGuid().ToString(),
+        });
+
+        var connectionBuilder = new DefaultSqlConnectionBuilder(monitor, _retryProvider);
+
+        Assert.Equal(DatabaseName, connectionBuilder.DefaultDatabase);
+
+        using SqlConnection connection = await connectionBuilder.GetSqlConnectionAsync();
+        Assert.Equal(ServerName, connection.DataSource);
+        Assert.Equal(DatabaseName, connection.Database);
+        Assert.Same(_retryProvider, connection.RetryLogicProvider);
+
+        var actual = new SqlConnectionStringBuilder(connection.ConnectionString);
+        Assert.Equal(SqlAuthenticationMethod.ActiveDirectoryManagedIdentity, actual.Authentication);
+        Assert.Equal(monitor.Get(Options.DefaultName).ManagedIdentityClientId, actual.UserID);
     }
 }
