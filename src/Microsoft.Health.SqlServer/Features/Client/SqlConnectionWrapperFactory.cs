@@ -9,6 +9,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using EnsureThat;
 using Microsoft.Data.SqlClient;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using Microsoft.Health.SqlServer.Configs;
 using Microsoft.Health.SqlServer.Features.Storage;
@@ -23,16 +24,26 @@ public class SqlConnectionWrapperFactory
     private readonly SqlServerDataStoreConfiguration _sqlServerDataStoreConfiguration;
 
     public SqlConnectionWrapperFactory(
+    SqlTransactionHandler sqlTransactionHandler,
+    ISqlConnectionBuilder sqlConnectionBuilder,
+    SqlRetryLogicBaseProvider sqlRetryLogicBaseProvider,
+    IOptionsMonitor<SqlServerDataStoreConfiguration> sqlServerDataStoreOptionsMonitor)
+        : this(sqlTransactionHandler, sqlConnectionBuilder, sqlRetryLogicBaseProvider, sqlServerDataStoreOptionsMonitor, serviceKey: Options.DefaultName)
+    { }
+
+    public SqlConnectionWrapperFactory(
         SqlTransactionHandler sqlTransactionHandler,
         ISqlConnectionBuilder sqlConnectionBuilder,
         SqlRetryLogicBaseProvider sqlRetryLogicBaseProvider,
-        IOptions<SqlServerDataStoreConfiguration> sqlServerDataStoreConfiguration)
+        IOptionsMonitor<SqlServerDataStoreConfiguration> sqlServerDataStoreOptionsFactory,
+        [ServiceKey] string serviceKey)
     {
         EnsureArg.IsNotNull(sqlTransactionHandler, nameof(sqlTransactionHandler));
         EnsureArg.IsNotNull(sqlConnectionBuilder, nameof(sqlConnectionBuilder));
         EnsureArg.IsNotNull(sqlRetryLogicBaseProvider, nameof(sqlRetryLogicBaseProvider));
+        EnsureArg.IsNotNull(sqlServerDataStoreOptionsFactory, nameof(sqlServerDataStoreOptionsFactory));
 
-        _sqlServerDataStoreConfiguration = EnsureArg.IsNotNull(sqlServerDataStoreConfiguration?.Value, nameof(sqlServerDataStoreConfiguration));
+        _sqlServerDataStoreConfiguration = sqlServerDataStoreOptionsFactory.Get(serviceKey);
         _sqlTransactionHandler = sqlTransactionHandler;
         _sqlConnectionBuilder = sqlConnectionBuilder;
         _sqlRetryLogicBaseProvider = sqlRetryLogicBaseProvider;

@@ -10,6 +10,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using EnsureThat;
 using Microsoft.Data.SqlClient;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.Health.SqlServer.Configs;
@@ -24,11 +25,21 @@ public class SchemaManagerDataStore : ISchemaManagerDataStore
     private readonly ILogger<SchemaManagerDataStore> _logger;
 
     public SchemaManagerDataStore(
+    SqlConnectionWrapperFactory sqlConnectionWrapperFactory,
+    IOptionsMonitor<SqlServerDataStoreConfiguration> sqlServerDataStoreOptionsMonitor,
+    ILogger<SchemaManagerDataStore> logger)
+        : this(sqlConnectionWrapperFactory, sqlServerDataStoreOptionsMonitor, serviceKey: Options.DefaultName, logger)
+    { }
+
+    public SchemaManagerDataStore(
         SqlConnectionWrapperFactory sqlConnectionWrapperFactory,
-        IOptions<SqlServerDataStoreConfiguration> sqlServerDataStoreConfiguration,
+        IOptionsMonitor<SqlServerDataStoreConfiguration> sqlServerDataStoreOptionsMonitor,
+        [ServiceKey] string serviceKey,
         ILogger<SchemaManagerDataStore> logger)
     {
-        _sqlServerDataStoreConfiguration = EnsureArg.IsNotNull(sqlServerDataStoreConfiguration?.Value, nameof(sqlServerDataStoreConfiguration));
+        EnsureArg.IsNotNull(sqlServerDataStoreOptionsMonitor, nameof(sqlServerDataStoreOptionsMonitor));
+
+        _sqlServerDataStoreConfiguration = sqlServerDataStoreOptionsMonitor.Get(serviceKey);
         _sqlConnectionWrapperFactory = EnsureArg.IsNotNull(sqlConnectionWrapperFactory, nameof(sqlConnectionWrapperFactory));
         _logger = EnsureArg.IsNotNull(logger, nameof(logger));
     }
