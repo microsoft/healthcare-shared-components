@@ -25,8 +25,10 @@ public class DefaultSqlConnectionTests
     [Fact]
     public void GivenDefaultSettings_WhenSqlConnectionRequested_ThenReturnSameValue()
     {
-        IOptions<SqlServerDataStoreConfiguration> options = Options.Create(new SqlServerDataStoreConfiguration { ConnectionString = DefaultConnectionString });
-        var connectionBuilder = new DefaultSqlConnectionBuilder(options, _retryProvider);
+        IOptionsMonitor<SqlServerDataStoreConfiguration> monitor = Substitute.For<IOptionsMonitor<SqlServerDataStoreConfiguration>>();
+        monitor.Get(Arg.Any<string>()).Returns(new SqlServerDataStoreConfiguration { ConnectionString = DefaultConnectionString });
+
+        var connectionBuilder = new DefaultSqlConnectionBuilder(monitor, _retryProvider);
 
         Assert.Equal(DatabaseName, connectionBuilder.DefaultDatabase);
 
@@ -39,8 +41,10 @@ public class DefaultSqlConnectionTests
     [Fact]
     public async Task GivenDefaultSettings_WhenSqlConnectionAsyncRequested_ThenReturnSameValue()
     {
-        IOptions<SqlServerDataStoreConfiguration> options = Options.Create(new SqlServerDataStoreConfiguration { ConnectionString = DefaultConnectionString });
-        var connectionBuilder = new DefaultSqlConnectionBuilder(options, _retryProvider);
+        IOptionsMonitor<SqlServerDataStoreConfiguration> monitor = Substitute.For<IOptionsMonitor<SqlServerDataStoreConfiguration>>();
+        monitor.Get(Arg.Any<string>()).Returns(new SqlServerDataStoreConfiguration { ConnectionString = DefaultConnectionString });
+
+        var connectionBuilder = new DefaultSqlConnectionBuilder(monitor, _retryProvider);
 
         Assert.Equal(DatabaseName, connectionBuilder.DefaultDatabase);
 
@@ -53,8 +57,10 @@ public class DefaultSqlConnectionTests
     [Fact]
     public async Task GivenDefaultSettings_WhenSqlConnectionAsyncWithAppNameRequested_ThenReturnSameValue()
     {
-        IOptions<SqlServerDataStoreConfiguration> options = Options.Create(new SqlServerDataStoreConfiguration { ConnectionString = DefaultConnectionString });
-        var connectionBuilder = new DefaultSqlConnectionBuilder(options, _retryProvider);
+        IOptionsMonitor<SqlServerDataStoreConfiguration> monitor = Substitute.For<IOptionsMonitor<SqlServerDataStoreConfiguration>>();
+        monitor.Get(Arg.Any<string>()).Returns(new SqlServerDataStoreConfiguration { ConnectionString = DefaultConnectionString });
+
+        var connectionBuilder = new DefaultSqlConnectionBuilder(monitor, _retryProvider);
 
         Assert.Equal(DatabaseName, connectionBuilder.DefaultDatabase);
 
@@ -70,8 +76,10 @@ public class DefaultSqlConnectionTests
     [InlineData("fhir")]
     public void GivenInitialCatalogOverride_WhenSqlConnectionRequested_ThenReturnModifiedValue(string initialCatalog)
     {
-        IOptions<SqlServerDataStoreConfiguration> options = Options.Create(new SqlServerDataStoreConfiguration { ConnectionString = DefaultConnectionString });
-        var connectionBuilder = new DefaultSqlConnectionBuilder(options, _retryProvider);
+        IOptionsMonitor<SqlServerDataStoreConfiguration> monitor = Substitute.For<IOptionsMonitor<SqlServerDataStoreConfiguration>>();
+        monitor.Get(Arg.Any<string>()).Returns(new SqlServerDataStoreConfiguration { ConnectionString = DefaultConnectionString });
+
+        var connectionBuilder = new DefaultSqlConnectionBuilder(monitor, _retryProvider);
 
         Assert.Equal(DatabaseName, connectionBuilder.DefaultDatabase);
 
@@ -87,8 +95,10 @@ public class DefaultSqlConnectionTests
     [InlineData("fhir")]
     public async Task GivenInitialCatalogOverride_WhenSqlConnectionAsyncRequested_ThenReturnModifiedValue(string initialCatalog)
     {
-        IOptions<SqlServerDataStoreConfiguration> options = Options.Create(new SqlServerDataStoreConfiguration { ConnectionString = DefaultConnectionString });
-        var connectionBuilder = new DefaultSqlConnectionBuilder(options, _retryProvider);
+        IOptionsMonitor<SqlServerDataStoreConfiguration> monitor = Substitute.For<IOptionsMonitor<SqlServerDataStoreConfiguration>>();
+        monitor.Get(Arg.Any<string>()).Returns(new SqlServerDataStoreConfiguration { ConnectionString = DefaultConnectionString });
+
+        var connectionBuilder = new DefaultSqlConnectionBuilder(monitor, _retryProvider);
 
         Assert.Equal(DatabaseName, connectionBuilder.DefaultDatabase);
 
@@ -104,8 +114,10 @@ public class DefaultSqlConnectionTests
     [InlineData(100)]
     public void GivenMaxPoolOverride_WhenSqlConnectionRequested_ThenReturnModifiedValue(int maxPoolSize)
     {
-        IOptions<SqlServerDataStoreConfiguration> options = Options.Create(new SqlServerDataStoreConfiguration { ConnectionString = DefaultConnectionString });
-        var connectionBuilder = new DefaultSqlConnectionBuilder(options, _retryProvider);
+        IOptionsMonitor<SqlServerDataStoreConfiguration> monitor = Substitute.For<IOptionsMonitor<SqlServerDataStoreConfiguration>>();
+        monitor.Get(Arg.Any<string>()).Returns(new SqlServerDataStoreConfiguration { ConnectionString = DefaultConnectionString });
+
+        var connectionBuilder = new DefaultSqlConnectionBuilder(monitor, _retryProvider);
 
         Assert.Equal(DatabaseName, connectionBuilder.DefaultDatabase);
 
@@ -122,8 +134,10 @@ public class DefaultSqlConnectionTests
     [InlineData(100)]
     public async Task GivenMaxPoolOverride_WhenSqlConnectionAsyncRequested_ThenReturnModifiedValue(int maxPoolSize)
     {
-        IOptions<SqlServerDataStoreConfiguration> options = Options.Create(new SqlServerDataStoreConfiguration { ConnectionString = DefaultConnectionString });
-        var connectionBuilder = new DefaultSqlConnectionBuilder(options, _retryProvider);
+        IOptionsMonitor<SqlServerDataStoreConfiguration> monitor = Substitute.For<IOptionsMonitor<SqlServerDataStoreConfiguration>>();
+        monitor.Get(Arg.Any<string>()).Returns(new SqlServerDataStoreConfiguration { ConnectionString = DefaultConnectionString });
+
+        var connectionBuilder = new DefaultSqlConnectionBuilder(monitor, _retryProvider);
 
         Assert.Equal(DatabaseName, connectionBuilder.DefaultDatabase);
 
@@ -138,14 +152,15 @@ public class DefaultSqlConnectionTests
     [Obsolete("Test should be removed when AuthenticationType is removed.")]
     public void GivenManagedIdentity_WhenSqlConnectionRequested_ThenReturnModifiedValue()
     {
-        IOptions<SqlServerDataStoreConfiguration> options = Options.Create(new SqlServerDataStoreConfiguration
+        IOptionsMonitor<SqlServerDataStoreConfiguration> monitor = Substitute.For<IOptionsMonitor<SqlServerDataStoreConfiguration>>();
+        monitor.Get(Arg.Any<string>()).Returns(new SqlServerDataStoreConfiguration
         {
             AuthenticationType = SqlServerAuthenticationType.ManagedIdentity,
             ConnectionString = DefaultConnectionString,
             ManagedIdentityClientId = Guid.NewGuid().ToString(),
         });
 
-        var connectionBuilder = new DefaultSqlConnectionBuilder(options, _retryProvider);
+        var connectionBuilder = new DefaultSqlConnectionBuilder(monitor, _retryProvider);
 
         Assert.Equal(DatabaseName, connectionBuilder.DefaultDatabase);
 
@@ -156,21 +171,22 @@ public class DefaultSqlConnectionTests
 
         var actual = new SqlConnectionStringBuilder(connection.ConnectionString);
         Assert.Equal(SqlAuthenticationMethod.ActiveDirectoryManagedIdentity, actual.Authentication);
-        Assert.Equal(options.Value.ManagedIdentityClientId, actual.UserID);
+        Assert.Equal(monitor.Get(Options.DefaultName).ManagedIdentityClientId, actual.UserID);
     }
 
     [Fact]
     [Obsolete("Test should be removed when AuthenticationType is removed.")]
     public async Task GivenManagedIdentity_WhenSqlConnectionAsyncRequested_ThenReturnModifiedValue()
     {
-        IOptions<SqlServerDataStoreConfiguration> options = Options.Create(new SqlServerDataStoreConfiguration
+        IOptionsMonitor<SqlServerDataStoreConfiguration> monitor = Substitute.For<IOptionsMonitor<SqlServerDataStoreConfiguration>>();
+        monitor.Get(Arg.Any<string>()).Returns(new SqlServerDataStoreConfiguration
         {
             AuthenticationType = SqlServerAuthenticationType.ManagedIdentity,
             ConnectionString = DefaultConnectionString,
             ManagedIdentityClientId = Guid.NewGuid().ToString(),
         });
 
-        var connectionBuilder = new DefaultSqlConnectionBuilder(options, _retryProvider);
+        var connectionBuilder = new DefaultSqlConnectionBuilder(monitor, _retryProvider);
 
         Assert.Equal(DatabaseName, connectionBuilder.DefaultDatabase);
 
@@ -181,6 +197,6 @@ public class DefaultSqlConnectionTests
 
         var actual = new SqlConnectionStringBuilder(connection.ConnectionString);
         Assert.Equal(SqlAuthenticationMethod.ActiveDirectoryManagedIdentity, actual.Authentication);
-        Assert.Equal(options.Value.ManagedIdentityClientId, actual.UserID);
+        Assert.Equal(monitor.Get(Options.DefaultName).ManagedIdentityClientId, actual.UserID);
     }
 }

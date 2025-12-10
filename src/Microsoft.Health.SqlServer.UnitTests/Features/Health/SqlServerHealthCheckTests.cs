@@ -28,7 +28,7 @@ public sealed class SqlServerHealthCheckTests
     private readonly SqlTransactionHandler _sqlTransactionHandler;
     private readonly ISqlConnectionBuilder _sqlConnectionBuilder;
     private readonly SqlRetryLogicBaseProvider _sqlRetryLogicBaseProvider;
-    private readonly IOptions<SqlServerDataStoreConfiguration> _sqlServerDataStoreConfiguration;
+    private readonly IOptionsMonitor<SqlServerDataStoreConfiguration> _sqlServerDataStoreConfiguration;
     private readonly ValueCache<CustomerKeyHealth> _cache;
 
     public SqlServerHealthCheckTests()
@@ -38,8 +38,8 @@ public sealed class SqlServerHealthCheckTests
         _sqlConnectionBuilder = Substitute.For<ISqlConnectionBuilder>();
         _sqlRetryLogicBaseProvider = Substitute.For<SqlRetryLogicBaseProvider>();
 
-        _sqlServerDataStoreConfiguration = Substitute.For<IOptions<SqlServerDataStoreConfiguration>>();
-        _sqlServerDataStoreConfiguration.Value.Returns(new SqlServerDataStoreConfiguration());
+        _sqlServerDataStoreConfiguration = Substitute.For<IOptionsMonitor<SqlServerDataStoreConfiguration>>();
+        _sqlServerDataStoreConfiguration.Get(Arg.Any<string>()).Returns(new SqlServerDataStoreConfiguration());
 
         _cache = new ValueCache<CustomerKeyHealth>();
         _cache.Set(new CustomerKeyHealth() { IsHealthy = true });

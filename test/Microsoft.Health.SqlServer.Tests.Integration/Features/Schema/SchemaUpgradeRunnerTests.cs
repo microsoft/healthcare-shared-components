@@ -40,12 +40,14 @@ public sealed class SchemaUpgradeRunnerTests : SqlIntegrationTestBase, IDisposab
         var sqlConnection = Substitute.For<ISqlConnectionBuilder>();
         sqlConnection.CreateConnection(default).ReturnsForAnyArgs(x => GetSqlConnection());
         sqlConnection.CreateConnectionAsync(default, default).ReturnsForAnyArgs(x => GetSqlConnection());
-        var config = Options.Create(new SqlServerDataStoreConfiguration());
+
+        IOptionsMonitor<SqlServerDataStoreConfiguration> monitor = Substitute.For<IOptionsMonitor<SqlServerDataStoreConfiguration>>();
+        monitor.Get(Arg.Any<string>()).Returns(new SqlServerDataStoreConfiguration());
 
         SqlRetryLogicBaseProvider sqlRetryLogicBaseProvider = SqlConfigurableRetryFactory.CreateFixedRetryProvider(new SqlClientRetryOptions().Settings);
-        var sqlConnectionWrapperFactory = new SqlConnectionWrapperFactory(_sqlTransactionHandler, sqlConnection, sqlRetryLogicBaseProvider, config);
+        var sqlConnectionWrapperFactory = new SqlConnectionWrapperFactory(_sqlTransactionHandler, sqlConnection, sqlRetryLogicBaseProvider, monitor);
 
-        _schemaDataStore = new SchemaManagerDataStore(sqlConnectionWrapperFactory, config, NullLogger<SchemaManagerDataStore>.Instance);
+        _schemaDataStore = new SchemaManagerDataStore(sqlConnectionWrapperFactory, monitor, NullLogger<SchemaManagerDataStore>.Instance);
         _runner = new SchemaUpgradeRunner(new ScriptProvider<SchemaVersion>(), new BaseScriptProvider(), NullLogger<SchemaUpgradeRunner>.Instance, sqlConnectionWrapperFactory, _schemaDataStore);
     }
 

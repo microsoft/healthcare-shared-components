@@ -13,6 +13,7 @@ using Microsoft.Health.SqlServer.Configs;
 using Microsoft.Health.SqlServer.Features.Client;
 using Microsoft.Health.SqlServer.Features.Schema;
 using Microsoft.Health.SqlServer.Features.Storage;
+using NSubstitute;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -53,12 +54,14 @@ public abstract class SqlIntegrationTestBase : IAsyncLifetime
     {
         TransactionHandler = new SqlTransactionHandler();
 
-        IOptions<SqlServerDataStoreConfiguration> options = Options.Create(Config);
+        IOptionsMonitor<SqlServerDataStoreConfiguration> monitor = Substitute.For<IOptionsMonitor<SqlServerDataStoreConfiguration>>();
+        monitor.Get(Arg.Any<string>()).Returns(Config);
+
         ConnectionFactory = new SqlConnectionWrapperFactory(
             TransactionHandler,
-            new DefaultSqlConnectionBuilder(Options.Create(Config), SqlConfigurableRetryFactory.CreateNoneRetryProvider()),
+            new DefaultSqlConnectionBuilder(monitor, SqlConfigurableRetryFactory.CreateNoneRetryProvider()),
             SqlConfigurableRetryFactory.CreateFixedRetryProvider(new SqlClientRetryOptions().Settings),
-            options);
+            monitor);
 
         ConnectionWrapper = await ConnectionFactory.ObtainSqlConnectionWrapperAsync("master", CancellationToken.None).ConfigureAwait(false);
 
