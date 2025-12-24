@@ -9,6 +9,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using EnsureThat;
 using Microsoft.Data.SqlClient;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using Microsoft.Health.SqlServer.Configs;
 
@@ -22,32 +23,39 @@ public class DefaultSqlConnectionBuilder : ISqlConnectionBuilder
     private readonly SqlServerDataStoreConfiguration _options;
     private readonly SqlRetryLogicBaseProvider _retryProvider;
 
+    public DefaultSqlConnectionBuilder(IOptionsMonitor<SqlServerDataStoreConfiguration> optionsMonitor, SqlRetryLogicBaseProvider retryProvider)
+        : this(optionsMonitor, retryProvider, serviceKey: Options.DefaultName)
+    { }
+
     /// <summary>
     /// Creates a new instance of the <see cref="DefaultSqlConnectionBuilder"/> class.
     /// </summary>
-    /// <param name="options">The SQL data store options containing information such as the connection string.</param>
+    /// <param name="optionsMonitor">The SQL data store options containing information such as the connection string.</param>
     /// <param name="retryProvider">A retry provider to ensure better connection resiliency.</param>
+    /// <param name="serviceKey">The service key to use when retrieving the SQL data store options.</param>
     /// <exception cref="ArgumentException">
     /// <para>The connection string is <see langword="null"/> or white space.</para>
     /// <para>-or-</para>
     /// <para>The managed identity client ID is missing when managed identity is specified.</para>
     /// </exception>
     /// <exception cref="ArgumentNullException">
-    /// <paramref name="options"/> or <paramref name="retryProvider"/> is <see langword="null"/>.
+    /// <paramref name="optionsMonitor"/> or <paramref name="retryProvider"/> is <see langword="null"/>.
     /// </exception>
-    public DefaultSqlConnectionBuilder(IOptions<SqlServerDataStoreConfiguration> options, SqlRetryLogicBaseProvider retryProvider)
+    public DefaultSqlConnectionBuilder(IOptionsMonitor<SqlServerDataStoreConfiguration> optionsMonitor, SqlRetryLogicBaseProvider retryProvider, [ServiceKey] string serviceKey)
     {
-        _options = EnsureArg.IsNotNull(options?.Value, nameof(options));
+        EnsureArg.IsNotNull(optionsMonitor, nameof(optionsMonitor));
+
+        _options = optionsMonitor.Get(serviceKey);
         _retryProvider = EnsureArg.IsNotNull(retryProvider, nameof(retryProvider));
 
         EnsureArg.IsNotNullOrWhiteSpace(
             _options.ConnectionString,
-            nameof(options),
+            nameof(optionsMonitor),
             o => o.WithMessage("The SQL connection string cannot be null or white space."));
 
 #pragma warning disable CS0618 // Type or member is obsolete
         if (_options.AuthenticationType == SqlServerAuthenticationType.ManagedIdentity && string.IsNullOrWhiteSpace(_options.ManagedIdentityClientId))
-            throw new ArgumentException("The managed identity client ID cannot be null or white space.", nameof(options));
+            throw new ArgumentException("The managed identity client ID cannot be null or white space.", nameof(optionsMonitor));
 #pragma warning restore CS0618 // Type or member is obsolete
 
         var builder = new SqlConnectionStringBuilder(_options.ConnectionString);
