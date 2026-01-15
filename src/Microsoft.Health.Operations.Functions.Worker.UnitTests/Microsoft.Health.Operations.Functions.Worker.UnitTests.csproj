@@ -2,6 +2,7 @@
 
   <PropertyGroup>
     <TargetFrameworks>$(LatestVersion)</TargetFrameworks>
+    <NoWarn>$(NoWarn);DURABLE2003</NoWarn>
     <Nullable>enable</Nullable>
   </PropertyGroup>
 

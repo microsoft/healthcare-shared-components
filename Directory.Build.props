@@ -60,7 +60,7 @@
     <Otherwise>
       <PropertyGroup>
         <ConfigurationBinderVersion>10.0.0</ConfigurationBinderVersion>
-        <DependencyInjectionAbstractionsVersion>10.0.0</DependencyInjectionAbstractionsVersion>
+        <DependencyInjectionAbstractionsVersion>10.0.1</DependencyInjectionAbstractionsVersion>
         <DependencyInjectionVersion>10.0.0</DependencyInjectionVersion>
         <IOPackagingVersion>10.0.0</IOPackagingVersion>
         <LoggingAbstractionsVersion>10.0.0</LoggingAbstractionsVersion>
