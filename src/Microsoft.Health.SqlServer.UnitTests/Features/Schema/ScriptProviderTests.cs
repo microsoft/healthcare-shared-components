@@ -44,4 +44,11 @@ public class ScriptProviderTests
         FileNotFoundException ex = await Assert.ThrowsAsync<FileNotFoundException>(() => _scriptProvider.GetDiffScriptAsBytesAsync(1, default));
         Assert.Equal("The provided version is unknown.", ex.Message);
     }
+
+    [Fact]
+    public async Task GivenACustomScriptIsPresent_WhenSnapshotScriptAsBytesAsync_ThenReturnsByteArrayofFile()
+    {
+        byte[] file = await _scriptProvider.GetCustomScriptAsBytesAsync("TestCustomScript.sql", default);
+        Assert.NotNull(file);
+    }
 }

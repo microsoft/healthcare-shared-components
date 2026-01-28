@@ -35,6 +35,9 @@ public class ScriptProvider<TSchemaVersionEnum> : IScriptProvider
     public Task<byte[]> GetDiffScriptAsBytesAsync(int version, CancellationToken cancellationToken)
         => ScriptAsBytesAsync($"{typeof(TSchemaVersionEnum).Namespace}.Migrations.{version}.diff.sql", cancellationToken);
 
+    public Task<byte[]> GetCustomScriptAsBytesAsync(string name, CancellationToken cancellationToken)
+        => ScriptAsBytesAsync($"{typeof(TSchemaVersionEnum).Namespace}.CustomScripts.{name}", cancellationToken);
+
     private static async Task<byte[]> ScriptAsBytesAsync(string resourceName, CancellationToken cancellationToken)
     {
         using Stream fileStream = Assembly.GetAssembly(typeof(TSchemaVersionEnum)).GetManifestResourceStream(resourceName);

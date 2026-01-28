@@ -79,6 +79,15 @@ public class SchemaUpgradeRunner
         _logger.LogInformation("Completed applying base schema");
     }
 
+    public async Task ApplyCustomScriptAsync(string name, CancellationToken cancellationToken)
+    {
+        _logger.LogInformation("Applying custom script {Name}", name);
+        byte[] scriptBytes = await _scriptProvider.GetCustomScriptAsBytesAsync(name, cancellationToken).ConfigureAwait(false);
+        string script = System.Text.Encoding.UTF8.GetString(scriptBytes);
+        await _schemaManagerDataStore.ExecuteScriptAsync(script, cancellationToken).ConfigureAwait(false);
+        _logger.LogInformation("Completed applying custom script {Name}", name);
+    }
+
     private async Task InsertSchemaVersionAsync(int schemaVersion, CancellationToken cancellationToken)
     {
         await UpsertSchemaVersionAsync(schemaVersion, "started", cancellationToken).ConfigureAwait(false);

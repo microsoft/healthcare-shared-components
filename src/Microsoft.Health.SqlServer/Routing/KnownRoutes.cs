@@ -18,6 +18,8 @@ public static class KnownRoutes
     public const string Script = Versions + "/{id:int}/script";
     public const string Diff = Script + "/diff";
 
+    public const string CustomScript = "/customscript";
+
     internal static readonly Uri RootedCurrentUri = new Uri("/" + SchemaRoot + "/" + Current, UriKind.Relative);
     internal static readonly Uri RootedCompatibilityUri = new Uri("/" + SchemaRoot + "/" + Compatibility, UriKind.Relative);
     internal static readonly Uri RootedVersionsUri = new Uri("/" + SchemaRoot + "/" + Versions, UriKind.Relative);

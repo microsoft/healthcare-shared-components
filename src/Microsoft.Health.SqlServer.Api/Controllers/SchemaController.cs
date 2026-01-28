@@ -102,6 +102,16 @@ public class SchemaController : Controller
 
     [HttpGet]
     [AllowAnonymous]
+    [Route(KnownRoutes.CustomScript, Name = RouteNames.CustomScript)]
+    public async Task<FileContentResult> CustomScriptAsync([FromQuery] string name)
+    {
+        _logger.LogInformation("Attempting to get custom script: {ScriptName}", name);
+        string fileName = name;
+        return File(await _scriptProvider.GetCustomScriptAsBytesAsync(name, HttpContext.RequestAborted).ConfigureAwait(false), "application/sql", fileName);
+    }
+
+    [HttpGet]
+    [AllowAnonymous]
     [Route(KnownRoutes.Compatibility)]
     public async Task<ActionResult> CompatibilityAsync()
     {

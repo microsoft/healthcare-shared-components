@@ -1,4 +1,4 @@
-﻿// -------------------------------------------------------------------------------------------------
+// -------------------------------------------------------------------------------------------------
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License (MIT). See LICENSE in the repo root for license information.
 // -------------------------------------------------------------------------------------------------
@@ -15,4 +15,5 @@ public interface IScriptProvider
     Task<byte[]> GetScriptAsBytesAsync(int version, CancellationToken cancellationToken);
 
     Task<byte[]> GetDiffScriptAsBytesAsync(int version, CancellationToken cancellationToken);
+    Task<byte[]> GetCustomScriptAsBytesAsync(string name, CancellationToken cancellationToken);
 }
