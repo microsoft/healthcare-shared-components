@@ -1,8 +1,8 @@
 <Project>
 
   <ItemGroup>
-    <PackageVersion Include="Azure.Core" Version="1.50.0" />
-    <PackageVersion Include="Azure.Identity" Version="1.17.1" />
+    <PackageVersion Include="Azure.Core" Version="1.51.1" />
+    <PackageVersion Include="Azure.Identity" Version="1.18.0" />
     <PackageVersion Include="Azure.Messaging.EventGrid" Version="5.0.0" />
     <PackageVersion Include="Azure.Security.KeyVault.Keys" Version="4.8.0" />
     <PackageVersion Include="Azure.Storage.Blobs" Version="12.27.0" />
@@ -10,7 +10,7 @@
     <PackageVersion Include="coverlet.collector" Version="8.0.0" />
     <PackageVersion Include="DistributedLock.SqlServer" Version="1.0.7" />
     <PackageVersion Include="Ensure.That" Version="10.1.0" />
-    <PackageVersion Include="Google.Protobuf" Version="3.33.5" />
+    <PackageVersion Include="Google.Protobuf" Version="3.34.0" />
     <PackageVersion Include="MartinCostello.Logging.XUnit" Version="0.7.0" />
     <PackageVersion Include="Medino" Version="3.0.2" />
     <PackageVersion Include="Medino.Extensions.DependencyInjection" Version="3.0.2" />
@@ -33,33 +33,33 @@
     <PackageVersion Include="Microsoft.CodeAnalysis.CSharp" Version="5.0.0" />
     <PackageVersion Include="Microsoft.CodeAnalysis.CSharp.Workspaces" Version="5.0.0" />
     <PackageVersion Include="Microsoft.Data.SqlClient" Version="6.1.4" />
-    <PackageVersion Include="Microsoft.DurableTask.Abstractions" Version="1.20.1" />
-    <PackageVersion Include="Microsoft.DurableTask.Client" Version="1.20.1" />
-    <PackageVersion Include="Microsoft.DurableTask.Client.Grpc" Version="1.20.1" />
-    <PackageVersion Include="Microsoft.DurableTask.Client.OrchestrationServiceClientShim" Version="1.20.1" />
+    <PackageVersion Include="Microsoft.DurableTask.Abstractions" Version="1.22.0" />
+    <PackageVersion Include="Microsoft.DurableTask.Client" Version="1.22.0" />
+    <PackageVersion Include="Microsoft.DurableTask.Client.Grpc" Version="1.22.0" />
+    <PackageVersion Include="Microsoft.DurableTask.Client.OrchestrationServiceClientShim" Version="1.22.0" />
     <PackageVersion Include="Microsoft.Extensions.Azure" Version="1.13.1" />
-    <PackageVersion Include="Microsoft.Extensions.Configuration" Version="$(SdkPackageVersion)" />
-    <PackageVersion Include="Microsoft.Extensions.Configuration.Abstractions" Version="$(SdkPackageVersion)" />
-    <PackageVersion Include="Microsoft.Extensions.Configuration.CommandLine" Version="$(SdkPackageVersion)" />
-    <PackageVersion Include="Microsoft.Extensions.Configuration.EnvironmentVariables" Version="$(SdkPackageVersion)" />
-    <PackageVersion Include="Microsoft.Extensions.Configuration.Binder" Version="$(ConfigurationBinderVersion)" />
-    <PackageVersion Include="Microsoft.Extensions.Configuration.FileExtensions" Version="$(SdkPackageVersion)" />
-    <PackageVersion Include="Microsoft.Extensions.Configuration.Json" Version="$(SdkPackageVersion)" />
-    <PackageVersion Include="Microsoft.Extensions.DependencyInjection" Version="$(DependencyInjectionVersion)" />
-    <PackageVersion Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="$(DependencyInjectionAbstractionsVersion)" />
-    <PackageVersion Include="Microsoft.Extensions.Diagnostics.HealthChecks" Version="$(SdkPackageVersion)" />
-    <PackageVersion Include="Microsoft.Extensions.Diagnostics.HealthChecks.Abstractions" Version="$(SdkPackageVersion)" />
-    <PackageVersion Include="Microsoft.Extensions.FileProviders.Abstractions" Version="$(SdkPackageVersion)" />
-    <PackageVersion Include="Microsoft.Extensions.Hosting" Version="$(SdkPackageVersion)" />
-    <PackageVersion Include="Microsoft.Extensions.Hosting.Abstractions" Version="$(SdkPackageVersion)" />
-    <PackageVersion Include="Microsoft.Extensions.Http" Version="$(SdkPackageVersion)" />
-    <PackageVersion Include="Microsoft.Extensions.Logging" Version="$(LoggingVersion)" />
-    <PackageVersion Include="Microsoft.Extensions.Logging.Abstractions" Version="$(LoggingAbstractionsVersion)" />
-    <PackageVersion Include="Microsoft.Extensions.Logging.Console" Version="$(LoggingVersion)" />
-    <PackageVersion Include="Microsoft.Extensions.Options" Version="$(OptionsVersion)" />
-    <PackageVersion Include="Microsoft.Extensions.Options.ConfigurationExtensions" Version="$(SdkPackageVersion)" />
-    <PackageVersion Include="Microsoft.Extensions.Options.DataAnnotations" Version="$(SdkPackageVersion)" />
-    <PackageVersion Include="Microsoft.Extensions.Primitives" Version="$(SdkPackageVersion)" />
+    <PackageVersion Include="Microsoft.Extensions.Configuration" Version="10.0.3" />
+    <PackageVersion Include="Microsoft.Extensions.Configuration.Abstractions" Version="10.0.3" />
+    <PackageVersion Include="Microsoft.Extensions.Configuration.CommandLine" Version="10.0.3" />
+    <PackageVersion Include="Microsoft.Extensions.Configuration.EnvironmentVariables" Version="10.0.3" />
+    <PackageVersion Include="Microsoft.Extensions.Configuration.Binder" Version="10.0.3" />
+    <PackageVersion Include="Microsoft.Extensions.Configuration.FileExtensions" Version="10.0.3" />
+    <PackageVersion Include="Microsoft.Extensions.Configuration.Json" Version="10.0.3" />
+    <PackageVersion Include="Microsoft.Extensions.DependencyInjection" Version="10.0.3" />
+    <PackageVersion Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="10.0.3" />
+    <PackageVersion Include="Microsoft.Extensions.Diagnostics.HealthChecks" Version="10.0.3" />
+    <PackageVersion Include="Microsoft.Extensions.Diagnostics.HealthChecks.Abstractions" Version="10.0.3" />
+    <PackageVersion Include="Microsoft.Extensions.FileProviders.Abstractions" Version="10.0.3" />
+    <PackageVersion Include="Microsoft.Extensions.Hosting" Version="10.0.3" />
+    <PackageVersion Include="Microsoft.Extensions.Hosting.Abstractions" Version="10.0.3" />
+    <PackageVersion Include="Microsoft.Extensions.Http" Version="10.0.3" />
+    <PackageVersion Include="Microsoft.Extensions.Logging" Version="10.0.3" />
+    <PackageVersion Include="Microsoft.Extensions.Logging.Abstractions" Version="10.0.3" />
+    <PackageVersion Include="Microsoft.Extensions.Logging.Console" Version="10.0.3" />
+    <PackageVersion Include="Microsoft.Extensions.Options" Version="10.0.3" />
+    <PackageVersion Include="Microsoft.Extensions.Options.ConfigurationExtensions" Version="10.0.3" />
+    <PackageVersion Include="Microsoft.Extensions.Options.DataAnnotations" Version="10.0.3" />
+    <PackageVersion Include="Microsoft.Extensions.Primitives" Version="10.0.3" />
     <PackageVersion Include="Microsoft.Extensions.TimeProvider.Testing" Version="$(R9PackageVersion)" />
     <PackageVersion Include="Microsoft.IdentityModel.JsonWebTokens" Version="8.16.0" />
     <PackageVersion Include="Microsoft.IdentityModel.Protocols.OpenIdConnect" Version="8.16.0" />
@@ -79,11 +79,10 @@
     <PackageVersion Include="System.CommandLine.Rendering" Version="0.2.0-alpha.19174.3" />
     <PackageVersion Include="System.Drawing.Common" Version="$(SdkPackageVersion)" />
     <PackageVersion Include="System.IO.Packaging" Version="$(IOPackagingVersion)" />
-    <PackageVersion Include="System.Linq.Async" Version="7.0.0" />
     <PackageVersion Include="System.Text.Json" Version="$(SystemTextJsonVersion)" />
     <PackageVersion Include="xunit" Version="2.9.3" />
     <PackageVersion Include="xunit.assert" Version="2.9.3" />
-    <PackageVersion Include="Xunit.DependencyInjection" Version="11.1.1" />
+    <PackageVersion Include="Xunit.DependencyInjection" Version="11.2.0" />
     <PackageVersion Include="xunit.extensibility.core" Version="2.9.3" />
     <PackageVersion Include="xunit.runner.visualstudio" Version="3.1.5" />
   </ItemGroup>

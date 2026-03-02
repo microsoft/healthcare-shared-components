@@ -28,7 +28,7 @@ public class KeyWrapUnwrapTestProviderTests
         IOptions<CustomerManagedKeyOptions> cmkOptions = Substitute.For<IOptions<CustomerManagedKeyOptions>>();
         cmkOptions.Value.Returns(_customerManagedKeyOptions);
 
-        _externalCredentialProvider.GetTokenCredential().Returns(new ManagedIdentityCredential());
+        _externalCredentialProvider.GetTokenCredential().Returns(new ManagedIdentityCredential(ManagedIdentityId.SystemAssigned));
 
         _keyWrapUnwrapTestProvider = new KeyWrapUnwrapTestProvider(_externalCredentialProvider, cmkOptions, NullLogger<KeyWrapUnwrapTestProvider>.Instance);
     }
