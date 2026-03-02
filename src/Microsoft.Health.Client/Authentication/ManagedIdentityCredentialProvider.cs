@@ -34,7 +34,8 @@ public class ManagedIdentityCredentialProvider : CredentialProvider
     protected override async Task<string> BearerTokenFunction(CancellationToken cancellationToken)
     {
         ManagedIdentityCredentialOptions options = _managedIdentityCredentialOptionsMonitor.Get(_optionsName);
-        ManagedIdentityCredential credential = new(options.ClientId);
+        ManagedIdentityId id = string.IsNullOrEmpty(options.ClientId) ? ManagedIdentityId.SystemAssigned : ManagedIdentityId.FromUserAssignedClientId(options.ClientId);
+        ManagedIdentityCredential credential = new(id);
 
         TokenRequestContext requestContext = new(scopes: [options.Resource], tenantId: options.TenantId);
         AccessToken accessToken = await credential.GetTokenAsync(requestContext, cancellationToken).ConfigureAwait(false);

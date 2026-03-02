@@ -33,7 +33,6 @@ jobs:
       uses: github/codeql-action/init@v4
       with:
         languages: 'csharp'
-        tools: https://github.com/dsp-testing/codeql-cli-nightlies/releases/download/codeql-bundle-20251112/codeql-bundle.tar.zst
 
     - name: dotnet restore
       shell: bash

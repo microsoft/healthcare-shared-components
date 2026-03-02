@@ -31,10 +31,26 @@ internal static class BlobClientFactory
 
         if (configuration.AuthenticationType == BlobDataStoreAuthenticationType.ManagedIdentity)
         {
-            ManagedIdentityCredential credential = new(configuration.ManagedIdentityClientId, configuration.Credentials);
+            ManagedIdentityCredential credential = new(CreateOptions(configuration));
             return new BlobServiceClient(new Uri(configuration.ConnectionString), credential, blobClientOptions);
         }
 
         return new BlobServiceClient(configuration.ConnectionString, blobClientOptions);
+    }
+
+    internal static ManagedIdentityCredentialOptions CreateOptions(BlobDataStoreConfiguration configuration)
+    {
+        ManagedIdentityId id = string.IsNullOrEmpty(configuration.ManagedIdentityClientId) ? ManagedIdentityId.SystemAssigned : ManagedIdentityId.FromUserAssignedClientId(configuration.ManagedIdentityClientId);
+        ManagedIdentityCredentialOptions options = new(id);
+
+        if (configuration.Credentials is not null)
+        {
+            options.AuthorityHost = configuration.Credentials.AuthorityHost;
+            options.IsUnsafeSupportLoggingEnabled = configuration.Credentials.IsUnsafeSupportLoggingEnabled;
+            options.RetryPolicy = configuration.Credentials.RetryPolicy;
+            options.Transport = configuration.Credentials.Transport;
+        }
+
+        return options;
     }
 }
