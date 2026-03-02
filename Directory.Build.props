@@ -33,7 +33,6 @@
     <When Condition="'$(TargetFramework)' == '$(LtsVersion)'">
       <PropertyGroup>
         <IOPackagingVersion>8.0.1</IOPackagingVersion>
-        <R9PackageVersion>8.0.0</R9PackageVersion>
         <SdkPackageVersion>8.0.0</SdkPackageVersion>
         <SystemTextJsonVersion>8.0.5</SystemTextJsonVersion>
       </PropertyGroup>
@@ -41,7 +40,6 @@
     <When Condition="'$(TargetFramework)' == '$(StsVersion)'">
       <PropertyGroup>
         <IOPackagingVersion>9.0.11</IOPackagingVersion>
-        <R9PackageVersion>9.10.0</R9PackageVersion>
         <SdkPackageVersion>9.0.11</SdkPackageVersion>
         <SystemTextJsonVersion>9.0.11</SystemTextJsonVersion>
     </PropertyGroup>
@@ -49,7 +47,6 @@
     <Otherwise>
       <PropertyGroup>
         <IOPackagingVersion>10.0.3</IOPackagingVersion>
-        <R9PackageVersion>10.3.0</R9PackageVersion>
         <SdkPackageVersion>10.0.3</SdkPackageVersion>
         <SystemTextJsonVersion>10.0.3</SystemTextJsonVersion>
       </PropertyGroup>

@@ -60,7 +60,7 @@
     <PackageVersion Include="Microsoft.Extensions.Options.ConfigurationExtensions" Version="10.0.3" />
     <PackageVersion Include="Microsoft.Extensions.Options.DataAnnotations" Version="10.0.3" />
     <PackageVersion Include="Microsoft.Extensions.Primitives" Version="10.0.3" />
-    <PackageVersion Include="Microsoft.Extensions.TimeProvider.Testing" Version="$(R9PackageVersion)" />
+    <PackageVersion Include="Microsoft.Extensions.TimeProvider.Testing" Version="10.3.0" />
     <PackageVersion Include="Microsoft.IdentityModel.JsonWebTokens" Version="8.16.0" />
     <PackageVersion Include="Microsoft.IdentityModel.Protocols.OpenIdConnect" Version="8.16.0" />
     <PackageVersion Include="Microsoft.IdentityModel.Tokens" Version="8.16.0" />
