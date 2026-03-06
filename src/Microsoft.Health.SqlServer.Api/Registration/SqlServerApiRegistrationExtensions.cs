@@ -16,6 +16,8 @@ namespace Microsoft.Health.SqlServer.Api.Registration;
 
 public static class SqlServerApiRegistrationExtensions
 {
+    private static readonly string[] SqlServerHealthCheckTags = new[] { "datastore:sqlServer" };
+
     public static IServiceCollection AddSqlServerApi(this IServiceCollection services)
     {
         EnsureArg.IsNotNull(services);
@@ -29,7 +31,7 @@ public static class SqlServerApiRegistrationExtensions
             .AddHealthChecks()
             .AddCheck<SqlServerHealthCheck>(
                 name: "DataStoreHealthCheck",
-                tags: new[] { "datastore:sqlServer" });
+                tags: SqlServerHealthCheckTags);
 
         services.Add<CompatibilityVersionHandler>()
             .Transient()
