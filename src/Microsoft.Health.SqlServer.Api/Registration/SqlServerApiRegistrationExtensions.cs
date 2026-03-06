@@ -27,7 +27,9 @@ public static class SqlServerApiRegistrationExtensions
 
         services
             .AddHealthChecks()
-            .AddCheck<SqlServerHealthCheck>("DataStoreHealthCheck");
+            .AddCheck<SqlServerHealthCheck>(
+                name: "DataStoreHealthCheck",
+                tags: new[] { "datastore:sqlServer" });
 
         services.Add<CompatibilityVersionHandler>()
             .Transient()
