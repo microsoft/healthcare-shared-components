@@ -42,7 +42,7 @@ jobs:
         informationalVersion: ${{ steps.version.outputs.informationalVersion }}
 
     - name: Login
-      uses: azure/login@v2
+      uses: azure/login@v3
       with:
         allow-no-subscriptions: true
         client-id: ${{ secrets.CLIENT_ID }}
