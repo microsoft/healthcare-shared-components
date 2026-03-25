@@ -42,7 +42,7 @@ runs:
   # GUID below is for Azure DevOps: https://learn.microsoft.com/en-us/azure/devops/organizations/accounts/manage-personal-access-tokens-via-api?view=azure-devops
   - name: Fetch Token
     id: az-account
-    uses: azure/CLI@v2
+    uses: azure/CLI@v3
     with:
       azcliversion: latest
       inlineScript: |
