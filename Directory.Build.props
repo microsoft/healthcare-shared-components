@@ -46,9 +46,9 @@
     </When>
     <Otherwise>
       <PropertyGroup>
-        <IOPackagingVersion>10.0.3</IOPackagingVersion>
-        <SdkPackageVersion>10.0.3</SdkPackageVersion>
-        <SystemTextJsonVersion>10.0.3</SystemTextJsonVersion>
+        <IOPackagingVersion>10.0.5</IOPackagingVersion>
+        <SdkPackageVersion>10.0.5</SdkPackageVersion>
+        <SystemTextJsonVersion>10.0.5</SystemTextJsonVersion>
       </PropertyGroup>
     </Otherwise>
   </Choose>

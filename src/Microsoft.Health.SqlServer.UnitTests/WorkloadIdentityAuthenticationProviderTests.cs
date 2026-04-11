@@ -37,7 +37,7 @@ public class WorkloadIdentityAuthenticationProviderTests
 
         WorkloadIdentityAuthenticationProvider provider = new(o => _credential);
 
-        await provider.AcquireTokenAsync(new MockSqlAuthenticationParameters(resource: resource));
+        await provider.AcquireTokenAsync(MockSqlAuthenticationParameters.Create(resource: resource));
 
         await _credential
             .Received(1)
@@ -61,7 +61,7 @@ public class WorkloadIdentityAuthenticationProviderTests
             return _credential;
         });
 
-        SqlAuthenticationToken actual = await provider.AcquireTokenAsync(new MockSqlAuthenticationParameters(authority: authority));
+        SqlAuthenticationToken actual = await provider.AcquireTokenAsync(MockSqlAuthenticationParameters.Create(authority: authority));
 
         Assert.Equal(accessToken.Token, actual.AccessToken);
     }
@@ -81,7 +81,7 @@ public class WorkloadIdentityAuthenticationProviderTests
             return _credential;
         });
 
-        SqlAuthenticationToken actual = await provider.AcquireTokenAsync(new MockSqlAuthenticationParameters(userId: null));
+        SqlAuthenticationToken actual = await provider.AcquireTokenAsync(MockSqlAuthenticationParameters.Create(userId: null));
 
         Assert.Equal(accessToken.Token, actual.AccessToken);
         Assert.Equal(accessToken.ExpiresOn, actual.ExpiresOn);
@@ -107,7 +107,7 @@ public class WorkloadIdentityAuthenticationProviderTests
             return _credential;
         });
 
-        SqlAuthenticationToken actual = await provider.AcquireTokenAsync(new MockSqlAuthenticationParameters(userId: UserId));
+        SqlAuthenticationToken actual = await provider.AcquireTokenAsync(MockSqlAuthenticationParameters.Create(userId: UserId));
 
         Assert.Equal(accessToken.Token, actual.AccessToken);
         Assert.Equal(accessToken.ExpiresOn, actual.ExpiresOn);
@@ -132,7 +132,7 @@ public class WorkloadIdentityAuthenticationProviderTests
 
         await Assert
             .ThrowsAsync<TaskCanceledException>(
-                () => provider.AcquireTokenAsync(new MockSqlAuthenticationParameters(connectionTimeout: 1)));
+                () => provider.AcquireTokenAsync(MockSqlAuthenticationParameters.Create(connectionTimeout: 1)));
 
         static async ValueTask<AccessToken> GetTokenAsync(CallInfo callInfo)
         {
@@ -148,24 +148,25 @@ public class WorkloadIdentityAuthenticationProviderTests
     public void GivenAuthenticationMethod_WhenCheckSupport_ThenReturnTrueForManagedIdentity(SqlAuthenticationMethod authenticationMethod, bool expected)
         => Assert.Equal(expected, new WorkloadIdentityAuthenticationProvider().IsSupported(authenticationMethod));
 
-    private sealed class MockSqlAuthenticationParameters : SqlAuthenticationParameters
+    private static class MockSqlAuthenticationParameters
     {
-        public MockSqlAuthenticationParameters(
+        public static SqlAuthenticationParameters Create(
             SqlAuthenticationMethod authenticationMethod = SqlAuthenticationMethod.ActiveDirectoryManagedIdentity,
             string resource = DefaultResource,
             string authority = DefaultAuthority,
             string userId = null,
             int connectionTimeout = -1)
-            : base(
-                  authenticationMethod,
-                  serverName: null,
-                  databaseName: null,
-                  resource: resource,
-                  authority: authority,
-                  userId: userId,
-                  password: null,
-                  connectionId: Guid.NewGuid(),
-                  connectionTimeout: connectionTimeout)
-        { }
+        {
+            return new SqlAuthenticationParameters(
+                authenticationMethod,
+                serverName: null,
+                databaseName: null,
+                resource: resource,
+                authority: authority,
+                userId: userId,
+                password: null,
+                connectionId: Guid.NewGuid(),
+                connectionTimeout: connectionTimeout);
+        }
     }
 }
