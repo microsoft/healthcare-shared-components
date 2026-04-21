@@ -89,4 +89,9 @@ public static class SqlErrorCodes
     /// The incoming request has too many parameters. The server supports a maximum of %d parameters.
     /// </summary>
     public const short TooManyParameters = 8003;
+
+    /// <summary>
+    /// Failed to update database because the database is read-only.
+    /// </summary>
+    public const short ReadOnlyDatabase = 3906;
 }

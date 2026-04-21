@@ -5,6 +5,7 @@
 
 using System;
 using System.Diagnostics.CodeAnalysis;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using EnsureThat;
@@ -68,7 +69,29 @@ public class SchemaJobWorker
                 ISchemaDataStore schemaDataStore = scope.ServiceProvider.GetRequiredService<ISchemaDataStore>();
 
                 int? previous = schemaInformation.Current;
-                schemaInformation.Current = await schemaDataStore.UpsertInstanceSchemaInformationAsync(instanceName, schemaInformation, cancellationToken).ConfigureAwait(false);
+                bool isReadOnlyDatabase = false;
+
+                try
+                {
+                    schemaInformation.Current = await schemaDataStore.UpsertInstanceSchemaInformationAsync(instanceName, schemaInformation, cancellationToken).ConfigureAwait(false);
+                }
+                catch (SqlException ex) when (ex.Number == SqlErrorCodes.ReadOnlyDatabase)
+                {
+                    // On a geo-replicated secondary, the database is read-only. The InstanceSchema
+                    // table is replicated from primary, so the secondary does not need to register.
+                    // Read the current schema version instead.
+                    isReadOnlyDatabase = true;
+                    _logger.LogInformation("Database is read-only (geo-replication secondary). Skipping instance schema upsert.");
+
+                    var versions = await schemaDataStore.GetCurrentVersionAsync(cancellationToken).ConfigureAwait(false);
+                    var completedVersions = versions
+                        .Where(v => v.Status == SchemaVersionStatus.completed && v.Id <= schemaInformation.MaximumSupportedVersion)
+                        .ToList();
+                    if (completedVersions.Count > 0)
+                    {
+                        schemaInformation.Current = completedVersions.Max(v => v.Id);
+                    }
+                }
 
                 // If there was a change in the schema version and this isn't the base schema
                 if (schemaInformation.Current != previous && schemaInformation.Current > 0)
@@ -78,7 +101,10 @@ public class SchemaJobWorker
                     await _mediator.NotifySchemaUpgradedAsync((int)schemaInformation.Current, isFullSchemaSnapshot).ConfigureAwait(false);
                 }
 
-                await schemaDataStore.DeleteExpiredInstanceSchemaAsync(cancellationToken).ConfigureAwait(false);
+                if (!isReadOnlyDatabase)
+                {
+                    await schemaDataStore.DeleteExpiredInstanceSchemaAsync(cancellationToken).ConfigureAwait(false);
+                }
 
                 if (_sqlServerDataStoreConfiguration.TerminateWhenSchemaVersionUpdatedTo.HasValue && _sqlServerDataStoreConfiguration.TerminateWhenSchemaVersionUpdatedTo.Value == schemaInformation.Current)
                 {
