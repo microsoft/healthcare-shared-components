@@ -84,7 +84,9 @@ public class SchemaJobWorker
                     _logger.LogInformation("Database is read-only (geo-replication secondary). Skipping instance schema upsert.");
 
                     var versions = await schemaDataStore.GetCurrentVersionAsync(cancellationToken).ConfigureAwait(false);
-                    var completedVersions = versions.Where(v => v.Status == SchemaVersionStatus.completed).ToList();
+                    var completedVersions = versions
+                        .Where(v => v.Status == SchemaVersionStatus.completed && v.Id <= schemaInformation.MaximumSupportedVersion)
+                        .ToList();
                     if (completedVersions.Count > 0)
                     {
                         schemaInformation.Current = completedVersions.Max(v => v.Id);

@@ -258,6 +258,43 @@ public sealed class SchemaJobWorkerTests : IDisposable
         Assert.Equal(3, info.Current);
     }
 
+    [Fact]
+    public async Task GivenReadOnlyDatabase_WhenCompletedVersionExceedsMaxSupported_CurrentIsCappedToMaxSupported()
+    {
+        // Pod supports up to version 5, but SQL has version 7 completed (replicated from a newer primary)
+        SchemaInformation info = new SchemaInformation(1, 5);
+        info.Current = null;
+
+        _schemaDataStore.UpsertInstanceSchemaInformationAsync(default, default, default).ReturnsForAnyArgs<int>(x =>
+        {
+            if (_callCount++ > 0)
+            {
+                _cts.Cancel();
+            }
+
+            throw SqlExceptionFactory.Create(SqlErrorCodes.ReadOnlyDatabase);
+        });
+
+        _schemaDataStore.GetCurrentVersionAsync(default).ReturnsForAnyArgs(
+            Task.FromResult(new List<CurrentVersionInformation>
+            {
+                new CurrentVersionInformation(3, SchemaVersionStatus.completed, new List<string> { "primary-pod" }),
+                new CurrentVersionInformation(5, SchemaVersionStatus.completed, new List<string> { "primary-pod" }),
+                new CurrentVersionInformation(7, SchemaVersionStatus.completed, new List<string> { "primary-pod" }),
+            }));
+
+        try
+        {
+            await _worker.ExecuteAsync(info, "secondary-pod", _cts.Token);
+        }
+        catch (TaskCanceledException)
+        {
+        }
+
+        // Should pick version 5 (max supported), not version 7
+        Assert.Equal(5, info.Current);
+    }
+
     public void Dispose()
     {
         _cts.Dispose();
