@@ -62,7 +62,7 @@ runs:
     run: dotnet nuget push ${{ inputs.packageFolder }}/*.nupkg --api-key AzureArtifacts --skip-duplicate
 
   - name: Publish Symbols
-    uses: microsoft/action-publish-symbols@v2.1.6
+    uses: microsoft/action-publish-symbols@v3
     with:
       accountName: ${{ inputs.symbolsAccountName }}
       personalAccessToken: ${{ steps.az-account.outputs.access-token }}
