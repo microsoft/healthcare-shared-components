@@ -36,11 +36,11 @@ jobs:
 
     - name: dotnet restore
       shell: bash
-      run: dotnet restore
+      run: dotnet restore Microsoft.Health.slnx
 
     - name: dotnet build
       shell: bash
-      run: dotnet build -c Release -p:ContinuousIntegrationBuild=true
+      run: dotnet build Microsoft.Health.slnx -c Release -p:ContinuousIntegrationBuild=true
 
     - name: Perform CodeQL Analysis
       uses: github/codeql-action/analyze@v4
