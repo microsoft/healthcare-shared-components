@@ -123,6 +123,12 @@ internal class SqlServerSchemaDataStore : ISchemaDataStore
                 throw;
             }
 
+            if (sqlEx.Number == SqlErrorCodes.ReadOnlyDatabase)
+            {
+                // On a geo-replicated secondary, the database is read-only. The caller handles this gracefully.
+                throw;
+            }
+
             _logger.LogError(sqlEx, "Error from SQL database on upserting InstanceSchema information");
             throw;
         }
