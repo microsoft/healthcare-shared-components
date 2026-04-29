@@ -54,6 +54,15 @@
       "matchPackagePrefixes": [
         "xunit"
       ]
+    },
+    {
+      "matchManagers": [
+        "github-actions"
+      ],
+      "matchPackageNames": [
+        "microsoft/action-publish-symbols"
+      ],
+      "allowedVersions": "<3"
     }
   ],
   "prConcurrentLimit": 0,
