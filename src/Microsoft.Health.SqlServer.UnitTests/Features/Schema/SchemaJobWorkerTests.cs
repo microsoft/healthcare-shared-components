@@ -30,6 +30,7 @@ public sealed class SchemaJobWorkerTests : IDisposable
     private readonly IProcessTerminator _processTerminator;
     private readonly ILogger<SchemaJobWorker> _logger;
     private readonly ISchemaDataStore _schemaDataStore;
+    private readonly ISchemaWriteGate _writeGate;
     private readonly SchemaJobWorker _worker;
     private int _callCount;
     private readonly CancellationTokenSource _cts = new CancellationTokenSource(1000);
@@ -41,8 +42,11 @@ public sealed class SchemaJobWorkerTests : IDisposable
         _processTerminator = Substitute.For<IProcessTerminator>();
         _logger = NullLogger<SchemaJobWorker>.Instance;
         _schemaDataStore = Substitute.For<ISchemaDataStore>();
+        _writeGate = Substitute.For<ISchemaWriteGate>();
+        _writeGate.CanWriteAsync(default).ReturnsForAnyArgs(Task.FromResult(true));
         var collection = new ServiceCollection();
         collection.AddSingleton<ISchemaDataStore>(_schemaDataStore);
+        collection.AddSingleton<ISchemaWriteGate>(_writeGate);
         _serviceProvider = collection.BuildServiceProvider();
         _schemaDataStore.DeleteExpiredInstanceSchemaAsync(default).ReturnsForAnyArgs(Task.CompletedTask);
 
@@ -299,5 +303,108 @@ public sealed class SchemaJobWorkerTests : IDisposable
     {
         _cts.Dispose();
         GC.SuppressFinalize(this);
+    }
+
+    [Fact]
+    public async Task GivenWriteGateReturnsFalse_WhenExecuting_UpsertIsSkipped()
+    {
+        _writeGate.CanWriteAsync(default).ReturnsForAnyArgs(Task.FromResult(false));
+
+        SchemaInformation info = new SchemaInformation(1, 5);
+        info.Current = null;
+
+        _schemaDataStore.GetCurrentVersionAsync(default).ReturnsForAnyArgs(x =>
+        {
+#pragma warning disable CA1849
+            if (_callCount++ > 0)
+            {
+                _cts.Cancel();
+            }
+#pragma warning restore CA1849
+
+            return Task.FromResult(new List<CurrentVersionInformation>
+            {
+                new CurrentVersionInformation(3, SchemaVersionStatus.completed, new List<string> { "primary-pod" }),
+            });
+        });
+
+        try
+        {
+            await _worker.ExecuteAsync(info, "secondary-pod", _cts.Token);
+        }
+        catch (TaskCanceledException)
+        {
+        }
+
+        await _schemaDataStore.DidNotReceive().UpsertInstanceSchemaInformationAsync(Arg.Any<string>(), Arg.Any<SchemaInformation>(), Arg.Any<CancellationToken>());
+        Assert.Equal(3, info.Current);
+    }
+
+    [Fact]
+    public async Task GivenWriteGateReturnsTrue_WhenExecuting_UpsertIsPerformed()
+    {
+        _writeGate.CanWriteAsync(default).ReturnsForAnyArgs(Task.FromResult(true));
+
+        SchemaInformation info = new SchemaInformation(1, 5);
+        info.Current = null;
+
+        _schemaDataStore.UpsertInstanceSchemaInformationAsync(default, default, default).ReturnsForAnyArgs(x =>
+        {
+#pragma warning disable CA1849
+            if (_callCount++ > 0)
+            {
+                _cts.Cancel();
+            }
+#pragma warning restore CA1849
+
+            return Task.FromResult(3);
+        });
+
+        try
+        {
+            await _worker.ExecuteAsync(info, "secondary-pod", _cts.Token);
+        }
+        catch (TaskCanceledException)
+        {
+        }
+
+        await _schemaDataStore.Received().UpsertInstanceSchemaInformationAsync(Arg.Any<string>(), Arg.Any<SchemaInformation>(), Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
+    public async Task GivenWriteGateReturnsTrue_WhenUpsertThrows3906_ReadOnlyFallbackIsUsed()
+    {
+        _writeGate.CanWriteAsync(default).ReturnsForAnyArgs(Task.FromResult(true));
+
+        SchemaInformation info = new SchemaInformation(1, 5);
+        info.Current = null;
+
+        _schemaDataStore.UpsertInstanceSchemaInformationAsync(default, default, default).ReturnsForAnyArgs<int>(x =>
+        {
+#pragma warning disable CA1849
+            if (_callCount++ > 0)
+            {
+                _cts.Cancel();
+            }
+#pragma warning restore CA1849
+
+            throw SqlExceptionFactory.Create(SqlErrorCodes.ReadOnlyDatabase);
+        });
+
+        _schemaDataStore.GetCurrentVersionAsync(default).ReturnsForAnyArgs(
+            Task.FromResult(new List<CurrentVersionInformation>
+            {
+                new CurrentVersionInformation(3, SchemaVersionStatus.completed, new List<string> { "primary-pod" }),
+            }));
+
+        try
+        {
+            await _worker.ExecuteAsync(info, "secondary-pod", _cts.Token);
+        }
+        catch (TaskCanceledException)
+        {
+        }
+
+        Assert.Equal(3, info.Current);
     }
 }

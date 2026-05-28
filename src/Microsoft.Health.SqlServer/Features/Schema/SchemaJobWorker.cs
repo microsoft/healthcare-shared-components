@@ -67,22 +67,36 @@ public class SchemaJobWorker
             {
                 using IServiceScope scope = _serviceProvider.CreateScope();
                 ISchemaDataStore schemaDataStore = scope.ServiceProvider.GetRequiredService<ISchemaDataStore>();
+                ISchemaWriteGate writeGate = scope.ServiceProvider.GetRequiredService<ISchemaWriteGate>();
 
                 int? previous = schemaInformation.Current;
                 bool isReadOnlyDatabase = false;
 
-                try
+                if (!await writeGate.CanWriteAsync(cancellationToken).ConfigureAwait(false))
                 {
-                    schemaInformation.Current = await schemaDataStore.UpsertInstanceSchemaInformationAsync(instanceName, schemaInformation, cancellationToken).ConfigureAwait(false);
-                }
-                catch (SqlException ex) when (ex.Number == SqlErrorCodes.ReadOnlyDatabase)
-                {
-                    // On a geo-replicated secondary, the database is read-only. The InstanceSchema
-                    // table is replicated from primary, so the secondary does not need to register.
-                    // Read the current schema version instead.
+                    // The gate indicates the database is a read-only secondary; skip the write entirely
+                    // to avoid a connection failure before the write reaches the server.
                     isReadOnlyDatabase = true;
-                    _logger.LogInformation("Database is read-only (geo-replication secondary). Skipping instance schema upsert.");
+                    _logger.LogInformation("Schema write gate returned false; database is a read-only secondary. Reading schema version from replicated data.");
+                }
+                else
+                {
+                    try
+                    {
+                        schemaInformation.Current = await schemaDataStore.UpsertInstanceSchemaInformationAsync(instanceName, schemaInformation, cancellationToken).ConfigureAwait(false);
+                    }
+                    catch (SqlException ex) when (ex.Number == SqlErrorCodes.ReadOnlyDatabase)
+                    {
+                        // Race condition: the gate returned true but the database became a read-only
+                        // secondary between the gate check and the write. Fall back to reading the
+                        // current schema version from the replicated data.
+                        isReadOnlyDatabase = true;
+                        _logger.LogInformation("Database is read-only (geo-replication secondary). Skipping instance schema write.");
+                    }
+                }
 
+                if (isReadOnlyDatabase)
+                {
                     var versions = await schemaDataStore.GetCurrentVersionAsync(cancellationToken).ConfigureAwait(false);
                     var completedVersions = versions
                         .Where(v => v.Status == SchemaVersionStatus.completed && v.Id <= schemaInformation.MaximumSupportedVersion)
