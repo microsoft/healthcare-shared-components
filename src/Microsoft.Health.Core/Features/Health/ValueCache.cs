@@ -3,6 +3,8 @@
 // Licensed under the MIT License (MIT). See LICENSE in the repo root for license information.
 // -------------------------------------------------------------------------------------------------
 
+#nullable enable
+
 using System;
 using System.Threading;
 using System.Threading.Tasks;
@@ -19,14 +21,17 @@ namespace Microsoft.Health.Core.Features.Health;
 /// <see langword="null"/> if the most recent <see cref="Set"/> happened longer than the expiry
 /// ago. This allows callers to detect when the cache has gone stale because the producer is no
 /// longer publishing fresh values (for example, a health-check publisher whose underlying probes
-/// are timing out or throwing).
+/// are timing out or throwing). When constructed with the parameterless constructor (or with
+/// <see cref="Timeout.InfiniteTimeSpan"/>), the cache never expires and <see cref="GetAsync"/>
+/// only returns <see langword="null"/> in the trivial case where <typeparamref name="T"/> itself
+/// is null (which is prevented by <see cref="Set"/>'s <see cref="EnsureArg"/> guard).
 /// </remarks>
 /// <typeparam name="T">The data type</typeparam>
 public class ValueCache<T> where T : class
 {
     private readonly TimeProvider _timeProvider;
     private readonly TimeSpan _expiry;
-    private volatile T _cachedData;
+    private volatile T? _cachedData;
     private long _lastSetUtcTicks;
     private readonly TaskCompletionSource _init = new TaskCompletionSource();
 
@@ -49,11 +54,19 @@ public class ValueCache<T> where T : class
         _timeProvider = EnsureArg.IsNotNull(timeProvider, nameof(timeProvider));
     }
 
-    public async Task<T> GetAsync(CancellationToken cancellationToken = default)
+    /// <summary>
+    /// Returns the most recently <see cref="Set"/> value, asynchronously waiting until <see cref="Set"/>
+    /// has been called at least once.
+    /// </summary>
+    /// <returns>
+    /// The cached value, or <see langword="null"/> if an expiry was configured and the most recent
+    /// <see cref="Set"/> is older than the expiry.
+    /// </returns>
+    public async Task<T?> GetAsync(CancellationToken cancellationToken = default)
     {
         await _init.Task.WaitAsync(cancellationToken).ConfigureAwait(false);
 
-        T data = _cachedData;
+        T? data = _cachedData;
 
         if (_expiry != Timeout.InfiniteTimeSpan)
         {
