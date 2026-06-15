@@ -67,6 +67,17 @@ public class SqlServerDataStoreConfiguration
     public TimeSpan CommandTimeout { get; set; } = TimeSpan.FromSeconds(30);
 
     /// <summary>
+    /// Specifies a per-probe timeout for the SQL data store health check.
+    /// The SQL probe is a fast liveness check, not a real workload, so it should not be allowed
+    /// to inherit the full retry / connect-timeout budget of normal SQL operations. If the probe
+    /// has not completed within this window the underlying SQL call is cancelled and the health
+    /// check returns <see cref="Microsoft.Extensions.Diagnostics.HealthChecks.HealthStatus.Unhealthy"/>
+    /// with diagnostics, ensuring the failure is published before the framework's
+    /// <c>HealthCheckPublisherOptions.Timeout</c> cancels the entire publish batch.
+    /// </summary>
+    public TimeSpan HealthCheckProbeTimeout { get; set; } = TimeSpan.FromSeconds(10);
+
+    /// <summary>
     /// If set, the maximum number of connections allowed in the pool to use when connecting to SQL.
     /// </summary>
     public int? MaxPoolSize { get; set; }

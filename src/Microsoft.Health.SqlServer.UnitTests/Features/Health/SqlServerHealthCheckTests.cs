@@ -3,6 +3,7 @@
 // Licensed under the MIT License (MIT). See LICENSE in the repo root for license information.
 // -------------------------------------------------------------------------------------------------
 
+using System;
 using System.Net;
 using System.Net.Http;
 using System.Threading;
@@ -79,8 +80,94 @@ public sealed class SqlServerHealthCheckTests
         // Setting up the ObtainSqlConnectionWrapperAsync method to throw an exception.
         connectionWrapperFactory.ObtainSqlConnectionWrapperAsync(Arg.Any<CancellationToken>()).Returns(Task.FromException<SqlConnectionWrapper>(httpRequestException));
 
-        var sqlHealthCheck = new SqlServerHealthCheck(connectionWrapperFactory, _cache, _logger);
+        var sqlHealthCheck = new SqlServerHealthCheck(connectionWrapperFactory, _cache, _sqlServerDataStoreConfiguration, _logger);
 
         return await sqlHealthCheck.CheckHealthAsync(new HealthCheckContext(), CancellationToken.None);
+    }
+
+    [Fact]
+    public async Task GivenASqlHealthCheck_WhenSqlConnectionWrapperThrowsLoginFailure_ThenReturnsUnhealthyWithException()
+    {
+        // SQL error 18456 = "Login failed for user" — what happens when the database is deleted.
+        SqlException loginFailure = SqlExceptionFactory.Create(18456, "Login failed for user 'svc'. The database does not exist.");
+
+        SqlConnectionWrapperFactory connectionWrapperFactory = Substitute.For<SqlConnectionWrapperFactory>(
+            _sqlTransactionHandler,
+            _sqlConnectionBuilder,
+            _sqlRetryLogicBaseProvider,
+            _sqlServerDataStoreConfiguration);
+
+        connectionWrapperFactory.ObtainSqlConnectionWrapperAsync(Arg.Any<CancellationToken>())
+            .Returns(Task.FromException<SqlConnectionWrapper>(loginFailure));
+
+        var sqlHealthCheck = new SqlServerHealthCheck(connectionWrapperFactory, _cache, _sqlServerDataStoreConfiguration, _logger);
+
+        HealthCheckResult result = await sqlHealthCheck.CheckHealthAsync(new HealthCheckContext(), CancellationToken.None);
+
+        Assert.Equal(HealthStatus.Unhealthy, result.Status);
+        Assert.Same(loginFailure, result.Exception);
+        Assert.Equal(HealthStatusReason.DataStoreConnectionDegraded.ToString(), result.Data["Reason"]);
+    }
+
+    [Fact]
+    public async Task GivenASqlHealthCheck_WhenProbeExceedsConfiguredTimeout_ThenReturnsUnhealthy()
+    {
+        var configWithShortTimeout = new SqlServerDataStoreConfiguration
+        {
+            HealthCheckProbeTimeout = TimeSpan.FromMilliseconds(50),
+        };
+        IOptions<SqlServerDataStoreConfiguration> options = Substitute.For<IOptions<SqlServerDataStoreConfiguration>>();
+        options.Value.Returns(configWithShortTimeout);
+
+        SqlConnectionWrapperFactory connectionWrapperFactory = Substitute.For<SqlConnectionWrapperFactory>(
+            _sqlTransactionHandler,
+            _sqlConnectionBuilder,
+            _sqlRetryLogicBaseProvider,
+            _sqlServerDataStoreConfiguration);
+
+        // Simulate the SQL wrapper hanging until its token is cancelled (the probe-internal CTS will trip).
+        connectionWrapperFactory.ObtainSqlConnectionWrapperAsync(Arg.Any<CancellationToken>())
+            .Returns(async callInfo =>
+            {
+                CancellationToken token = callInfo.Arg<CancellationToken>();
+                await Task.Delay(Timeout.InfiniteTimeSpan, token).ConfigureAwait(false);
+                return null;
+            });
+
+        var sqlHealthCheck = new SqlServerHealthCheck(connectionWrapperFactory, _cache, options, _logger);
+
+        HealthCheckResult result = await sqlHealthCheck.CheckHealthAsync(new HealthCheckContext(), CancellationToken.None);
+
+        Assert.Equal(HealthStatus.Unhealthy, result.Status);
+        Assert.Contains("timeout", result.Description, StringComparison.OrdinalIgnoreCase);
+        Assert.Equal(HealthStatusReason.DataStoreConnectionDegraded.ToString(), result.Data["Reason"]);
+    }
+
+    [Fact]
+    public async Task GivenASqlHealthCheck_WhenCallerCancels_ThenOperationCanceledExceptionPropagates()
+    {
+        // When the framework's outer token cancels (the caller), we must NOT swallow it — the
+        // framework's hosted service relies on OCE propagation to distinguish "publisher cancelled
+        // the batch" from a real health failure.
+        SqlConnectionWrapperFactory connectionWrapperFactory = Substitute.For<SqlConnectionWrapperFactory>(
+            _sqlTransactionHandler,
+            _sqlConnectionBuilder,
+            _sqlRetryLogicBaseProvider,
+            _sqlServerDataStoreConfiguration);
+
+        connectionWrapperFactory.ObtainSqlConnectionWrapperAsync(Arg.Any<CancellationToken>())
+            .Returns(async callInfo =>
+            {
+                CancellationToken token = callInfo.Arg<CancellationToken>();
+                await Task.Delay(Timeout.InfiniteTimeSpan, token).ConfigureAwait(false);
+                return null;
+            });
+
+        var sqlHealthCheck = new SqlServerHealthCheck(connectionWrapperFactory, _cache, _sqlServerDataStoreConfiguration, _logger);
+
+        using var callerCts = new CancellationTokenSource(TimeSpan.FromMilliseconds(50));
+
+        await Assert.ThrowsAnyAsync<OperationCanceledException>(
+            () => sqlHealthCheck.CheckHealthAsync(new HealthCheckContext(), callerCts.Token));
     }
 }
