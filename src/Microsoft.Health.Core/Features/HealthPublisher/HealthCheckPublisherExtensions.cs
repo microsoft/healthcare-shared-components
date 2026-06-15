@@ -8,6 +8,8 @@ using EnsureThat;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 using Microsoft.Health.Core.Features.HealthPublisher;
 using Microsoft.Health.Core.Features.Metric;
@@ -24,7 +26,8 @@ public static class HealthCheckPublisherExtensions
         services.AddSingleton<ValueCache<HealthReport>>(sp =>
         {
             HealthReportCachingOptions reportCacheOptions = sp.GetService<IOptions<HealthReportCachingOptions>>()?.Value ?? new HealthReportCachingOptions();
-            return new ValueCache<HealthReport>(reportCacheOptions.Expiry);
+            ILogger<ValueCache<HealthReport>> logger = sp.GetService<ILogger<ValueCache<HealthReport>>>() ?? NullLogger<ValueCache<HealthReport>>.Instance;
+            return new ValueCache<HealthReport>(reportCacheOptions.Expiry, logger);
         });
 
         if (configure != null)

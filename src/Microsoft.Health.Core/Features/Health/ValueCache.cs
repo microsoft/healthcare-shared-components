@@ -9,6 +9,8 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 using EnsureThat;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 
 namespace Microsoft.Health.Core.Features.Health;
 
@@ -31,19 +33,28 @@ public class ValueCache<T> where T : class
 {
     private readonly TimeProvider _timeProvider;
     private readonly TimeSpan _expiry;
+    private readonly ILogger<ValueCache<T>> _logger;
     private volatile T? _cachedData;
     private long _lastSetUtcTicks;
     private readonly TaskCompletionSource _init = new TaskCompletionSource();
 
     public ValueCache()
-        : this(Timeout.InfiniteTimeSpan, TimeProvider.System)
+        : this(Timeout.InfiniteTimeSpan, TimeProvider.System, NullLogger<ValueCache<T>>.Instance)
     { }
 
     public ValueCache(TimeSpan expiry)
-        : this(expiry, TimeProvider.System)
+        : this(expiry, TimeProvider.System, NullLogger<ValueCache<T>>.Instance)
+    { }
+
+    public ValueCache(TimeSpan expiry, ILogger<ValueCache<T>> logger)
+        : this(expiry, TimeProvider.System, logger)
     { }
 
     internal ValueCache(TimeSpan expiry, TimeProvider timeProvider)
+        : this(expiry, timeProvider, NullLogger<ValueCache<T>>.Instance)
+    { }
+
+    internal ValueCache(TimeSpan expiry, TimeProvider timeProvider, ILogger<ValueCache<T>> logger)
     {
         if (expiry != Timeout.InfiniteTimeSpan && expiry <= TimeSpan.Zero)
         {
@@ -52,6 +63,7 @@ public class ValueCache<T> where T : class
 
         _expiry = expiry;
         _timeProvider = EnsureArg.IsNotNull(timeProvider, nameof(timeProvider));
+        _logger = EnsureArg.IsNotNull(logger, nameof(logger));
     }
 
     /// <summary>
@@ -72,8 +84,14 @@ public class ValueCache<T> where T : class
         {
             long lastSetTicks = Interlocked.Read(ref _lastSetUtcTicks);
             DateTimeOffset lastSet = new DateTimeOffset(lastSetTicks, TimeSpan.Zero);
-            if (_timeProvider.GetUtcNow() - lastSet > _expiry)
+            TimeSpan age = _timeProvider.GetUtcNow() - lastSet;
+            if (age > _expiry)
             {
+                _logger.LogWarning(
+                    "ValueCache<{ValueType}> returning null: cached value is stale (age {AgeSeconds:F1}s exceeds expiry {ExpirySeconds:F1}s). The producer has not refreshed the cache within the expiry window.",
+                    typeof(T).Name,
+                    age.TotalSeconds,
+                    _expiry.TotalSeconds);
                 return null;
             }
         }

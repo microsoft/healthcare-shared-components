@@ -6,6 +6,7 @@
 using System;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Time.Testing;
 using Microsoft.Health.Core.Features.Health;
 using Xunit;
@@ -137,5 +138,61 @@ public class ValueCacheTests
     public void GivenInfiniteExpiry_WhenConstructed_ThenSucceeds()
     {
         _ = new ValueCache<string>(Timeout.InfiniteTimeSpan);
+    }
+
+    [Fact]
+    public async Task GivenStaleCache_WhenGetAsync_ThenLogsWarning()
+    {
+        FakeTimeProvider timeProvider = new FakeTimeProvider();
+        TestLogger<ValueCache<string>> logger = new TestLogger<ValueCache<string>>();
+        ValueCache<string> cache = new ValueCache<string>(TimeSpan.FromMinutes(5), timeProvider, logger);
+
+        cache.Set("v1");
+        timeProvider.Advance(TimeSpan.FromMinutes(6));
+
+        string result = await cache.GetAsync();
+
+        Assert.Null(result);
+        LogEntry entry = Assert.Single(logger.Entries, e => e.Level == LogLevel.Warning);
+        Assert.Contains("stale", entry.Message, StringComparison.OrdinalIgnoreCase);
+        Assert.Contains("String", entry.Message, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public async Task GivenFreshCache_WhenGetAsync_ThenDoesNotLog()
+    {
+        FakeTimeProvider timeProvider = new FakeTimeProvider();
+        TestLogger<ValueCache<string>> logger = new TestLogger<ValueCache<string>>();
+        ValueCache<string> cache = new ValueCache<string>(TimeSpan.FromMinutes(5), timeProvider, logger);
+
+        cache.Set("v1");
+        timeProvider.Advance(TimeSpan.FromMinutes(1));
+
+        string result = await cache.GetAsync();
+
+        Assert.Equal("v1", result);
+        Assert.Empty(logger.Entries);
+    }
+
+    private sealed record LogEntry(LogLevel Level, string Message);
+
+    private sealed class TestLogger<T> : ILogger<T>
+    {
+        public System.Collections.Generic.List<LogEntry> Entries { get; } = new();
+
+        public IDisposable BeginScope<TState>(TState state) where TState : notnull => NullScope.Instance;
+
+        public bool IsEnabled(LogLevel logLevel) => true;
+
+        public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception exception, Func<TState, Exception, string> formatter)
+        {
+            Entries.Add(new LogEntry(logLevel, formatter(state, exception)));
+        }
+
+        private sealed class NullScope : IDisposable
+        {
+            public static readonly NullScope Instance = new();
+            public void Dispose() { }
+        }
     }
 }
