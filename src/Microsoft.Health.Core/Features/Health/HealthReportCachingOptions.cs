@@ -23,7 +23,16 @@ public class HealthReportCachingOptions
     /// <c>503 Service Unavailable</c>. This protects against the case where the publisher iteration
     /// has stopped completing (for example, a health check whose underlying dependency is hanging or
     /// throwing for longer than the publisher period). Set to <see cref="Timeout.InfiniteTimeSpan"/>
-    /// to disable expiry. Defaults to 5 minutes.
+    /// to disable expiry.
     /// </remarks>
+    /// <value>
+    /// Defaults to 5 minutes. This is intentionally several multiples of the typical publisher
+    /// <c>Period</c> (30s&#8211;1m) so that a single slow or skipped publish iteration does not
+    /// flip the service to <c>503</c>, while still bounding how long a wedged publisher can keep
+    /// serving a stale <c>Healthy</c> report. Five minutes also comfortably exceeds the worst-case
+    /// duration of a single probe (for example, the ~225s SqlClient retry budget for a transient
+    /// login failure), leaving roughly one publish cycle of headroom before the cache is treated
+    /// as stale.
+    /// </value>
     public TimeSpan Expiry { get; set; } = TimeSpan.FromMinutes(5);
 }
