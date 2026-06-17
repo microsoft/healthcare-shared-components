@@ -8,6 +8,9 @@ using EnsureThat;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.Extensions.Options;
 using Microsoft.Health.Core.Features.HealthPublisher;
 using Microsoft.Health.Core.Features.Metric;
 
@@ -15,16 +18,26 @@ namespace Microsoft.Health.Core.Features.Health;
 
 public static class HealthCheckPublisherExtensions
 {
-    public static IServiceCollection AddHealthCheckCachePublisher(this IServiceCollection services, Action<HealthCheckPublisherOptions> configure = null)
+    public static IServiceCollection AddHealthCheckCachePublisher(this IServiceCollection services, Action<HealthCheckPublisherOptions> configure = null, Action<HealthReportCachingOptions> configureReportCache = null)
     {
         EnsureArg.IsNotNull(configure, nameof(configure));
 
         services.TryAddEnumerable(ServiceDescriptor.Singleton<IHealthCheckPublisher, HealthCheckCachePublisher>());
-        services.AddSingleton<ValueCache<HealthReport>>();
+        services.AddSingleton<ValueCache<HealthReport>>(sp =>
+        {
+            HealthReportCachingOptions reportCacheOptions = sp.GetService<IOptions<HealthReportCachingOptions>>()?.Value ?? new HealthReportCachingOptions();
+            ILogger<ValueCache<HealthReport>> logger = sp.GetService<ILogger<ValueCache<HealthReport>>>() ?? NullLogger<ValueCache<HealthReport>>.Instance;
+            return new ValueCache<HealthReport>(reportCacheOptions.Expiry, logger);
+        });
 
         if (configure != null)
         {
             services.Configure(configure);
+        }
+
+        if (configureReportCache != null)
+        {
+            services.Configure(configureReportCache);
         }
 
         return services;

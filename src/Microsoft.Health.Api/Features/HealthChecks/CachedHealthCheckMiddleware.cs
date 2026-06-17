@@ -38,12 +38,16 @@ internal class CachedHealthCheckMiddleware
     {
         EnsureArg.IsNotNull(httpContext, nameof(httpContext));
 
-        // Get results
+        // Get the latest published HealthReport. ValueCache returns null if the report has gone stale
+        // (i.e., no fresh report has been published within the configured expiry). When that happens we
+        // surface an Unhealthy response rather than continuing to serve a stale report indefinitely.
         HealthReport latestReport = await _healthCheckReportCache.GetAsync(httpContext.RequestAborted).ConfigureAwait(false);
 
-        if (!DefaultStatusCodesMapping.TryGetValue(latestReport.Status, out var statusCode))
+        HealthStatus overallStatus = latestReport?.Status ?? HealthStatus.Unhealthy;
+
+        if (!DefaultStatusCodesMapping.TryGetValue(overallStatus, out var statusCode))
         {
-            var message = $"No status code mapping found for {nameof(HealthStatus)} value: {latestReport.Status}.";
+            var message = $"No status code mapping found for {nameof(HealthStatus)} value: {overallStatus}.";
             throw new InvalidOperationException(message);
         }
 
@@ -53,6 +57,15 @@ internal class CachedHealthCheckMiddleware
 
     private static object FormatReport(HealthReport healthReport)
     {
+        if (healthReport == null)
+        {
+            return new
+            {
+                OverallStatus = HealthStatus.Unhealthy.ToString(),
+                Details = Enumerable.Empty<object>(),
+            };
+        }
+
         return new
         {
             OverallStatus = healthReport.Status.ToString(),
