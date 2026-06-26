@@ -46,6 +46,11 @@ public static class SqlErrorCodes
     public const short TimeoutExpired = -2;
 
     /// <summary>
+    /// Transaction was deadlocked on lock resources with another process and has been chosen as the deadlock victim.
+    /// </summary>
+    public const short DeadlockVictim = 1205;
+
+    /// <summary>
     /// Cannot continue the execution because the session is in the kill state.
     /// </summary>
     public const short KilledSessionState = 596;
