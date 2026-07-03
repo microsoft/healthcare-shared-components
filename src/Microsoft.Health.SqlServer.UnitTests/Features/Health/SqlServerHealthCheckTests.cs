@@ -74,7 +74,8 @@ public sealed class SqlServerHealthCheckTests
             _sqlTransactionHandler,
             _sqlConnectionBuilder,
             _sqlRetryLogicBaseProvider,
-            _sqlServerDataStoreConfiguration);
+            _sqlServerDataStoreConfiguration,
+            null);
 
         // Setting up the ObtainSqlConnectionWrapperAsync method to throw an exception.
         connectionWrapperFactory.ObtainSqlConnectionWrapperAsync(Arg.Any<CancellationToken>()).Returns(Task.FromException<SqlConnectionWrapper>(httpRequestException));

@@ -25,15 +25,18 @@ public class SqlServerHealthCheck : StorageHealthCheck
 {
     private readonly ILogger<SqlServerHealthCheck> _logger;
     private readonly SqlConnectionWrapperFactory _sqlConnectionWrapperFactory;
+    private readonly SqlConnectionPoolManager _sqlConnectionPoolManager;
 
     public SqlServerHealthCheck(
         SqlConnectionWrapperFactory sqlConnectionWrapperFactory,
         ValueCache<CustomerKeyHealth> customerKeyHealthCache,
-        ILogger<SqlServerHealthCheck> logger)
+        ILogger<SqlServerHealthCheck> logger,
+        SqlConnectionPoolManager sqlConnectionPoolManager = null)
         : base(customerKeyHealthCache, logger)
     {
         _sqlConnectionWrapperFactory = EnsureArg.IsNotNull(sqlConnectionWrapperFactory, nameof(sqlConnectionWrapperFactory));
         _logger = EnsureArg.IsNotNull(logger, nameof(logger));
+        _sqlConnectionPoolManager = sqlConnectionPoolManager;
     }
 
     public override async Task<HealthCheckResult> CheckStorageHealthAsync(CancellationToken cancellationToken)
@@ -65,6 +68,18 @@ public class SqlServerHealthCheck : StorageHealthCheck
                 DegradedDescription,
                 httpEx,
                 new Dictionary<string, object> { { "Reason", reason.ToString() } });
+        }
+        catch (SqlException sqlEx) when (SqlConnectionPoolManager.IsTransportError(sqlEx))
+        {
+            // Transport-level errors (TCP RST from VFP/SDN reprogramming) indicate all pooled connections are stale.
+            // Clear pools and report Unhealthy so the load balancer stops routing traffic until recovery.
+            _sqlConnectionPoolManager?.HandleError(sqlEx);
+
+            return new HealthCheckResult(
+                HealthStatus.Unhealthy,
+                "SQL transport error detected. Connection pools cleared.",
+                sqlEx,
+                new Dictionary<string, object> { { "Reason", HealthStatusReason.DataStoreConnectionDegraded.ToString() } });
         }
         catch (SqlException sqlEx) when (sqlEx.IsCMKError())
         {
