@@ -46,6 +46,18 @@ internal class KeyWrapUnwrapTestProvider : IKeyTestProvider
         }
     }
 
+    internal KeyWrapUnwrapTestProvider(
+        KeyClient keyClient,
+        IOptions<CustomerManagedKeyOptions> cmkOptions,
+        ILogger<KeyWrapUnwrapTestProvider> logger)
+    {
+        EnsureArg.IsNotNull(cmkOptions, nameof(cmkOptions));
+
+        _keyClient = EnsureArg.IsNotNull(keyClient, nameof(keyClient));
+        _customerManagedKeyOptions = EnsureArg.IsNotNull(cmkOptions.Value, nameof(cmkOptions.Value));
+        _logger = EnsureArg.IsNotNull(logger, nameof(logger));
+    }
+
     public async Task<CustomerKeyHealth> AssertHealthAsync(CancellationToken cancellationToken = default)
     {
         if (_keyClient == null)
@@ -71,14 +83,23 @@ internal class KeyWrapUnwrapTestProvider : IKeyTestProvider
         }
         catch (Exception ex) when (ex is RequestFailedException or CryptographicException or InvalidOperationException or NotSupportedException)
         {
-            _logger.LogInformation(ex, AccessLostMessage);
-
-            return new CustomerKeyHealth
-            {
-                IsHealthy = false,
-                Reason = HealthStatusReason.CustomerManagedKeyAccessLost,
-                Exception = ex,
-            };
+            return HandleKeyAccessFailure(ex);
         }
+        catch (AggregateException ex) when (ex.Message.Contains("vault.azure.net", StringComparison.OrdinalIgnoreCase))
+        {
+            return HandleKeyAccessFailure(ex);
+        }
+    }
+
+    private CustomerKeyHealth HandleKeyAccessFailure(Exception ex)
+    {
+        _logger.LogInformation(ex, AccessLostMessage);
+
+        return new CustomerKeyHealth
+        {
+            IsHealthy = false,
+            Reason = HealthStatusReason.CustomerManagedKeyAccessLost,
+            Exception = ex,
+        };
     }
 }
