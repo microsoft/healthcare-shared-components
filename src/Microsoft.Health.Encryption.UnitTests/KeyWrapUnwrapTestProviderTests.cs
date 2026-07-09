@@ -52,7 +52,7 @@ public class KeyWrapUnwrapTestProviderTests
     public async Task GivenKeyVaultDnsFailure_WhenAssertHealthAsync_ThenUnhealthyReturned()
     {
         // Arrange
-        const string aggregateMessage = "Retry failed after 4 tries. Retry settings can be adjusted in ClientOptions.Retry or by configuring a custom retry policy in ClientOptions.RetryPolicy. (Name or service not known (czm282606251up-kv.vault.azure.net:443)) (Name or service not known (czm282606251up-kv.vault.azure.net:443)) (Name or service not known (czm282606251up-kv.vault.azure.net:443)) (Name or service not known (czm282606251up-kv.vault.azure.net:443))";
+        const string aggregateMessage = "Retry failed after 4 tries. Retry settings can be adjusted in ClientOptions.Retry or by configuring a custom retry policy in ClientOptions.RetryPolicy. (Name or service not known (name-kv.vault.azure.net:443)) (Name or service not known (name-kv.vault.azure.net:443)) (Name or service not known (name-kv.vault.azure.net:443)) (Name or service not known (name-kv.vault.azure.net:443))";
 
         var innerException = new HttpRequestException("Name or service not known (name-kv.vault.azure.net:443)");
         var aggregateException = new AggregateException(aggregateMessage, innerException, innerException, innerException, innerException);
@@ -62,7 +62,7 @@ public class KeyWrapUnwrapTestProviderTests
             .ThrowsAsync(aggregateException);
 
         var cmkOptions = Substitute.For<IOptions<CustomerManagedKeyOptions>>();
-        cmkOptions.Value.Returns(new CustomerManagedKeyOptions { KeyName = "test-key", KeyVaultUri = new Uri("https://czm282606251up-kv.vault.azure.net") });
+        cmkOptions.Value.Returns(new CustomerManagedKeyOptions { KeyName = "test-key", KeyVaultUri = new Uri("https://name-kv.vault.azure.net") });
 
         var provider = new KeyWrapUnwrapTestProvider(mockKeyClient, cmkOptions, NullLogger<KeyWrapUnwrapTestProvider>.Instance);
 
