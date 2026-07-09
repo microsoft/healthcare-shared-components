@@ -46,18 +46,6 @@ internal class KeyWrapUnwrapTestProvider : IKeyTestProvider
         }
     }
 
-    internal KeyWrapUnwrapTestProvider(
-        KeyClient keyClient,
-        IOptions<CustomerManagedKeyOptions> cmkOptions,
-        ILogger<KeyWrapUnwrapTestProvider> logger)
-    {
-        EnsureArg.IsNotNull(cmkOptions, nameof(cmkOptions));
-
-        _keyClient = EnsureArg.IsNotNull(keyClient, nameof(keyClient));
-        _customerManagedKeyOptions = EnsureArg.IsNotNull(cmkOptions.Value, nameof(cmkOptions.Value));
-        _logger = EnsureArg.IsNotNull(logger, nameof(logger));
-    }
-
     public async Task<CustomerKeyHealth> AssertHealthAsync(CancellationToken cancellationToken = default)
     {
         if (_keyClient == null)
@@ -81,11 +69,9 @@ internal class KeyWrapUnwrapTestProvider : IKeyTestProvider
 
             return new CustomerKeyHealth();
         }
-        catch (Exception ex) when (ex is RequestFailedException or CryptographicException or InvalidOperationException or NotSupportedException)
-        {
-            return HandleKeyAccessFailure(ex);
-        }
-        catch (AggregateException ex) when (ex.Message.Contains("vault.azure.net", StringComparison.OrdinalIgnoreCase))
+        catch (Exception ex) when (
+            ex is RequestFailedException or CryptographicException or InvalidOperationException or NotSupportedException
+            || (ex is AggregateException aggregate && aggregate.Message.Contains("vault.azure.net", StringComparison.OrdinalIgnoreCase) && aggregate.Message.Contains("Name or service not known", StringComparison.OrdinalIgnoreCase)))
         {
             return HandleKeyAccessFailure(ex);
         }
