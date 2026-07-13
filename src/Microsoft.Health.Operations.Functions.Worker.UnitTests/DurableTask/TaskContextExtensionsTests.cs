@@ -103,7 +103,7 @@ public class TaskContextExtensionsTests
             .Received(1)
             .CallActivityAsync<OrchestrationInstanceMetadata?>(
                 nameof(DurableTaskClientActivity.GetInstanceAsync),
-                Arg.Is<GetInstanceOptions>(x => !x.GetInputsAndOutputs),
+                Arg.Is<GetInstanceOptions>(x => x != null && !x.GetInputsAndOutputs),
                 Arg.Is(taskOptions));
     }
 }
