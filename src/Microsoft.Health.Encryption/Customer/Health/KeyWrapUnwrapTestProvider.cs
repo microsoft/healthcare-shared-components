@@ -69,16 +69,23 @@ internal class KeyWrapUnwrapTestProvider : IKeyTestProvider
 
             return new CustomerKeyHealth();
         }
-        catch (Exception ex) when (ex is RequestFailedException or CryptographicException or InvalidOperationException or NotSupportedException)
+        catch (Exception ex) when (
+            ex is RequestFailedException or CryptographicException or InvalidOperationException or NotSupportedException
+            || (ex is AggregateException aggregate && aggregate.Message.Contains("vault.azure.net", StringComparison.OrdinalIgnoreCase) && aggregate.Message.Contains("Name or service not known", StringComparison.OrdinalIgnoreCase)))
         {
-            _logger.LogInformation(ex, AccessLostMessage);
-
-            return new CustomerKeyHealth
-            {
-                IsHealthy = false,
-                Reason = HealthStatusReason.CustomerManagedKeyAccessLost,
-                Exception = ex,
-            };
+            return HandleKeyAccessFailure(ex);
         }
+    }
+
+    private CustomerKeyHealth HandleKeyAccessFailure(Exception ex)
+    {
+        _logger.LogInformation(ex, AccessLostMessage);
+
+        return new CustomerKeyHealth
+        {
+            IsHealthy = false,
+            Reason = HealthStatusReason.CustomerManagedKeyAccessLost,
+            Exception = ex,
+        };
     }
 }

@@ -3,6 +3,7 @@
 // Licensed under the MIT License (MIT). See LICENSE in the repo root for license information.
 // -------------------------------------------------------------------------------------------------
 
+using System;
 using System.Threading.Tasks;
 using Azure.Identity;
 using Microsoft.Extensions.Logging.Abstractions;
@@ -41,5 +42,27 @@ public class KeyWrapUnwrapTestProviderTests
         Assert.True(health.IsHealthy);
         Assert.Equal(HealthStatusReason.None, health.Reason);
         Assert.Null(health.Exception);
+    }
+
+    [Fact]
+    public async Task GivenKeyVaultDnsFailure_WhenAssertHealthAsync_ThenUnhealthyReturned()
+    {
+        // Arrange - use a non-existent Key Vault URI to trigger a real DNS failure
+        var cmkOptions = Substitute.For<IOptions<CustomerManagedKeyOptions>>();
+        cmkOptions.Value.Returns(new CustomerManagedKeyOptions
+        {
+            KeyName = "test-key",
+            KeyVaultUri = new Uri("https://does-not-exist-kv.vault.azure.net"),
+        });
+
+        var provider = new KeyWrapUnwrapTestProvider(_externalCredentialProvider, cmkOptions, NullLogger<KeyWrapUnwrapTestProvider>.Instance);
+
+        // Act
+        CustomerKeyHealth health = await provider.AssertHealthAsync();
+
+        // Assert
+        Assert.False(health.IsHealthy);
+        Assert.Equal(HealthStatusReason.CustomerManagedKeyAccessLost, health.Reason);
+        Assert.NotNull(health.Exception);
     }
 }
