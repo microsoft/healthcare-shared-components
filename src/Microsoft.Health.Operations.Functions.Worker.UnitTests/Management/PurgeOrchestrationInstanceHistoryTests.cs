@@ -75,7 +75,7 @@ public class PurgeOrchestrationInstanceHistoryTests
             .GetAllInstancesAsync(Arg.Is<OrchestrationQuery?>(x => IsExpectedQuery(x!)));
 
         foreach (string id in instances.Select(x => x.InstanceId))
-            await _durableClient.Received(1).PurgeInstanceAsync(id, Arg.Is<PurgeInstanceOptions>(x => x.Recursive), _context.CancellationToken);
+            await _durableClient.Received(1).PurgeInstanceAsync(id, Arg.Is<PurgeInstanceOptions>(x => x != null && x.Recursive), _context.CancellationToken);
     }
 
     [Fact]
@@ -110,7 +110,7 @@ public class PurgeOrchestrationInstanceHistoryTests
 
         await _durableClient
             .Received(1)
-            .PurgeInstanceAsync(instanceId1, Arg.Is<PurgeInstanceOptions>(x => x.Recursive), _context.CancellationToken);
+            .PurgeInstanceAsync(instanceId1, Arg.Is<PurgeInstanceOptions>(x => x != null && x.Recursive), _context.CancellationToken);
 
         await _durableClient
             .DidNotReceive()
