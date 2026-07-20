@@ -2,10 +2,13 @@
 
   <PropertyGroup>
     <TargetFrameworks>$(SupportedFrameworks)</TargetFrameworks>
+    <VectorSchemaModelOutput>$(MSBuildProjectDirectory)\obj\$(Configuration)\$(TargetFramework)\VectorSchema.Generated.cs</VectorSchemaModelOutput>
+    <GeneratorProjectPath>$(MSBuildThisFileDirectory)..\..\tools\Microsoft.Health.Extensions.BuildTimeCodeGenerator\Microsoft.Health.Extensions.BuildTimeCodeGenerator.csproj</GeneratorProjectPath>
   </PropertyGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\Microsoft.Health.SqlServer\Microsoft.Health.SqlServer.csproj" />
+    <Compile Include="$(VectorSchemaModelOutput)" />
   </ItemGroup>
 
   <ItemGroup>
@@ -28,5 +31,12 @@
     <EmbeddedResource Include="Features\Schema\Migrations\2.diff.sql" />
     <EmbeddedResource Include="Features\Schema\Migrations\1.sql" />
   </ItemGroup>
+
+  <Target Name="GenerateVectorSchemaModel" BeforeTargets="CoreCompile">
+    <MSBuild Projects="$(GeneratorProjectPath)" Targets="Build" Properties="TargetFramework=$(TargetFramework)">
+      <Output TaskParameter="TargetOutputs" PropertyName="VectorSchemaModelGeneratorPath" />
+    </MSBuild>
+    <Exec Command="dotnet &quot;$(VectorSchemaModelGeneratorPath)&quot; --generator-name &quot;MutableSqlModelGenerator&quot; --output-file &quot;$(VectorSchemaModelOutput)&quot; --namespace &quot;Microsoft.Health.SqlServer.UnitTests.Features.Schema&quot; &quot;$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)\Features\Schema\VectorSchema.sql'))&quot;" />
+  </Target>
 
 </Project>
