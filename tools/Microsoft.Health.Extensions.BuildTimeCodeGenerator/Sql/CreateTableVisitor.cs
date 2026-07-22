@@ -33,7 +33,7 @@ internal class CreateTableVisitor : SqlVisitor
 
             ClassDeclarationSyntax classDeclarationSyntax =
                 CreateSkeletalClass(className, schemaQualifiedTableName)
-                    .AddMembers(node.Definition.ColumnDefinitions.Select(CreatePropertyForTableColumn).ToArray());
+                    .AddMembers(node.Definition.ColumnDefinitions.Select(CreatePropertyForCreateTableColumn).ToArray());
 
             FieldDeclarationSyntax field = CreateStaticFieldForClass(className, tableName);
 
@@ -42,6 +42,24 @@ internal class CreateTableVisitor : SqlVisitor
         }
 
         base.Visit(node);
+    }
+
+    private static MemberDeclarationSyntax CreatePropertyForCreateTableColumn(ColumnDefinition column)
+    {
+        if (!string.Equals(column.DataType?.Name.BaseIdentifier.Value, "vector", StringComparison.OrdinalIgnoreCase))
+        {
+            return CreatePropertyForTableColumn(column);
+        }
+
+        return FieldDeclaration(
+                VariableDeclaration(SyntaxFactory.ParseTypeName("string"))
+                    .AddVariables(VariableDeclarator(column.ColumnIdentifier.Value)
+                        .WithInitializer(
+                            EqualsValueClause(
+                                LiteralExpression(
+                                    SyntaxKind.StringLiteralExpression,
+                                    Literal(column.ColumnIdentifier.Value))))))
+            .AddModifiers(Token(SyntaxKind.InternalKeyword), Token(SyntaxKind.ConstKeyword));
     }
 
     private static ClassDeclarationSyntax CreateSkeletalClass(string className, string schemaQualifiedTableName)
