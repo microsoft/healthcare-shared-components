@@ -21,12 +21,14 @@ public class SqlConnectionWrapperFactory
     private readonly ISqlConnectionBuilder _sqlConnectionBuilder;
     private readonly SqlRetryLogicBaseProvider _sqlRetryLogicBaseProvider;
     private readonly SqlServerDataStoreConfiguration _sqlServerDataStoreConfiguration;
+    private readonly SqlConnectionPoolManager _sqlConnectionPoolManager;
 
     public SqlConnectionWrapperFactory(
         SqlTransactionHandler sqlTransactionHandler,
         ISqlConnectionBuilder sqlConnectionBuilder,
         SqlRetryLogicBaseProvider sqlRetryLogicBaseProvider,
-        IOptions<SqlServerDataStoreConfiguration> sqlServerDataStoreConfiguration)
+        IOptions<SqlServerDataStoreConfiguration> sqlServerDataStoreConfiguration,
+        SqlConnectionPoolManager sqlConnectionPoolManager = null)
     {
         EnsureArg.IsNotNull(sqlTransactionHandler, nameof(sqlTransactionHandler));
         EnsureArg.IsNotNull(sqlConnectionBuilder, nameof(sqlConnectionBuilder));
@@ -36,6 +38,7 @@ public class SqlConnectionWrapperFactory
         _sqlTransactionHandler = sqlTransactionHandler;
         _sqlConnectionBuilder = sqlConnectionBuilder;
         _sqlRetryLogicBaseProvider = sqlRetryLogicBaseProvider;
+        _sqlConnectionPoolManager = sqlConnectionPoolManager;
     }
 
     public string DefaultDatabase => _sqlConnectionBuilder.DefaultDatabase;
@@ -44,7 +47,16 @@ public class SqlConnectionWrapperFactory
     public virtual async Task<SqlConnectionWrapper> GetConnectionWrapperAsync(Action<SqlConnectionStringBuilder> configure = null, bool enlistInTransaction = false, CancellationToken cancellationToken = default)
     {
         var sqlConnectionWrapper = new SqlConnectionWrapper(_sqlTransactionHandler, _sqlConnectionBuilder, _sqlRetryLogicBaseProvider, enlistInTransaction, _sqlServerDataStoreConfiguration);
-        await sqlConnectionWrapper.InitializeAsync(configure, cancellationToken: cancellationToken).ConfigureAwait(false);
+
+        try
+        {
+            await sqlConnectionWrapper.InitializeAsync(configure, cancellationToken: cancellationToken).ConfigureAwait(false);
+        }
+        catch (SqlException ex)
+        {
+            _sqlConnectionPoolManager?.HandleError(ex);
+            throw;
+        }
 
         return sqlConnectionWrapper;
     }
@@ -53,7 +65,16 @@ public class SqlConnectionWrapperFactory
     public virtual async Task<SqlConnectionWrapper> ObtainSqlConnectionWrapperAsync(CancellationToken cancellationToken, bool enlistInTransaction = false)
     {
         var sqlConnectionWrapper = new SqlConnectionWrapper(_sqlTransactionHandler, _sqlConnectionBuilder, _sqlRetryLogicBaseProvider, enlistInTransaction, _sqlServerDataStoreConfiguration);
-        await sqlConnectionWrapper.InitializeAsync(cancellationToken: cancellationToken).ConfigureAwait(false);
+
+        try
+        {
+            await sqlConnectionWrapper.InitializeAsync(cancellationToken: cancellationToken).ConfigureAwait(false);
+        }
+        catch (SqlException ex)
+        {
+            _sqlConnectionPoolManager?.HandleError(ex);
+            throw;
+        }
 
         return sqlConnectionWrapper;
     }
@@ -62,9 +83,18 @@ public class SqlConnectionWrapperFactory
     public async Task<SqlConnectionWrapper> ObtainSqlConnectionWrapperAsync(string initialCatalog, CancellationToken cancellationToken, bool enlistInTransaction = false)
     {
         var sqlConnectionWrapper = new SqlConnectionWrapper(_sqlTransactionHandler, _sqlConnectionBuilder, _sqlRetryLogicBaseProvider, enlistInTransaction, _sqlServerDataStoreConfiguration);
-        await sqlConnectionWrapper.InitializeAsync(
-            initialCatalog is not null ? b => b.InitialCatalog = initialCatalog : null,
-            cancellationToken: cancellationToken).ConfigureAwait(false);
+
+        try
+        {
+            await sqlConnectionWrapper.InitializeAsync(
+                initialCatalog is not null ? b => b.InitialCatalog = initialCatalog : null,
+                cancellationToken: cancellationToken).ConfigureAwait(false);
+        }
+        catch (SqlException ex)
+        {
+            _sqlConnectionPoolManager?.HandleError(ex);
+            throw;
+        }
 
         return sqlConnectionWrapper;
     }
