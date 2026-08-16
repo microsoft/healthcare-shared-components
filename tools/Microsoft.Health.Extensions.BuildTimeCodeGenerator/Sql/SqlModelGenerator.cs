@@ -3,6 +3,7 @@
 // Licensed under the MIT License (MIT). See LICENSE in the repo root for license information.
 // -------------------------------------------------------------------------------------------------
 
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -66,8 +67,19 @@ public abstract class SqlModelGenerator : ICodeGenerator
             using (var stream = File.OpenRead(sqlFile))
             using (var reader = new StreamReader(stream))
             {
-                var parser = new TSql150Parser(true);
-                yield return parser.Parse(reader, out var errors);
+                var parser = new TSql170Parser(true);
+                TSqlFragment fragment = parser.Parse(reader, out var errors);
+
+                if (errors.Count > 0)
+                {
+                    string errorDetails = string.Join(
+                        Environment.NewLine,
+                        errors.Select(error => $"({error.Line},{error.Column}) SQL{error.Number}: {error.Message}"));
+
+                    throw new InvalidOperationException($"Failed to parse SQL file '{sqlFile}':{Environment.NewLine}{errorDetails}");
+                }
+
+                yield return fragment;
             }
         }
     }
