@@ -38,7 +38,7 @@
     <PackageVersion Include="Microsoft.DurableTask.Client" Version="1.24.2" />
     <PackageVersion Include="Microsoft.DurableTask.Client.Grpc" Version="1.24.2" />
     <PackageVersion Include="Microsoft.DurableTask.Client.OrchestrationServiceClientShim" Version="1.24.2" />
-    <PackageVersion Include="Microsoft.Extensions.Azure" Version="1.14.0" />
+    <PackageVersion Include="Microsoft.Extensions.Azure" Version="1.14.1" />
     <PackageVersion Include="Microsoft.Extensions.Configuration" Version="10.0.11" />
     <PackageVersion Include="Microsoft.Extensions.Configuration.Abstractions" Version="10.0.11" />
     <PackageVersion Include="Microsoft.Extensions.Configuration.CommandLine" Version="10.0.11" />
