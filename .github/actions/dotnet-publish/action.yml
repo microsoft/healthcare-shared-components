@@ -34,7 +34,7 @@ runs:
         -o "${{ inputs.packageFolder }}"
 
   - name: Upload Packages
-    uses: actions/upload-artifact@v7
+    uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
     with:
       name: packages
       path: ${{ inputs.packageFolder }}
@@ -42,7 +42,7 @@ runs:
   # GUID below is for Azure DevOps: https://learn.microsoft.com/en-us/azure/devops/organizations/accounts/manage-personal-access-tokens-via-api?view=azure-devops
   - name: Fetch Token
     id: az-account
-    uses: azure/CLI@v3
+    uses: azure/CLI@9eb25b8360668fb0ecbafa808d40e2197b2f5f52 # v3.0.0
     with:
       azcliversion: latest
       inlineScript: |
@@ -51,7 +51,7 @@ runs:
         echo "access-token=$token" >> "$GITHUB_OUTPUT"
 
   - name: Authenticate NuGet
-    uses: actions/setup-dotnet@v6
+    uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
     with:
       source-url: '${{ inputs.nugetFeed }}'
     env:
@@ -62,7 +62,7 @@ runs:
     run: dotnet nuget push ${{ inputs.packageFolder }}/*.nupkg --api-key AzureArtifacts --skip-duplicate
 
   - name: Publish Symbols
-    uses: microsoft/action-publish-symbols@v2.1.6
+    uses: microsoft/action-publish-symbols@67b415b8752953314b1c65a958b7d3131855fbe9 # v2.1.6
     with:
       accountName: ${{ inputs.symbolsAccountName }}
       personalAccessToken: ${{ steps.az-account.outputs.access-token }}
