@@ -28,6 +28,7 @@ public class SqlSchemaManager : ISchemaManager
     private readonly ISchemaClient _schemaClient;
     private readonly ILogger<SqlSchemaManager> _logger;
     private readonly IMediator _mediator;
+    private readonly ISchemaWriteGate _schemaWriteGate;
 
     private const int RetryAttempts = 3;
 
@@ -36,12 +37,14 @@ public class SqlSchemaManager : ISchemaManager
         ISchemaManagerDataStore schemaManagerDataStore,
         ISchemaClient schemaClient,
         IMediator mediator,
+        ISchemaWriteGate schemaWriteGate,
         ILogger<SqlSchemaManager> logger)
     {
         _baseSchemaRunner = EnsureArg.IsNotNull(baseSchemaRunner, nameof(baseSchemaRunner));
         _schemaManagerDataStore = EnsureArg.IsNotNull(schemaManagerDataStore, nameof(schemaManagerDataStore));
         _schemaClient = EnsureArg.IsNotNull(schemaClient, nameof(schemaClient));
         _mediator = EnsureArg.IsNotNull(mediator, nameof(mediator));
+        _schemaWriteGate = EnsureArg.IsNotNull(schemaWriteGate, nameof(schemaWriteGate));
         _logger = EnsureArg.IsNotNull(logger, nameof(logger));
     }
 
@@ -51,6 +54,19 @@ public class SqlSchemaManager : ISchemaManager
     public virtual async Task ApplySchema(MutuallyExclusiveType type, bool force = false, CancellationToken token = default)
     {
         EnsureArg.IsNotNull(type, nameof(type));
+
+        // Check the write gate before performing any compatibility validation or DDL. On a
+        // read-only geo-replication secondary, ISchemaWriteGate.CanWriteAsync() returns false so
+        // the apply completes as a successful no-op rather than failing with a
+        // SchemaManagerException (the secondary's InstanceSchema data reflects an older,
+        // primary-region binary version and can never itself be advanced). Callers that are not
+        // configured for geo-replication get the default ISchemaWriteGate, which always permits
+        // writes, so this is a no-op for them.
+        if (!await _schemaWriteGate.CanWriteAsync(token).ConfigureAwait(false))
+        {
+            _logger.LogInformation("Schema write gate returned false; the database is a read-only secondary. Skipping schema apply so the caller can complete successfully.");
+            return;
+        }
 
         try
         {
