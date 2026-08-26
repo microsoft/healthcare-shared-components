@@ -86,24 +86,8 @@ public sealed class SchemaInitializer : IHostedService
 
         _logger.LogInformation("Initial check of schema version is {Version}", _schemaInformation.Current?.ToString(CultureInfo.InvariantCulture) ?? "NULL");
 
-        // Determine whether this instance may apply schema changes. On a read-only geo-replication
-        // secondary the schema is replicated from the primary and cannot be advanced from here, so
-        // the write gate returns false. In that case we log whether the replicated schema is current
-        // or behind and skip the upgrade entirely; the notification below still runs so dependent
-        // jobs can start. Services not configured for geo-replication get the default gate, which
-        // always permits writes, preserving existing behavior.
-        bool canWriteSchema = true;
-        if (_options.SchemaOptions.AutomaticUpdatesEnabled)
-        {
-            ISchemaWriteGate schemaWriteGate = scope.ServiceProvider.GetRequiredService<ISchemaWriteGate>();
-            canWriteSchema = await schemaWriteGate.CanWriteAsync(cancellationToken).ConfigureAwait(false);
-            if (!canWriteSchema)
-            {
-                LogReadOnlySecondarySchemaStatus();
-            }
-        }
-
-        if (_options.SchemaOptions.AutomaticUpdatesEnabled && canWriteSchema)
+        if (_options.SchemaOptions.AutomaticUpdatesEnabled &&
+            await CanApplySchemaUpdatesAsync(scope.ServiceProvider, cancellationToken).ConfigureAwait(false))
         {
             SchemaUpgradeRunner _schemaUpgradeRunner = scope.ServiceProvider.GetRequiredService<SchemaUpgradeRunner>();
 
@@ -192,24 +176,51 @@ public sealed class SchemaInitializer : IHostedService
         }
     }
 
+    // On a read-only geo-replication secondary the schema is replicated from the primary and cannot
+    // be advanced from here, so ISchemaWriteGate returns false. In that case we log whether the
+    // replicated schema is current or behind and skip the upgrade; the caller still fires the schema
+    // notification so dependent jobs can start. Services not configured for geo-replication get the
+    // default gate, which always permits writes, preserving existing behavior.
+    internal async Task<bool> CanApplySchemaUpdatesAsync(IServiceProvider scopedServiceProvider, CancellationToken cancellationToken)
+    {
+        ISchemaWriteGate schemaWriteGate = scopedServiceProvider.GetRequiredService<ISchemaWriteGate>();
+        if (await schemaWriteGate.CanWriteAsync(cancellationToken).ConfigureAwait(false))
+        {
+            return true;
+        }
+
+        LogReadOnlySecondarySchemaStatus();
+        return false;
+    }
+
+    internal static SecondarySchemaStatus GetSecondarySchemaStatus(int? currentVersion, int maximumSupportedVersion)
+    {
+        if (!currentVersion.HasValue)
+        {
+            return SecondarySchemaStatus.Unknown;
+        }
+
+        return currentVersion < maximumSupportedVersion ? SecondarySchemaStatus.Behind : SecondarySchemaStatus.Current;
+    }
+
     private void LogReadOnlySecondarySchemaStatus()
     {
-        if (!_schemaInformation.Current.HasValue)
+        switch (GetSecondarySchemaStatus(_schemaInformation.Current, _schemaInformation.MaximumSupportedVersion))
         {
-            _logger.LogWarning("Schema write gate denied writes (read-only geo-replication secondary), but the current schema version could not be determined. Skipping schema upgrade.");
-        }
-        else if (_schemaInformation.Current < _schemaInformation.MaximumSupportedVersion)
-        {
-            _logger.LogInformation(
-                "Schema write gate denied writes (read-only geo-replication secondary). Schema is behind. Current version: {CurrentVersion}; latest supported version: {LatestVersion}. Skipping schema upgrade.",
-                _schemaInformation.Current,
-                _schemaInformation.MaximumSupportedVersion);
-        }
-        else
-        {
-            _logger.LogInformation(
-                "Schema write gate denied writes (read-only geo-replication secondary). Schema is current at version {CurrentVersion}. Skipping schema upgrade.",
-                _schemaInformation.Current);
+            case SecondarySchemaStatus.Unknown:
+                _logger.LogWarning("Schema write gate denied writes (read-only geo-replication secondary), but the current schema version could not be determined. Skipping schema upgrade.");
+                break;
+            case SecondarySchemaStatus.Behind:
+                _logger.LogInformation(
+                    "Schema write gate denied writes (read-only geo-replication secondary). Schema is behind. Current version: {CurrentVersion}; latest supported version: {LatestVersion}. Skipping schema upgrade.",
+                    _schemaInformation.Current,
+                    _schemaInformation.MaximumSupportedVersion);
+                break;
+            default:
+                _logger.LogInformation(
+                    "Schema write gate denied writes (read-only geo-replication secondary). Schema is current at version {CurrentVersion}. Skipping schema upgrade.",
+                    _schemaInformation.Current);
+                break;
         }
     }
 
@@ -364,4 +375,20 @@ public sealed class SchemaInitializer : IHostedService
         command.CommandText = "SELECT count(*) FROM fn_my_permissions (NULL, 'DATABASE') WHERE permission_name = 'CREATE TABLE'";
         return (int)await command.ExecuteScalarAsync(cancellationToken).ConfigureAwait(false) > 0;
     }
+}
+
+/// <summary>
+/// Describes the state of the replicated schema on a read-only geo-replication secondary,
+/// relative to the maximum version supported by the running instance.
+/// </summary>
+internal enum SecondarySchemaStatus
+{
+    /// <summary>The current schema version could not be determined.</summary>
+    Unknown,
+
+    /// <summary>The replicated schema is behind the maximum supported version.</summary>
+    Behind,
+
+    /// <summary>The replicated schema is at (or beyond) the maximum supported version.</summary>
+    Current,
 }

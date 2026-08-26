@@ -8,3 +8,4 @@ using System.Runtime.CompilerServices;
 [assembly: InternalsVisibleTo("DynamicProxyGenAssembly2")]
 [assembly: InternalsVisibleTo("Microsoft.Health.SchemaManager.Core.UnitTests")]
 [assembly: InternalsVisibleTo("Microsoft.Health.SqlServer.Tests.Integration")]
+[assembly: InternalsVisibleTo("Microsoft.Health.SqlServer.UnitTests")]
