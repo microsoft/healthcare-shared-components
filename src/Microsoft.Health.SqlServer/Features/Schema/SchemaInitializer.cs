@@ -86,7 +86,24 @@ public sealed class SchemaInitializer : IHostedService
 
         _logger.LogInformation("Initial check of schema version is {Version}", _schemaInformation.Current?.ToString(CultureInfo.InvariantCulture) ?? "NULL");
 
+        // Determine whether this instance may apply schema changes. On a read-only geo-replication
+        // secondary the schema is replicated from the primary and cannot be advanced from here, so
+        // the write gate returns false. In that case we log whether the replicated schema is current
+        // or behind and skip the upgrade entirely; the notification below still runs so dependent
+        // jobs can start. Services not configured for geo-replication get the default gate, which
+        // always permits writes, preserving existing behavior.
+        bool canWriteSchema = true;
         if (_options.SchemaOptions.AutomaticUpdatesEnabled)
+        {
+            ISchemaWriteGate schemaWriteGate = scope.ServiceProvider.GetRequiredService<ISchemaWriteGate>();
+            canWriteSchema = await schemaWriteGate.CanWriteAsync(cancellationToken).ConfigureAwait(false);
+            if (!canWriteSchema)
+            {
+                LogReadOnlySecondarySchemaStatus();
+            }
+        }
+
+        if (_options.SchemaOptions.AutomaticUpdatesEnabled && canWriteSchema)
         {
             SchemaUpgradeRunner _schemaUpgradeRunner = scope.ServiceProvider.GetRequiredService<SchemaUpgradeRunner>();
 
@@ -172,6 +189,27 @@ public sealed class SchemaInitializer : IHostedService
         if (!schemaUpgradedNotificationSent && _schemaInformation.Current.HasValue)
         {
             await _mediator.NotifySchemaUpgradedAsync((int)_schemaInformation.Current, false, cancellationToken).ConfigureAwait(false);
+        }
+    }
+
+    private void LogReadOnlySecondarySchemaStatus()
+    {
+        if (!_schemaInformation.Current.HasValue)
+        {
+            _logger.LogWarning("Schema write gate denied writes (read-only geo-replication secondary), but the current schema version could not be determined. Skipping schema upgrade.");
+        }
+        else if (_schemaInformation.Current < _schemaInformation.MaximumSupportedVersion)
+        {
+            _logger.LogInformation(
+                "Schema write gate denied writes (read-only geo-replication secondary). Schema is behind. Current version: {CurrentVersion}; latest supported version: {LatestVersion}. Skipping schema upgrade.",
+                _schemaInformation.Current,
+                _schemaInformation.MaximumSupportedVersion);
+        }
+        else
+        {
+            _logger.LogInformation(
+                "Schema write gate denied writes (read-only geo-replication secondary). Schema is current at version {CurrentVersion}. Skipping schema upgrade.",
+                _schemaInformation.Current);
         }
     }
 

@@ -9,7 +9,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using Medino;
 using Microsoft.Extensions.Logging.Abstractions;
-using Microsoft.Health.SqlServer.Features.Schema;
 using Microsoft.Health.SqlServer.Features.Schema.Manager;
 using Microsoft.Health.SqlServer.Features.Schema.Manager.Exceptions;
 using Microsoft.Health.SqlServer.Features.Schema.Manager.Model;
@@ -25,14 +24,12 @@ public class SqlSchemaManagerTests
     private readonly ISchemaClient _client = Substitute.For<ISchemaClient>();
     private readonly IBaseSchemaRunner _baseSchemaRunner = Substitute.For<IBaseSchemaRunner>();
     private readonly IMediator _mediator = Substitute.For<IMediator>();
-    private readonly ISchemaWriteGate _schemaWriteGate = Substitute.For<ISchemaWriteGate>();
 
     public SqlSchemaManagerTests()
     {
         _baseSchemaRunner.EnsureBaseSchemaExistsAsync(default).ReturnsForAnyArgs(Task.FromResult(true));
         _baseSchemaRunner.EnsureInstanceSchemaRecordExistsAsync(default).ReturnsForAnyArgs(Task.FromResult(true));
-        _schemaWriteGate.CanWriteAsync(Arg.Any<CancellationToken>()).Returns(true);
-        _sqlSchemaManager = new SqlSchemaManager(_baseSchemaRunner, _schemaManagerDataStore, _client, _mediator, _schemaWriteGate, NullLogger<SqlSchemaManager>.Instance);
+        _sqlSchemaManager = new SqlSchemaManager(_baseSchemaRunner, _schemaManagerDataStore, _client, _mediator, NullLogger<SqlSchemaManager>.Instance);
     }
 
     [Fact]
@@ -181,54 +178,5 @@ public class SqlSchemaManagerTests
         await _sqlSchemaManager.ApplySchema(new MutuallyExclusiveType { Latest = false, Version = 2, Next = false });
 
         await _schemaManagerDataStore.DidNotReceive().ExecuteScriptAndCompleteSchemaVersionAsync(Arg.Is("script"), Arg.Is(2), Arg.Is(false), Arg.Any<CancellationToken>());
-    }
-
-    [Fact]
-    public async Task ApplySchema_WriteGateDeniesWrite_CompletesWithoutValidationOrDdl()
-    {
-        // A read-only geo-replication secondary (or any other write gate implementation that
-        // denies writes) must cause ApplySchema to complete as a no-op: no base schema
-        // initialization, no compatibility validation, and no script execution.
-        _schemaWriteGate.CanWriteAsync(Arg.Any<CancellationToken>()).Returns(false);
-
-        await _sqlSchemaManager.ApplySchema(new MutuallyExclusiveType { Latest = true });
-
-        await _baseSchemaRunner.DidNotReceiveWithAnyArgs().EnsureBaseSchemaExistsAsync(default);
-        await _client.DidNotReceiveWithAnyArgs().GetCompatibilityAsync(default);
-        await _schemaManagerDataStore.DidNotReceiveWithAnyArgs().ExecuteScriptAndCompleteSchemaVersionAsync(default, default, default, default);
-    }
-
-    [Fact]
-    public async Task ApplySchema_WriteGatePermitsWrite_AppliesSchemaNormally()
-    {
-        // The default (and any permissive) write gate must not change existing behavior:
-        // compatibility validation and migration proceed exactly as before this gate existed.
-        _schemaWriteGate.CanWriteAsync(Arg.Any<CancellationToken>()).Returns(true);
-        _schemaManagerDataStore.GetCurrentSchemaVersionAsync(default).ReturnsForAnyArgs(Task.FromResult(1));
-        _client.GetCurrentVersionInformationAsync(Arg.Any<CancellationToken>()).ReturnsForAnyArgs(new List<CurrentVersion> { });
-        _client.GetAvailabilityAsync(Arg.Any<CancellationToken>()).ReturnsForAnyArgs(new List<AvailableVersion> { new AvailableVersion(1, "_script/1.sql", "_script/1.diff.sql"), new AvailableVersion(2, "_script/2.sql", "_script/2.diff.sql") });
-        _client.GetCompatibilityAsync(Arg.Any<CancellationToken>()).ReturnsForAnyArgs(new CompatibleVersion(1, 2));
-        _client.GetDiffScriptAsync(2, Arg.Any<CancellationToken>()).Returns("script");
-
-        await _sqlSchemaManager.ApplySchema(new MutuallyExclusiveType { Latest = false, Version = 2, Next = false });
-
-        await _schemaManagerDataStore.Received(1).ExecuteScriptAndCompleteSchemaVersionAsync(Arg.Is("script"), Arg.Is(2), Arg.Is(false), Arg.Any<CancellationToken>());
-    }
-
-    [Fact]
-    public async Task ApplySchema_WriteGateDeniesWrite_DoesNotCheckGateForReadOperations()
-    {
-        // Reads (GetAvailableSchema/GetCurrentSchema) are safe against a read-only secondary and
-        // must never be gated.
-        _schemaWriteGate.CanWriteAsync(Arg.Any<CancellationToken>()).Returns(false);
-        _client.GetAvailabilityAsync(Arg.Any<CancellationToken>()).ReturnsForAnyArgs(new List<AvailableVersion> { new AvailableVersion(1, "_script/1.sql", "_script/1.diff.sql") });
-        _client.GetCurrentVersionInformationAsync(Arg.Any<CancellationToken>()).ReturnsForAnyArgs(new List<CurrentVersion> { new CurrentVersion(1, "completed", new List<string>()) });
-
-        IReadOnlyList<AvailableVersion> available = await _sqlSchemaManager.GetAvailableSchema();
-        IReadOnlyList<CurrentVersion> current = await _sqlSchemaManager.GetCurrentSchema();
-
-        Assert.NotEmpty(available);
-        Assert.NotEmpty(current);
-        await _schemaWriteGate.DidNotReceiveWithAnyArgs().CanWriteAsync(default);
     }
 }

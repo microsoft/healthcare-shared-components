@@ -18,7 +18,6 @@ using Microsoft.Extensions.Options;
 using Microsoft.Health.SqlServer;
 using Microsoft.Health.SqlServer.Configs;
 using Microsoft.Health.SqlServer.Features.Client;
-using Microsoft.Health.SqlServer.Features.Schema;
 using Microsoft.Health.SqlServer.Features.Schema.Manager;
 using Microsoft.Health.SqlServer.Features.Schema.Messages.Notifications;
 using Microsoft.Health.SqlServer.Features.Storage;
@@ -90,24 +89,9 @@ public static class Program
         services.AddScoped<SqlConnectionWrapperFactory>();
         services.AddScoped<SqlTransactionHandler>();
         services.AddScoped<ISchemaManagerDataStore, SchemaManagerDataStore>();
-
-        // This sample console does not use AddSqlServerManagement, which normally registers the
-        // default (always-writable) ISchemaWriteGate. Register it directly here so
-        // SqlSchemaManager can resolve it; ISchemaWriteGate.CanWriteAsync's default interface
-        // implementation always permits writes, which preserves this tool's existing behavior.
-        services.TryAddSingleton<ISchemaWriteGate, AlwaysWritableSchemaWriteGate>();
-
         services.AddSingleton<ISchemaManager, SqlSchemaManager>();
         services.AddMedino(c => c.RegisterServicesFromAssemblyContaining<SchemaUpgradedNotification>());
         services.AddLogging(configure => configure.AddConsole());
         return services.BuildServiceProvider();
-    }
-
-    /// <summary>
-    /// Always permits schema writes. Used in place of the internal <c>DefaultSchemaWriteGate</c>
-    /// from Microsoft.Health.SqlServer, which is not accessible outside that assembly.
-    /// </summary>
-    private sealed class AlwaysWritableSchemaWriteGate : ISchemaWriteGate
-    {
     }
 }
