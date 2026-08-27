@@ -119,6 +119,7 @@ public static class SqlServerBaseRegistrationExtensions
         services.TryAddScoped<ISchemaDataStore, SqlServerSchemaDataStore>();
         services.TryAddSingleton<SchemaJobWorker>();
         services.TryAddSingleton<ISchemaWriteGate, DefaultSchemaWriteGate>();
+        services.TryAddSingleton<ISchemaMetrics, SchemaMetrics>();
         services.TryAddSingleton<IScriptProvider, ScriptProvider<TVersion>>();
         services.TryAddSingleton<IBaseScriptProvider, BaseScriptProvider>();
         services.TryAddScoped<SchemaUpgradeRunner>();

@@ -40,7 +40,7 @@ public sealed class SchemaInitializerTests
         using ServiceProvider provider = BuildScopedProvider(gate);
         SchemaInitializer initializer = CreateInitializer(new SchemaInformation(1, 5) { Current = 3 }, NullLogger<SchemaInitializer>.Instance);
 
-        bool result = await initializer.CanApplySchemaUpdatesAsync(provider, CancellationToken.None);
+        bool result = await initializer.CanApplySchemaUpdatesAsync(provider, "testdb", CancellationToken.None);
 
         Assert.False(result);
         await gate.ReceivedWithAnyArgs(1).CanWriteAsync(default);
@@ -54,7 +54,7 @@ public sealed class SchemaInitializerTests
         using ServiceProvider provider = BuildScopedProvider(gate);
         SchemaInitializer initializer = CreateInitializer(new SchemaInformation(1, 5) { Current = 3 }, NullLogger<SchemaInitializer>.Instance);
 
-        bool result = await initializer.CanApplySchemaUpdatesAsync(provider, CancellationToken.None);
+        bool result = await initializer.CanApplySchemaUpdatesAsync(provider, "testdb", CancellationToken.None);
 
         Assert.True(result);
     }
@@ -65,7 +65,7 @@ public sealed class SchemaInitializerTests
         var logger = new ListLogger<SchemaInitializer>();
         SchemaInitializer initializer = CreateInitializer(new SchemaInformation(1, 5) { Current = 3 }, logger);
 
-        await initializer.CanApplySchemaUpdatesAsync(BuildScopedProvider(FalseGate()), CancellationToken.None);
+        await initializer.CanApplySchemaUpdatesAsync(BuildScopedProvider(FalseGate()), "testdb", CancellationToken.None);
 
         (LogLevel Level, string Message) entry = Assert.Single(logger.Entries);
         Assert.Equal(LogLevel.Information, entry.Level);
@@ -78,7 +78,7 @@ public sealed class SchemaInitializerTests
         var logger = new ListLogger<SchemaInitializer>();
         SchemaInitializer initializer = CreateInitializer(new SchemaInformation(1, 5) { Current = 5 }, logger);
 
-        await initializer.CanApplySchemaUpdatesAsync(BuildScopedProvider(FalseGate()), CancellationToken.None);
+        await initializer.CanApplySchemaUpdatesAsync(BuildScopedProvider(FalseGate()), "testdb", CancellationToken.None);
 
         (LogLevel Level, string Message) entry = Assert.Single(logger.Entries);
         Assert.Equal(LogLevel.Information, entry.Level);
@@ -91,7 +91,7 @@ public sealed class SchemaInitializerTests
         var logger = new ListLogger<SchemaInitializer>();
         SchemaInitializer initializer = CreateInitializer(new SchemaInformation(1, 5) { Current = 7 }, logger);
 
-        await initializer.CanApplySchemaUpdatesAsync(BuildScopedProvider(FalseGate()), CancellationToken.None);
+        await initializer.CanApplySchemaUpdatesAsync(BuildScopedProvider(FalseGate()), "testdb", CancellationToken.None);
 
         (LogLevel Level, string Message) entry = Assert.Single(logger.Entries);
         Assert.Equal(LogLevel.Warning, entry.Level);
@@ -104,11 +104,49 @@ public sealed class SchemaInitializerTests
         var logger = new ListLogger<SchemaInitializer>();
         SchemaInitializer initializer = CreateInitializer(new SchemaInformation(1, 5) { Current = null }, logger);
 
-        await initializer.CanApplySchemaUpdatesAsync(BuildScopedProvider(FalseGate()), CancellationToken.None);
+        await initializer.CanApplySchemaUpdatesAsync(BuildScopedProvider(FalseGate()), "testdb", CancellationToken.None);
 
         (LogLevel Level, string Message) entry = Assert.Single(logger.Entries);
         Assert.Equal(LogLevel.Warning, entry.Level);
         Assert.Contains("could not be determined", entry.Message, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public async Task GivenWriteGateReturnsFalseAndSchemaBehind_WhenCheckingCanApplySchemaUpdates_EmitsSchemaBehindMetric()
+    {
+        ISchemaMetrics metrics = Substitute.For<ISchemaMetrics>();
+        SchemaInitializer initializer = CreateInitializer(new SchemaInformation(1, 5) { Current = 3 }, NullLogger<SchemaInitializer>.Instance, metrics, region: "eastus2");
+
+        await initializer.CanApplySchemaUpdatesAsync(BuildScopedProvider(FalseGate()), "MyDatabase", CancellationToken.None);
+
+        metrics.Received(1).SchemaBehind("MyDatabase", 3, "eastus2");
+    }
+
+    [Theory]
+    [InlineData(5)] // current
+    [InlineData(7)] // ahead
+    [InlineData(null)] // unknown
+    public async Task GivenWriteGateReturnsFalseAndSchemaNotBehind_WhenCheckingCanApplySchemaUpdates_DoesNotEmitMetric(int? currentVersion)
+    {
+        ISchemaMetrics metrics = Substitute.For<ISchemaMetrics>();
+        SchemaInitializer initializer = CreateInitializer(new SchemaInformation(1, 5) { Current = currentVersion }, NullLogger<SchemaInitializer>.Instance, metrics);
+
+        await initializer.CanApplySchemaUpdatesAsync(BuildScopedProvider(FalseGate()), "MyDatabase", CancellationToken.None);
+
+        metrics.DidNotReceiveWithAnyArgs().SchemaBehind(default, default, default);
+    }
+
+    [Fact]
+    public async Task GivenWriteGateReturnsTrue_WhenCheckingCanApplySchemaUpdates_DoesNotEmitMetric()
+    {
+        ISchemaMetrics metrics = Substitute.For<ISchemaMetrics>();
+        ISchemaWriteGate gate = Substitute.For<ISchemaWriteGate>();
+        gate.CanWriteAsync(default).ReturnsForAnyArgs(Task.FromResult(true));
+        SchemaInitializer initializer = CreateInitializer(new SchemaInformation(1, 5) { Current = 3 }, NullLogger<SchemaInitializer>.Instance, metrics);
+
+        await initializer.CanApplySchemaUpdatesAsync(BuildScopedProvider(gate), "MyDatabase", CancellationToken.None);
+
+        metrics.DidNotReceiveWithAnyArgs().SchemaBehind(default, default, default);
     }
 
     private static ISchemaWriteGate FalseGate()
@@ -125,13 +163,14 @@ public sealed class SchemaInitializerTests
         return services.BuildServiceProvider();
     }
 
-    private static SchemaInitializer CreateInitializer(SchemaInformation schemaInformation, ILogger<SchemaInitializer> logger)
+    private static SchemaInitializer CreateInitializer(SchemaInformation schemaInformation, ILogger<SchemaInitializer> logger, ISchemaMetrics schemaMetrics = null, string region = null)
     {
         return new SchemaInitializer(
             Substitute.For<IServiceProvider>(),
-            Options.Create(new SqlServerDataStoreConfiguration()),
+            Options.Create(new SqlServerDataStoreConfiguration { Region = region }),
             schemaInformation,
             Substitute.For<IMediator>(),
+            schemaMetrics ?? Substitute.For<ISchemaMetrics>(),
             logger);
     }
 
