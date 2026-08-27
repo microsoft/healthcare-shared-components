@@ -28,7 +28,17 @@ runs:
 
   - name: 'Install Azure Functions Core Tools'
     shell: bash
-    run: npm install --global azure-functions-core-tools@4 --unsafe-perm=true --registry=https://registry.npmjs.org/ --userconfig=/dev/null
+    run: |
+      functionsVersion=4.9.0
+      archive="$RUNNER_TEMP/Azure.Functions.Cli.linux-x64.$functionsVersion.zip"
+      installDirectory="$RUNNER_TEMP/azure-functions-core-tools"
+      curl --fail --location --retry 3 --output "$archive" \
+        "https://github.com/Azure/azure-functions-core-tools/releases/download/$functionsVersion/Azure.Functions.Cli.linux-x64.$functionsVersion.zip"
+      echo "2bf6409dd0a15b4210159da2b407265e8e193cd4ebeeafb0ed126420675142ce  $archive" | sha256sum --check
+      mkdir --parents "$installDirectory"
+      unzip -q "$archive" -d "$installDirectory"
+      chmod +x "$installDirectory/func"
+      echo "$installDirectory" >> "$GITHUB_PATH"
 
   - name: 'Start Azurite'
     shell: bash
