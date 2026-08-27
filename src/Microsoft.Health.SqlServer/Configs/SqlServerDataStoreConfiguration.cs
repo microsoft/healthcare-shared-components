@@ -70,4 +70,10 @@ public class SqlServerDataStoreConfiguration
     /// If set, the maximum number of connections allowed in the pool to use when connecting to SQL.
     /// </summary>
     public int? MaxPoolSize { get; set; }
+
+    /// <summary>
+    /// The Azure region the service is running in. Used only as a dimension on emitted metrics
+    /// (for example, the schema-behind metric on read-only geo-replication secondaries).
+    /// </summary>
+    public string Region { get; set; }
 }
