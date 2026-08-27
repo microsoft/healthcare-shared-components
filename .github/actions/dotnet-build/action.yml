@@ -29,6 +29,7 @@ runs:
   - name: 'Install Azure Functions Core Tools'
     shell: bash
     run: |
+      # npm 4.14.0 references a private Azure Artifacts feed; use release assets until upstream issue #5569 is fixed.
       release=$(gh api 'repos/Azure/azure-functions-core-tools/releases?per_page=100' \
         --jq 'map(select(.draft == false and .prerelease == false and (.tag_name | test("^4\\.")))) | first')
       asset=$(jq -c '.assets[] | select(.name | test("^Azure\\.Functions\\.Cli\\.linux-x64\\.4\\.[0-9.]+\\.zip$"))' <<< "$release")
