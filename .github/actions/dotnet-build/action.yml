@@ -29,16 +29,28 @@ runs:
   - name: 'Install Azure Functions Core Tools'
     shell: bash
     run: |
-      functionsVersion=4.9.0
-      archive="$RUNNER_TEMP/Azure.Functions.Cli.linux-x64.$functionsVersion.zip"
+      release=$(gh api 'repos/Azure/azure-functions-core-tools/releases?per_page=100' \
+        --jq 'map(select(.draft == false and .prerelease == false and (.tag_name | test("^4\\.")))) | first')
+      asset=$(jq -c '.assets[] | select(.name | test("^Azure\\.Functions\\.Cli\\.linux-x64\\.4\\.[0-9.]+\\.zip$"))' <<< "$release")
+      assetName=$(jq -r '.name' <<< "$asset")
+      assetUrl=$(jq -r '.browser_download_url' <<< "$asset")
+      expectedDigest=$(jq -r '.digest | sub("^sha256:"; "")' <<< "$asset")
+
+      if [[ -z "$assetName" || -z "$assetUrl" || ! "$expectedDigest" =~ ^[0-9a-f]{64}$ ]]; then
+        echo "Unable to resolve the latest stable Azure Functions Core Tools 4.x release." >&2
+        exit 1
+      fi
+
+      archive="$RUNNER_TEMP/$assetName"
       installDirectory="$RUNNER_TEMP/azure-functions-core-tools"
-      curl --fail --location --retry 3 --output "$archive" \
-        "https://github.com/Azure/azure-functions-core-tools/releases/download/$functionsVersion/Azure.Functions.Cli.linux-x64.$functionsVersion.zip"
-      echo "2bf6409dd0a15b4210159da2b407265e8e193cd4ebeeafb0ed126420675142ce  $archive" | sha256sum --check
+      curl --fail --location --retry 3 --output "$archive" "$assetUrl"
+      echo "$expectedDigest  $archive" | sha256sum --check
       mkdir --parents "$installDirectory"
       unzip -q "$archive" -d "$installDirectory"
       chmod +x "$installDirectory/func"
       echo "$installDirectory" >> "$GITHUB_PATH"
+    env:
+      GH_TOKEN: ${{ github.token }}
 
   - name: 'Start Azurite'
     shell: bash
