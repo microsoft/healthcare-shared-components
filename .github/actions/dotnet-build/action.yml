@@ -28,7 +28,11 @@ runs:
 
   - name: 'Install Azure Functions Core Tools'
     shell: bash
-    run: npm i -g azure-functions-core-tools@4 --unsafe-perm true
+    run: |
+      npm install --global azure-functions-core-tools@4 ` 
+        --unsafe-perm=true ` 
+        --registry=https://registry.npmjs.org/ ` 
+        --userconfig=/dev/null
 
   - name: 'Start Azurite'
     shell: bash
