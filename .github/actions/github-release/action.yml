@@ -27,16 +27,21 @@ runs:
     shell: bash
     run: |
       # Read first line of title
-      readarray -t lines <<< "${{ inputs.title }}"
+      readarray -t lines <<< "$RELEASE_TITLE"
 
-      gh release create "${{ inputs.tag }}" \
-        --repo "${{ inputs.repository }}" \
-        --target ${{ inputs.commitSha }} \
+      gh release create "$RELEASE_TAG" \
+        --repo "$REPOSITORY" \
+        --target "$COMMIT_SHA" \
         --title "${lines[0]}" \
         --generate-notes
 
-      for pkg in ${{ inputs.packageFolder }}/*.nupkg; do
-          gh release upload "${{ inputs.tag }}" $pkg --repo "${{ inputs.repository }}" --clobber
+      for pkg in "$PACKAGE_FOLDER"/*.nupkg; do
+          gh release upload "$RELEASE_TAG" "$pkg" --repo "$REPOSITORY" --clobber
       done
     env:
+      COMMIT_SHA: ${{ inputs.commitSha }}
       GITHUB_TOKEN: ${{ inputs.gitHubToken }}
+      PACKAGE_FOLDER: ${{ inputs.packageFolder }}
+      RELEASE_TAG: ${{ inputs.tag }}
+      RELEASE_TITLE: ${{ inputs.title }}
+      REPOSITORY: ${{ inputs.repository }}
