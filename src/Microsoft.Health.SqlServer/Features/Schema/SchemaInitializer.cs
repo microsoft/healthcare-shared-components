@@ -200,7 +200,12 @@ public sealed class SchemaInitializer : IHostedService
             return SecondarySchemaStatus.Unknown;
         }
 
-        return currentVersion < maximumSupportedVersion ? SecondarySchemaStatus.Behind : SecondarySchemaStatus.Current;
+        if (currentVersion < maximumSupportedVersion)
+        {
+            return SecondarySchemaStatus.Behind;
+        }
+
+        return currentVersion > maximumSupportedVersion ? SecondarySchemaStatus.Ahead : SecondarySchemaStatus.Current;
     }
 
     private void LogReadOnlySecondarySchemaStatus()
@@ -213,6 +218,12 @@ public sealed class SchemaInitializer : IHostedService
             case SecondarySchemaStatus.Behind:
                 _logger.LogInformation(
                     "Schema write gate denied writes (read-only geo-replication secondary). Schema is behind. Current version: {CurrentVersion}; latest supported version: {LatestVersion}. Skipping schema upgrade.",
+                    _schemaInformation.Current,
+                    _schemaInformation.MaximumSupportedVersion);
+                break;
+            case SecondarySchemaStatus.Ahead:
+                _logger.LogWarning(
+                    "Schema write gate denied writes (read-only geo-replication secondary). The replicated schema (version {CurrentVersion}) is newer than the maximum version supported by this instance ({LatestVersion}); this instance may be running outdated code. Skipping schema upgrade.",
                     _schemaInformation.Current,
                     _schemaInformation.MaximumSupportedVersion);
                 break;
@@ -389,6 +400,9 @@ internal enum SecondarySchemaStatus
     /// <summary>The replicated schema is behind the maximum supported version.</summary>
     Behind,
 
-    /// <summary>The replicated schema is at (or beyond) the maximum supported version.</summary>
+    /// <summary>The replicated schema is at the maximum supported version.</summary>
     Current,
+
+    /// <summary>The replicated schema is newer than the maximum version supported by this instance.</summary>
+    Ahead,
 }
