@@ -5,7 +5,7 @@
 
 using Xunit;
 
-namespace Microsoft.Health.SqlServer.UnitTests.Features.Schema;
+namespace Microsoft.Health.Tools.Sql.Tasks.Tests.Features.Schema;
 
 public class VectorSchemaModelTests
 {

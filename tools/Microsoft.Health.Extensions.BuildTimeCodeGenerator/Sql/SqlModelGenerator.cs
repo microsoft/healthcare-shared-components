@@ -64,23 +64,22 @@ public abstract class SqlModelGenerator : ICodeGenerator
     {
         foreach (var sqlFile in _sqlFiles)
         {
-            using (var stream = File.OpenRead(sqlFile))
-            using (var reader = new StreamReader(stream))
+            using var stream = File.OpenRead(sqlFile);
+            using var reader = new StreamReader(stream);
+
+            var parser = new TSql170Parser(true);
+            TSqlFragment fragment = parser.Parse(reader, out var errors);
+
+            if (errors.Count > 0)
             {
-                var parser = new TSql170Parser(true);
-                TSqlFragment fragment = parser.Parse(reader, out var errors);
+                string errorDetails = string.Join(
+                    Environment.NewLine,
+                    errors.Select(error => $"({error.Line},{error.Column}) SQL{error.Number}: {error.Message}"));
 
-                if (errors.Count > 0)
-                {
-                    string errorDetails = string.Join(
-                        Environment.NewLine,
-                        errors.Select(error => $"({error.Line},{error.Column}) SQL{error.Number}: {error.Message}"));
-
-                    throw new InvalidOperationException($"Failed to parse SQL file '{sqlFile}':{Environment.NewLine}{errorDetails}");
-                }
-
-                yield return fragment;
+                throw new FormatException($"Failed to parse SQL file '{sqlFile}':{Environment.NewLine}{errorDetails}");
             }
+
+            yield return fragment;
         }
     }
 }
