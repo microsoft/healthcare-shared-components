@@ -24,7 +24,7 @@ steps:
     FILE_VERSION: ${{ parameters.fileVersion }}
     INFORMATIONAL_VERSION: ${{ parameters.informationalVersion }}
 
-- bash: bash "$BUILD_SOURCESDIRECTORY/build/scripts/install-functions-core-tools.sh"
+- bash: bash "$BUILD_SOURCESDIRECTORY/.pipelines/scripts/install-functions-core-tools.sh"
   displayName: Install Azure Functions Core Tools
 
 - pwsh: |
