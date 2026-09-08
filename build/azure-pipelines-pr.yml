@@ -1,0 +1,85 @@
+name: Packages-PR-$(Date:yyyyMMdd)$(Rev:.r)
+
+trigger: none
+
+pr:
+  autoCancel: true
+  branches:
+    include:
+    - main
+  paths:
+    exclude:
+    - '*.md'
+    - '**/*.md'
+
+resources:
+  repositories:
+  - repository: 1esPipelines
+    type: git
+    name: 1ESPipelineTemplates/1ESPipelineTemplates
+    ref: refs/tags/release
+
+extends:
+  template: v1/1ES.Unofficial.PipelineTemplate.yml@1esPipelines
+  parameters:
+    pool:
+      name: DevOps1ESSharedPool
+      image: ubuntu-internal
+      os: linux
+    sdl:
+      sourceAnalysisPool:
+        name: DevOps1ESSharedPool
+        image: windows-internal
+        os: windows
+
+    stages:
+    - stage: Validate
+      displayName: Validate packages
+      jobs:
+      - job: BuildAndTest
+        displayName: Build and test
+        timeoutInMinutes: 120
+        steps:
+        - checkout: self
+          clean: true
+          fetchDepth: 0
+          fetchTags: true
+          persistCredentials: false
+
+        - task: UseDotNet@2
+          displayName: Install .NET 8 SDK
+          inputs:
+            packageType: sdk
+            version: 8.x
+
+        - task: UseDotNet@2
+          displayName: Install .NET 9 SDK
+          inputs:
+            packageType: sdk
+            version: 9.x
+
+        - task: UseDotNet@2
+          displayName: Install SDK from global.json
+          inputs:
+            packageType: sdk
+            useGlobalJson: true
+            workingDirectory: $(Build.SourcesDirectory)
+
+        - task: gitversion-setup@4.7.0
+          displayName: Install GitVersion
+          inputs:
+            versionSpec: 6.x
+
+        - task: gitversion-execute@4.7.0
+          name: version
+          displayName: Determine version
+          inputs:
+            targetPath: $(Build.SourcesDirectory)
+            configFilePath: GitVersion.yml
+
+        - template: templates/dotnet-build.yml
+          parameters:
+            buildConfiguration: Release
+            assemblyVersion: $(version.assemblySemVer)
+            fileVersion: $(version.assemblySemFileVer)
+            informationalVersion: $(version.informationalVersion)
