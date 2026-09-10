@@ -14,6 +14,8 @@ using EnsureThat;
 using Medino;
 using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
+using Microsoft.Health.SqlServer.Configs;
 using Microsoft.Health.SqlServer.Features.Schema.Extensions;
 using Microsoft.Health.SqlServer.Features.Schema.Manager.Exceptions;
 using Microsoft.Health.SqlServer.Features.Schema.Manager.Model;
@@ -28,6 +30,10 @@ public class SqlSchemaManager : ISchemaManager
     private readonly ISchemaClient _schemaClient;
     private readonly ILogger<SqlSchemaManager> _logger;
     private readonly IMediator _mediator;
+    private readonly ISchemaWriteGate _schemaWriteGate;
+    private readonly ISchemaMetrics _schemaMetrics;
+    private readonly string _databaseName;
+    private readonly string _region;
 
     private const int RetryAttempts = 3;
 
@@ -36,13 +42,22 @@ public class SqlSchemaManager : ISchemaManager
         ISchemaManagerDataStore schemaManagerDataStore,
         ISchemaClient schemaClient,
         IMediator mediator,
+        ISchemaWriteGate schemaWriteGate,
+        ISchemaMetrics schemaMetrics,
+        IOptions<SqlServerDataStoreConfiguration> sqlServerDataStoreConfiguration,
         ILogger<SqlSchemaManager> logger)
     {
         _baseSchemaRunner = EnsureArg.IsNotNull(baseSchemaRunner, nameof(baseSchemaRunner));
         _schemaManagerDataStore = EnsureArg.IsNotNull(schemaManagerDataStore, nameof(schemaManagerDataStore));
         _schemaClient = EnsureArg.IsNotNull(schemaClient, nameof(schemaClient));
         _mediator = EnsureArg.IsNotNull(mediator, nameof(mediator));
+        _schemaWriteGate = EnsureArg.IsNotNull(schemaWriteGate, nameof(schemaWriteGate));
+        _schemaMetrics = EnsureArg.IsNotNull(schemaMetrics, nameof(schemaMetrics));
         _logger = EnsureArg.IsNotNull(logger, nameof(logger));
+
+        SqlServerDataStoreConfiguration configuration = EnsureArg.IsNotNull(sqlServerDataStoreConfiguration?.Value, nameof(sqlServerDataStoreConfiguration));
+        _region = configuration.Region;
+        _databaseName = TryGetDatabaseName(configuration.ConnectionString);
     }
 
     internal TimeSpan RetrySleepDuration { get; set; } = TimeSpan.FromSeconds(20);
@@ -51,6 +66,18 @@ public class SqlSchemaManager : ISchemaManager
     public virtual async Task ApplySchema(MutuallyExclusiveType type, bool force = false, CancellationToken token = default)
     {
         EnsureArg.IsNotNull(type, nameof(type));
+
+        // On a read-only geo-replication secondary the schema is replicated from the primary and
+        // cannot be advanced from here, so ISchemaWriteGate returns false. Checking the gate before
+        // any of the calls below (which can perform DDL, e.g. EnsureBaseSchemaExistsAsync) ensures a
+        // role transition cannot race with an unsafe secondary write. Services not configured for
+        // geo-replication get the default gate, which always permits writes, preserving existing
+        // behavior for non-geo resources and databases without a replication link.
+        if (!await _schemaWriteGate.CanWriteAsync(token).ConfigureAwait(false))
+        {
+            await ReportReadOnlySecondaryAsync(token).ConfigureAwait(false);
+            return;
+        }
 
         try
         {
@@ -297,5 +324,56 @@ public class SqlSchemaManager : ISchemaManager
         int latestVersion = await _schemaManagerDataStore.GetCurrentSchemaVersionAsync(cancellationToken).ConfigureAwait(false);
         _logger.LogInformation("Latest schema version in db is : {Version}", latestVersion);
         return latestVersion;
+    }
+
+    // Reports the state of a write denied by ISchemaWriteGate, sharing status determination, log
+    // messages, and metrics with SchemaInitializer via SchemaWriteGateDiagnostics. The current and
+    // maximum supported versions are fetched best-effort: on failure (for example, the base schema
+    // does not exist yet), the status falls back to Unknown so this method never throws, since the
+    // apply command must still return successfully as a no-op.
+    private async Task ReportReadOnlySecondaryAsync(CancellationToken cancellationToken)
+    {
+        int? currentVersion = null;
+        int? maximumSupportedVersion = null;
+
+        try
+        {
+            currentVersion = await _schemaManagerDataStore.GetCurrentSchemaVersionAsync(cancellationToken).ConfigureAwait(false);
+
+            List<AvailableVersion> availableVersions = await _schemaClient.GetAvailabilityAsync(cancellationToken).ConfigureAwait(false);
+            if (availableVersions != null && availableVersions.Count > 0)
+            {
+                maximumSupportedVersion = availableVersions[^1].Id;
+            }
+        }
+        catch (Exception ex) when (ex is SchemaManagerException or HttpRequestException or SqlException)
+        {
+            _logger.LogWarning(ex, "Unable to determine the current schema version while the write gate denied writes.");
+        }
+
+        SecondarySchemaStatus status = SchemaWriteGateDiagnostics.GetSecondarySchemaStatus(currentVersion, maximumSupportedVersion);
+        SchemaWriteGateDiagnostics.LogReadOnlySecondaryStatus(_logger, status, currentVersion, maximumSupportedVersion);
+
+        if (status == SecondarySchemaStatus.Behind)
+        {
+            _schemaMetrics.SchemaBehind(_databaseName, currentVersion.Value, _region);
+        }
+    }
+
+    private static string TryGetDatabaseName(string connectionString)
+    {
+        if (string.IsNullOrWhiteSpace(connectionString))
+        {
+            return null;
+        }
+
+        try
+        {
+            return new SqlConnectionStringBuilder(connectionString).InitialCatalog;
+        }
+        catch (Exception ex) when (ex is ArgumentException or FormatException or KeyNotFoundException)
+        {
+            return null;
+        }
     }
 }
