@@ -17,12 +17,12 @@ jobs:
 
     steps:
     - name: Checkout
-      uses: actions/checkout@v7
+      uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       with:
         fetch-depth: 0
 
     - name: Install .NET SDK
-      uses: actions/setup-dotnet@v6
+      uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
       with:
         global-json-file: 'global.json'
         dotnet-version: |
@@ -42,7 +42,7 @@ jobs:
         informationalVersion: ${{ steps.version.outputs.informationalVersion }}
 
     - name: Login
-      uses: azure/login@v3
+      uses: azure/login@f5d393ae46f8fde4be8b75f32e3fc50e654ad0ca # v3.0.1
       with:
         allow-no-subscriptions: true
         client-id: ${{ secrets.CLIENT_ID }}
