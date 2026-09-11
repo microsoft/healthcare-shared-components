@@ -1,0 +1,157 @@
+parameters:
+- name: buildConfiguration
+  type: string
+  default: Release
+- name: assemblyVersion
+  type: string
+- name: fileVersion
+  type: string
+- name: informationalVersion
+  type: string
+
+steps:
+- pwsh: |
+    $PSNativeCommandUseErrorActionPreference = $true
+    dotnet build Microsoft.Health.slnx `
+        -c $env:BUILD_CONFIGURATION `
+        "-p:ContinuousIntegrationBuild=true;AssemblyVersion=$env:ASSEMBLY_VERSION;FileVersion=$env:FILE_VERSION;InformationalVersion=$env:INFORMATIONAL_VERSION" `
+        -warnaserror
+  displayName: Build
+  workingDirectory: $(Build.SourcesDirectory)
+  env:
+    BUILD_CONFIGURATION: ${{ parameters.buildConfiguration }}
+    ASSEMBLY_VERSION: ${{ parameters.assemblyVersion }}
+    FILE_VERSION: ${{ parameters.fileVersion }}
+    INFORMATIONAL_VERSION: ${{ parameters.informationalVersion }}
+
+- bash: bash "$BUILD_SOURCESDIRECTORY/.pipelines/scripts/install-functions-core-tools.sh"
+  displayName: Install Azure Functions Core Tools
+
+- pwsh: |
+    $PSNativeCommandUseErrorActionPreference = $true
+    $name = "azure-storage-$env:BUILD_BUILDID-$env:SYSTEM_JOBATTEMPT"
+    docker run --detach --rm --name $name `
+        --publish 127.0.0.1:10000:10000 `
+        --publish 127.0.0.1:10001:10001 `
+        --publish 127.0.0.1:10002:10002 `
+        mcr.microsoft.com/azure-storage/azurite:latest `
+        azurite --blobHost 0.0.0.0 --queueHost 0.0.0.0 --tableHost 0.0.0.0 --skipApiVersionCheck
+    Write-Host '##vso[task.setvariable variable=AzuriteStarted]true'
+  displayName: Start Azurite
+
+- pwsh: |
+    $PSNativeCommandUseErrorActionPreference = $true
+    $env:MSSQL_SA_PASSWORD = "Test1!$([Guid]::NewGuid().ToString('N'))"
+    Write-Host "##vso[task.setvariable variable=SqlPassword;issecret=true]$env:MSSQL_SA_PASSWORD"
+    $name = "sql-server-$env:BUILD_BUILDID-$env:SYSTEM_JOBATTEMPT"
+    docker run --detach --rm --name $name `
+        --env ACCEPT_EULA=Y --env MSSQL_SA_PASSWORD `
+        --publish 127.0.0.1:1433:1433 `
+        mcr.microsoft.com/mssql/server:2022-latest
+    Write-Host '##vso[task.setvariable variable=SqlServerStarted]true'
+  displayName: Start SQL Server
+
+- pwsh: |
+    # SQL Server needs time to initialize; nonzero sqlcmd exits are retried here only.
+    $PSNativeCommandUseErrorActionPreference = $false
+    $name = "sql-server-$env:BUILD_BUILDID-$env:SYSTEM_JOBATTEMPT"
+    for ($attempt = 0; $attempt -lt 24; $attempt++) {
+        docker exec --env SQLCMDPASSWORD $name `
+            /opt/mssql-tools18/bin/sqlcmd -S localhost -U SA -C -Q 'SELECT 1'
+        if ($LASTEXITCODE -eq 0) {
+            exit 0
+        }
+
+        Start-Sleep -Seconds 5
+    }
+
+    docker logs $name
+    throw 'SQL Server did not become ready within two minutes.'
+  displayName: Wait for SQL Server
+  env:
+    SQLCMDPASSWORD: $(SqlPassword)
+
+- pwsh: |
+    $PSNativeCommandUseErrorActionPreference = $true
+    dotnet test Microsoft.Health.slnx `
+        -c $env:BUILD_CONFIGURATION `
+        "-p:ContinuousIntegrationBuild=true;AssemblyVersion=$env:ASSEMBLY_VERSION;FileVersion=$env:FILE_VERSION;InformationalVersion=$env:INFORMATIONAL_VERSION" `
+        --filter 'FullyQualifiedName!~Microsoft.Health.Functions.Worker.Tests.Integration' `
+        -warnaserror --no-build `
+        --logger trx `
+        --results-directory (Join-Path $env:AGENT_TEMPDIRECTORY 'TestResults')
+  displayName: Test
+  workingDirectory: $(Build.SourcesDirectory)
+  env:
+    BUILD_CONFIGURATION: ${{ parameters.buildConfiguration }}
+    ASSEMBLY_VERSION: ${{ parameters.assemblyVersion }}
+    FILE_VERSION: ${{ parameters.fileVersion }}
+    INFORMATIONAL_VERSION: ${{ parameters.informationalVersion }}
+    AzureWebJobsStorage: UseDevelopmentStorage=true
+    DurableTask__ConnectionName: AzureWebJobsStorage
+    TestSqlConnectionString: 'Server=(local);Persist Security Info=False;User ID=sa;Password=$(SqlPassword);MultipleActiveResultSets=False;Connection Timeout=30;TrustServerCertificate=true'
+
+- pwsh: |
+    $PSNativeCommandUseErrorActionPreference = $true
+    $exampleDirectory = Join-Path $env:BUILD_SOURCESDIRECTORY 'test' 'Microsoft.Health.Functions.Worker.Examples'
+    $outputDirectory = Join-Path $exampleDirectory 'bin' 'output'
+    # func start --no-build expects the compiled app in bin/output.
+    New-Item -ItemType Directory -Path $outputDirectory -Force | Out-Null
+    Copy-Item (Join-Path $exampleDirectory 'bin' $env:BUILD_CONFIGURATION 'net10.0' '*') `
+        -Destination $outputDirectory -Recurse -Force
+
+    $funcHost = Start-Job -Name AzFuncStart `
+        -ScriptBlock { & func start --port 7071 --no-build --prefix (Join-Path 'bin' 'output') } `
+        -WorkingDirectory $exampleDirectory
+    try {
+        # The integration fixture waits for the host's health endpoint before running tests.
+        $testProject = Join-Path $env:BUILD_SOURCESDIRECTORY 'test' `
+            'Microsoft.Health.Functions.Worker.Tests.Integration' 'Microsoft.Health.Functions.Worker.Tests.Integration.csproj'
+        dotnet test $testProject `
+            -c $env:BUILD_CONFIGURATION `
+            "-p:ContinuousIntegrationBuild=true;AssemblyVersion=$env:ASSEMBLY_VERSION;FileVersion=$env:FILE_VERSION;InformationalVersion=$env:INFORMATIONAL_VERSION" `
+            -warnaserror --no-build `
+            --logger trx `
+            --results-directory (Join-Path $env:AGENT_TEMPDIRECTORY 'TestResults')
+    }
+    finally {
+        Stop-Job -Id $funcHost.Id
+        Receive-Job -Id $funcHost.Id
+        Remove-Job -Id $funcHost.Id
+    }
+  displayName: Test isolated worker
+  env:
+    BUILD_CONFIGURATION: ${{ parameters.buildConfiguration }}
+    ASSEMBLY_VERSION: ${{ parameters.assemblyVersion }}
+    FILE_VERSION: ${{ parameters.fileVersion }}
+    INFORMATIONAL_VERSION: ${{ parameters.informationalVersion }}
+    AzureWebJobsStorage: UseDevelopmentStorage=true
+    AzureFunctionsJobHost__Extensions__DurableTask__StorageProvider__ConnectionName: AzureWebJobsStorage
+    AzureFunctionsJobHost__Extensions__DurableTask__HubName: WorkerIntegrationTests
+    FunctionWorkerTest__DurableTask__ConnectionString: UseDevelopmentStorage=true
+    FunctionWorkerTest__DurableTask__TaskHubName: WorkerIntegrationTests
+    FunctionWorkerTest__Port: '7071'
+
+- task: PublishTestResults@2
+  displayName: Publish test results
+  condition: succeededOrFailed()
+  inputs:
+    testResultsFormat: VSTest
+    testResultsFiles: '**/*.trx'
+    searchFolder: $(Agent.TempDirectory)/TestResults
+    mergeTestResults: true
+    failTaskOnFailedTests: true
+    failTaskOnFailureToPublishResults: true
+    testRunTitle: Packages PR
+
+- pwsh: |
+    $PSNativeCommandUseErrorActionPreference = $true
+    docker stop "azure-storage-$env:BUILD_BUILDID-$env:SYSTEM_JOBATTEMPT"
+  displayName: Stop Azurite
+  condition: and(always(), eq(variables['AzuriteStarted'], 'true'))
+
+- pwsh: |
+    $PSNativeCommandUseErrorActionPreference = $true
+    docker stop "sql-server-$env:BUILD_BUILDID-$env:SYSTEM_JOBATTEMPT"
+  displayName: Stop SQL Server
+  condition: and(always(), eq(variables['SqlServerStarted'], 'true'))
