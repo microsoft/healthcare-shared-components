@@ -99,4 +99,20 @@ public static class SqlErrorCodes
     /// Failed to update database because the database is read-only.
     /// </summary>
     public const short ReadOnlyDatabase = 3906;
+
+    /// <summary>
+    /// A transport-level error has occurred (TCP provider: error code 35).
+    /// Indicates the underlying TCP connection was reset (e.g., during VFP/SDN reprogramming).
+    /// </summary>
+    public const int TransportLevelError = 35;
+
+    /// <summary>
+    /// The semaphore timeout period has expired (TCP keepalive failure).
+    /// </summary>
+    public const int SemaphoreTimeout = 121;
+
+    /// <summary>
+    /// An existing connection was forcibly closed by the remote host.
+    /// </summary>
+    public const int ConnectionForciblyClosedByRemoteHost = 64;
 }

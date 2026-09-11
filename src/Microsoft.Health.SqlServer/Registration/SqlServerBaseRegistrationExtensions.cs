@@ -68,6 +68,8 @@ public static class SqlServerBaseRegistrationExtensions
         services.AddOptions();
         services.AddSqlRetryLogicProvider();
         services.TryAddSingleton<ISqlConnectionBuilder, DefaultSqlConnectionBuilder>();
+        services.TryAddSingleton<ISqlConnectionPoolResetter, DefaultSqlConnectionPoolResetter>();
+        services.TryAddSingleton<SqlConnectionPoolManager>();
 
         // Services to facilitate SQL connections
         // TODO: Does SqlTransactionHandler need to be registered directly? Should usage change to ITransactionHandler?
