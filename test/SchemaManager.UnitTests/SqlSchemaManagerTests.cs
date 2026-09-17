@@ -9,6 +9,9 @@ using System.Threading;
 using System.Threading.Tasks;
 using Medino;
 using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.Extensions.Options;
+using Microsoft.Health.SqlServer.Configs;
+using Microsoft.Health.SqlServer.Features.Schema;
 using Microsoft.Health.SqlServer.Features.Schema.Manager;
 using Microsoft.Health.SqlServer.Features.Schema.Manager.Exceptions;
 using Microsoft.Health.SqlServer.Features.Schema.Manager.Model;
@@ -24,12 +27,28 @@ public class SqlSchemaManagerTests
     private readonly ISchemaClient _client = Substitute.For<ISchemaClient>();
     private readonly IBaseSchemaRunner _baseSchemaRunner = Substitute.For<IBaseSchemaRunner>();
     private readonly IMediator _mediator = Substitute.For<IMediator>();
+    private readonly ISchemaWriteGate _schemaWriteGate = Substitute.For<ISchemaWriteGate>();
+    private readonly ISchemaMetrics _schemaMetrics = Substitute.For<ISchemaMetrics>();
 
     public SqlSchemaManagerTests()
     {
         _baseSchemaRunner.EnsureBaseSchemaExistsAsync(default).ReturnsForAnyArgs(Task.FromResult(true));
         _baseSchemaRunner.EnsureInstanceSchemaRecordExistsAsync(default).ReturnsForAnyArgs(Task.FromResult(true));
-        _sqlSchemaManager = new SqlSchemaManager(_baseSchemaRunner, _schemaManagerDataStore, _client, _mediator, NullLogger<SqlSchemaManager>.Instance);
+        _schemaWriteGate.CanWriteAsync(default).ReturnsForAnyArgs(Task.FromResult(true));
+        _sqlSchemaManager = CreateSchemaManager(_schemaWriteGate, _schemaMetrics);
+    }
+
+    private SqlSchemaManager CreateSchemaManager(ISchemaWriteGate schemaWriteGate, ISchemaMetrics schemaMetrics, string region = null)
+    {
+        return new SqlSchemaManager(
+            _baseSchemaRunner,
+            _schemaManagerDataStore,
+            _client,
+            _mediator,
+            schemaWriteGate,
+            schemaMetrics,
+            Options.Create(new SqlServerDataStoreConfiguration { ConnectionString = "Server=(local);Database=TestDb;", Region = region }),
+            NullLogger<SqlSchemaManager>.Instance);
     }
 
     [Fact]
@@ -178,5 +197,76 @@ public class SqlSchemaManagerTests
         await _sqlSchemaManager.ApplySchema(new MutuallyExclusiveType { Latest = false, Version = 2, Next = false });
 
         await _schemaManagerDataStore.DidNotReceive().ExecuteScriptAndCompleteSchemaVersionAsync(Arg.Is("script"), Arg.Is(2), Arg.Is(false), Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
+    public async Task GivenWriteGateReturnsFalse_WhenApplySchema_ThenSkipsWithoutApplyingAnySchema()
+    {
+        _schemaWriteGate.CanWriteAsync(default).ReturnsForAnyArgs(Task.FromResult(false));
+
+        await _sqlSchemaManager.ApplySchema(new MutuallyExclusiveType { Latest = true });
+
+        await _baseSchemaRunner.DidNotReceiveWithAnyArgs().EnsureBaseSchemaExistsAsync(default);
+        await _schemaManagerDataStore.DidNotReceiveWithAnyArgs().ExecuteScriptAndCompleteSchemaVersionAsync(default, default, default, default);
+    }
+
+    [Fact]
+    public async Task GivenWriteGateReturnsFalseAndSchemaBehind_WhenApplySchema_ThenEmitsSchemaBehindMetric()
+    {
+        SqlSchemaManager sqlSchemaManager = CreateSchemaManager(FalseGate(), _schemaMetrics, region: "eastus2");
+        _schemaManagerDataStore.GetCurrentSchemaVersionAsync(default).ReturnsForAnyArgs(Task.FromResult(3));
+        _client.GetAvailabilityAsync(Arg.Any<CancellationToken>()).ReturnsForAnyArgs(new List<AvailableVersion> { new AvailableVersion(3, "_script/3.sql", "_script/3.diff.sql"), new AvailableVersion(5, "_script/5.sql", "_script/5.diff.sql") });
+
+        await sqlSchemaManager.ApplySchema(new MutuallyExclusiveType { Latest = true });
+
+        _schemaMetrics.Received(1).SchemaBehind(Arg.Any<string>(), 3, "eastus2");
+    }
+
+    [Theory]
+    [InlineData(5)] // current
+    [InlineData(7)] // ahead
+    public async Task GivenWriteGateReturnsFalseAndSchemaNotBehind_WhenApplySchema_ThenDoesNotEmitMetric(int currentVersion)
+    {
+        SqlSchemaManager sqlSchemaManager = CreateSchemaManager(FalseGate(), _schemaMetrics);
+        _schemaManagerDataStore.GetCurrentSchemaVersionAsync(default).ReturnsForAnyArgs(Task.FromResult(currentVersion));
+        _client.GetAvailabilityAsync(Arg.Any<CancellationToken>()).ReturnsForAnyArgs(new List<AvailableVersion> { new AvailableVersion(5, "_script/5.sql", "_script/5.diff.sql") });
+
+        await sqlSchemaManager.ApplySchema(new MutuallyExclusiveType { Latest = true });
+
+        _schemaMetrics.DidNotReceiveWithAnyArgs().SchemaBehind(default, default, default);
+    }
+
+    [Fact]
+    public async Task GivenWriteGateReturnsFalseAndAvailabilityLookupFails_WhenApplySchema_ThenSkipsWithoutThrowing()
+    {
+        SqlSchemaManager sqlSchemaManager = CreateSchemaManager(FalseGate(), _schemaMetrics);
+        _schemaManagerDataStore.GetCurrentSchemaVersionAsync(default).ReturnsForAnyArgs(Task.FromResult(3));
+        _client.GetAvailabilityAsync(Arg.Any<CancellationToken>()).ReturnsForAnyArgs(Task.FromException<List<AvailableVersion>>(new SchemaManagerException("unavailable")));
+
+        await sqlSchemaManager.ApplySchema(new MutuallyExclusiveType { Latest = true });
+
+        _schemaMetrics.DidNotReceiveWithAnyArgs().SchemaBehind(default, default, default);
+        await _schemaManagerDataStore.DidNotReceiveWithAnyArgs().ExecuteScriptAndCompleteSchemaVersionAsync(default, default, default, default);
+    }
+
+    [Fact]
+    public async Task GivenWriteGateReturnsTrue_WhenApplySchema_ThenDoesNotEmitMetric()
+    {
+        _schemaManagerDataStore.GetCurrentSchemaVersionAsync(default).ReturnsForAnyArgs(Task.FromResult(1));
+        _client.GetCurrentVersionInformationAsync(Arg.Any<CancellationToken>()).ReturnsForAnyArgs(new List<CurrentVersion> { });
+        _client.GetAvailabilityAsync(Arg.Any<CancellationToken>()).ReturnsForAnyArgs(new List<AvailableVersion> { new AvailableVersion(1, "_script/1.sql", "_script/1.diff.sql"), new AvailableVersion(2, "_script/2.sql", "_script/2.diff.sql") });
+        _client.GetCompatibilityAsync(Arg.Any<CancellationToken>()).ReturnsForAnyArgs(new CompatibleVersion(1, 2));
+        _client.GetDiffScriptAsync(2, Arg.Any<CancellationToken>()).Returns("script");
+
+        await _sqlSchemaManager.ApplySchema(new MutuallyExclusiveType { Latest = false, Version = 2, Next = false });
+
+        _schemaMetrics.DidNotReceiveWithAnyArgs().SchemaBehind(default, default, default);
+    }
+
+    private static ISchemaWriteGate FalseGate()
+    {
+        ISchemaWriteGate gate = Substitute.For<ISchemaWriteGate>();
+        gate.CanWriteAsync(default).ReturnsForAnyArgs(Task.FromResult(false));
+        return gate;
     }
 }
