@@ -65,10 +65,12 @@ extends:
             useGlobalJson: true
             workingDirectory: $(Build.SourcesDirectory)
 
-        - task: gitversion-setup@4.7.0
-          displayName: Install GitVersion
+        - task: DotNetCoreCLI@2
+          displayName: 'Install Tools'
           inputs:
-            versionSpec: 6.x
+            command: custom
+            custom: tool
+            arguments: 'install GitVersion.Tool --version 6.* --global --configfile nuget.config'
 
         - task: gitversion-execute@4.7.0
           name: version
