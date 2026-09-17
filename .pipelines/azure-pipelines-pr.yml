@@ -77,7 +77,7 @@ extends:
             targetPath: $(Build.SourcesDirectory)
             configFilePath: GitVersion.yml
 
-        - template: templates/dotnet-build.yml
+        - template: /.pipelines/templates/dotnet-build.yml@self
           parameters:
             buildConfiguration: Release
             assemblyVersion: $(version.assemblySemVer)
