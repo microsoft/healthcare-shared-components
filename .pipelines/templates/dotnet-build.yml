@@ -10,19 +10,28 @@ parameters:
   type: string
 
 steps:
-- pwsh: |
-    $PSNativeCommandUseErrorActionPreference = $true
-    dotnet build Microsoft.Health.slnx `
-        -c $env:BUILD_CONFIGURATION `
-        "-p:ContinuousIntegrationBuild=true;AssemblyVersion=$env:ASSEMBLY_VERSION;FileVersion=$env:FILE_VERSION;InformationalVersion=$env:INFORMATIONAL_VERSION" `
-        -warnaserror
+- task: DotNetCoreCLI@2
+  displayName: Restore NuGet packages
+  inputs:
+    command: restore
+    projects: Microsoft.Health.slnx
+    feedsToUse: config
+    nugetConfigPath: $(Build.SourcesDirectory)/nuget.config
+    restoreArguments: >-
+      --configuration "${{ parameters.buildConfiguration }}"
+      "-p:ContinuousIntegrationBuild=true;AssemblyVersion=${{ parameters.assemblyVersion }};FileVersion=${{ parameters.fileVersion }};InformationalVersion=${{ parameters.informationalVersion }}"
+      -warnaserror
+
+- task: DotNetCoreCLI@2
   displayName: Build
-  workingDirectory: $(Build.SourcesDirectory)
-  env:
-    BUILD_CONFIGURATION: ${{ parameters.buildConfiguration }}
-    ASSEMBLY_VERSION: ${{ parameters.assemblyVersion }}
-    FILE_VERSION: ${{ parameters.fileVersion }}
-    INFORMATIONAL_VERSION: ${{ parameters.informationalVersion }}
+  inputs:
+    command: build
+    projects: Microsoft.Health.slnx
+    arguments: >-
+      --configuration "${{ parameters.buildConfiguration }}"
+      "-p:ContinuousIntegrationBuild=true;AssemblyVersion=${{ parameters.assemblyVersion }};FileVersion=${{ parameters.fileVersion }};InformationalVersion=${{ parameters.informationalVersion }}"
+      -warnaserror --no-restore
+    workingDirectory: $(Build.SourcesDirectory)
 
 - bash: bash "$BUILD_SOURCESDIRECTORY/.pipelines/scripts/install-functions-core-tools.sh"
   displayName: Install Azure Functions Core Tools
