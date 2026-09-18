@@ -18,7 +18,6 @@ steps:
     feedsToUse: config
     nugetConfigPath: $(Build.SourcesDirectory)/nuget.config
     restoreArguments: >-
-      --configuration "${{ parameters.buildConfiguration }}"
       "-p:ContinuousIntegrationBuild=true;AssemblyVersion=${{ parameters.assemblyVersion }};FileVersion=${{ parameters.fileVersion }};InformationalVersion=${{ parameters.informationalVersion }}"
       -warnaserror
 
