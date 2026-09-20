@@ -10,6 +10,17 @@ parameters:
   type: string
 
 steps:
+- pwsh: |
+    $PSNativeCommandUseErrorActionPreference = $true
+    df -h
+    docker system df
+    docker image prune --all --force
+    docker builder prune --all --force
+    df -h
+    docker system df
+  displayName: Free Docker disk space before build
+  continueOnError: true
+
 - task: DotNetCoreCLI@2
   displayName: Restore NuGet packages
   inputs:
@@ -163,3 +174,15 @@ steps:
     docker stop "sql-server-$env:BUILD_BUILDID-$env:SYSTEM_JOBATTEMPT"
   displayName: Stop SQL Server
   condition: and(always(), eq(variables['SqlServerStarted'], 'true'))
+
+- pwsh: |
+    $PSNativeCommandUseErrorActionPreference = $true
+    df -h
+    docker system df
+    docker image prune --all --force
+    docker builder prune --all --force
+    df -h
+    docker system df
+  displayName: Free Docker disk space after build
+  condition: always()
+  continueOnError: true
