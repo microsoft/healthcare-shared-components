@@ -68,22 +68,7 @@ extends:
         - task: NuGetAuthenticate@1
           displayName: Authenticate NuGet feeds
 
-        - task: DotNetCoreCLI@2
-          displayName: 'Install Tools'
-          inputs:
-            command: custom
-            custom: tool
-            arguments: 'install GitVersion.Tool --version 6.* --tool-path "$(Agent.TempDirectory)/gitversion" --configfile nuget.config'
-
-        - pwsh: |
-            $PSNativeCommandUseErrorActionPreference = $true
-            $version = & (Join-Path $env:AGENT_TEMPDIRECTORY 'gitversion/dotnet-gitversion') -config GitVersion.yml -output json -nofetch | Out-String | ConvertFrom-Json
-            Write-Host "##vso[task.setvariable variable=assemblySemVer;isOutput=true]$($version.AssemblySemVer)"
-            Write-Host "##vso[task.setvariable variable=assemblySemFileVer;isOutput=true]$($version.AssemblySemFileVer)"
-            Write-Host "##vso[task.setvariable variable=informationalVersion;isOutput=true]$($version.InformationalVersion)"
-          name: version
-          displayName: Determine version
-          workingDirectory: $(Build.SourcesDirectory)
+        - template: /.pipelines/templates/gitversion.yml@self
 
         - template: /.pipelines/templates/dotnet-build.yml@self
           parameters:

@@ -161,7 +161,7 @@ steps:
     mergeTestResults: true
     failTaskOnFailedTests: true
     failTaskOnFailureToPublishResults: true
-    testRunTitle: Packages PR
+    testRunTitle: Healthcare Shared Components Tests
 
 - pwsh: |
     $PSNativeCommandUseErrorActionPreference = $true
