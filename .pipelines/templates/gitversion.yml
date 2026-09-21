@@ -16,5 +16,5 @@ steps:
     Write-Host "##vso[task.setvariable variable=informationalVersion;isOutput=true]$($version.InformationalVersion)"
     Write-Host "##vso[task.setvariable variable=nuGetVersion;isOutput=true]$($version.MajorMinorPatch)$($version.PreReleaseLabelWithDash)"
   name: version
-  displayName: Determine version
+  displayName: Run GitVersion
   workingDirectory: $(Build.SourcesDirectory)

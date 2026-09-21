@@ -18,11 +18,11 @@ steps:
     docker builder prune --all --force
     df -h
     docker system df
-  displayName: Free Docker disk space before build
+  displayName: Pre-Build Docker Cleanup
   continueOnError: true
 
 - task: DotNetCoreCLI@2
-  displayName: Restore NuGet packages
+  displayName: Restore NuGet Packages
   inputs:
     command: restore
     projects: Microsoft.Health.slnx
@@ -33,7 +33,7 @@ steps:
       -warnaserror
 
 - task: DotNetCoreCLI@2
-  displayName: Build
+  displayName: Build Solution
   inputs:
     command: build
     projects: Microsoft.Health.slnx
@@ -99,7 +99,7 @@ steps:
         -warnaserror --no-build `
         --logger trx `
         --results-directory (Join-Path $env:AGENT_TEMPDIRECTORY 'TestResults')
-  displayName: Test
+  displayName: Run Tests
   workingDirectory: $(Build.SourcesDirectory)
   env:
     BUILD_CONFIGURATION: ${{ parameters.buildConfiguration }}
@@ -138,7 +138,7 @@ steps:
         Receive-Job -Id $funcHost.Id
         Remove-Job -Id $funcHost.Id
     }
-  displayName: Test isolated worker
+  displayName: Test Isolated Functions Worker
   env:
     BUILD_CONFIGURATION: ${{ parameters.buildConfiguration }}
     ASSEMBLY_VERSION: ${{ parameters.assemblyVersion }}
@@ -152,7 +152,7 @@ steps:
     FunctionWorkerTest__Port: '7071'
 
 - task: PublishTestResults@2
-  displayName: Publish test results
+  displayName: Publish Test Results
   condition: succeededOrFailed()
   inputs:
     testResultsFormat: VSTest
@@ -183,6 +183,6 @@ steps:
     docker builder prune --all --force
     df -h
     docker system df
-  displayName: Free Docker disk space after build
+  displayName: Post-Build Docker Cleanup
   condition: always()
   continueOnError: true

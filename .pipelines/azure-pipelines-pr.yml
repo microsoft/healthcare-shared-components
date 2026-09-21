@@ -34,11 +34,10 @@ extends:
 
     stages:
     - stage: Validate
-      displayName: Validate packages
+      displayName: Validate Packages
       jobs:
       - job: BuildAndTest
-        displayName: Build and test
-        timeoutInMinutes: 120
+        displayName: Build and Test
         steps:
         - checkout: self
           clean: true
