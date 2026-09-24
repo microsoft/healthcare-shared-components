@@ -193,7 +193,7 @@ public sealed class SchemaInitializer : IHostedService
         }
 
         SecondarySchemaStatus status = GetSecondarySchemaStatus(_schemaInformation.Current, _schemaInformation.MaximumSupportedVersion);
-        LogReadOnlySecondarySchemaStatus(status);
+        SchemaWriteGateDiagnostics.LogReadOnlySecondaryStatus(_logger, status, _schemaInformation.Current, _schemaInformation.MaximumSupportedVersion);
 
         if (status == SecondarySchemaStatus.Behind)
         {
@@ -203,47 +203,10 @@ public sealed class SchemaInitializer : IHostedService
         return false;
     }
 
-    internal static SecondarySchemaStatus GetSecondarySchemaStatus(int? currentVersion, int maximumSupportedVersion)
-    {
-        if (!currentVersion.HasValue)
-        {
-            return SecondarySchemaStatus.Unknown;
-        }
-
-        if (currentVersion < maximumSupportedVersion)
-        {
-            return SecondarySchemaStatus.Behind;
-        }
-
-        return currentVersion > maximumSupportedVersion ? SecondarySchemaStatus.Ahead : SecondarySchemaStatus.Current;
-    }
-
-    private void LogReadOnlySecondarySchemaStatus(SecondarySchemaStatus status)
-    {
-        switch (status)
-        {
-            case SecondarySchemaStatus.Unknown:
-                _logger.LogWarning("Schema write gate denied writes (read-only geo-replication secondary), but the current schema version could not be determined. Skipping schema upgrade.");
-                break;
-            case SecondarySchemaStatus.Behind:
-                _logger.LogInformation(
-                    "Schema write gate denied writes (read-only geo-replication secondary). Schema is behind. Current version: {CurrentVersion}; latest supported version: {LatestVersion}. Skipping schema upgrade.",
-                    _schemaInformation.Current,
-                    _schemaInformation.MaximumSupportedVersion);
-                break;
-            case SecondarySchemaStatus.Ahead:
-                _logger.LogWarning(
-                    "Schema write gate denied writes (read-only geo-replication secondary). The replicated schema (version {CurrentVersion}) is newer than the maximum version supported by this instance ({LatestVersion}); this instance may be running outdated code. Skipping schema upgrade.",
-                    _schemaInformation.Current,
-                    _schemaInformation.MaximumSupportedVersion);
-                break;
-            default:
-                _logger.LogInformation(
-                    "Schema write gate denied writes (read-only geo-replication secondary). Schema is current at version {CurrentVersion}. Skipping schema upgrade.",
-                    _schemaInformation.Current);
-                break;
-        }
-    }
+    // Delegates to the logic shared with SqlSchemaManager, the other independent schema-write path
+    // in this package, so both report identical status for a given (current, maximum) version pair.
+    internal static SecondarySchemaStatus GetSecondarySchemaStatus(int? currentVersion, int? maximumSupportedVersion)
+        => SchemaWriteGateDiagnostics.GetSecondarySchemaStatus(currentVersion, maximumSupportedVersion);
 
     private async Task GetCurrentSchemaVersionAsync(CancellationToken cancellationToken)
     {
