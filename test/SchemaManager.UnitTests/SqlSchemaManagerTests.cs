@@ -10,6 +10,7 @@ using System.Threading.Tasks;
 using Medino;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
+using Microsoft.Health.SqlServer;
 using Microsoft.Health.SqlServer.Configs;
 using Microsoft.Health.SqlServer.Features.Schema;
 using Microsoft.Health.SqlServer.Features.Schema.Manager;
@@ -29,25 +30,31 @@ public class SqlSchemaManagerTests
     private readonly IMediator _mediator = Substitute.For<IMediator>();
     private readonly ISchemaWriteGate _schemaWriteGate = Substitute.For<ISchemaWriteGate>();
     private readonly ISchemaMetrics _schemaMetrics = Substitute.For<ISchemaMetrics>();
+    private readonly ISqlConnectionBuilder _sqlConnectionBuilder = Substitute.For<ISqlConnectionBuilder>();
 
     public SqlSchemaManagerTests()
     {
         _baseSchemaRunner.EnsureBaseSchemaExistsAsync(default).ReturnsForAnyArgs(Task.FromResult(true));
         _baseSchemaRunner.EnsureInstanceSchemaRecordExistsAsync(default).ReturnsForAnyArgs(Task.FromResult(true));
         _schemaWriteGate.CanWriteAsync(default).ReturnsForAnyArgs(Task.FromResult(true));
+        _sqlConnectionBuilder.DefaultDatabase.Returns("TestDb");
         _sqlSchemaManager = CreateSchemaManager(_schemaWriteGate, _schemaMetrics);
     }
 
     private SqlSchemaManager CreateSchemaManager(ISchemaWriteGate schemaWriteGate, ISchemaMetrics schemaMetrics, string region = null)
     {
+        var evaluator = new SchemaWriteGateEvaluator(
+            schemaWriteGate,
+            schemaMetrics,
+            _sqlConnectionBuilder,
+            Options.Create(new SqlServerDataStoreConfiguration { ConnectionString = "Server=(local);Database=TestDb;", Region = region }),
+            NullLogger<SchemaWriteGateEvaluator>.Instance);
         return new SqlSchemaManager(
             _baseSchemaRunner,
             _schemaManagerDataStore,
             _client,
             _mediator,
-            schemaWriteGate,
-            schemaMetrics,
-            Options.Create(new SqlServerDataStoreConfiguration { ConnectionString = "Server=(local);Database=TestDb;", Region = region }),
+            evaluator,
             NullLogger<SqlSchemaManager>.Instance);
     }
 
@@ -219,7 +226,7 @@ public class SqlSchemaManagerTests
 
         await sqlSchemaManager.ApplySchema(new MutuallyExclusiveType { Latest = true });
 
-        _schemaMetrics.Received(1).SchemaBehind(Arg.Any<string>(), 3, "eastus2");
+        _schemaMetrics.Received(1).SchemaBehind("TestDb", 3, "eastus2");
     }
 
     [Theory]

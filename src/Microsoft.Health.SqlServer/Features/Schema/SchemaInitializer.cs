@@ -36,7 +36,7 @@ public sealed class SchemaInitializer : IHostedService
     private readonly SchemaInformation _schemaInformation;
     private readonly ILogger<SchemaInitializer> _logger;
     private readonly IMediator _mediator;
-    private readonly ISchemaMetrics _schemaMetrics;
+    private readonly SchemaWriteGateEvaluator _schemaWriteGateEvaluator;
     private bool _canCallGetCurrentSchema;
     public const string SchemaUpgradeLockName = "SchemaUpgrade";
 
@@ -45,14 +45,14 @@ public sealed class SchemaInitializer : IHostedService
         IOptions<SqlServerDataStoreConfiguration> options,
         SchemaInformation schemaInformation,
         IMediator mediator,
-        ISchemaMetrics schemaMetrics,
+        SchemaWriteGateEvaluator schemaWriteGateEvaluator,
         ILogger<SchemaInitializer> logger)
     {
         _serviceProvider = EnsureArg.IsNotNull(services, nameof(services));
         _options = EnsureArg.IsNotNull(options?.Value, nameof(options));
         _schemaInformation = EnsureArg.IsNotNull(schemaInformation, nameof(schemaInformation));
         _mediator = EnsureArg.IsNotNull(mediator, nameof(mediator));
-        _schemaMetrics = EnsureArg.IsNotNull(schemaMetrics, nameof(schemaMetrics));
+        _schemaWriteGateEvaluator = EnsureArg.IsNotNull(schemaWriteGateEvaluator, nameof(schemaWriteGateEvaluator));
         _logger = EnsureArg.IsNotNull(logger, nameof(logger));
     }
 
@@ -90,7 +90,7 @@ public sealed class SchemaInitializer : IHostedService
         _logger.LogInformation("Initial check of schema version is {Version}", _schemaInformation.Current?.ToString(CultureInfo.InvariantCulture) ?? "NULL");
 
         if (_options.SchemaOptions.AutomaticUpdatesEnabled &&
-            await CanApplySchemaUpdatesAsync(scope.ServiceProvider, connectionFactory.DefaultDatabase, cancellationToken).ConfigureAwait(false))
+            await CanApplySchemaUpdatesAsync(cancellationToken).ConfigureAwait(false))
         {
             SchemaUpgradeRunner _schemaUpgradeRunner = scope.ServiceProvider.GetRequiredService<SchemaUpgradeRunner>();
 
@@ -184,29 +184,10 @@ public sealed class SchemaInitializer : IHostedService
     // replicated schema is current or behind and skip the upgrade; the caller still fires the schema
     // notification so dependent jobs can start. Services not configured for geo-replication get the
     // default gate, which always permits writes, preserving existing behavior.
-    internal async Task<bool> CanApplySchemaUpdatesAsync(IServiceProvider scopedServiceProvider, string databaseName, CancellationToken cancellationToken)
-    {
-        ISchemaWriteGate schemaWriteGate = scopedServiceProvider.GetRequiredService<ISchemaWriteGate>();
-        if (await schemaWriteGate.CanWriteAsync(cancellationToken).ConfigureAwait(false))
-        {
-            return true;
-        }
-
-        SecondarySchemaStatus status = GetSecondarySchemaStatus(_schemaInformation.Current, _schemaInformation.MaximumSupportedVersion);
-        SchemaWriteGateDiagnostics.LogReadOnlySecondaryStatus(_logger, status, _schemaInformation.Current, _schemaInformation.MaximumSupportedVersion);
-
-        if (status == SecondarySchemaStatus.Behind)
-        {
-            _schemaMetrics.SchemaBehind(databaseName, _schemaInformation.Current.Value, _options.Region);
-        }
-
-        return false;
-    }
-
-    // Delegates to the logic shared with SqlSchemaManager, the other independent schema-write path
-    // in this package, so both report identical status for a given (current, maximum) version pair.
-    internal static SecondarySchemaStatus GetSecondarySchemaStatus(int? currentVersion, int? maximumSupportedVersion)
-        => SchemaWriteGateDiagnostics.GetSecondarySchemaStatus(currentVersion, maximumSupportedVersion);
+    internal Task<bool> CanApplySchemaUpdatesAsync(CancellationToken cancellationToken)
+        => _schemaWriteGateEvaluator.CanApplySchemaUpdatesAsync(
+            _ => Task.FromResult((_schemaInformation.Current, (int?)_schemaInformation.MaximumSupportedVersion)),
+            cancellationToken);
 
     private async Task GetCurrentSchemaVersionAsync(CancellationToken cancellationToken)
     {
@@ -359,23 +340,4 @@ public sealed class SchemaInitializer : IHostedService
         command.CommandText = "SELECT count(*) FROM fn_my_permissions (NULL, 'DATABASE') WHERE permission_name = 'CREATE TABLE'";
         return (int)await command.ExecuteScalarAsync(cancellationToken).ConfigureAwait(false) > 0;
     }
-}
-
-/// <summary>
-/// Describes the state of the replicated schema on a read-only geo-replication secondary,
-/// relative to the maximum version supported by the running instance.
-/// </summary>
-internal enum SecondarySchemaStatus
-{
-    /// <summary>The current schema version could not be determined.</summary>
-    Unknown,
-
-    /// <summary>The replicated schema is behind the maximum supported version.</summary>
-    Behind,
-
-    /// <summary>The replicated schema is at the maximum supported version.</summary>
-    Current,
-
-    /// <summary>The replicated schema is newer than the maximum version supported by this instance.</summary>
-    Ahead,
 }

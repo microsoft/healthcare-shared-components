@@ -8,7 +8,6 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using Medino;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
@@ -29,7 +28,7 @@ public sealed class SchemaInitializerTests
     [InlineData(7, 5, (int)SecondarySchemaStatus.Ahead)]
     public void GivenSchemaVersions_WhenGettingSecondarySchemaStatus_ReturnsExpectedStatus(int? currentVersion, int maximumSupportedVersion, int expectedStatus)
     {
-        Assert.Equal(expectedStatus, (int)SchemaInitializer.GetSecondarySchemaStatus(currentVersion, maximumSupportedVersion));
+        Assert.Equal(expectedStatus, (int)SchemaWriteGateEvaluator.GetSecondarySchemaStatus(currentVersion, maximumSupportedVersion));
     }
 
     [Fact]
@@ -37,10 +36,9 @@ public sealed class SchemaInitializerTests
     {
         ISchemaWriteGate gate = Substitute.For<ISchemaWriteGate>();
         gate.CanWriteAsync(default).ReturnsForAnyArgs(Task.FromResult(false));
-        using ServiceProvider provider = BuildScopedProvider(gate);
-        SchemaInitializer initializer = CreateInitializer(new SchemaInformation(1, 5) { Current = 3 }, NullLogger<SchemaInitializer>.Instance);
+        SchemaInitializer initializer = CreateInitializer(new SchemaInformation(1, 5) { Current = 3 }, NullLogger<SchemaWriteGateEvaluator>.Instance, gate: gate);
 
-        bool result = await initializer.CanApplySchemaUpdatesAsync(provider, "testdb", CancellationToken.None);
+        bool result = await initializer.CanApplySchemaUpdatesAsync(CancellationToken.None);
 
         Assert.False(result);
         await gate.ReceivedWithAnyArgs(1).CanWriteAsync(default);
@@ -51,10 +49,9 @@ public sealed class SchemaInitializerTests
     {
         ISchemaWriteGate gate = Substitute.For<ISchemaWriteGate>();
         gate.CanWriteAsync(default).ReturnsForAnyArgs(Task.FromResult(true));
-        using ServiceProvider provider = BuildScopedProvider(gate);
-        SchemaInitializer initializer = CreateInitializer(new SchemaInformation(1, 5) { Current = 3 }, NullLogger<SchemaInitializer>.Instance);
+        SchemaInitializer initializer = CreateInitializer(new SchemaInformation(1, 5) { Current = 3 }, NullLogger<SchemaWriteGateEvaluator>.Instance, gate: gate);
 
-        bool result = await initializer.CanApplySchemaUpdatesAsync(provider, "testdb", CancellationToken.None);
+        bool result = await initializer.CanApplySchemaUpdatesAsync(CancellationToken.None);
 
         Assert.True(result);
     }
@@ -62,62 +59,62 @@ public sealed class SchemaInitializerTests
     [Fact]
     public async Task GivenWriteGateReturnsFalseAndSchemaBehind_WhenCheckingCanApplySchemaUpdates_LogsBehind()
     {
-        var logger = new ListLogger<SchemaInitializer>();
+        var logger = new ListLogger<SchemaWriteGateEvaluator>();
         SchemaInitializer initializer = CreateInitializer(new SchemaInformation(1, 5) { Current = 3 }, logger);
 
-        await initializer.CanApplySchemaUpdatesAsync(BuildScopedProvider(FalseGate()), "testdb", CancellationToken.None);
+        await initializer.CanApplySchemaUpdatesAsync(CancellationToken.None);
 
         (LogLevel Level, string Message) entry = Assert.Single(logger.Entries);
         Assert.Equal(LogLevel.Information, entry.Level);
-        Assert.Contains("is behind", entry.Message, StringComparison.Ordinal);
+        Assert.Contains("Schema status: Behind; current version: 3; latest supported version: 5", entry.Message, StringComparison.Ordinal);
     }
 
     [Fact]
     public async Task GivenWriteGateReturnsFalseAndSchemaCurrent_WhenCheckingCanApplySchemaUpdates_LogsCurrent()
     {
-        var logger = new ListLogger<SchemaInitializer>();
+        var logger = new ListLogger<SchemaWriteGateEvaluator>();
         SchemaInitializer initializer = CreateInitializer(new SchemaInformation(1, 5) { Current = 5 }, logger);
 
-        await initializer.CanApplySchemaUpdatesAsync(BuildScopedProvider(FalseGate()), "testdb", CancellationToken.None);
+        await initializer.CanApplySchemaUpdatesAsync(CancellationToken.None);
 
         (LogLevel Level, string Message) entry = Assert.Single(logger.Entries);
         Assert.Equal(LogLevel.Information, entry.Level);
-        Assert.Contains("is current", entry.Message, StringComparison.Ordinal);
+        Assert.Contains("Schema status: Current; current version: 5; latest supported version: 5", entry.Message, StringComparison.Ordinal);
     }
 
     [Fact]
     public async Task GivenWriteGateReturnsFalseAndSchemaAhead_WhenCheckingCanApplySchemaUpdates_LogsWarning()
     {
-        var logger = new ListLogger<SchemaInitializer>();
+        var logger = new ListLogger<SchemaWriteGateEvaluator>();
         SchemaInitializer initializer = CreateInitializer(new SchemaInformation(1, 5) { Current = 7 }, logger);
 
-        await initializer.CanApplySchemaUpdatesAsync(BuildScopedProvider(FalseGate()), "testdb", CancellationToken.None);
+        await initializer.CanApplySchemaUpdatesAsync(CancellationToken.None);
 
         (LogLevel Level, string Message) entry = Assert.Single(logger.Entries);
         Assert.Equal(LogLevel.Warning, entry.Level);
-        Assert.Contains("newer than", entry.Message, StringComparison.Ordinal);
+        Assert.Contains("Schema status: Ahead; current version: 7; latest supported version: 5", entry.Message, StringComparison.Ordinal);
     }
 
     [Fact]
     public async Task GivenWriteGateReturnsFalseAndVersionUnknown_WhenCheckingCanApplySchemaUpdates_LogsWarning()
     {
-        var logger = new ListLogger<SchemaInitializer>();
+        var logger = new ListLogger<SchemaWriteGateEvaluator>();
         SchemaInitializer initializer = CreateInitializer(new SchemaInformation(1, 5) { Current = null }, logger);
 
-        await initializer.CanApplySchemaUpdatesAsync(BuildScopedProvider(FalseGate()), "testdb", CancellationToken.None);
+        await initializer.CanApplySchemaUpdatesAsync(CancellationToken.None);
 
         (LogLevel Level, string Message) entry = Assert.Single(logger.Entries);
         Assert.Equal(LogLevel.Warning, entry.Level);
-        Assert.Contains("could not be determined", entry.Message, StringComparison.Ordinal);
+        Assert.Contains("Schema status: Unknown; current version: (null); latest supported version: 5", entry.Message, StringComparison.Ordinal);
     }
 
     [Fact]
     public async Task GivenWriteGateReturnsFalseAndSchemaBehind_WhenCheckingCanApplySchemaUpdates_EmitsSchemaBehindMetric()
     {
         ISchemaMetrics metrics = Substitute.For<ISchemaMetrics>();
-        SchemaInitializer initializer = CreateInitializer(new SchemaInformation(1, 5) { Current = 3 }, NullLogger<SchemaInitializer>.Instance, metrics, region: "eastus2");
+        SchemaInitializer initializer = CreateInitializer(new SchemaInformation(1, 5) { Current = 3 }, NullLogger<SchemaWriteGateEvaluator>.Instance, metrics, region: "eastus2", databaseName: "MyDatabase");
 
-        await initializer.CanApplySchemaUpdatesAsync(BuildScopedProvider(FalseGate()), "MyDatabase", CancellationToken.None);
+        await initializer.CanApplySchemaUpdatesAsync(CancellationToken.None);
 
         metrics.Received(1).SchemaBehind("MyDatabase", 3, "eastus2");
     }
@@ -129,9 +126,9 @@ public sealed class SchemaInitializerTests
     public async Task GivenWriteGateReturnsFalseAndSchemaNotBehind_WhenCheckingCanApplySchemaUpdates_DoesNotEmitMetric(int? currentVersion)
     {
         ISchemaMetrics metrics = Substitute.For<ISchemaMetrics>();
-        SchemaInitializer initializer = CreateInitializer(new SchemaInformation(1, 5) { Current = currentVersion }, NullLogger<SchemaInitializer>.Instance, metrics);
+        SchemaInitializer initializer = CreateInitializer(new SchemaInformation(1, 5) { Current = currentVersion }, NullLogger<SchemaWriteGateEvaluator>.Instance, metrics);
 
-        await initializer.CanApplySchemaUpdatesAsync(BuildScopedProvider(FalseGate()), "MyDatabase", CancellationToken.None);
+        await initializer.CanApplySchemaUpdatesAsync(CancellationToken.None);
 
         metrics.DidNotReceiveWithAnyArgs().SchemaBehind(default, default, default);
     }
@@ -142,9 +139,9 @@ public sealed class SchemaInitializerTests
         ISchemaMetrics metrics = Substitute.For<ISchemaMetrics>();
         ISchemaWriteGate gate = Substitute.For<ISchemaWriteGate>();
         gate.CanWriteAsync(default).ReturnsForAnyArgs(Task.FromResult(true));
-        SchemaInitializer initializer = CreateInitializer(new SchemaInformation(1, 5) { Current = 3 }, NullLogger<SchemaInitializer>.Instance, metrics);
+        SchemaInitializer initializer = CreateInitializer(new SchemaInformation(1, 5) { Current = 3 }, NullLogger<SchemaWriteGateEvaluator>.Instance, metrics, gate: gate);
 
-        await initializer.CanApplySchemaUpdatesAsync(BuildScopedProvider(gate), "MyDatabase", CancellationToken.None);
+        await initializer.CanApplySchemaUpdatesAsync(CancellationToken.None);
 
         metrics.DidNotReceiveWithAnyArgs().SchemaBehind(default, default, default);
     }
@@ -156,22 +153,25 @@ public sealed class SchemaInitializerTests
         return gate;
     }
 
-    private static ServiceProvider BuildScopedProvider(ISchemaWriteGate gate)
+    private static SchemaInitializer CreateInitializer(
+        SchemaInformation schemaInformation,
+        ILogger<SchemaWriteGateEvaluator> logger,
+        ISchemaMetrics schemaMetrics = null,
+        string region = null,
+        string databaseName = "testdb",
+        ISchemaWriteGate gate = null)
     {
-        var services = new ServiceCollection();
-        services.AddSingleton(gate);
-        return services.BuildServiceProvider();
-    }
-
-    private static SchemaInitializer CreateInitializer(SchemaInformation schemaInformation, ILogger<SchemaInitializer> logger, ISchemaMetrics schemaMetrics = null, string region = null)
-    {
+        ISqlConnectionBuilder connectionBuilder = Substitute.For<ISqlConnectionBuilder>();
+        connectionBuilder.DefaultDatabase.Returns(databaseName);
+        var options = Options.Create(new SqlServerDataStoreConfiguration { Region = region });
+        var evaluator = new SchemaWriteGateEvaluator(gate ?? FalseGate(), schemaMetrics ?? Substitute.For<ISchemaMetrics>(), connectionBuilder, options, logger);
         return new SchemaInitializer(
             Substitute.For<IServiceProvider>(),
-            Options.Create(new SqlServerDataStoreConfiguration { Region = region }),
+            options,
             schemaInformation,
             Substitute.For<IMediator>(),
-            schemaMetrics ?? Substitute.For<ISchemaMetrics>(),
-            logger);
+            evaluator,
+            NullLogger<SchemaInitializer>.Instance);
     }
 
     private sealed class ListLogger<T> : ILogger<T>

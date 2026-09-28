@@ -97,6 +97,7 @@ public static class Program
         // need to skip schema writes on a read-only secondary should register their own gate.
         services.TryAddSingleton<ISchemaWriteGate, AlwaysWritableSchemaWriteGate>();
         services.TryAddSingleton<ISchemaMetrics, NoOpSchemaMetrics>();
+        services.AddSingleton<SchemaWriteGateEvaluator>();
 
         services.AddSingleton<ISchemaManager, SqlSchemaManager>();
         services.AddMedino(c => c.RegisterServicesFromAssemblyContaining<SchemaUpgradedNotification>());
