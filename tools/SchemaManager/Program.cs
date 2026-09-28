@@ -91,28 +91,13 @@ public static class Program
         services.AddScoped<SqlTransactionHandler>();
         services.AddScoped<ISchemaManagerDataStore, SchemaManagerDataStore>();
 
-        // This standalone console does not use AddSqlServerManagement, so it does not get a real
-        // geo-replication-aware ISchemaWriteGate/ISchemaMetrics. Register no-op implementations
-        // that preserve today's behavior (always permit writes, never emit metrics); hosts that
-        // need to skip schema writes on a read-only secondary should register their own gate.
-        services.TryAddSingleton<ISchemaWriteGate, AlwaysWritableSchemaWriteGate>();
-        services.TryAddSingleton<ISchemaMetrics, NoOpSchemaMetrics>();
+        services.TryAddSingleton<ISchemaWriteGate, DefaultSchemaWriteGate>();
+        services.TryAddSingleton<ISchemaMetrics, SchemaMetrics>();
         services.AddSingleton<SchemaWriteGateEvaluator>();
 
         services.AddSingleton<ISchemaManager, SqlSchemaManager>();
         services.AddMedino(c => c.RegisterServicesFromAssemblyContaining<SchemaUpgradedNotification>());
         services.AddLogging(configure => configure.AddConsole());
         return services.BuildServiceProvider();
-    }
-
-    private sealed class AlwaysWritableSchemaWriteGate : ISchemaWriteGate
-    {
-    }
-
-    private sealed class NoOpSchemaMetrics : ISchemaMetrics
-    {
-        public void SchemaBehind(string databaseName, int schemaVersion, string region)
-        {
-        }
     }
 }
