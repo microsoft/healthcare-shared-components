@@ -11,9 +11,11 @@ using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 using Microsoft.Health.SqlServer.Configs;
 using Microsoft.Health.SqlServer.Features.Client;
+using Microsoft.Health.SqlServer.Features.Schema;
 using Microsoft.Health.SqlServer.Features.Schema.Manager;
 using Microsoft.Health.SqlServer.Features.Schema.Manager.Exceptions;
 using Microsoft.Health.SqlServer.Features.Storage;
+using NSubstitute;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -35,7 +37,9 @@ public sealed class BaseSchemaRunnerTests : SqlIntegrationTestBase, IDisposable
         var sqlConnectionWrapperFactory = new SqlConnectionWrapperFactory(_sqlTransactionHandler, sqlConnection, sqlRetryLogicBaseProvider, options);
         _dataStore = new SchemaManagerDataStore(sqlConnectionWrapperFactory, options, NullLogger<SchemaManagerDataStore>.Instance);
 
-        _runner = new BaseSchemaRunner(sqlConnectionWrapperFactory, _dataStore, NullLogger<BaseSchemaRunner>.Instance);
+        ISchemaWriteGate writeGate = Substitute.For<ISchemaWriteGate>();
+        writeGate.CanWriteAsync(default).ReturnsForAnyArgs(Task.FromResult(true));
+        _runner = new BaseSchemaRunner(sqlConnectionWrapperFactory, _dataStore, writeGate, NullLogger<BaseSchemaRunner>.Instance);
     }
 
     [Fact]

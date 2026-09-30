@@ -28,6 +28,7 @@ public class SqlSchemaManager : ISchemaManager
     private readonly ISchemaClient _schemaClient;
     private readonly ILogger<SqlSchemaManager> _logger;
     private readonly IMediator _mediator;
+    private readonly SchemaWriteGateEvaluator _schemaWriteGateEvaluator;
 
     private const int RetryAttempts = 3;
 
@@ -36,12 +37,14 @@ public class SqlSchemaManager : ISchemaManager
         ISchemaManagerDataStore schemaManagerDataStore,
         ISchemaClient schemaClient,
         IMediator mediator,
+        SchemaWriteGateEvaluator schemaWriteGateEvaluator,
         ILogger<SqlSchemaManager> logger)
     {
         _baseSchemaRunner = EnsureArg.IsNotNull(baseSchemaRunner, nameof(baseSchemaRunner));
         _schemaManagerDataStore = EnsureArg.IsNotNull(schemaManagerDataStore, nameof(schemaManagerDataStore));
         _schemaClient = EnsureArg.IsNotNull(schemaClient, nameof(schemaClient));
         _mediator = EnsureArg.IsNotNull(mediator, nameof(mediator));
+        _schemaWriteGateEvaluator = EnsureArg.IsNotNull(schemaWriteGateEvaluator, nameof(schemaWriteGateEvaluator));
         _logger = EnsureArg.IsNotNull(logger, nameof(logger));
     }
 
@@ -51,6 +54,13 @@ public class SqlSchemaManager : ISchemaManager
     public virtual async Task ApplySchema(MutuallyExclusiveType type, bool force = false, CancellationToken token = default)
     {
         EnsureArg.IsNotNull(type, nameof(type));
+
+        // A geo-replication secondary receives schema updates from the primary database.
+        // Skip writes here because the secondary database is read-only.
+        if (!await _schemaWriteGateEvaluator.CanApplySchemaUpdatesAsync(GetSchemaVersionsAsync, token).ConfigureAwait(false))
+        {
+            return;
+        }
 
         try
         {
@@ -297,5 +307,29 @@ public class SqlSchemaManager : ISchemaManager
         int latestVersion = await _schemaManagerDataStore.GetCurrentSchemaVersionAsync(cancellationToken).ConfigureAwait(false);
         _logger.LogInformation("Latest schema version in db is : {Version}", latestVersion);
         return latestVersion;
+    }
+
+    // The base schema may not exist on a secondary yet, so version lookup is best-effort.
+    private async Task<(int? CurrentVersion, int? MaximumSupportedVersion)> GetSchemaVersionsAsync(CancellationToken cancellationToken)
+    {
+        int? currentVersion = null;
+        int? maximumSupportedVersion = null;
+
+        try
+        {
+            currentVersion = await _schemaManagerDataStore.GetCurrentSchemaVersionAsync(cancellationToken).ConfigureAwait(false);
+
+            List<AvailableVersion> availableVersions = await _schemaClient.GetAvailabilityAsync(cancellationToken).ConfigureAwait(false);
+            if (availableVersions != null && availableVersions.Count > 0)
+            {
+                maximumSupportedVersion = availableVersions[^1].Id;
+            }
+        }
+        catch (Exception ex) when (ex is SchemaManagerException or HttpRequestException or SqlException)
+        {
+            _logger.LogWarning(ex, "Unable to determine the current schema version while the write gate denied writes.");
+        }
+
+        return (currentVersion, maximumSupportedVersion);
     }
 }

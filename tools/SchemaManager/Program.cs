@@ -18,6 +18,7 @@ using Microsoft.Extensions.Options;
 using Microsoft.Health.SqlServer;
 using Microsoft.Health.SqlServer.Configs;
 using Microsoft.Health.SqlServer.Features.Client;
+using Microsoft.Health.SqlServer.Features.Schema;
 using Microsoft.Health.SqlServer.Features.Schema.Manager;
 using Microsoft.Health.SqlServer.Features.Schema.Messages.Notifications;
 using Microsoft.Health.SqlServer.Features.Storage;
@@ -89,6 +90,11 @@ public static class Program
         services.AddScoped<SqlConnectionWrapperFactory>();
         services.AddScoped<SqlTransactionHandler>();
         services.AddScoped<ISchemaManagerDataStore, SchemaManagerDataStore>();
+
+        services.TryAddSingleton<ISchemaWriteGate, DefaultSchemaWriteGate>();
+        services.TryAddSingleton<ISchemaMetrics, SchemaMetrics>();
+        services.AddSingleton<SchemaWriteGateEvaluator>();
+
         services.AddSingleton<ISchemaManager, SqlSchemaManager>();
         services.AddMedino(c => c.RegisterServicesFromAssemblyContaining<SchemaUpgradedNotification>());
         services.AddLogging(configure => configure.AddConsole());

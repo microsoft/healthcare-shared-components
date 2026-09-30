@@ -22,20 +22,29 @@ public class BaseSchemaRunner : IBaseSchemaRunner
 
     private readonly SqlConnectionWrapperFactory _sqlConnectionFactory;
     private readonly ISchemaManagerDataStore _schemaManagerDataStore;
+    private readonly ISchemaWriteGate _schemaWriteGate;
     private readonly ILogger<BaseSchemaRunner> _logger;
 
     public BaseSchemaRunner(
         SqlConnectionWrapperFactory sqlConnectionFactory,
         ISchemaManagerDataStore schemaManagerDataStore,
+        ISchemaWriteGate schemaWriteGate,
         ILogger<BaseSchemaRunner> logger)
     {
         _sqlConnectionFactory = EnsureArg.IsNotNull(sqlConnectionFactory);
         _schemaManagerDataStore = EnsureArg.IsNotNull(schemaManagerDataStore);
+        _schemaWriteGate = EnsureArg.IsNotNull(schemaWriteGate, nameof(schemaWriteGate));
         _logger = EnsureArg.IsNotNull(logger, nameof(logger));
     }
 
     public async Task EnsureBaseSchemaExistsAsync(CancellationToken cancellationToken)
     {
+        if (!await _schemaWriteGate.CanWriteAsync(cancellationToken).ConfigureAwait(false))
+        {
+            _logger.LogInformation("Schema write gate denied writes; skipping base schema initialization.");
+            return;
+        }
+
         BaseScriptProvider baseScriptProvider = new();
 
         await InitializeAsync(cancellationToken).ConfigureAwait(false);
