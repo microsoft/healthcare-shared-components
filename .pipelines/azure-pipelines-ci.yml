@@ -1,0 +1,87 @@
+name: Packages-CI-$(Date:yyyyMMdd)$(Rev:.r)
+
+trigger:
+  branches:
+    include:
+    - main
+  paths:
+    exclude:
+    - '*.md'
+    - '**/*.md'
+
+pr: none
+
+pool:
+  name: DevOps1ESSharedPool
+  demands:
+  - ImageOverride -equals ubuntu-internal
+
+variables:
+  buildConfiguration: Release
+
+stages:
+- stage: Build
+  displayName: Build Packages
+  jobs:
+  - job: BuildAndTest
+    displayName: Build, Test, and Pack
+    steps:
+    - checkout: self
+      clean: true
+      fetchDepth: 0
+      fetchTags: true
+      persistCredentials: false
+
+    - task: UseDotNet@2
+      displayName: Install .NET 8 SDK
+      inputs:
+        packageType: sdk
+        version: 8.x
+
+    - task: UseDotNet@2
+      displayName: Install .NET 9 SDK
+      inputs:
+        packageType: sdk
+        version: 9.x
+
+    - task: UseDotNet@2
+      displayName: Install SDK from global.json
+      inputs:
+        packageType: sdk
+        useGlobalJson: true
+        workingDirectory: $(Build.SourcesDirectory)
+
+    - task: NuGetAuthenticate@1
+      displayName: Authenticate NuGet feeds
+
+    - template: /.pipelines/templates/gitversion.yml@self
+
+    # The CD pipeline reads the package version from the run name.
+    - pwsh: Write-Host "##vso[build.updatebuildnumber]$env:PACKAGE_VERSION"
+      displayName: Set Run Name
+      env:
+        PACKAGE_VERSION: $(version.nuGetVersion)
+
+    - template: /.pipelines/templates/dotnet-build.yml@self
+      parameters:
+        buildConfiguration: $(buildConfiguration)
+        assemblyVersion: $(version.assemblySemVer)
+        fileVersion: $(version.assemblySemFileVer)
+        informationalVersion: $(version.informationalVersion)
+
+    - pwsh: |
+        $PSNativeCommandUseErrorActionPreference = $true
+        dotnet pack Microsoft.Health.slnx `
+            -c $env:BUILD_CONFIGURATION `
+            "-p:ContinuousIntegrationBuild=true;PackageVersion=$env:PACKAGE_VERSION" `
+            --no-build `
+            -o (Join-Path $env:BUILD_ARTIFACTSTAGINGDIRECTORY 'packages')
+      displayName: Pack NuGet Packages
+      workingDirectory: $(Build.SourcesDirectory)
+      env:
+        BUILD_CONFIGURATION: $(buildConfiguration)
+        PACKAGE_VERSION: $(version.nuGetVersion)
+
+    - publish: $(Build.ArtifactStagingDirectory)/packages
+      displayName: Publish Packages Artifact
+      artifact: packages
