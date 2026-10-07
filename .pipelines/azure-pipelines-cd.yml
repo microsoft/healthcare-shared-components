@@ -105,8 +105,6 @@ stages:
         IndexSources: false # Source Link is embedded at build time
         PublishSymbols: true
         SymbolServerType: TeamServices
-        SymbolsProduct: Microsoft.Health
-        SymbolsVersion: $(resources.pipeline.ci.runName)
 
     - task: GitHubRelease@1
       displayName: Create GitHub Release
