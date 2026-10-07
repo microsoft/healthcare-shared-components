@@ -12,17 +12,36 @@ parameters:
 steps:
 - pwsh: |
     $PSNativeCommandUseErrorActionPreference = $true
-    dotnet build Microsoft.Health.slnx `
-        -c $env:BUILD_CONFIGURATION `
-        "-p:ContinuousIntegrationBuild=true;AssemblyVersion=$env:ASSEMBLY_VERSION;FileVersion=$env:FILE_VERSION;InformationalVersion=$env:INFORMATIONAL_VERSION" `
-        -warnaserror
-  displayName: Build
-  workingDirectory: $(Build.SourcesDirectory)
-  env:
-    BUILD_CONFIGURATION: ${{ parameters.buildConfiguration }}
-    ASSEMBLY_VERSION: ${{ parameters.assemblyVersion }}
-    FILE_VERSION: ${{ parameters.fileVersion }}
-    INFORMATIONAL_VERSION: ${{ parameters.informationalVersion }}
+    df -h
+    docker system df
+    docker image prune --all --force
+    docker builder prune --all --force
+    df -h
+    docker system df
+  displayName: Pre-Build Docker Cleanup
+  continueOnError: true
+
+- task: DotNetCoreCLI@2
+  displayName: Restore NuGet Packages
+  inputs:
+    command: restore
+    projects: Microsoft.Health.slnx
+    feedsToUse: config
+    nugetConfigPath: $(Build.SourcesDirectory)/nuget.config
+    restoreArguments: >-
+      "-p:ContinuousIntegrationBuild=true;AssemblyVersion=${{ parameters.assemblyVersion }};FileVersion=${{ parameters.fileVersion }};InformationalVersion=${{ parameters.informationalVersion }}"
+      -warnaserror
+
+- task: DotNetCoreCLI@2
+  displayName: Build Solution
+  inputs:
+    command: build
+    projects: Microsoft.Health.slnx
+    arguments: >-
+      --configuration "${{ parameters.buildConfiguration }}"
+      "-p:ContinuousIntegrationBuild=true;AssemblyVersion=${{ parameters.assemblyVersion }};FileVersion=${{ parameters.fileVersion }};InformationalVersion=${{ parameters.informationalVersion }}"
+      -warnaserror --no-restore
+    workingDirectory: $(Build.SourcesDirectory)
 
 - bash: bash "$BUILD_SOURCESDIRECTORY/.pipelines/scripts/install-functions-core-tools.sh"
   displayName: Install Azure Functions Core Tools
@@ -80,7 +99,7 @@ steps:
         -warnaserror --no-build `
         --logger trx `
         --results-directory (Join-Path $env:AGENT_TEMPDIRECTORY 'TestResults')
-  displayName: Test
+  displayName: Run Tests
   workingDirectory: $(Build.SourcesDirectory)
   env:
     BUILD_CONFIGURATION: ${{ parameters.buildConfiguration }}
@@ -119,7 +138,7 @@ steps:
         Receive-Job -Id $funcHost.Id
         Remove-Job -Id $funcHost.Id
     }
-  displayName: Test isolated worker
+  displayName: Test Isolated Functions Worker
   env:
     BUILD_CONFIGURATION: ${{ parameters.buildConfiguration }}
     ASSEMBLY_VERSION: ${{ parameters.assemblyVersion }}
@@ -133,7 +152,7 @@ steps:
     FunctionWorkerTest__Port: '7071'
 
 - task: PublishTestResults@2
-  displayName: Publish test results
+  displayName: Publish Test Results
   condition: succeededOrFailed()
   inputs:
     testResultsFormat: VSTest
@@ -142,7 +161,7 @@ steps:
     mergeTestResults: true
     failTaskOnFailedTests: true
     failTaskOnFailureToPublishResults: true
-    testRunTitle: Packages PR
+    testRunTitle: Healthcare Shared Components Tests
 
 - pwsh: |
     $PSNativeCommandUseErrorActionPreference = $true
@@ -155,3 +174,15 @@ steps:
     docker stop "sql-server-$env:BUILD_BUILDID-$env:SYSTEM_JOBATTEMPT"
   displayName: Stop SQL Server
   condition: and(always(), eq(variables['SqlServerStarted'], 'true'))
+
+- pwsh: |
+    $PSNativeCommandUseErrorActionPreference = $true
+    df -h
+    docker system df
+    docker image prune --all --force
+    docker builder prune --all --force
+    df -h
+    docker system df
+  displayName: Post-Build Docker Cleanup
+  condition: always()
+  continueOnError: true

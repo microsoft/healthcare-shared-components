@@ -34,11 +34,10 @@ extends:
 
     stages:
     - stage: Validate
-      displayName: Validate packages
+      displayName: Validate Packages
       jobs:
       - job: BuildAndTest
-        displayName: Build and test
-        timeoutInMinutes: 120
+        displayName: Build and Test
         steps:
         - checkout: self
           clean: true
@@ -65,19 +64,12 @@ extends:
             useGlobalJson: true
             workingDirectory: $(Build.SourcesDirectory)
 
-        - task: gitversion-setup@4.7.0
-          displayName: Install GitVersion
-          inputs:
-            versionSpec: 6.x
+        - task: NuGetAuthenticate@1
+          displayName: Authenticate NuGet feeds
 
-        - task: gitversion-execute@4.7.0
-          name: version
-          displayName: Determine version
-          inputs:
-            targetPath: $(Build.SourcesDirectory)
-            configFilePath: GitVersion.yml
+        - template: /.pipelines/templates/gitversion.yml@self
 
-        - template: templates/dotnet-build.yml
+        - template: /.pipelines/templates/dotnet-build.yml@self
           parameters:
             buildConfiguration: Release
             assemblyVersion: $(version.assemblySemVer)

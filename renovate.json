@@ -12,7 +12,20 @@
   "labels": [
     "dependencies"
   ],
+  "minimumReleaseAge": "7 days",
   "packageRules": [
+    {
+      "description": "Look up public packages on nuget.org instead of the Azure Artifacts mirror in nuget.config",
+      "matchDatasources": [
+        "nuget"
+      ],
+      "matchPackageNames": [
+        "!Microsoft.Health.*"
+      ],
+      "registryUrls": [
+        "https://api.nuget.org/v3/index.json"
+      ]
+    },
     {
       "groupName": "DurableTask",
       "matchPackagePatterns": [

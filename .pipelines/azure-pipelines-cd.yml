@@ -1,0 +1,124 @@
+name: Packages-CD-$(Date:yyyyMMdd)$(Rev:.r)
+
+trigger: none
+
+pr: none
+
+resources:
+  pipelines:
+  - pipeline: ci
+    source: Packages CI
+    trigger:
+      branches:
+        include:
+        - main
+
+pool:
+  name: DevOps1ESSharedPool
+  demands:
+  - ImageOverride -equals ubuntu-internal
+
+variables:
+  gitHubServiceConnection: github.com_microsoft
+  nuGetFeed: https://microsofthealthoss.pkgs.visualstudio.com/FhirServer/_packaging/Public/nuget/v3/index.json
+
+stages:
+- stage: Release
+  displayName: Release Packages
+  jobs:
+  - job: Publish
+    displayName: Publish and Release
+    steps:
+    # Checkout populates Build.SourceVersionMessage; only the triggering commit is needed.
+    - checkout: self
+      fetchDepth: 1
+      fetchTags: false
+      persistCredentials: false
+
+    - download: ci
+      displayName: Download Packages Artifact
+      artifact: packages
+
+    # Build.SourceVersionMessage is already truncated to the commit's first line.
+    - pwsh: |
+        $title = $env:CI_VERSION
+        if ($env:BUILD_SOURCEVERSION -eq $env:CI_COMMIT_SHA) {
+            $title += ": $env:BUILD_SOURCEVERSIONMESSAGE"
+        }
+        else {
+            # Manual runs can pair a CI run with a different commit of this repository.
+            Write-Host "##vso[task.logissue type=warning]Checked-out commit $env:BUILD_SOURCEVERSION doesn't match CI commit $env:CI_COMMIT_SHA; using version-only release title."
+        }
+
+        Write-Host "##vso[task.setvariable variable=ReleaseTitle]$title"
+      displayName: Determine Release Title
+      env:
+        CI_COMMIT_SHA: $(resources.pipeline.ci.sourceCommit)
+        CI_VERSION: $(resources.pipeline.ci.runName)
+
+    - pwsh: |
+        Add-Type -AssemblyName System.IO.Compression.FileSystem
+        $symbolsDirectory = Join-Path $env:AGENT_TEMPDIRECTORY 'symbols'
+        foreach ($package in Get-ChildItem -Path (Join-Path $env:PIPELINE_WORKSPACE 'ci' 'packages') -Filter *.nupkg) {
+            $archive = [System.IO.Compression.ZipFile]::OpenRead($package.FullName)
+            try {
+                foreach ($entry in $archive.Entries | Where-Object { $_.FullName -like '*.pdb' }) {
+                    # Keep each package's lib/<tfm> layout so PDBs for different frameworks don't collide.
+                    $destination = Join-Path $symbolsDirectory $package.BaseName $entry.FullName
+                    New-Item -ItemType Directory -Path (Split-Path $destination) -Force | Out-Null
+                    [System.IO.Compression.ZipFileExtensions]::ExtractToFile($entry, $destination, $true)
+                }
+            }
+            finally {
+                $archive.Dispose()
+            }
+        }
+      displayName: Extract Symbols
+
+    - task: UseDotNet@2
+      displayName: Install SDK from global.json
+      inputs:
+        packageType: sdk
+        useGlobalJson: true
+        workingDirectory: $(Build.SourcesDirectory)
+
+    - task: NuGetAuthenticate@1
+      displayName: Authenticate NuGet Feed
+
+    # DotNetCoreCLI's "push" command can't skip duplicates, which would make reruns fail with 409 Conflict.
+    - task: DotNetCoreCLI@2
+      displayName: Push NuGet Packages
+      inputs:
+        command: custom
+        custom: nuget
+        arguments: >-
+          push "$(Pipeline.Workspace)/ci/packages/*.nupkg"
+          --source "$(nuGetFeed)"
+          --api-key AzureArtifacts
+          --skip-duplicate
+
+    - task: PublishSymbols@2
+      displayName: Publish Symbols
+      inputs:
+        SymbolsFolder: $(Agent.TempDirectory)/symbols
+        SearchPattern: '**/*.pdb'
+        IndexSources: false # Source Link is embedded at build time
+        PublishSymbols: true
+        SymbolServerType: TeamServices
+
+    - task: GitHubRelease@1
+      displayName: Create GitHub Release
+      inputs:
+        gitHubConnection: ${{ variables.gitHubServiceConnection }}
+        repositoryName: microsoft/healthcare-shared-components
+        action: create
+        target: $(resources.pipeline.ci.sourceCommit)
+        tagSource: userSpecifiedTag
+        tag: v$(resources.pipeline.ci.runName)
+        title: $(ReleaseTitle)
+        releaseNotesSource: inline
+        assets: $(Pipeline.Workspace)/ci/packages/*.nupkg
+        assetUploadMode: replace
+        addChangeLog: true
+        changeLogCompareToRelease: lastFullRelease
+        changeLogType: commitBased

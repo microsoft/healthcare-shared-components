@@ -1,8 +1,8 @@
 
-# Health Care Shared Components
+# Healthcare Shared Components
 [![Packages CI](https://github.com/microsoft/healthcare-shared-components/actions/workflows/packages-ci.yml/badge.svg)](https://github.com/microsoft/healthcare-shared-components/actions/workflows/packages-ci.yml)
 
-This repository is a collection of components used by the Microsoft Health Care team which develops services such as
+This repository is a collection of components used by the Microsoft Healthcare team which develops services such as
 the [FHIR Server for Azure](https://github.com/microsoft/fhir-server), the [IoMT FHIR Connector for Azure](https://github.com/microsoft/iomt-fhir),
 and the [Medical Imaging Server for DICOM](https://github.com/microsoft/dicom-server).
 
