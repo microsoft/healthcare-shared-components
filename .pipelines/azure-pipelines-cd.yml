@@ -29,33 +29,32 @@ stages:
   - job: Publish
     displayName: Publish and Release
     steps:
-    - checkout: none
+    # Checkout populates Build.SourceVersionMessage; only the triggering commit is needed.
+    - checkout: self
+      fetchDepth: 1
+      fetchTags: false
+      persistCredentials: false
 
     - download: ci
       displayName: Download Packages Artifact
       artifact: packages
 
-    # Run names only contain the build number, so fetch the commit subject from the CI run's changes.
+    # Build.SourceVersionMessage is already truncated to the commit's first line.
     - pwsh: |
-        $uri = "$env:SYSTEM_COLLECTIONURI$env:CI_PROJECT_ID/_apis/build/builds/$env:CI_RUN_ID/changes?api-version=7.1"
-        $changes = Invoke-RestMethod -Uri $uri -Headers @{ Authorization = "Bearer $env:SYSTEM_ACCESSTOKEN" }
-        $commit = $changes.value | Where-Object id -eq $env:CI_COMMIT_SHA | Select-Object -First 1
         $title = $env:CI_VERSION
-        if ($commit) {
-            $title += ': ' + ($commit.message -split '\r?\n', 2)[0]
+        if ($env:BUILD_SOURCEVERSION -eq $env:CI_COMMIT_SHA) {
+            $title += ": $env:BUILD_SOURCEVERSIONMESSAGE"
         }
         else {
-            Write-Host "##vso[task.logissue type=warning]Commit $env:CI_COMMIT_SHA not found in CI run $env:CI_RUN_ID; using version-only release title."
+            # Manual runs can pair a CI run with a different commit of this repository.
+            Write-Host "##vso[task.logissue type=warning]Checked-out commit $env:BUILD_SOURCEVERSION doesn't match CI commit $env:CI_COMMIT_SHA; using version-only release title."
         }
 
         Write-Host "##vso[task.setvariable variable=ReleaseTitle]$title"
       displayName: Determine Release Title
       env:
         CI_COMMIT_SHA: $(resources.pipeline.ci.sourceCommit)
-        CI_PROJECT_ID: $(resources.pipeline.ci.projectID)
-        CI_RUN_ID: $(resources.pipeline.ci.runID)
         CI_VERSION: $(resources.pipeline.ci.runName)
-        SYSTEM_ACCESSTOKEN: $(System.AccessToken)
 
     - pwsh: |
         Add-Type -AssemblyName System.IO.Compression.FileSystem
