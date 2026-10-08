@@ -16,30 +16,31 @@ using Microsoft.Extensions.Options;
 using Microsoft.Health.Client.Authentication;
 using Microsoft.Health.Client.Authentication.Exceptions;
 using NSubstitute;
-using Xunit;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Microsoft.Health.Client.UnitTests;
 
+[TestClass]
 public class CredentialProviderTests
 {
-    [Fact]
+    [TestMethod]
     public async Task GivenAnNonSetToken_WhenGetBearerTokenCalled_ThenBearerTokenFunctionIsCalled()
     {
         DateTime expirationTime = DateTime.UtcNow + TimeSpan.FromDays(1);
 
         var credentialProvider = new TestCredentialProvider(JwtTokenHelpers.GenerateToken(expirationTime));
-        Assert.Null(credentialProvider.Token);
-        Assert.Equal(default, credentialProvider.TokenExpiration);
+        Assert.IsNull(credentialProvider.Token);
+        Assert.AreEqual(default, credentialProvider.TokenExpiration);
 
         var token = await credentialProvider.GetBearerTokenAsync(cancellationToken: default);
 
-        Assert.Equal(token, credentialProvider.Token);
+        Assert.AreEqual(token, credentialProvider.Token);
 
         // JWT token expiration is limited to second precision
-        Assert.InRange(credentialProvider.TokenExpiration, expirationTime.AddSeconds(-1), expirationTime.AddSeconds(1));
+        Assert.IsInRange(expirationTime.AddSeconds(-1), expirationTime.AddSeconds(1), credentialProvider.TokenExpiration);
     }
 
-    [Fact]
+    [TestMethod]
     public async Task InvalidOAuth2ClientCredential_RetrieveToken_ShouldThrowError()
     {
         using var response = new HttpResponseMessage
@@ -66,7 +67,7 @@ public class CredentialProviderTests
         await Assert.ThrowsAsync<FailToRetrieveTokenException>(() => credentialProvider.GetBearerTokenAsync(cancellationToken: default));
     }
 
-    [Fact]
+    [TestMethod]
     public async Task InvalidOAuth2UserPasswordCredential_RetrieveToken_ShouldThrowError()
     {
         using var response = new HttpResponseMessage
@@ -95,7 +96,7 @@ public class CredentialProviderTests
         await Assert.ThrowsAsync<FailToRetrieveTokenException>(() => credentialProvider.GetBearerTokenAsync(cancellationToken: default));
     }
 
-    [Fact]
+    [TestMethod]
     public async Task GivenANonExpiredToken_WhenGetBearerTokenCalled_ThenSameBearerTokenIsReturned()
     {
         DateTime initialExpiration = DateTime.UtcNow + TimeSpan.FromDays(1);
@@ -104,7 +105,7 @@ public class CredentialProviderTests
 
         // Returns the initialToken
         var initialResult = await credentialProvider.GetBearerTokenAsync(cancellationToken: default);
-        Assert.Equal(initialToken, initialResult);
+        Assert.AreEqual(initialToken, initialResult);
 
         // Update the token that would be returned if BearerTokenFunction() was called
         DateTime updatedExpiration = DateTime.UtcNow + TimeSpan.FromDays(1);
@@ -114,10 +115,10 @@ public class CredentialProviderTests
         // Should return the initialToken since it is not within the expiration window
         var secondResult = await credentialProvider.GetBearerTokenAsync(cancellationToken: default);
 
-        Assert.Equal(initialResult, secondResult);
+        Assert.AreEqual(initialResult, secondResult);
     }
 
-    [Fact]
+    [TestMethod]
     public async Task GivenAnExpiringToken_WhenGetBearerTokenCalled_ThenNewBearerTokenIsReturned()
     {
         DateTime initialExpiration = DateTime.UtcNow + TimeSpan.FromMinutes(4);
@@ -126,7 +127,7 @@ public class CredentialProviderTests
 
         // Returns the initialToken
         var initialResult = await credentialProvider.GetBearerTokenAsync(cancellationToken: default);
-        Assert.Equal(initialToken, initialResult);
+        Assert.AreEqual(initialToken, initialResult);
 
         // Update the token that will be returned since the initial token is within the expiration window
         DateTime updatedExpiration = DateTime.UtcNow + TimeSpan.FromDays(1);
@@ -136,24 +137,24 @@ public class CredentialProviderTests
         // Should return the initialToken since it is not within the expiration window
         var secondResult = await credentialProvider.GetBearerTokenAsync(cancellationToken: default);
 
-        Assert.Equal(secondToken, secondResult);
-        Assert.NotEqual(initialResult, secondResult);
+        Assert.AreEqual(secondToken, secondResult);
+        Assert.AreNotEqual(initialResult, secondResult);
     }
 
-    [Fact]
+    [TestMethod]
     public void GivenACertificateWithAPrivateKey_WhenGeneratingClientAssertion_ThenPrivateKeyNotIncludedInX5c()
     {
         string clientId = Guid.NewGuid().ToString();
         using var certificate = BuildSelfSignedServerPfxCertificate(clientId);
 
-        Assert.True(certificate.HasPrivateKey);
+        Assert.IsTrue(certificate.HasPrivateKey);
 
         var assertion = OAuth2ClientCertificateCredentialProvider.GenerateClientAssertion(clientId, certificate, new Uri("https://example.com/token"));
 
         var handler = new JwtSecurityTokenHandler();
         var token = handler.ReadToken(assertion) as JwtSecurityToken;
 
-        Assert.NotNull(token?.Header.X5c);
+        Assert.IsNotNull(token?.Header.X5c);
         byte[] x5CBytes = Convert.FromBase64String(token.Header.X5c);
 
 #if NET9_0_OR_GREATER
@@ -162,8 +163,8 @@ public class CredentialProviderTests
         using var x5CCertificate = new X509Certificate2(x5CBytes);
 #endif
 
-        Assert.Equal($"CN={clientId}", x5CCertificate.SubjectName.Name);
-        Assert.False(x5CCertificate.HasPrivateKey);
+        Assert.AreEqual($"CN={clientId}", x5CCertificate.SubjectName.Name);
+        Assert.IsFalse(x5CCertificate.HasPrivateKey);
 
         static X509Certificate2 BuildSelfSignedServerPfxCertificate(string certificateName)
         {

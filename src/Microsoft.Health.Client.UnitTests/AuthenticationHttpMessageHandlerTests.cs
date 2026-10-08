@@ -9,10 +9,11 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Health.Client.Authentication;
 using NSubstitute;
-using Xunit;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Microsoft.Health.Client.UnitTests;
 
+[TestClass]
 public sealed class AuthenticationHttpMessageHandlerTests : IDisposable
 {
     private readonly AuthenticationHttpMessageHandler _authenticationHttpMessageHandler;
@@ -27,7 +28,7 @@ public sealed class AuthenticationHttpMessageHandlerTests : IDisposable
         };
     }
 
-    [Fact]
+    [TestMethod]
     public async Task GivenARequest_WhenSendAsyncCalled_AuthorizationHeaderIsSet()
     {
         using var invoker = new HttpMessageInvoker(_authenticationHttpMessageHandler);
@@ -35,8 +36,8 @@ public sealed class AuthenticationHttpMessageHandlerTests : IDisposable
 
         var result = await invoker.SendAsync(message, CancellationToken.None);
 
-        Assert.Equal("Bearer", result.RequestMessage.Headers.Authorization.Scheme);
-        Assert.Equal("token", result.RequestMessage.Headers.Authorization.Parameter);
+        Assert.AreEqual("Bearer", result.RequestMessage.Headers.Authorization.Scheme);
+        Assert.AreEqual("token", result.RequestMessage.Headers.Authorization.Parameter);
     }
 
     public void Dispose()
