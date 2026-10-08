@@ -4,31 +4,32 @@
 // -------------------------------------------------------------------------------------------------
 
 using System;
-using Xunit;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Microsoft.Health.Operations.UnitTests;
 
+[TestClass]
 public class OperationIdTests
 {
-    [Fact]
+    [TestMethod]
     public void GivenOperationIdClass_WhenGeneratingNewId_ThenReturnProperlyFormattedString()
     {
         string actual = OperationId.Generate();
-        Assert.True(Guid.TryParseExact(actual, OperationId.FormatSpecifier, out Guid _));
+        Assert.IsTrue(Guid.TryParseExact(actual, OperationId.FormatSpecifier, out Guid _));
     }
 
-    [Fact]
+    [TestMethod]
     public void GivenString_WhenParsingOperationIdExactly_ThenReturnGuid()
     {
         Guid expected = Guid.NewGuid();
-        Assert.Equal(expected, OperationId.ParseExact(expected.ToString(OperationId.FormatSpecifier)));
+        Assert.AreEqual(expected, OperationId.ParseExact(expected.ToString(OperationId.FormatSpecifier)));
     }
 
-    [Fact]
+    [TestMethod]
     public void GivenNull_WhenParsingOperationIdExactly_ThenThrowArgumentNullException()
         => Assert.Throws<ArgumentNullException>(() => OperationId.ParseExact(null!));
 
-    [Fact]
+    [TestMethod]
     public void GivenInvalidString_WhenParsingOperationIdExactly_ThenThrowFormatException()
         => Assert.Throws<FormatException>(() => OperationId.ParseExact(Guid.NewGuid().ToString("X")));
 }
