@@ -10,15 +10,16 @@ using Microsoft.Health.Operations.Functions.Management;
 using Microsoft.Health.Operations.Functions.Worker.DurableTask;
 using Microsoft.Health.Operations.Functions.Worker.Management;
 using NSubstitute;
-using Xunit;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Microsoft.Health.Operations.Functions.Worker.UnitTests.DurableTask;
 
+[TestClass]
 public class TaskContextExtensionsTests
 {
-    [Theory]
-    [InlineData("foo")]
-    [InlineData("{88b1375b-75ca-495d-8c85-28cfe1a94de1}")]
+    [TestMethod]
+    [DataRow("foo")]
+    [DataRow("{88b1375b-75ca-495d-8c85-28cfe1a94de1}")]
     public void GivenInvalidId_WhenValidating_ThenThrowFormatException(string instanceId)
     {
         TaskOrchestrationContext context = Substitute.For<TaskOrchestrationContext>();
@@ -27,7 +28,7 @@ public class TaskContextExtensionsTests
         Assert.Throws<FormatException>(context.ThrowIfInvalidOperationId);
     }
 
-    [Fact]
+    [TestMethod]
     public void GivenValidId_WhenValidating_ThenPass()
     {
         TaskOrchestrationContext context = Substitute.For<TaskOrchestrationContext>();
@@ -36,9 +37,9 @@ public class TaskContextExtensionsTests
         context.ThrowIfInvalidOperationId();
     }
 
-    [Theory]
-    [InlineData("bar")]
-    [InlineData("5e81a27e-3bc0-435e-8ff5-a748203e5306")]
+    [TestMethod]
+    [DataRow("bar")]
+    [DataRow("5e81a27e-3bc0-435e-8ff5-a748203e5306")]
     public void GivenInvalidIdInActivity_WhenGettingOperationId_ThenThrowFormatException(string instanceId)
     {
         TaskActivityContext context = Substitute.For<TaskActivityContext>();
@@ -47,19 +48,19 @@ public class TaskContextExtensionsTests
         Assert.Throws<FormatException>(() => context.GetOperationId());
     }
 
-    [Fact]
+    [TestMethod]
     public void GivenValidIdInActivity_WhenGettingOperationId_ThenReturnedParsedValue()
     {
         Guid expected = Guid.NewGuid();
         TaskActivityContext context = Substitute.For<TaskActivityContext>();
         context.InstanceId.Returns(expected.ToString(OperationId.FormatSpecifier));
 
-        Assert.Equal(expected, context.GetOperationId());
+        Assert.AreEqual(expected, context.GetOperationId());
     }
 
-    [Theory]
-    [InlineData("baz")]
-    [InlineData("ba9a0977-cc48-4bfc-b4c9-f160f82b888a")]
+    [TestMethod]
+    [DataRow("baz")]
+    [DataRow("ba9a0977-cc48-4bfc-b4c9-f160f82b888a")]
     public void GivenInvalidIdInOrchestration_WhenGettingOperationId_ThenThrowFormatException(string instanceId)
     {
         TaskOrchestrationContext context = Substitute.For<TaskOrchestrationContext>();
@@ -68,17 +69,17 @@ public class TaskContextExtensionsTests
         Assert.Throws<FormatException>(() => context.GetOperationId());
     }
 
-    [Fact]
+    [TestMethod]
     public void GivenValidIdInOrchestration_WhenGettingOperationId_ThenReturnedParsedValue()
     {
         Guid expected = Guid.NewGuid();
         TaskOrchestrationContext context = Substitute.For<TaskOrchestrationContext>();
         context.InstanceId.Returns(expected.ToString(OperationId.FormatSpecifier));
 
-        Assert.Equal(expected, context.GetOperationId());
+        Assert.AreEqual(expected, context.GetOperationId());
     }
 
-    [Fact]
+    [TestMethod]
     public async Task GivenRunningOrchestration_WhenQueryingCreatedAtTime_ThenReturnCreatedAtTime()
     {
         // Arrange input
@@ -97,7 +98,7 @@ public class TaskContextExtensionsTests
         DateTimeOffset actual = await context.GetCreatedAtTimeAsync(taskOptions);
 
         // Assert behavior
-        Assert.Equal(expected, actual);
+        Assert.AreEqual(expected, actual);
 
         await context
             .Received(1)

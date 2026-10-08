@@ -13,10 +13,11 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Health.Operations.Functions.Management;
 using Microsoft.Health.Operations.Functions.Worker.Management;
 using NSubstitute;
-using Xunit;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Microsoft.Health.Operations.Functions.Worker.UnitTests.Management;
 
+[TestClass]
 public class DurableOrchestrationClientActivityTests
 {
     private readonly FunctionContext _context;
@@ -31,7 +32,7 @@ public class DurableOrchestrationClientActivityTests
                 .BuildServiceProvider());
     }
 
-    [Fact]
+    [TestMethod]
     public async Task GivenNoInstance_WhenQueryingInstance_ThenReturnNull()
     {
         // Arrange input
@@ -47,13 +48,13 @@ public class DurableOrchestrationClientActivityTests
         OrchestrationInstanceMetadata? actual = await DurableTaskClientActivity.GetInstanceAsync(options, client, _context, instanceId, cts.Token);
 
         // Assert behavior
-        Assert.Null(actual);
+        Assert.IsNull(actual);
         await client
             .Received(1)
             .GetInstanceAsync(instanceId, options.GetInputsAndOutputs, cts.Token);
     }
 
-    [Fact]
+    [TestMethod]
     public async Task GivenValidInstance_WhenQueryingInstance_ThenReturnStatus()
     {
         // Arrange input
@@ -90,15 +91,15 @@ public class DurableOrchestrationClientActivityTests
 
     private static void AssertEqual(OrchestrationMetadata? expected, OrchestrationInstanceMetadata? actual)
     {
-        Assert.NotNull(actual);
+        Assert.IsNotNull(actual);
 
-        Assert.Equal(expected!.InstanceId, actual.InstanceId);
-        Assert.Equal(expected.Name, actual.Name);
-        Assert.Equal(expected.CreatedAt, actual.CreatedAt);
-        Assert.Equal(expected.LastUpdatedAt, actual.LastUpdatedAt);
-        Assert.Equal(expected.RuntimeStatus, actual.RuntimeStatus);
-        Assert.Equal(expected.SerializedCustomStatus, actual.SerializedCustomStatus);
-        Assert.Equal(expected.SerializedInput, actual.SerializedInput);
-        Assert.Equal(expected.SerializedOutput, actual.SerializedOutput);
+        Assert.AreEqual(expected!.InstanceId, actual.InstanceId);
+        Assert.AreEqual(expected.Name, actual.Name);
+        Assert.AreEqual(expected.CreatedAt, actual.CreatedAt);
+        Assert.AreEqual(expected.LastUpdatedAt, actual.LastUpdatedAt);
+        Assert.AreEqual(expected.RuntimeStatus, actual.RuntimeStatus);
+        Assert.AreEqual(expected.SerializedCustomStatus, actual.SerializedCustomStatus);
+        Assert.AreEqual(expected.SerializedInput, actual.SerializedInput);
+        Assert.AreEqual(expected.SerializedOutput, actual.SerializedOutput);
     }
 }

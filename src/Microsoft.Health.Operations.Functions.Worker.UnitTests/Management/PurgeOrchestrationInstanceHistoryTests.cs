@@ -17,10 +17,11 @@ using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Time.Testing;
 using Microsoft.Health.Operations.Functions.Worker.Management;
 using NSubstitute;
-using Xunit;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Microsoft.Health.Operations.Functions.Worker.UnitTests.Management;
 
+[TestClass]
 public class PurgeOrchestrationInstanceHistoryTests
 {
     private readonly FakeTimeProvider _timeProvider = new(UtcNow);
@@ -50,9 +51,9 @@ public class PurgeOrchestrationInstanceHistoryTests
                 .BuildServiceProvider());
     }
 
-    [Theory]
-    [InlineData(0)]
-    [InlineData(12)]
+    [TestMethod]
+    [DataRow(0)]
+    [DataRow(12)]
     public async Task GivenOrchestrationInstances_WhenPurgeCompletedDurableFunctionsHistory_ThenOrchestrationsPurgedAsync(int count)
     {
         List<OrchestrationMetadata> instances = Enumerable
@@ -78,7 +79,7 @@ public class PurgeOrchestrationInstanceHistoryTests
             await _durableClient.Received(1).PurgeInstanceAsync(id, Arg.Is<PurgeInstanceOptions>(x => x != null && x.Recursive), _context.CancellationToken);
     }
 
-    [Fact]
+    [TestMethod]
     public async Task GivenOrchestrationInstancesAndInstancesToSkipPurging_WhenPurgeCompletedDurableFunctionsHistory_ThenNoOrchestrationsPurgedAsync()
     {
         var instanceId1 = OperationId.Generate();
