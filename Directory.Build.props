@@ -88,7 +88,7 @@
         <IsPackable>false</IsPackable>
         <!-- CA1515: Consider making public types internal -->
         <!-- CA1707: Identifiers should not contain underscores -->
-        <!-- CA2007: Do not directly await a Task. xUnit1030 - Do not call ConfigureAwait in test method-->
+        <!-- CA2007: Do not directly await a Task -->
         <NoWarn>($NoWarn);CA1515;CA1707,CA2007</NoWarn>
       </PropertyGroup>
       <ItemGroup>

@@ -170,7 +170,7 @@ public class AuditHeaderReaderTests
         Assert.Throws<InvalidDefinitionException>(() => auditConfiguration.CustomAuditHeaderPrefix = prefix);
     }
 
-    [SuppressMessage("Design", "CA1002:Do not expose generic lists", Justification = "Public member used for XUnit.")]
+    [SuppressMessage("Design", "CA1002:Do not expose generic lists", Justification = "Public member used for test data.")]
     public static List<object[]> GenerateRandomHeaders(int testCount, int numberOfAuditHeaders)
     {
         var tests = new List<object[]>();

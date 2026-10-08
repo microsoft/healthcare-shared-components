@@ -73,7 +73,7 @@ internal class KeyWrapUnwrapTestProvider : IKeyTestProvider
         catch (Exception ex) when
         (
             (ex is RequestFailedException or CryptographicException or InvalidOperationException or NotSupportedException) ||
-            (ex is AggregateException && IsNameResolutionError(ex as AggregateException))
+            (ex is AggregateException ae && IsNameResolutionError(ae))
         )
         {
             return HandleKeyAccessFailure(ex);
@@ -94,7 +94,7 @@ internal class KeyWrapUnwrapTestProvider : IKeyTestProvider
 
     private static bool IsNameResolutionError(AggregateException ex)
     {
-        if (ex.InnerExceptions is null)
+        if (ex?.InnerExceptions is null)
             return false;
 
         foreach (Exception inner in ex.InnerExceptions)
