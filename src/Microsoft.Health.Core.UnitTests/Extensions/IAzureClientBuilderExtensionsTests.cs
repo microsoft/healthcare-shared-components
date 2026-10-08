@@ -15,17 +15,18 @@ using Microsoft.Extensions.Azure;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Health.Core.Extensions;
-using Xunit;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Microsoft.Health.Core.UnitTests.Extensions;
 
 [Obsolete("The retry behavior for IMDS has been improved in Azure.Identity and prevents overriding MaxRetries.")]
+[TestClass]
 public class IAzureClientBuilderExtensionsTests
 {
     private static readonly Assembly AzureCoreAssembly = typeof(TokenCredential).Assembly;
     private static readonly Assembly AzureIdentityAssembly = typeof(ManagedIdentityCredential).Assembly;
 
-    [Fact]
+    [TestMethod]
     public void GivenNoConfiguration_WhenConfiguringManagedIdentity_ThenUseDefaults()
     {
         string clientId = Guid.NewGuid().ToString();
@@ -41,11 +42,11 @@ public class IAzureClientBuilderExtensionsTests
             .Build();
 
         ManagedIdentityCredential actualCredential = AssertTokenCredential<ManagedIdentityCredential>(config);
-        Assert.Equal(clientId, GetClientId(actualCredential));
+        Assert.AreEqual(clientId, GetClientId(actualCredential));
         AssertRetryOptions(expectedOptions, actualCredential);
     }
 
-    [Fact]
+    [TestMethod]
     public void GivenConfiguration_WhenConfiguringManagedIdentity_ThenUseRetrySettings()
     {
         string clientId = Guid.NewGuid().ToString();
@@ -71,11 +72,11 @@ public class IAzureClientBuilderExtensionsTests
             .Build();
 
         ManagedIdentityCredential actualCredential = AssertTokenCredential<ManagedIdentityCredential>(config);
-        Assert.Equal(clientId, GetClientId(actualCredential));
+        Assert.AreEqual(clientId, GetClientId(actualCredential));
         AssertRetryOptions(expectedOptions, actualCredential);
     }
 
-    [Fact]
+    [TestMethod]
     public void GivenOtherCredentialType_WhenConfiguringCredential_ThenSkipAndUseDefaults()
     {
         RetryOptions expectedOptions = CreateRetryOptions(isManagedIdentity: false);
@@ -138,7 +139,7 @@ public class IAzureClientBuilderExtensionsTests
             .GetField("_credential", BindingFlags.NonPublic | BindingFlags.Instance)
             .GetValue(accessTokenCache) as TokenCredential;
 
-        return Assert.IsType<T>(tokenCredential);
+        return Assert.IsExactInstanceOfType<T>(tokenCredential);
     }
 
     private static void AssertRetryOptions<T>(RetryOptions expected, T actualCredential)
@@ -169,18 +170,18 @@ public class IAzureClientBuilderExtensionsTests
             .GetField("_maxRetries", BindingFlags.NonPublic | BindingFlags.Instance)
             .GetValue(actualRetryPolicy);
 
-        Assert.Equal(expected.MaxRetries, maxRetries);
+        Assert.AreEqual(expected.MaxRetries, maxRetries);
 
         if (typeof(T) == typeof(ManagedIdentityCredential))
         {
             Type expectedStrategyType = AzureIdentityAssembly.GetType("Azure.Identity.ImdsRetryDelayStrategy", throwOnError: true);
-            Assert.IsType(expectedStrategyType, delayStrategy);
+            Assert.IsExactInstanceOfType(delayStrategy, expectedStrategyType);
 
             var delay = (TimeSpan)expectedStrategyType
                 .GetField("_defaultDelay", BindingFlags.NonPublic | BindingFlags.Instance)
                 .GetValue(delayStrategy);
 
-            Assert.Equal(expected.Delay, delay);
+            Assert.AreEqual(expected.Delay, delay);
         }
         else
         {
@@ -194,12 +195,12 @@ public class IAzureClientBuilderExtensionsTests
             if (expectedStrategyType is null)
                 Assert.Fail($"Unexpected retry mode: {expected.Mode}");
 
-            Assert.IsType(expectedStrategyType, delayStrategy);
+            Assert.IsExactInstanceOfType(delayStrategy, expectedStrategyType);
             var delay = (TimeSpan)expectedStrategyType
                 .GetField("_delay", BindingFlags.NonPublic | BindingFlags.Instance)
                 .GetValue(delayStrategy);
 
-            Assert.Equal(expected.Delay, delay);
+            Assert.AreEqual(expected.Delay, delay);
         }
 
         if (expected.Mode == RetryMode.Exponential)
@@ -208,7 +209,7 @@ public class IAzureClientBuilderExtensionsTests
                 .GetField("_maxDelay", BindingFlags.NonPublic | BindingFlags.Instance)
                 .GetValue(delayStrategy);
 
-            Assert.Equal(expected.MaxDelay, maxDelay);
+            Assert.AreEqual(expected.MaxDelay, maxDelay);
         }
 
         // Validate ResponseBodyPolicy
@@ -218,7 +219,7 @@ public class IAzureClientBuilderExtensionsTests
             .GetField("_networkTimeout", BindingFlags.NonPublic | BindingFlags.Instance)
             .GetValue(actualResponseBodyPolicy);
 
-        Assert.Equal(expected.NetworkTimeout, networkTimeout);
+        Assert.AreEqual(expected.NetworkTimeout, networkTimeout);
     }
 
     private static string GetClientId(ManagedIdentityCredential credential)

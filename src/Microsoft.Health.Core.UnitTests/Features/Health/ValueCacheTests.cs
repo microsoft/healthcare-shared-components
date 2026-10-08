@@ -9,13 +9,14 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Time.Testing;
 using Microsoft.Health.Core.Features.Health;
-using Xunit;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Microsoft.Health.Core.UnitTests.Features.Health;
 
+[TestClass]
 public class ValueCacheTests
 {
-    [Fact]
+    [TestMethod]
     public async Task GivenNoExpiry_WhenSetAndGet_ThenReturnsValue()
     {
         ValueCache<string> cache = new ValueCache<string>();
@@ -24,10 +25,10 @@ public class ValueCacheTests
 
         string result = await cache.GetAsync();
 
-        Assert.Equal("hello", result);
+        Assert.AreEqual("hello", result);
     }
 
-    [Fact]
+    [TestMethod]
     public async Task GivenNoExpiry_WhenLongDelayBetweenSetAndGet_ThenStillReturnsValue()
     {
         FakeTimeProvider timeProvider = new(DateTimeOffset.UtcNow);
@@ -38,10 +39,10 @@ public class ValueCacheTests
 
         string result = await cache.GetAsync();
 
-        Assert.Equal("hello", result);
+        Assert.AreEqual("hello", result);
     }
 
-    [Fact]
+    [TestMethod]
     public async Task GivenExpiry_WhenValueIsFresh_ThenReturnsValue()
     {
         FakeTimeProvider timeProvider = new(DateTimeOffset.UtcNow);
@@ -52,10 +53,10 @@ public class ValueCacheTests
 
         string result = await cache.GetAsync();
 
-        Assert.Equal("hello", result);
+        Assert.AreEqual("hello", result);
     }
 
-    [Fact]
+    [TestMethod]
     public async Task GivenExpiry_WhenValueIsExactlyAtExpiry_ThenReturnsValue()
     {
         FakeTimeProvider timeProvider = new(DateTimeOffset.UtcNow);
@@ -66,10 +67,10 @@ public class ValueCacheTests
 
         string result = await cache.GetAsync();
 
-        Assert.Equal("hello", result);
+        Assert.AreEqual("hello", result);
     }
 
-    [Fact]
+    [TestMethod]
     public async Task GivenExpiry_WhenValueIsStale_ThenReturnsNull()
     {
         FakeTimeProvider timeProvider = new(DateTimeOffset.UtcNow);
@@ -80,10 +81,10 @@ public class ValueCacheTests
 
         string result = await cache.GetAsync();
 
-        Assert.Null(result);
+        Assert.IsNull(result);
     }
 
-    [Fact]
+    [TestMethod]
     public async Task GivenExpiry_WhenSetIsCalledAgainBeforeExpiry_ThenReturnsLatestValue()
     {
         FakeTimeProvider timeProvider = new(DateTimeOffset.UtcNow);
@@ -96,10 +97,10 @@ public class ValueCacheTests
 
         string result = await cache.GetAsync();
 
-        Assert.Equal("second", result);
+        Assert.AreEqual("second", result);
     }
 
-    [Fact]
+    [TestMethod]
     public async Task GivenExpiry_WhenSetIsCalledAfterExpiry_ThenFreshAgain()
     {
         FakeTimeProvider timeProvider = new(DateTimeOffset.UtcNow);
@@ -108,14 +109,14 @@ public class ValueCacheTests
         cache.Set("first");
         timeProvider.Advance(TimeSpan.FromMinutes(10));
 
-        Assert.Null(await cache.GetAsync());
+        Assert.IsNull(await cache.GetAsync());
 
         cache.Set("second");
 
-        Assert.Equal("second", await cache.GetAsync());
+        Assert.AreEqual("second", await cache.GetAsync());
     }
 
-    [Fact]
+    [TestMethod]
     public async Task GivenNoSet_WhenGetWithCancellation_ThenThrows()
     {
         ValueCache<string> cache = new ValueCache<string>();
@@ -123,24 +124,24 @@ public class ValueCacheTests
 
         await cts.CancelAsync();
 
-        await Assert.ThrowsAnyAsync<OperationCanceledException>(() => cache.GetAsync(cts.Token));
+        await Assert.ThrowsAsync<OperationCanceledException>(() => cache.GetAsync(cts.Token));
     }
 
-    [Theory]
-    [InlineData(0)]
-    [InlineData(-1)]
+    [TestMethod]
+    [DataRow(0)]
+    [DataRow(-1)]
     public void GivenNonPositiveExpiry_WhenConstructed_ThenThrows(int seconds)
     {
         Assert.Throws<ArgumentOutOfRangeException>(() => new ValueCache<string>(TimeSpan.FromSeconds(seconds)));
     }
 
-    [Fact]
+    [TestMethod]
     public void GivenInfiniteExpiry_WhenConstructed_ThenSucceeds()
     {
         _ = new ValueCache<string>(Timeout.InfiniteTimeSpan);
     }
 
-    [Fact]
+    [TestMethod]
     public async Task GivenStaleCache_WhenGetAsync_ThenLogsWarning()
     {
         FakeTimeProvider timeProvider = new FakeTimeProvider();
@@ -152,13 +153,13 @@ public class ValueCacheTests
 
         string result = await cache.GetAsync();
 
-        Assert.Null(result);
-        LogEntry entry = Assert.Single(logger.Entries, e => e.Level == LogLevel.Warning);
+        Assert.IsNull(result);
+        LogEntry entry = Assert.ContainsSingle(e => e.Level == LogLevel.Warning, logger.Entries);
         Assert.Contains("stale", entry.Message, StringComparison.OrdinalIgnoreCase);
         Assert.Contains("String", entry.Message, StringComparison.Ordinal);
     }
 
-    [Fact]
+    [TestMethod]
     public async Task GivenFreshCache_WhenGetAsync_ThenDoesNotLog()
     {
         FakeTimeProvider timeProvider = new FakeTimeProvider();
@@ -170,8 +171,8 @@ public class ValueCacheTests
 
         string result = await cache.GetAsync();
 
-        Assert.Equal("v1", result);
-        Assert.Empty(logger.Entries);
+        Assert.AreEqual("v1", result);
+        Assert.IsEmpty(logger.Entries);
     }
 
     private sealed record LogEntry(LogLevel Level, string Message);
