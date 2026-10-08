@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="MSTest.Sdk">
 
   <PropertyGroup>
     <TargetFrameworks>$(SupportedFrameworks)</TargetFrameworks>
@@ -9,10 +9,7 @@
     <PackageReference Include="Medino" />
     <PackageReference Include="Microsoft.Data.SqlClient" />
     <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" />
-    <PackageReference Include="Microsoft.NET.Test.Sdk" />
     <PackageReference Include="NSubstitute" />
-    <PackageReference Include="xunit" />
-    <PackageReference Include="xunit.runner.visualstudio" PrivateAssets="All" />
     <PackageReference Include="System.Drawing.Common" PrivateAssets="All" />
   </ItemGroup>
 

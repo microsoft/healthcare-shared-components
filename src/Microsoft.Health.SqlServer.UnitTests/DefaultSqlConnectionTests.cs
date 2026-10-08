@@ -9,10 +9,11 @@ using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.Options;
 using Microsoft.Health.SqlServer.Configs;
 using NSubstitute;
-using Xunit;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Microsoft.Health.SqlServer.UnitTests.Features;
 
+[TestClass]
 public class DefaultSqlConnectionTests
 {
     private const string DatabaseName = "Dicom";
@@ -22,119 +23,119 @@ public class DefaultSqlConnectionTests
 
     private readonly SqlRetryLogicBaseProvider _retryProvider = Substitute.For<SqlRetryLogicBaseProvider>();
 
-    [Fact]
+    [TestMethod]
     public void GivenDefaultSettings_WhenSqlConnectionRequested_ThenReturnSameValue()
     {
         IOptions<SqlServerDataStoreConfiguration> options = Options.Create(new SqlServerDataStoreConfiguration { ConnectionString = DefaultConnectionString });
         var connectionBuilder = new DefaultSqlConnectionBuilder(options, _retryProvider);
 
-        Assert.Equal(DatabaseName, connectionBuilder.DefaultDatabase);
+        Assert.AreEqual(DatabaseName, connectionBuilder.DefaultDatabase);
 
         using SqlConnection connection = connectionBuilder.GetSqlConnection();
-        Assert.Equal(ServerName, connection.DataSource);
-        Assert.Equal(DatabaseName, connection.Database);
-        Assert.Same(_retryProvider, connection.RetryLogicProvider);
+        Assert.AreEqual(ServerName, connection.DataSource);
+        Assert.AreEqual(DatabaseName, connection.Database);
+        Assert.AreSame(_retryProvider, connection.RetryLogicProvider);
     }
 
-    [Fact]
+    [TestMethod]
     public async Task GivenDefaultSettings_WhenSqlConnectionAsyncRequested_ThenReturnSameValue()
     {
         IOptions<SqlServerDataStoreConfiguration> options = Options.Create(new SqlServerDataStoreConfiguration { ConnectionString = DefaultConnectionString });
         var connectionBuilder = new DefaultSqlConnectionBuilder(options, _retryProvider);
 
-        Assert.Equal(DatabaseName, connectionBuilder.DefaultDatabase);
+        Assert.AreEqual(DatabaseName, connectionBuilder.DefaultDatabase);
 
         using SqlConnection connection = await connectionBuilder.GetSqlConnectionAsync();
-        Assert.Equal(ServerName, connection.DataSource);
-        Assert.Equal(DatabaseName, connection.Database);
-        Assert.Same(_retryProvider, connection.RetryLogicProvider);
+        Assert.AreEqual(ServerName, connection.DataSource);
+        Assert.AreEqual(DatabaseName, connection.Database);
+        Assert.AreSame(_retryProvider, connection.RetryLogicProvider);
     }
 
-    [Fact]
+    [TestMethod]
     public async Task GivenDefaultSettings_WhenSqlConnectionAsyncWithAppNameRequested_ThenReturnSameValue()
     {
         IOptions<SqlServerDataStoreConfiguration> options = Options.Create(new SqlServerDataStoreConfiguration { ConnectionString = DefaultConnectionString });
         var connectionBuilder = new DefaultSqlConnectionBuilder(options, _retryProvider);
 
-        Assert.Equal(DatabaseName, connectionBuilder.DefaultDatabase);
+        Assert.AreEqual(DatabaseName, connectionBuilder.DefaultDatabase);
 
         using SqlConnection connection = await connectionBuilder.GetSqlConnectionAsync(false, "test");
-        Assert.Equal(ServerName, connection.DataSource);
-        Assert.Equal(DatabaseName, connection.Database);
-        Assert.Same(_retryProvider, connection.RetryLogicProvider);
+        Assert.AreEqual(ServerName, connection.DataSource);
+        Assert.AreEqual(DatabaseName, connection.Database);
+        Assert.AreSame(_retryProvider, connection.RetryLogicProvider);
     }
 
-    [Theory]
-    [InlineData(DatabaseName)]
-    [InlineData(MasterDatabase)]
-    [InlineData("fhir")]
+    [TestMethod]
+    [DataRow(DatabaseName)]
+    [DataRow(MasterDatabase)]
+    [DataRow("fhir")]
     public void GivenInitialCatalogOverride_WhenSqlConnectionRequested_ThenReturnModifiedValue(string initialCatalog)
     {
         IOptions<SqlServerDataStoreConfiguration> options = Options.Create(new SqlServerDataStoreConfiguration { ConnectionString = DefaultConnectionString });
         var connectionBuilder = new DefaultSqlConnectionBuilder(options, _retryProvider);
 
-        Assert.Equal(DatabaseName, connectionBuilder.DefaultDatabase);
+        Assert.AreEqual(DatabaseName, connectionBuilder.DefaultDatabase);
 
         using SqlConnection connection = connectionBuilder.GetSqlConnection(initialCatalog);
-        Assert.Equal(ServerName, connection.DataSource);
-        Assert.Equal(initialCatalog, connection.Database);
-        Assert.Same(_retryProvider, connection.RetryLogicProvider);
+        Assert.AreEqual(ServerName, connection.DataSource);
+        Assert.AreEqual(initialCatalog, connection.Database);
+        Assert.AreSame(_retryProvider, connection.RetryLogicProvider);
     }
 
-    [Theory]
-    [InlineData(DatabaseName)]
-    [InlineData(MasterDatabase)]
-    [InlineData("fhir")]
+    [TestMethod]
+    [DataRow(DatabaseName)]
+    [DataRow(MasterDatabase)]
+    [DataRow("fhir")]
     public async Task GivenInitialCatalogOverride_WhenSqlConnectionAsyncRequested_ThenReturnModifiedValue(string initialCatalog)
     {
         IOptions<SqlServerDataStoreConfiguration> options = Options.Create(new SqlServerDataStoreConfiguration { ConnectionString = DefaultConnectionString });
         var connectionBuilder = new DefaultSqlConnectionBuilder(options, _retryProvider);
 
-        Assert.Equal(DatabaseName, connectionBuilder.DefaultDatabase);
+        Assert.AreEqual(DatabaseName, connectionBuilder.DefaultDatabase);
 
         using SqlConnection connection = await connectionBuilder.GetSqlConnectionAsync(initialCatalog);
-        Assert.Equal(ServerName, connection.DataSource);
-        Assert.Equal(initialCatalog, connection.Database);
-        Assert.Same(_retryProvider, connection.RetryLogicProvider);
+        Assert.AreEqual(ServerName, connection.DataSource);
+        Assert.AreEqual(initialCatalog, connection.Database);
+        Assert.AreSame(_retryProvider, connection.RetryLogicProvider);
     }
 
-    [Theory]
-    [InlineData(1)]
-    [InlineData(10)]
-    [InlineData(100)]
+    [TestMethod]
+    [DataRow(1)]
+    [DataRow(10)]
+    [DataRow(100)]
     public void GivenMaxPoolOverride_WhenSqlConnectionRequested_ThenReturnModifiedValue(int maxPoolSize)
     {
         IOptions<SqlServerDataStoreConfiguration> options = Options.Create(new SqlServerDataStoreConfiguration { ConnectionString = DefaultConnectionString });
         var connectionBuilder = new DefaultSqlConnectionBuilder(options, _retryProvider);
 
-        Assert.Equal(DatabaseName, connectionBuilder.DefaultDatabase);
+        Assert.AreEqual(DatabaseName, connectionBuilder.DefaultDatabase);
 
         using SqlConnection connection = connectionBuilder.GetSqlConnection(maxPoolSize: maxPoolSize);
-        Assert.Equal(ServerName, connection.DataSource);
-        Assert.Equal(DatabaseName, connection.Database);
-        Assert.Equal(maxPoolSize, new SqlConnectionStringBuilder(connection.ConnectionString).MaxPoolSize);
-        Assert.Same(_retryProvider, connection.RetryLogicProvider);
+        Assert.AreEqual(ServerName, connection.DataSource);
+        Assert.AreEqual(DatabaseName, connection.Database);
+        Assert.AreEqual(maxPoolSize, new SqlConnectionStringBuilder(connection.ConnectionString).MaxPoolSize);
+        Assert.AreSame(_retryProvider, connection.RetryLogicProvider);
     }
 
-    [Theory]
-    [InlineData(1)]
-    [InlineData(10)]
-    [InlineData(100)]
+    [TestMethod]
+    [DataRow(1)]
+    [DataRow(10)]
+    [DataRow(100)]
     public async Task GivenMaxPoolOverride_WhenSqlConnectionAsyncRequested_ThenReturnModifiedValue(int maxPoolSize)
     {
         IOptions<SqlServerDataStoreConfiguration> options = Options.Create(new SqlServerDataStoreConfiguration { ConnectionString = DefaultConnectionString });
         var connectionBuilder = new DefaultSqlConnectionBuilder(options, _retryProvider);
 
-        Assert.Equal(DatabaseName, connectionBuilder.DefaultDatabase);
+        Assert.AreEqual(DatabaseName, connectionBuilder.DefaultDatabase);
 
         using SqlConnection connection = await connectionBuilder.GetSqlConnectionAsync(maxPoolSize: maxPoolSize);
-        Assert.Equal(ServerName, connection.DataSource);
-        Assert.Equal(DatabaseName, connection.Database);
-        Assert.Equal(maxPoolSize, new SqlConnectionStringBuilder(connection.ConnectionString).MaxPoolSize);
-        Assert.Same(_retryProvider, connection.RetryLogicProvider);
+        Assert.AreEqual(ServerName, connection.DataSource);
+        Assert.AreEqual(DatabaseName, connection.Database);
+        Assert.AreEqual(maxPoolSize, new SqlConnectionStringBuilder(connection.ConnectionString).MaxPoolSize);
+        Assert.AreSame(_retryProvider, connection.RetryLogicProvider);
     }
 
-    [Fact]
+    [TestMethod]
     [Obsolete("Test should be removed when AuthenticationType is removed.")]
     public void GivenManagedIdentity_WhenSqlConnectionRequested_ThenReturnModifiedValue()
     {
@@ -147,19 +148,19 @@ public class DefaultSqlConnectionTests
 
         var connectionBuilder = new DefaultSqlConnectionBuilder(options, _retryProvider);
 
-        Assert.Equal(DatabaseName, connectionBuilder.DefaultDatabase);
+        Assert.AreEqual(DatabaseName, connectionBuilder.DefaultDatabase);
 
         using SqlConnection connection = connectionBuilder.GetSqlConnection();
-        Assert.Equal(ServerName, connection.DataSource);
-        Assert.Equal(DatabaseName, connection.Database);
-        Assert.Same(_retryProvider, connection.RetryLogicProvider);
+        Assert.AreEqual(ServerName, connection.DataSource);
+        Assert.AreEqual(DatabaseName, connection.Database);
+        Assert.AreSame(_retryProvider, connection.RetryLogicProvider);
 
         var actual = new SqlConnectionStringBuilder(connection.ConnectionString);
-        Assert.Equal(SqlAuthenticationMethod.ActiveDirectoryManagedIdentity, actual.Authentication);
-        Assert.Equal(options.Value.ManagedIdentityClientId, actual.UserID);
+        Assert.AreEqual(SqlAuthenticationMethod.ActiveDirectoryManagedIdentity, actual.Authentication);
+        Assert.AreEqual(options.Value.ManagedIdentityClientId, actual.UserID);
     }
 
-    [Fact]
+    [TestMethod]
     [Obsolete("Test should be removed when AuthenticationType is removed.")]
     public async Task GivenManagedIdentity_WhenSqlConnectionAsyncRequested_ThenReturnModifiedValue()
     {
@@ -172,15 +173,15 @@ public class DefaultSqlConnectionTests
 
         var connectionBuilder = new DefaultSqlConnectionBuilder(options, _retryProvider);
 
-        Assert.Equal(DatabaseName, connectionBuilder.DefaultDatabase);
+        Assert.AreEqual(DatabaseName, connectionBuilder.DefaultDatabase);
 
         using SqlConnection connection = await connectionBuilder.GetSqlConnectionAsync();
-        Assert.Equal(ServerName, connection.DataSource);
-        Assert.Equal(DatabaseName, connection.Database);
-        Assert.Same(_retryProvider, connection.RetryLogicProvider);
+        Assert.AreEqual(ServerName, connection.DataSource);
+        Assert.AreEqual(DatabaseName, connection.Database);
+        Assert.AreSame(_retryProvider, connection.RetryLogicProvider);
 
         var actual = new SqlConnectionStringBuilder(connection.ConnectionString);
-        Assert.Equal(SqlAuthenticationMethod.ActiveDirectoryManagedIdentity, actual.Authentication);
-        Assert.Equal(options.Value.ManagedIdentityClientId, actual.UserID);
+        Assert.AreEqual(SqlAuthenticationMethod.ActiveDirectoryManagedIdentity, actual.Authentication);
+        Assert.AreEqual(options.Value.ManagedIdentityClientId, actual.UserID);
     }
 }

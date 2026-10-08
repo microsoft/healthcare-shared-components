@@ -13,10 +13,11 @@ using Azure.Identity;
 using Microsoft.Data.SqlClient;
 using NSubstitute;
 using NSubstitute.Core;
-using Xunit;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Microsoft.Health.SqlServer.UnitTests;
 
+[TestClass]
 public class WorkloadIdentityAuthenticationProviderTests
 {
     private const string DefaultAuthority = "https://login.microsoftonline.com/";
@@ -24,9 +25,9 @@ public class WorkloadIdentityAuthenticationProviderTests
 
     private readonly WorkloadIdentityCredential _credential = Substitute.For<WorkloadIdentityCredential>();
 
-    [Theory]
-    [InlineData("https://database.windows.net")]
-    [InlineData("https://database.windows.net/.default")]
+    [TestMethod]
+    [DataRow("https://database.windows.net")]
+    [DataRow("https://database.windows.net/.default")]
     public async Task GivenDifferentResources_WhenFetchingToken_ThenNormalizeScope(string resource)
     {
         AccessToken accessToken = new(Guid.NewGuid().ToString(), DateTimeOffset.UtcNow);
@@ -44,9 +45,9 @@ public class WorkloadIdentityAuthenticationProviderTests
             .GetTokenAsync(Arg.Is<TokenRequestContext>(c => c.Scopes.Single() == DefaultResource), Arg.Any<CancellationToken>());
     }
 
-    [Theory]
-    [InlineData("https://login.microsoftonline.com/foo", "https://login.microsoftonline.com/")]
-    [InlineData("https://login.microsoftonline.us/", "https://login.microsoftonline.us/")]
+    [TestMethod]
+    [DataRow("https://login.microsoftonline.com/foo", "https://login.microsoftonline.com/")]
+    [DataRow("https://login.microsoftonline.us/", "https://login.microsoftonline.us/")]
     public async Task GivenDifferentAuthorities_WhenFetchingToken_ThenTrimAfterFinalSlash(string authority, string expected)
     {
         AccessToken accessToken = new(Guid.NewGuid().ToString(), DateTimeOffset.UtcNow);
@@ -57,16 +58,16 @@ public class WorkloadIdentityAuthenticationProviderTests
 
         WorkloadIdentityAuthenticationProvider provider = new(o =>
         {
-            Assert.Equal(expected, o.AuthorityHost.OriginalString);
+            Assert.AreEqual(expected, o.AuthorityHost.OriginalString);
             return _credential;
         });
 
         SqlAuthenticationToken actual = await provider.AcquireTokenAsync(MockSqlAuthenticationParameters.Create(authority: authority));
 
-        Assert.Equal(accessToken.Token, actual.AccessToken);
+        Assert.AreEqual(accessToken.Token, actual.AccessToken);
     }
 
-    [Fact]
+    [TestMethod]
     public async Task GivenNoUserId_WhenFetchingToken_ThenNoClientId()
     {
         AccessToken accessToken = new(Guid.NewGuid().ToString(), DateTimeOffset.UtcNow);
@@ -77,21 +78,21 @@ public class WorkloadIdentityAuthenticationProviderTests
 
         WorkloadIdentityAuthenticationProvider provider = new(o =>
         {
-            Assert.Null(o.ClientId);
+            Assert.IsNull(o.ClientId);
             return _credential;
         });
 
         SqlAuthenticationToken actual = await provider.AcquireTokenAsync(MockSqlAuthenticationParameters.Create(userId: null));
 
-        Assert.Equal(accessToken.Token, actual.AccessToken);
-        Assert.Equal(accessToken.ExpiresOn, actual.ExpiresOn);
+        Assert.AreEqual(accessToken.Token, actual.AccessToken);
+        Assert.AreEqual(accessToken.ExpiresOn, actual.ExpiresOn);
 
         await _credential
             .Received(1)
             .GetTokenAsync(Arg.Is<TokenRequestContext>(c => c.Scopes.Single() == DefaultResource), Arg.Any<CancellationToken>());
     }
 
-    [Fact]
+    [TestMethod]
     public async Task GivenUserId_WhenFetchingToken_ThenUseAsClientId()
     {
         string UserId = Guid.NewGuid().ToString();
@@ -103,21 +104,21 @@ public class WorkloadIdentityAuthenticationProviderTests
 
         WorkloadIdentityAuthenticationProvider provider = new(o =>
         {
-            Assert.Equal(UserId, o.ClientId);
+            Assert.AreEqual(UserId, o.ClientId);
             return _credential;
         });
 
         SqlAuthenticationToken actual = await provider.AcquireTokenAsync(MockSqlAuthenticationParameters.Create(userId: UserId));
 
-        Assert.Equal(accessToken.Token, actual.AccessToken);
-        Assert.Equal(accessToken.ExpiresOn, actual.ExpiresOn);
+        Assert.AreEqual(accessToken.Token, actual.AccessToken);
+        Assert.AreEqual(accessToken.ExpiresOn, actual.ExpiresOn);
 
         await _credential
             .Received(1)
             .GetTokenAsync(Arg.Is<TokenRequestContext>(c => c.Scopes.Single() == DefaultResource), Arg.Any<CancellationToken>());
     }
 
-    [Fact]
+    [TestMethod]
     [SuppressMessage("Reliability", "CA2012:Use ValueTasks correctly", Justification = "ValueTask only used once.")]
     public async Task GivenTimeout_WhenFetchingToken_ThenThrowException()
     {
@@ -141,12 +142,12 @@ public class WorkloadIdentityAuthenticationProviderTests
         }
     }
 
-    [Theory]
-    [InlineData(SqlAuthenticationMethod.ActiveDirectoryManagedIdentity, true)]
-    [InlineData(SqlAuthenticationMethod.ActiveDirectoryMSI, true)]
-    [InlineData(SqlAuthenticationMethod.ActiveDirectoryDefault, false)]
+    [TestMethod]
+    [DataRow(SqlAuthenticationMethod.ActiveDirectoryManagedIdentity, true)]
+    [DataRow(SqlAuthenticationMethod.ActiveDirectoryMSI, true)]
+    [DataRow(SqlAuthenticationMethod.ActiveDirectoryDefault, false)]
     public void GivenAuthenticationMethod_WhenCheckSupport_ThenReturnTrueForManagedIdentity(SqlAuthenticationMethod authenticationMethod, bool expected)
-        => Assert.Equal(expected, new WorkloadIdentityAuthenticationProvider().IsSupported(authenticationMethod));
+        => Assert.AreEqual(expected, new WorkloadIdentityAuthenticationProvider().IsSupported(authenticationMethod));
 
     private static class MockSqlAuthenticationParameters
     {

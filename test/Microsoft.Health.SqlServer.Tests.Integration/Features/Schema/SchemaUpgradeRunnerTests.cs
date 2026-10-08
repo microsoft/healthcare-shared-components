@@ -16,22 +16,23 @@ using Microsoft.Health.SqlServer.Features.Schema;
 using Microsoft.Health.SqlServer.Features.Schema.Manager;
 using Microsoft.Health.SqlServer.Features.Storage;
 using NSubstitute;
-using Xunit;
-using Xunit.Abstractions;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Microsoft.Health.SqlServer.Tests.Integration.Features.Schema;
 
-public sealed class SchemaUpgradeRunnerTests : SqlIntegrationTestBase, IDisposable
+[TestClass]
+public sealed class SchemaUpgradeRunnerTests : SqlIntegrationTestBase
 {
     private SchemaUpgradeRunner _runner;
     private SchemaManagerDataStore _schemaDataStore;
     private readonly SqlTransactionHandler _sqlTransactionHandler = new SqlTransactionHandler();
 
-    public SchemaUpgradeRunnerTests(ITestOutputHelper outputHelper)
-        : base(outputHelper)
+    public SchemaUpgradeRunnerTests(TestContext testContext)
+        : base(testContext)
     {
     }
 
+    [TestInitialize]
     [SuppressMessage("Performance", "CA1849:Call async methods when in an async method", Justification = "BeginTransaction is used by underlying implementation.")]
     public override async Task InitializeAsync()
     {
@@ -49,44 +50,44 @@ public sealed class SchemaUpgradeRunnerTests : SqlIntegrationTestBase, IDisposab
         _runner = new SchemaUpgradeRunner(new ScriptProvider<SchemaVersion>(), new BaseScriptProvider(), NullLogger<SchemaUpgradeRunner>.Instance, sqlConnectionWrapperFactory, _schemaDataStore);
     }
 
-    [Fact]
+    [TestMethod]
     public async Task ApplyBaseSchema_DoesNotExist_Succeeds()
     {
-        Assert.False(await _schemaDataStore.BaseSchemaExistsAsync(CancellationToken.None));
+        Assert.IsFalse(await _schemaDataStore.BaseSchemaExistsAsync(CancellationToken.None));
         await _runner.ApplyBaseSchemaAsync(CancellationToken.None);
-        Assert.True(await _schemaDataStore.BaseSchemaExistsAsync(CancellationToken.None));
+        Assert.IsTrue(await _schemaDataStore.BaseSchemaExistsAsync(CancellationToken.None));
     }
 
-    [Fact]
+    [TestMethod]
     public async Task ApplySchema_BaseSchemaDoesNotExist_Fails()
     {
-        Assert.False(await _schemaDataStore.BaseSchemaExistsAsync(CancellationToken.None));
+        Assert.IsFalse(await _schemaDataStore.BaseSchemaExistsAsync(CancellationToken.None));
         var outerException = await Assert.ThrowsAsync<SqlException>(() => _runner.ApplySchemaAsync(1, true, CancellationToken.None));
         Assert.Contains("Could not find stored procedure 'dbo.UpsertSchemaVersion'.", outerException.Message, StringComparison.Ordinal);
     }
 
-    [Fact]
+    [TestMethod]
     public async Task ApplySchema_BaseSchemaExists_Succeeds()
     {
         await _runner.ApplyBaseSchemaAsync(CancellationToken.None);
         await _runner.ApplySchemaAsync(1, applyFullSchemaSnapshot: true, CancellationToken.None);
         var version = await _schemaDataStore.GetCurrentSchemaVersionAsync(CancellationToken.None);
-        Assert.Equal(1, version);
+        Assert.AreEqual(1, version);
     }
 
-    [Fact]
+    [TestMethod]
     public async Task ApplySchema_UsingDiff_Succeeds()
     {
         await _runner.ApplyBaseSchemaAsync(CancellationToken.None);
         await _runner.ApplySchemaAsync(2, applyFullSchemaSnapshot: true, CancellationToken.None);
         var version = await _schemaDataStore.GetCurrentSchemaVersionAsync(CancellationToken.None);
-        Assert.Equal(2, version);
+        Assert.AreEqual(2, version);
         await _runner.ApplySchemaAsync(3, applyFullSchemaSnapshot: false, CancellationToken.None);
         version = await _schemaDataStore.GetCurrentSchemaVersionAsync(CancellationToken.None);
-        Assert.Equal(3, version);
+        Assert.AreEqual(3, version);
     }
 
-    [Fact]
+    [TestMethod]
     public async Task ApplyFullSchemaAndDiffScript_OnPreviouslyFailedAttempt_Succeeds()
     {
         await _runner.ApplyBaseSchemaAsync(CancellationToken.None);
@@ -100,18 +101,22 @@ public sealed class SchemaUpgradeRunnerTests : SqlIntegrationTestBase, IDisposab
         // attempt 2 : To apply schemaVersion-2 passes
         await _runner.ApplySchemaAsync(2, applyFullSchemaSnapshot: true, CancellationToken.None);
         var version = await _schemaDataStore.GetCurrentSchemaVersionAsync(CancellationToken.None);
-        Assert.Equal(2, version);
+        Assert.AreEqual(2, version);
 
         // diff script for version 3 should pass even if SchemaVersion table has an entry with 'failed' status for version 3
         await _schemaDataStore.ExecuteScriptAsync("Insert into SchemaVersion values (3, 'failed')", CancellationToken.None);
         await _runner.ApplySchemaAsync(3, applyFullSchemaSnapshot: false, CancellationToken.None);
         version = await _schemaDataStore.GetCurrentSchemaVersionAsync(CancellationToken.None);
-        Assert.Equal(3, version);
+        Assert.AreEqual(3, version);
     }
 
-    public void Dispose()
+    public override ValueTask DisposeAsync(bool disposing)
     {
-        _sqlTransactionHandler.Dispose();
-        GC.SuppressFinalize(this);
+        if (disposing)
+        {
+            _sqlTransactionHandler.Dispose();
+        }
+
+        return ValueTask.CompletedTask;
     }
 }
