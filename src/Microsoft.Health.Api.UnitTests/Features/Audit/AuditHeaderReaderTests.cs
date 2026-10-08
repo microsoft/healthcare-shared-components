@@ -15,11 +15,12 @@ using Microsoft.Health.Api.Features.Audit;
 using Microsoft.Health.Core.Configs;
 using Microsoft.Health.Core.Exceptions;
 using NSubstitute;
-using Xunit;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Microsoft.Health.Api.UnitTests.Features.Audit;
 
 [SuppressMessage("Security", "CA5394:Do not use insecure randomness", Justification = "Values do not need to be cryptographically secure.")]
+[TestClass]
 public class AuditHeaderReaderTests
 {
     private readonly DefaultHttpContext _httpContext;
@@ -39,14 +40,14 @@ public class AuditHeaderReaderTests
         _optionsAuditConfiguration.Value.Returns(auditConfiguration);
     }
 
-    [Fact]
+    [TestMethod]
     public void GivenNoCustomHeaders_WhenHeadersRead_ThenEmptyDictionaryReturned()
     {
         var headerReader = new AuditHeaderReader(_optionsAuditConfiguration);
 
         // No headers at all
         var result = headerReader.Read(_httpContext);
-        Assert.Empty(result);
+        Assert.IsEmpty(result);
 
         // Some non-audit headers
         var headers = GenerateRandomHeaders(1, 0).ToList()[0][0] as Dictionary<string, string>;
@@ -56,11 +57,11 @@ public class AuditHeaderReaderTests
         }
 
         result = headerReader.Read(_httpContext);
-        Assert.Empty(result);
+        Assert.IsEmpty(result);
     }
 
-    [Theory]
-    [MemberData(nameof(GenerateRandomHeaders), 10, -1)]
+    [TestMethod]
+    [DynamicData(nameof(GenerateRandomHeaders), 10, -1)]
     [SuppressMessage("Design", "CA1062:Validate arguments of public methods", Justification = "Headers are not null.")]
     public void GivenMixedHeaders_WhenHeadersRead_ThenOnlyCorrectCustomHeadersReturn(IReadOnlyDictionary<string, string> headers, int expectedCustomHeaderCount)
     {
@@ -73,10 +74,10 @@ public class AuditHeaderReaderTests
         }
 
         var result = headerReader.Read(_httpContext);
-        Assert.Equal(result.Count, expectedCustomHeaderCount);
+        Assert.AreEqual(expectedCustomHeaderCount, result.Count);
     }
 
-    [Fact]
+    [TestMethod]
     [SuppressMessage("Usage", "ASP0019:Suggest using IHeaderDictionary.Append or the indexer", Justification = "Desired behavior adds empty headers.")]
     public void GivenHeaderWithNoValue_WhenHeadersRead_ThenHeaderNameWithEmptyValueIsReturned()
     {
@@ -89,25 +90,25 @@ public class AuditHeaderReaderTests
 
         var result = headerReader.Read(_httpContext);
 
-        Assert.Equal(5, result.Count);
+        Assert.AreEqual(5, result.Count);
 
         foreach (var customHeader in result)
         {
-            Assert.True(string.IsNullOrEmpty(customHeader.Value));
+            Assert.IsTrue(string.IsNullOrEmpty(customHeader.Value));
         }
     }
 
-    [Fact]
+    [TestMethod]
     public void GivenMultipleValuesOfSameHeader_WhenHeadersRead_ThenConcatenatedStringValueReturend()
     {
         var headerReader = new AuditHeaderReader(_optionsAuditConfiguration);
         _httpContext.Request.Headers.Append(_optionsAuditConfiguration.Value.CustomAuditHeaderPrefix + "repeated", new StringValues(["item1", "item2"]));
 
         var result = headerReader.Read(_httpContext);
-        Assert.Equal("item1,item2", result[_optionsAuditConfiguration.Value.CustomAuditHeaderPrefix + "repeated"]);
+        Assert.AreEqual("item1,item2", result[_optionsAuditConfiguration.Value.CustomAuditHeaderPrefix + "repeated"]);
     }
 
-    [Fact]
+    [TestMethod]
     public void GivenTooManyCustomHeaders_WhenHeadersRead_ThenAuditHeaderCountExceededExceptionIsThrown()
     {
         var headerReader = new AuditHeaderReader(_optionsAuditConfiguration);
@@ -121,7 +122,7 @@ public class AuditHeaderReaderTests
         Assert.Throws<AuditHeaderCountExceededException>(() => headerReader.Read(_httpContext));
     }
 
-    [Fact]
+    [TestMethod]
     public void GivenAHeaderWithTooLargeValue_WhenHeadersRead_ThenAuditHeaderTooLargeExceptionIsThrown()
     {
         var d = new Dictionary<string, string>() { ["a"] = "b" };
@@ -138,7 +139,7 @@ public class AuditHeaderReaderTests
         Assert.Throws<AuditHeaderTooLargeException>(() => headerReader.Read(_httpContext));
     }
 
-    [Fact]
+    [TestMethod]
     public void GivenCustomHeaders_WhenMultipleCallsUsingTheSameHttpContext_ThenHttpContextItemsIsUsed()
     {
         var headerReader = new AuditHeaderReader(_optionsAuditConfiguration);
@@ -150,19 +151,19 @@ public class AuditHeaderReaderTests
         }
 
         var result = headerReader.Read(_httpContext);
-        Assert.Equal(5, result.Count);
+        Assert.HasCount(5, result);
 
         var changedHeaders = new Dictionary<string, string>() { ["changed"] = "changed" };
 
         _httpContext.Items[AuditConstants.CustomAuditHeaderKeyValue] = changedHeaders;
 
         result = headerReader.Read(_httpContext);
-        Assert.Equal(changedHeaders, result);
+        Assert.AreEquivalent(changedHeaders, result);
     }
 
-    [Theory]
-    [InlineData(null)]
-    [InlineData("")]
+    [TestMethod]
+    [DataRow(null)]
+    [DataRow("")]
     public void GivenEmptyPrefixValue_WhenConfigurationValueSet_ThenInvalidDefinitionExceptionIsThrown(string prefix)
     {
         var auditConfiguration = new AuditConfiguration();

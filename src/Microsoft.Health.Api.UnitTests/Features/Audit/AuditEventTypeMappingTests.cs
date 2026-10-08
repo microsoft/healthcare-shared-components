@@ -18,11 +18,12 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Health.Api.Features.AnonymousOperation;
 using Microsoft.Health.Api.Features.Audit;
 using NSubstitute;
-using Xunit;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Microsoft.Health.Api.UnitTests.Features.Audit;
 
-public class AuditEventTypeMappingTests : IAsyncLifetime
+[TestClass]
+public class AuditEventTypeMappingTests : IAsyncDisposable
 {
     private const string ControllerName = nameof(MockController);
     private const string AnonymousMethodName = nameof(MockController.Anonymous);
@@ -100,33 +101,38 @@ public class AuditEventTypeMappingTests : IAsyncLifetime
         _auditEventTypeMapping = new AuditEventTypeMapping(_actionDescriptorCollectionProvider);
     }
 
+    [TestInitialize]
     public Task InitializeAsync()
     {
         return ((IHostedService)_auditEventTypeMapping).StartAsync(CancellationToken.None);
     }
 
-    public Task DisposeAsync() => Task.CompletedTask;
+    public async ValueTask DisposeAsync()
+    {
+        await ((IHostedService)_auditEventTypeMapping).StopAsync(CancellationToken.None);
+        GC.SuppressFinalize(this);
+    }
 
-    [Theory]
-    [InlineData(ControllerName, AnonymousMethodName, null)]
-    [InlineData(ControllerName, MetadataAnonymousMethodName, MetadataFhirAnonymousOperationType)]
-    [InlineData(ControllerName, VersionsAnonymousMethodName, VersionsFhirAnonymousOperationType)]
-    [InlineData(ControllerName, AudittedMethodName, AuditEventType)]
-    [InlineData(ControllerName, MultipleRoutesMethodName, AuditEventType)]
+    [TestMethod]
+    [DataRow(ControllerName, AnonymousMethodName, null)]
+    [DataRow(ControllerName, MetadataAnonymousMethodName, MetadataFhirAnonymousOperationType)]
+    [DataRow(ControllerName, VersionsAnonymousMethodName, VersionsFhirAnonymousOperationType)]
+    [DataRow(ControllerName, AudittedMethodName, AuditEventType)]
+    [DataRow(ControllerName, MultipleRoutesMethodName, AuditEventType)]
     public void GivenControllerNameAndActionName_WhenGetAuditEventTypeIsCalled_ThenAuditEventTypeShouldBeReturned(string controllerName, string actionName, string expectedAuditEventType)
     {
         string actualAuditEventType = _auditEventTypeMapping.GetAuditEventType(controllerName, actionName);
 
-        Assert.Equal(expectedAuditEventType, actualAuditEventType);
+        Assert.AreEqual(expectedAuditEventType, actualAuditEventType);
     }
 
-    [Fact]
+    [TestMethod]
     public void GivenUnknownControllerNameAndActionName_WhenGetAuditEventTypeIsCalled_ThenAuditExceptionShouldBeThrown()
     {
         Assert.Throws<MissingAuditEventTypeMappingException>(() => _auditEventTypeMapping.GetAuditEventType("test", "action"));
     }
 
-    [Fact]
+    [TestMethod]
     public async Task GivenTwoMethodsWithTheSameNameAndDifferentAuditEvents_WhenMappingIsCreated_ThenDuplicateActionForAuditEventExceptionShouldBeThrown()
     {
         Type mockControllerType = typeof(MockController);
