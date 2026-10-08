@@ -15,10 +15,11 @@ using Microsoft.Health.SqlServer.Features.Schema.Extensions;
 using Microsoft.Health.SqlServer.Features.Schema.Messages.Get;
 using Microsoft.Health.SqlServer.Features.Schema.Model;
 using NSubstitute;
-using Xunit;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Microsoft.Health.SqlServer.Api.UnitTests.Features;
 
+[TestClass]
 public class CompatibilityVersionHandlerTests
 {
     private readonly ISchemaDataStore _schemaMigrationDataStore;
@@ -33,7 +34,7 @@ public class CompatibilityVersionHandlerTests
         _mediator = new Mediator(collection.BuildServiceProvider());
     }
 
-    [Fact]
+    [TestMethod]
     public async Task GivenAMediator_WhenCompatibleRequest_ThenReturnsCompatibleVersions()
     {
         _schemaMigrationDataStore
@@ -43,7 +44,7 @@ public class CompatibilityVersionHandlerTests
         using CancellationTokenSource cts = new();
         GetCompatibilityVersionResponse response = await _mediator.GetCompatibleVersionAsync(cts.Token);
 
-        Assert.Equal(1, response.CompatibleVersions.Min);
-        Assert.Equal(3, response.CompatibleVersions.Max);
+        Assert.AreEqual(1, response.CompatibleVersions.Min);
+        Assert.AreEqual(3, response.CompatibleVersions.Max);
     }
 }

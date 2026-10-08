@@ -16,10 +16,11 @@ using Microsoft.Health.SqlServer.Features.Schema.Extensions;
 using Microsoft.Health.SqlServer.Features.Schema.Messages.Get;
 using Microsoft.Health.SqlServer.Features.Schema.Model;
 using NSubstitute;
-using Xunit;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Microsoft.Health.SqlServer.Api.UnitTests.Features;
 
+[TestClass]
 public class CurrentVersionHandlerTests
 {
     private readonly ISchemaDataStore _schemaDataStore;
@@ -34,7 +35,7 @@ public class CurrentVersionHandlerTests
         _mediator = new Mediator(collection.BuildServiceProvider());
     }
 
-    [Fact]
+    [TestMethod]
     public async Task GivenACurrentMediator_WhenCurrentRequest_ThenReturnsCurrentVersionInformation()
     {
         string status = "completed";
@@ -53,13 +54,13 @@ public class CurrentVersionHandlerTests
         GetCurrentVersionResponse response = await _mediator.GetCurrentVersionAsync(cts.Token);
         var currentVersionsResponse = response.CurrentVersions;
 
-        Assert.Equal(mockCurrentVersions.Count, currentVersionsResponse.Count);
-        Assert.Equal(1, currentVersionsResponse[0].Id);
-        Assert.Equal(SchemaVersionStatus.completed, currentVersionsResponse[0].Status);
-        Assert.Equal(2, currentVersionsResponse[0].Servers.Count);
+        Assert.AreEqual(mockCurrentVersions.Count, currentVersionsResponse.Count);
+        Assert.AreEqual(1, currentVersionsResponse[0].Id);
+        Assert.AreEqual(SchemaVersionStatus.completed, currentVersionsResponse[0].Status);
+        Assert.AreEqual(2, currentVersionsResponse[0].Servers.Count);
     }
 
-    [Fact]
+    [TestMethod]
     public async Task GivenACurrentMediator_WhenCurrentRequestAndEmptySchemaVersionTable_ThenReturnsEmptyArray()
     {
         var mockCurrentVersions = new List<CurrentVersionInformation>();
@@ -71,6 +72,6 @@ public class CurrentVersionHandlerTests
         using CancellationTokenSource cts = new();
         GetCurrentVersionResponse response = await _mediator.GetCurrentVersionAsync(cts.Token);
 
-        Assert.Empty(response.CurrentVersions);
+        Assert.IsEmpty(response.CurrentVersions);
     }
 }
