@@ -6,10 +6,11 @@
 using Azure;
 using Microsoft.Health.Encryption.Customer.Extensions;
 using System.Collections.Generic;
-using Xunit;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Microsoft.Health.Encryption.UnitTests;
 
+[TestClass]
 public class AzureStorageErrorExtensionsTests
 {
     public static IEnumerable<object[]> GetExceptionToResultMapping
@@ -23,11 +24,11 @@ public class AzureStorageErrorExtensionsTests
         }
     }
 
-    [Theory]
-    [MemberData(nameof(GetExceptionToResultMapping))]
+    [TestMethod]
+    [DynamicData(nameof(GetExceptionToResultMapping))]
     public void GivenRequestFailedException_WhenIsCMKErrorIsCalled_ThenReturnExpectedResult(RequestFailedException exception, bool expectedResult)
     {
         bool result = exception.IsCMKError();
-        Assert.Equal(expectedResult, result);
+        Assert.AreEqual(expectedResult, result);
     }
 }

@@ -13,10 +13,11 @@ using Microsoft.Health.Core.Features.Health;
 using Microsoft.Health.Encryption.Customer.Configs;
 using Microsoft.Health.Encryption.Customer.Health;
 using NSubstitute;
-using Xunit;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Microsoft.Health.Encryption.UnitTests;
 
+[TestClass]
 public class CustomerKeyValidationBackgroundServiceTests : IDisposable
 {
     private readonly IKeyTestProvider _keyWrapUnwrapTestProvider = Substitute.For<IKeyTestProvider>();
@@ -46,18 +47,18 @@ public class CustomerKeyValidationBackgroundServiceTests : IDisposable
             NullLogger<CustomerKeyValidationBackgroundService>.Instance);
     }
 
-    [Fact]
+    [TestMethod]
     public async Task GivenKeyIsAccessible_WhenHealthIsChecked_ThenHealthyStateShouldBeSaved()
     {
         await _validationService.CheckHealth(CancellationToken.None);
 
         CustomerKeyHealth cmkHealth = await _customerKeyHealthCache.GetAsync();
-        Assert.True(cmkHealth.IsHealthy);
-        Assert.Null(cmkHealth.Exception);
-        Assert.Equal(HealthStatusReason.None, cmkHealth.Reason);
+        Assert.IsTrue(cmkHealth.IsHealthy);
+        Assert.IsNull(cmkHealth.Exception);
+        Assert.AreEqual(HealthStatusReason.None, cmkHealth.Reason);
     }
 
-    [Fact]
+    [TestMethod]
     public async Task GivenKeyAccessFails_WhenHealthIsChecked_ThenNotHealthStateIsSaved()
     {
         var rfe = new RequestFailedException("key request failed");
@@ -72,26 +73,26 @@ public class CustomerKeyValidationBackgroundServiceTests : IDisposable
 
         CustomerKeyHealth cmkHealth = await _customerKeyHealthCache.GetAsync();
 
-        Assert.False(cmkHealth.IsHealthy);
-        Assert.Equal(rfe, cmkHealth.Exception);
-        Assert.Equal(HealthStatusReason.CustomerManagedKeyAccessLost, cmkHealth.Reason);
+        Assert.IsFalse(cmkHealth.IsHealthy);
+        Assert.AreEqual(rfe, cmkHealth.Exception);
+        Assert.AreEqual(HealthStatusReason.CustomerManagedKeyAccessLost, cmkHealth.Reason);
     }
 
-    [Fact]
+    [TestMethod]
     public async Task GivenUninitializedHealthStatus_WhenHealthIsChecked_ThenNotHealthyStateIsSaved()
     {
         // health is not initialized
         Task<CustomerKeyHealth> cmkHealthTask = _customerKeyHealthCache.GetAsync();
-        Assert.True(!cmkHealthTask.IsCompleted);
+        Assert.IsTrue(!cmkHealthTask.IsCompleted);
 
         // check health
         await _validationService.CheckHealth(CancellationToken.None);
 
         // health has been set, result is returned
         CustomerKeyHealth cmkHealth = await cmkHealthTask;
-        Assert.True(cmkHealth.IsHealthy);
-        Assert.Null(cmkHealth.Exception);
-        Assert.Equal(HealthStatusReason.None, cmkHealth.Reason);
+        Assert.IsTrue(cmkHealth.IsHealthy);
+        Assert.IsNull(cmkHealth.Exception);
+        Assert.AreEqual(HealthStatusReason.None, cmkHealth.Reason);
     }
 
     protected virtual void Dispose(bool disposing)

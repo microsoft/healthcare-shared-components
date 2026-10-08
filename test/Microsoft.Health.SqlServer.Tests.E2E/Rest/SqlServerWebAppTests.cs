@@ -21,25 +21,22 @@ using Newtonsoft.Json.Linq;
 
 namespace Microsoft.Health.SqlServer.Tests.E2E.Rest;
 
-[SuppressMessage("Maintainability", "CA1515:Consider making public types internal", Justification = "Used by test framework.")]
-public class SqlServerWebAppTestFixture : IAsyncDisposable
+public abstract class SqlServerWebAppTests : IAsyncDisposable
 {
     private bool _isDisposed;
 
-    public SqlServerWebAppTestFixture()
+    protected SqlServerWebAppTests()
         : this(Path.Combine("test"))
     {
     }
 
     [SuppressMessage("Reliability", "CA2000:Dispose objects before losing scope", Justification = "DelegatingHandler disposes inner handler.")]
-    protected SqlServerWebAppTestFixture(string targetProjectParentDirectory)
+    protected SqlServerWebAppTests(string targetProjectParentDirectory)
     {
         string environmentUrl = Environment.GetEnvironmentVariable("TestEnvironmentUrl");
 
         if (string.IsNullOrWhiteSpace(environmentUrl))
         {
-            environmentUrl = "http://localhost/";
-
             WebApplication = CreateLocalWebApp(targetProjectParentDirectory);
             WebApplication.Start();
 
