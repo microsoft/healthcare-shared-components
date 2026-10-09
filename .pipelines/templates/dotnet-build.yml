@@ -22,14 +22,8 @@ steps:
   continueOnError: true
 
 - pwsh: |
+    # Use dotnet cli directly to resolve the MSTest.Sdk project
     $PSNativeCommandUseErrorActionPreference = $true
-    # Solution restores report MSBuild SDK resolution failures (e.g. MSTest.Sdk) only as NU1503, so
-    # evaluate one MSTest.Sdk project first to surface the resolver's actual error and cache the SDK.
-    dotnet msbuild (Join-Path 'src' 'Microsoft.Health.Core.UnitTests' 'Microsoft.Health.Core.UnitTests.csproj') `
-        -getProperty:TargetFrameworks
-
-    # Use the repository's nuget.config with the credential provider configured by NuGetAuthenticate,
-    # which is the same configuration the MSBuild SDK resolver uses.
     dotnet restore Microsoft.Health.slnx `
         "-p:ContinuousIntegrationBuild=true;AssemblyVersion=$env:ASSEMBLY_VERSION;FileVersion=$env:FILE_VERSION;InformationalVersion=$env:INFORMATIONAL_VERSION" `
         -warnaserror
@@ -113,7 +107,7 @@ steps:
         -WorkingDirectory $exampleDirectory
     try {
         # The integration fixture waits for the host's health endpoint before running tests.
-        dotnet test Microsoft.Health.slnx `
+        dotnet test `
             -c $env:BUILD_CONFIGURATION `
             --coverage `
             --coverage-output "coverage.cobertura.xml" `
@@ -125,14 +119,14 @@ steps:
             --report-azdo `
             --report-azdo-upload-artifacts all `
             --results-directory (Join-Path $env:AGENT_TEMPDIRECTORY 'TestResults') `
-            -warnaserror
+            --solution Microsoft.Health.slnx
     }
     finally {
         Stop-Job -Id $funcHost.Id
         Receive-Job -Id $funcHost.Id
         Remove-Job -Id $funcHost.Id
     }
-  displayName: Test
+  displayName: Test Solution
   env:
     BUILD_CONFIGURATION: ${{ parameters.buildConfiguration }}
     ASSEMBLY_VERSION: ${{ parameters.assemblyVersion }}
