@@ -21,16 +21,24 @@ steps:
   displayName: Pre-Build Docker Cleanup
   continueOnError: true
 
-- task: DotNetCoreCLI@2
+- pwsh: |
+    $PSNativeCommandUseErrorActionPreference = $true
+    # Solution restores report MSBuild SDK resolution failures (e.g. MSTest.Sdk) only as NU1503, so
+    # evaluate one MSTest.Sdk project first to surface the resolver's actual error and cache the SDK.
+    dotnet msbuild (Join-Path 'src' 'Microsoft.Health.Core.UnitTests' 'Microsoft.Health.Core.UnitTests.csproj') `
+        -getProperty:TargetFrameworks
+
+    # Use the repository's nuget.config with the credential provider configured by NuGetAuthenticate,
+    # which is the same configuration the MSBuild SDK resolver uses.
+    dotnet restore Microsoft.Health.slnx `
+        "-p:ContinuousIntegrationBuild=true;AssemblyVersion=$env:ASSEMBLY_VERSION;FileVersion=$env:FILE_VERSION;InformationalVersion=$env:INFORMATIONAL_VERSION" `
+        -warnaserror
   displayName: Restore NuGet Packages
-  inputs:
-    command: restore
-    projects: Microsoft.Health.slnx
-    feedsToUse: config
-    nugetConfigPath: $(Build.SourcesDirectory)/nuget.config
-    restoreArguments: >-
-      "-p:ContinuousIntegrationBuild=true;AssemblyVersion=${{ parameters.assemblyVersion }};FileVersion=${{ parameters.fileVersion }};InformationalVersion=${{ parameters.informationalVersion }}"
-      -warnaserror
+  workingDirectory: $(Build.SourcesDirectory)
+  env:
+    ASSEMBLY_VERSION: ${{ parameters.assemblyVersion }}
+    FILE_VERSION: ${{ parameters.fileVersion }}
+    INFORMATIONAL_VERSION: ${{ parameters.informationalVersion }}
 
 - task: DotNetCoreCLI@2
   displayName: Build Solution
