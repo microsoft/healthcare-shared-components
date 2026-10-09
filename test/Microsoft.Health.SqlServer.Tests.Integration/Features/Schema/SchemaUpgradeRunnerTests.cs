@@ -110,13 +110,13 @@ public sealed class SchemaUpgradeRunnerTests : SqlIntegrationTestBase
         Assert.AreEqual(3, version);
     }
 
-    public override ValueTask DisposeAsync(bool disposing)
+    public override async ValueTask DisposeAsync(bool disposing)
     {
         if (disposing)
         {
             _sqlTransactionHandler.Dispose();
         }
 
-        return ValueTask.CompletedTask;
+        await base.DisposeAsync(disposing);
     }
 }

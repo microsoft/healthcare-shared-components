@@ -65,13 +65,13 @@ public sealed class BaseSchemaRunnerTests : SqlIntegrationTestBase
         await Assert.ThrowsAsync<SchemaManagerException>(() => _runner.EnsureInstanceSchemaRecordExistsAsync(CancellationToken.None));
     }
 
-    public override ValueTask DisposeAsync(bool disposing)
+    public override async ValueTask DisposeAsync(bool disposing)
     {
         if (disposing)
         {
             _sqlTransactionHandler.Dispose();
         }
 
-        return ValueTask.CompletedTask;
+        await base.DisposeAsync(disposing);
     }
 }

@@ -48,6 +48,7 @@ public abstract class SqlIntegrationTestBase : IAsyncDisposable
 
     protected SqlServerDataStoreConfiguration Config { get; set; }
 
+    [TestInitialize]
     public virtual async Task InitializeAsync()
     {
         TransactionHandler = new SqlTransactionHandler();
@@ -78,20 +79,24 @@ public abstract class SqlIntegrationTestBase : IAsyncDisposable
         {
             if (disposing)
             {
-                await ConnectionWrapper.SqlConnection.ChangeDatabaseAsync("master").ConfigureAwait(false);
-                try
+                if (ConnectionWrapper is not null)
                 {
-                    await DeleteDatabaseAsync(DatabaseName).ConfigureAwait(false);
-                }
-                catch (Exception e)
-                {
-                    _testContext.WriteLine($"Failed to delete test database after test run: {e.Message}{Environment.NewLine}{Environment.NewLine}{e.StackTrace}");
-                    throw;
+                    await ConnectionWrapper.SqlConnection.ChangeDatabaseAsync("master").ConfigureAwait(false);
+                    try
+                    {
+                        await DeleteDatabaseAsync(DatabaseName).ConfigureAwait(false);
+                    }
+                    catch (Exception e)
+                    {
+                        _testContext.WriteLine($"Failed to delete test database after test run: {e.Message}{Environment.NewLine}{Environment.NewLine}{e.StackTrace}");
+                        throw;
+                    }
+
+                    await ConnectionWrapper.SqlConnection.CloseAsync().ConfigureAwait(false);
+                    ConnectionWrapper.Dispose();
                 }
 
-                await ConnectionWrapper.SqlConnection.CloseAsync().ConfigureAwait(false);
-                ConnectionWrapper.Dispose();
-                TransactionHandler.Dispose();
+                TransactionHandler?.Dispose();
             }
 
             _disposed = true;

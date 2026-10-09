@@ -102,6 +102,17 @@ steps:
     Copy-Item (Join-Path $exampleDirectory 'bin' $env:BUILD_CONFIGURATION 'net10.0' '*') `
         -Destination $outputDirectory -Recurse -Force
 
+    # Microsoft.Testing.Platform's Azure DevOps reporting silently degrades if any of these are missing.
+    foreach ($name in 'TF_BUILD', 'SYSTEM_COLLECTIONURI', 'SYSTEM_TEAMPROJECT', 'BUILD_DEFINITIONID', 'BUILD_BUILDID') {
+        $value = [Environment]::GetEnvironmentVariable($name)
+        if ([string]::IsNullOrEmpty($value)) {
+            Write-Host "##vso[task.logissue type=warning]$name is not set; Azure DevOps test reporting will be incomplete."
+        }
+        else {
+            Write-Host "$name=$value"
+        }
+    }
+
     $funcHost = Start-Job -Name AzFuncStart `
         -ScriptBlock { & func start --port 7071 --no-build --prefix (Join-Path 'bin' 'output') } `
         -WorkingDirectory $exampleDirectory
@@ -110,7 +121,6 @@ steps:
         dotnet test `
             -c $env:BUILD_CONFIGURATION `
             --coverage `
-            --coverage-output "coverage.cobertura.xml" `
             --coverage-output-format cobertura `
             --coverage-settings "$(Build.SourcesDirectory)/CodeCoverage.config" `
             "-p:ContinuousIntegrationBuild=true;AssemblyVersion=$env:ASSEMBLY_VERSION;FileVersion=$env:FILE_VERSION;InformationalVersion=$env:INFORMATIONAL_VERSION" `
@@ -139,11 +149,13 @@ steps:
     FunctionWorkerTest__DurableTask__ConnectionString: UseDevelopmentStorage=true
     FunctionWorkerTest__DurableTask__TaskHubName: WorkerIntegrationTests
     FunctionWorkerTest__Port: '7071'
+    SYSTEM_ACCESSTOKEN: $(System.AccessToken)
     TestSqlConnectionString: 'Server=(local);Persist Security Info=False;User ID=sa;Password=$(SqlPassword);MultipleActiveResultSets=False;Connection Timeout=30;TrustServerCertificate=true'
 
 - task: PublishCodeCoverageResults@2
+  displayName: Publish Code Coverage
   inputs:
-    summaryFileLocation: $(Agent.TempDirectory)/TestResults/**/coverage.cobertura.xml
+    summaryFileLocation: $(Agent.TempDirectory)/TestResults/**/*.cobertura.xml
 
 - pwsh: |
     $PSNativeCommandUseErrorActionPreference = $true
