@@ -18,10 +18,11 @@ using Microsoft.Health.SqlServer.Features.Client;
 using Microsoft.Health.SqlServer.Features.Health;
 using Microsoft.Health.SqlServer.Features.Storage;
 using NSubstitute;
-using Xunit;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Microsoft.Health.SqlServer.UnitTests.Features.Health;
 
+[TestClass]
 public sealed class SqlServerHealthCheckTests
 {
     private readonly ILogger<SqlServerHealthCheck> _logger;
@@ -45,24 +46,24 @@ public sealed class SqlServerHealthCheckTests
         _cache.Set(new CustomerKeyHealth() { IsHealthy = true });
     }
 
-    [Theory]
-    [InlineData(HttpStatusCode.Forbidden)]
-    [InlineData(HttpStatusCode.Unauthorized)]
+    [TestMethod]
+    [DataRow(HttpStatusCode.Forbidden)]
+    [DataRow(HttpStatusCode.Unauthorized)]
     public async Task GivenASqlHealthCheck_WhenSqlConnectionWrapperThrowsAnInvalidAccess_ThenHandlesItProperlyAsDegraded(HttpStatusCode statusCode)
     {
         HealthCheckResult healthCheckResult = await GetHealthCheckResultGivenAnErrorHttpStatusCodeAsync(statusCode);
 
-        Assert.Equal(HealthStatus.Degraded, healthCheckResult.Status);
-        Assert.Equal(HealthStatusReason.DataStoreConnectionDegraded.ToString(), healthCheckResult.Data["Reason"]);
+        Assert.AreEqual(HealthStatus.Degraded, healthCheckResult.Status);
+        Assert.AreEqual(HealthStatusReason.DataStoreConnectionDegraded.ToString(), healthCheckResult.Data["Reason"]);
     }
 
-    [Theory]
-    [InlineData(HttpStatusCode.NotFound)]
+    [TestMethod]
+    [DataRow(HttpStatusCode.NotFound)]
     public async Task GivenASqlHealthCheck_WhenSqlConnectionWrapperThrowsAnUnknownStatusCode_ThenHandlesItError(HttpStatusCode statusCode)
     {
         HttpRequestException httpException = await Assert.ThrowsAsync<HttpRequestException>(() => GetHealthCheckResultGivenAnErrorHttpStatusCodeAsync(statusCode));
 
-        Assert.Equal(statusCode, httpException.StatusCode);
+        Assert.AreEqual(statusCode, httpException.StatusCode);
     }
 
     private async Task<HealthCheckResult> GetHealthCheckResultGivenAnErrorHttpStatusCodeAsync(HttpStatusCode statusCode)

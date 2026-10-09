@@ -17,19 +17,20 @@ using Microsoft.Health.Core.Features.Security;
 using Microsoft.Health.Core.UnitTests.Features.Security.Samples;
 using Newtonsoft.Json.Linq;
 using NSubstitute;
-using Xunit;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Microsoft.Health.Core.UnitTests.Features.Security;
 
+[TestClass]
 public class RoleLoaderTests
 {
     private static readonly string[] AllDataActions = ["*"];
     private static readonly string[] DefaultScopes = ["/"];
 
-    public static IEnumerable<object[]> GetInvalidRoles()
+    public static IEnumerable<(string, object)> GetInvalidRoles()
     {
-        yield return new object[]
-        {
+        yield return
+        (
             "empty name",
             new
             {
@@ -43,11 +44,11 @@ public class RoleLoaderTests
                         scopes = DefaultScopes,
                     },
                 },
-            },
-        };
+            }
+        );
 
-        yield return new object[]
-        {
+        yield return
+        (
             "actions missing",
             new
             {
@@ -60,11 +61,11 @@ public class RoleLoaderTests
                         scopes = DefaultScopes,
                     },
                 },
-            },
-        };
+            }
+        );
 
-        yield return new object[]
-        {
+        yield return
+        (
             "invalid notAction",
             new
             {
@@ -78,11 +79,11 @@ public class RoleLoaderTests
                         scopes = DefaultScopes,
                     },
                 },
-            },
-        };
+            }
+        );
 
-        yield return new object[]
-        {
+        yield return
+        (
             "missing scopes",
             new
             {
@@ -95,11 +96,11 @@ public class RoleLoaderTests
                         notDataActions = Array.Empty<string>(),
                     },
                 },
-            },
-        };
+            }
+        );
 
-        yield return new object[]
-        {
+        yield return
+        (
             "scope not /",
             new
             {
@@ -113,11 +114,11 @@ public class RoleLoaderTests
                         scopes = new[] { "/a" },
                     },
                 },
-            },
-        };
+            }
+        );
 
-        yield return new object[]
-        {
+        yield return
+        (
             "scope not single /",
             new
             {
@@ -131,11 +132,11 @@ public class RoleLoaderTests
                         scopes = new[] { "/", "/" },
                     },
                 },
-            },
-        };
+            }
+        );
 
-        yield return new object[]
-        {
+        yield return
+        (
             "role name duplicated",
             new
             {
@@ -156,11 +157,11 @@ public class RoleLoaderTests
                         scopes = DefaultScopes,
                     },
                 },
-            },
-        };
+            }
+        );
     }
 
-    [Fact]
+    [TestMethod]
     public async Task GivenValidRoles_WhenLoaded_AreProperlyTransformed()
     {
         var roles = new
@@ -179,12 +180,12 @@ public class RoleLoaderTests
 
         AuthorizationConfiguration<DataActions> authConfig = await LoadAsync(roles);
 
-        Role<DataActions> actualRole = Assert.Single(authConfig.Roles);
-        Assert.Equal(roles.roles.First().name, actualRole.Name);
-        Assert.Equal(DataActions.All, actualRole.AllowedDataActions);
+        Role<DataActions> actualRole = Assert.ContainsSingle(authConfig.Roles);
+        Assert.AreEqual(roles.roles.First().name, actualRole.Name);
+        Assert.AreEqual(DataActions.All, actualRole.AllowedDataActions);
     }
 
-    [Fact]
+    [TestMethod]
     public async Task GivenValidDataActions_WhenSpecifiedAsRoleActions_AreRecognized()
     {
         IEnumerable<DataActions> actionNames = Enum.GetValues<DataActions>()
@@ -205,16 +206,15 @@ public class RoleLoaderTests
 
         AuthorizationConfiguration<DataActions> authConfig = await LoadAsync(roles);
 
-        Assert.All(
-            actionNames.Zip(authConfig.Roles.Select(r => r.AllowedDataActions)),
-            t => Assert.Equal(t.First, t.Second));
+        foreach ((DataActions first, DataActions second) in actionNames.Zip(authConfig.Roles.Select(r => r.AllowedDataActions)))
+            Assert.AreEqual(first, second);
     }
 
-    [Theory]
-    [MemberData(nameof(GetInvalidRoles))]
+    [TestMethod]
+    [DynamicData(nameof(GetInvalidRoles))]
     public async Task GivenInvalidRoles_WhenLoaded_RaiseValidationErrors(string description, object roles)
     {
-        Assert.NotEmpty(description);
+        Assert.IsNotEmpty(description);
         await Assert.ThrowsAsync<InvalidDefinitionException>(() => LoadAsync(roles));
     }
 

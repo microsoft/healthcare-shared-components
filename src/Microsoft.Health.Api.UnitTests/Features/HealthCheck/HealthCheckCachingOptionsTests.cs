@@ -1,4 +1,4 @@
-﻿// -------------------------------------------------------------------------------------------------
+// -------------------------------------------------------------------------------------------------
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License (MIT). See LICENSE in the repo root for license information.
 // -------------------------------------------------------------------------------------------------
@@ -11,13 +11,14 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using Microsoft.Health.Api.Features.HealthChecks;
 using Microsoft.Health.Api.Modules;
-using Xunit;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Microsoft.Health.Api.UnitTests.Features.HealthCheck;
 
+[TestClass]
 public class HealthCheckCachingOptionsTests
 {
-    [Fact]
+    [TestMethod]
     public void GivenConfiguration_WhenCreatingHealthCheckOptions_ThenValidateExpiry()
     {
         IConfiguration config = new ConfigurationBuilder()
@@ -30,10 +31,10 @@ public class HealthCheckCachingOptionsTests
 
         IOptions<HealthCheckCachingOptions> options = GetOptions(config);
         var exception = Assert.Throws<OptionsValidationException>(() => options.Value);
-        Assert.Single(exception.Failures);
+        Assert.ContainsSingle(exception.Failures);
     }
 
-    [Fact]
+    [TestMethod]
     public void GivenConfiguration_WhenCreatingHealthCheckOptions_ThenValidateRefreshOffset()
     {
         IConfiguration config = new ConfigurationBuilder()
@@ -46,12 +47,12 @@ public class HealthCheckCachingOptionsTests
 
         IOptions<HealthCheckCachingOptions> options = GetOptions(config);
         var exception = Assert.Throws<OptionsValidationException>(() => options.Value);
-        Assert.Single(exception.Failures);
+        Assert.ContainsSingle(exception.Failures);
     }
 
-    [Theory]
-    [InlineData("0")]
-    [InlineData("-5")]
+    [TestMethod]
+    [DataRow("0")]
+    [DataRow("-5")]
     public void GivenConfiguration_WhenCreatingHealthCheckOptions_ThenValidateMaxRefreshThreads(string value)
     {
         IConfiguration config = new ConfigurationBuilder()
@@ -64,10 +65,10 @@ public class HealthCheckCachingOptionsTests
 
         IOptions<HealthCheckCachingOptions> options = GetOptions(config);
         var exception = Assert.Throws<OptionsValidationException>(() => options.Value);
-        Assert.Single(exception.Failures);
+        Assert.ContainsSingle(exception.Failures);
     }
 
-    [Fact]
+    [TestMethod]
     public void GivenConfiguration_WhenCreatingHealthCheckOptions_ThenValidatePropertyCombination()
     {
         IConfiguration config = new ConfigurationBuilder()
@@ -81,10 +82,10 @@ public class HealthCheckCachingOptionsTests
 
         IOptions<HealthCheckCachingOptions> options = GetOptions(config);
         var exception = Assert.Throws<OptionsValidationException>(() => options.Value);
-        Assert.Single(exception.Failures);
+        Assert.ContainsSingle(exception.Failures);
     }
 
-    [Fact]
+    [TestMethod]
     public void GivenConfiguration_WhenCreatingHealthCheckOptionsWithMultipleProblems_ThenReturnAllFailures()
     {
         IConfiguration config = new ConfigurationBuilder()
@@ -99,10 +100,10 @@ public class HealthCheckCachingOptionsTests
 
         IOptions<HealthCheckCachingOptions> options = GetOptions(config);
         var exception = Assert.Throws<OptionsValidationException>(() => options.Value);
-        Assert.Equal(3, exception.Failures.Count());
+        Assert.AreEqual(3, exception.Failures.Count());
     }
 
-    [Fact]
+    [TestMethod]
     public void GivenConfiguration_WhenCreatingHealthCheckOptions_ThenPopulateProperties()
     {
         IConfiguration config = new ConfigurationBuilder()
@@ -116,12 +117,12 @@ public class HealthCheckCachingOptionsTests
             .Build();
 
         HealthCheckCachingOptions options = GetOptions(config)?.Value;
-        Assert.Equal(TimeSpan.FromSeconds(15), options.Expiry);
-        Assert.Equal(TimeSpan.FromSeconds(5), options.RefreshOffset);
-        Assert.Equal(4, options.MaxRefreshThreads);
+        Assert.AreEqual(TimeSpan.FromSeconds(15), options.Expiry);
+        Assert.AreEqual(TimeSpan.FromSeconds(5), options.RefreshOffset);
+        Assert.AreEqual(4, options.MaxRefreshThreads);
     }
 
-    [Fact]
+    [TestMethod]
     public void GivenNoConfiguration_WhenCreatingHealthCheckOptions_ThenPopulateDefault()
     {
         IServiceCollection services = new ServiceCollection();
@@ -129,9 +130,9 @@ public class HealthCheckCachingOptionsTests
         IServiceProvider provider = services.BuildServiceProvider();
 
         HealthCheckCachingOptions options = provider.GetRequiredService<IOptions<HealthCheckCachingOptions>>()?.Value;
-        Assert.Equal(TimeSpan.FromSeconds(1), options.Expiry);
-        Assert.Equal(TimeSpan.Zero, options.RefreshOffset);
-        Assert.Equal(2, options.MaxRefreshThreads);
+        Assert.AreEqual(TimeSpan.FromSeconds(1), options.Expiry);
+        Assert.AreEqual(TimeSpan.Zero, options.RefreshOffset);
+        Assert.AreEqual(2, options.MaxRefreshThreads);
     }
 
     private static IOptions<HealthCheckCachingOptions> GetOptions(IConfiguration config)

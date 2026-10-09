@@ -10,10 +10,11 @@ using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 using Microsoft.Health.Api.Features.HealthChecks;
 using NSubstitute;
-using Xunit;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Microsoft.Health.Api.UnitTests.Features.HealthCheck;
 
+[TestClass]
 public sealed class HealthCheckCacheTests : IDisposable
 {
     public HealthCheckCacheTests()
@@ -30,13 +31,13 @@ public sealed class HealthCheckCacheTests : IDisposable
     public void Dispose()
         => _cache.Dispose();
 
-    [Theory]
-    [InlineData("Foo")]
-    [InlineData("Bar")]
+    [TestMethod]
+    [DataRow("Foo")]
+    [DataRow("Bar")]
     public void GivenKnownHealthCheckName_WhenGettingResultCache_ThenReturnResultCache(string name)
-        => Assert.NotNull(_cache.GetResultCache(name));
+        => Assert.IsNotNull(_cache.GetResultCache(name));
 
-    [Fact]
+    [TestMethod]
     public void GivenUnknownHealthCheckName_WhenGettingResultCache_ThenThrowKeyNotFoundException()
         => Assert.Throws<KeyNotFoundException>(() => _cache.GetResultCache("Baz"));
 }

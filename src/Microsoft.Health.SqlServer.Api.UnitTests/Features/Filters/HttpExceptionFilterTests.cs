@@ -21,10 +21,11 @@ using Microsoft.Health.SqlServer.Api.UnitTests.Controllers;
 using Microsoft.Health.SqlServer.Features.Exceptions;
 using Microsoft.Health.SqlServer.Features.Schema;
 using NSubstitute;
-using Xunit;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Microsoft.Health.SqlServer.Api.UnitTests.Features.Filters;
 
+[TestClass]
 public sealed class HttpExceptionFilterTests : IDisposable
 {
     private readonly SchemaController _controller;
@@ -44,7 +45,7 @@ public sealed class HttpExceptionFilterTests : IDisposable
             _controller);
     }
 
-    [Fact]
+    [TestMethod]
     public void GivenANotImplementedException_WhenExecutingAnAction_ThenTheResponseShouldBeAJsonResultWithNotImplementedStatusCode()
     {
         var filter = new HttpExceptionFilterAttribute();
@@ -55,11 +56,11 @@ public sealed class HttpExceptionFilterTests : IDisposable
 
         var result = _context.Result as JsonResult;
 
-        Assert.NotNull(result);
-        Assert.Equal((int)HttpStatusCode.NotImplemented, result.StatusCode);
+        Assert.IsNotNull(result);
+        Assert.AreEqual((int)HttpStatusCode.NotImplemented, result.StatusCode);
     }
 
-    [Fact]
+    [TestMethod]
     public void GivenANotFoundException_WhenExecutingAnAction_ThenTheResponseShouldBeAJsonResultWithNotFoundStatusCode()
     {
         var filter = new HttpExceptionFilterAttribute();
@@ -70,11 +71,11 @@ public sealed class HttpExceptionFilterTests : IDisposable
 
         var result = _context.Result as JsonResult;
 
-        Assert.NotNull(result);
-        Assert.Equal((int)HttpStatusCode.NotFound, result.StatusCode);
+        Assert.IsNotNull(result);
+        Assert.AreEqual((int)HttpStatusCode.NotFound, result.StatusCode);
     }
 
-    [Fact]
+    [TestMethod]
     public void GivenASqlRecordNotFoundException_WhenExecutingAnAction_ThenTheResponseShouldBeAJsonResultWithNotFoundStatusCode()
     {
         var filter = new HttpExceptionFilterAttribute();
@@ -85,11 +86,11 @@ public sealed class HttpExceptionFilterTests : IDisposable
 
         var result = _context.Result as JsonResult;
 
-        Assert.NotNull(result);
-        Assert.Equal((int)HttpStatusCode.NotFound, result.StatusCode);
+        Assert.IsNotNull(result);
+        Assert.AreEqual((int)HttpStatusCode.NotFound, result.StatusCode);
     }
 
-    [Fact]
+    [TestMethod]
     public void GivenASqlOperationFailedException_WhenExecutingAnAction_ThenTheResponseShouldBeAJsonResultWithInternalServerErrorAsStatusCode()
     {
         var filter = new HttpExceptionFilterAttribute();
@@ -100,8 +101,8 @@ public sealed class HttpExceptionFilterTests : IDisposable
 
         var result = _context.Result as JsonResult;
 
-        Assert.NotNull(result);
-        Assert.Equal((int)HttpStatusCode.InternalServerError, result.StatusCode);
+        Assert.IsNotNull(result);
+        Assert.AreEqual((int)HttpStatusCode.InternalServerError, result.StatusCode);
     }
 
     public void Dispose()

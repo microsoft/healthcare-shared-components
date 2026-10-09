@@ -3,35 +3,36 @@
 // Licensed under the MIT License (MIT). See LICENSE in the repo root for license information.
 // -------------------------------------------------------------------------------------------------
 
-using Xunit;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Microsoft.Health.Operations.UnitTests;
 
+[TestClass]
 public class OperationStatusExtensionsTests
 {
-    [Theory]
-    [InlineData(OperationStatus.Unknown, false)]
-    [InlineData(OperationStatus.NotStarted, true)]
-    [InlineData(OperationStatus.Running, true)]
+    [TestMethod]
+    [DataRow(OperationStatus.Unknown, false)]
+    [DataRow(OperationStatus.NotStarted, true)]
+    [DataRow(OperationStatus.Running, true)]
 #pragma warning disable CS0618
-    [InlineData(OperationStatus.Completed, false)]
+    [DataRow(OperationStatus.Completed, false)]
 #pragma warning restore CS0618
-    [InlineData(OperationStatus.Succeeded, false)]
-    [InlineData(OperationStatus.Failed, false)]
-    [InlineData(OperationStatus.Canceled, false)]
+    [DataRow(OperationStatus.Succeeded, false)]
+    [DataRow(OperationStatus.Failed, false)]
+    [DataRow(OperationStatus.Canceled, false)]
     public void GivenStatus_WhenCheckingIfInProgress_ThenReturnProperValue(OperationStatus status, bool expected)
-        => Assert.Equal(expected, status.IsInProgress());
+        => Assert.AreEqual(expected, status.IsInProgress());
 
-    [Theory]
-    [InlineData(OperationStatus.Unknown, false)]
-    [InlineData(OperationStatus.NotStarted, false)]
-    [InlineData(OperationStatus.Running, false)]
+    [TestMethod]
+    [DataRow(OperationStatus.Unknown, false)]
+    [DataRow(OperationStatus.NotStarted, false)]
+    [DataRow(OperationStatus.Running, false)]
 #pragma warning disable CS0618
-    [InlineData(OperationStatus.Completed, true)]
+    [DataRow(OperationStatus.Completed, true)]
 #pragma warning restore CS0618
-    [InlineData(OperationStatus.Succeeded, true)]
-    [InlineData(OperationStatus.Failed, true)]
-    [InlineData(OperationStatus.Canceled, true)]
+    [DataRow(OperationStatus.Succeeded, true)]
+    [DataRow(OperationStatus.Failed, true)]
+    [DataRow(OperationStatus.Canceled, true)]
     public void GivenStatus_WhenCheckingIfStopped_ThenReturnProperValue(OperationStatus status, bool expected)
-        => Assert.Equal(expected, status.IsStopped());
+        => Assert.AreEqual(expected, status.IsStopped());
 }

@@ -13,10 +13,11 @@ using Microsoft.Health.Core.Features.Identity;
 using Microsoft.Health.Encryption.Customer.Configs;
 using Microsoft.Health.Encryption.Customer.Health;
 using NSubstitute;
-using Xunit;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Microsoft.Health.Encryption.UnitTests;
 
+[TestClass]
 public class KeyWrapUnwrapTestProviderTests
 {
     private readonly IExternalCredentialProvider _externalCredentialProvider = Substitute.For<IExternalCredentialProvider>();
@@ -34,17 +35,17 @@ public class KeyWrapUnwrapTestProviderTests
         _keyWrapUnwrapTestProvider = new KeyWrapUnwrapTestProvider(_externalCredentialProvider, cmkOptions, NullLogger<KeyWrapUnwrapTestProvider>.Instance);
     }
 
-    [Fact]
+    [TestMethod]
     public async Task CustomerKeyNotSet_AssertHealthAsync_HealthyReturned()
     {
         CustomerKeyHealth health = await _keyWrapUnwrapTestProvider.AssertHealthAsync();
 
-        Assert.True(health.IsHealthy);
-        Assert.Equal(HealthStatusReason.None, health.Reason);
-        Assert.Null(health.Exception);
+        Assert.IsTrue(health.IsHealthy);
+        Assert.AreEqual(HealthStatusReason.None, health.Reason);
+        Assert.IsNull(health.Exception);
     }
 
-    [Fact]
+    [TestMethod]
     public async Task GivenKeyVaultDnsFailure_WhenAssertHealthAsync_ThenUnhealthyReturned()
     {
         // Arrange - use a non-existent Key Vault URI to trigger a real DNS failure
@@ -61,8 +62,8 @@ public class KeyWrapUnwrapTestProviderTests
         CustomerKeyHealth health = await provider.AssertHealthAsync();
 
         // Assert
-        Assert.False(health.IsHealthy);
-        Assert.Equal(HealthStatusReason.CustomerManagedKeyAccessLost, health.Reason);
-        Assert.NotNull(health.Exception);
+        Assert.IsFalse(health.IsHealthy);
+        Assert.AreEqual(HealthStatusReason.CustomerManagedKeyAccessLost, health.Reason);
+        Assert.IsNotNull(health.Exception);
     }
 }

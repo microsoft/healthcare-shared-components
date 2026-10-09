@@ -9,13 +9,11 @@ using System.Collections.ObjectModel;
 using System.Linq;
 using Azure.Messaging.EventGrid;
 using NSubstitute;
-using Xunit;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Microsoft.Health.EventGrid.UnitTests.Events;
 
-/// <summary>
-/// EventGridSinkTests.
-/// </summary>
+[TestClass]
 public class EventGridSinkTests
 {
     private readonly EventGridSink _eventGridSink;
@@ -41,7 +39,7 @@ public class EventGridSinkTests
     /// <summary>
     /// Test Send Events.
     /// </summary>
-    [Fact]
+    [TestMethod]
     public void TestSendEvents()
     {
         var eventsData = new List<EventGridEvent> { _testEventData };
@@ -65,7 +63,7 @@ public class EventGridSinkTests
     /// <summary>
     /// Test Send single Event
     /// </summary>
-    [Fact]
+    [TestMethod]
     public void TestSendEvent()
     {
         _ = _eventGridSink.WriteAsync(_testEventData);

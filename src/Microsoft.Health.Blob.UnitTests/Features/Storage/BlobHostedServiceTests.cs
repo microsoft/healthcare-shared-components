@@ -12,10 +12,11 @@ using Microsoft.Extensions.Options;
 using Microsoft.Health.Blob.Configs;
 using Microsoft.Health.Blob.Features.Storage;
 using NSubstitute;
-using Xunit;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Microsoft.Health.Blob.UnitTests.Features.Storage;
 
+[TestClass]
 public class BlobHostedServiceTests
 {
     private readonly IBlobInitializer _blobInitializer;
@@ -38,7 +39,7 @@ public class BlobHostedServiceTests
         _collectionInitializers = Substitute.For<List<IBlobContainerInitializer>>();
     }
 
-    [Fact]
+    [TestMethod]
     public async Task GivenCancelation_WhenStartingService_ThenOperationCanceledExceptionIsThrown()
     {
         var blobHostedService = new BlobHostedService(_blobInitializer, _collectionInitializers, _options, NullLogger<BlobHostedService>.Instance);

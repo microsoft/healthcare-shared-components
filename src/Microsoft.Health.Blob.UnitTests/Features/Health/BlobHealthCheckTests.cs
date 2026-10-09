@@ -17,10 +17,11 @@ using Microsoft.Health.Core.Features.Health;
 using Microsoft.Health.Encryption.Customer.Health;
 using NSubstitute;
 using NSubstitute.ExceptionExtensions;
-using Xunit;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Microsoft.Health.Blob.UnitTests.Features.Health;
 
+[TestClass]
 public class BlobHealthCheckTests
 {
     private readonly ValueCache<CustomerKeyHealth> _customerKeyHealthCache = new ValueCache<CustomerKeyHealth>();
@@ -54,15 +55,15 @@ public class BlobHealthCheckTests
             NullLogger<TestBlobHealthCheck>.Instance);
     }
 
-    [Fact]
+    [TestMethod]
     public async Task GivenBlobDataStoreIsAvailable_WhenHealthIsChecked_ThenHealthyStateShouldBeReturned()
     {
         HealthCheckResult result = await _healthCheck.CheckHealthAsync(new HealthCheckContext());
 
-        Assert.Equal(HealthStatus.Healthy, result.Status);
+        Assert.AreEqual(HealthStatus.Healthy, result.Status);
     }
 
-    [Fact]
+    [TestMethod]
     public async Task GivenBlobDataStoreIsNotAvailable_WhenHealthIsChecked_ThenExceptionIsThrown()
     {
         _testProvider.PerformTestAsync(default, _containerConfiguration).ThrowsForAnyArgs<HttpRequestException>();
@@ -70,7 +71,7 @@ public class BlobHealthCheckTests
         await Assert.ThrowsAsync<HttpRequestException>(() => _healthCheck.CheckHealthAsync(new HealthCheckContext()));
     }
 
-    [Fact]
+    [TestMethod]
     public async Task GivenPrerequisiteIsNotHealthy_WhenHealthIsChecked_ThenDegradedStatusReturned()
     {
         _customerKeyHealthCache.Set(new CustomerKeyHealth
@@ -80,10 +81,10 @@ public class BlobHealthCheckTests
         });
 
         HealthCheckResult result = await _healthCheck.CheckHealthAsync(new HealthCheckContext());
-        Assert.Equal(HealthStatus.Degraded, result.Status);
+        Assert.AreEqual(HealthStatus.Degraded, result.Status);
     }
 
-    [Fact]
+    [TestMethod]
     public async Task GivenCancellation_WhenHealthIsChecked_ThenOperationCancelledExceptionIsThrown()
     {
         using var cancellationTokenSource = new CancellationTokenSource();

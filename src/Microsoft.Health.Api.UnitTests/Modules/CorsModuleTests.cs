@@ -1,4 +1,4 @@
-﻿// -------------------------------------------------------------------------------------------------
+// -------------------------------------------------------------------------------------------------
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License (MIT). See LICENSE in the repo root for license information.
 // -------------------------------------------------------------------------------------------------
@@ -10,10 +10,11 @@ using Microsoft.Health.Api.Configuration;
 using Microsoft.Health.Api.Features.Cors;
 using Microsoft.Health.Api.Modules;
 using NSubstitute;
-using Xunit;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Microsoft.Health.Api.UnitTests.Modules;
 
+[TestClass]
 public class CorsModuleTests
 {
     private readonly CorsModule _corsModule;
@@ -27,65 +28,65 @@ public class CorsModuleTests
         _corsModule = new CorsModule(apiConfiguration);
     }
 
-    [Fact]
+    [TestMethod]
     public void GivenACorsConfiguration_WhenNoValuesSet_PolicyHasOnlyDefaults()
     {
         _corsModule.Load(_servicesCollection);
 
         CorsPolicy corsPolicy = _corsModule.DefaultCorsPolicy;
-        Assert.Empty(corsPolicy.Origins);
-        Assert.Empty(corsPolicy.Headers);
-        Assert.Empty(corsPolicy.Methods);
-        Assert.False(corsPolicy.SupportsCredentials);
-        Assert.Null(corsPolicy.PreflightMaxAge);
+        Assert.IsEmpty(corsPolicy.Origins);
+        Assert.IsEmpty(corsPolicy.Headers);
+        Assert.IsEmpty(corsPolicy.Methods);
+        Assert.IsFalse(corsPolicy.SupportsCredentials);
+        Assert.IsNull(corsPolicy.PreflightMaxAge);
     }
 
-    [Fact]
+    [TestMethod]
     public void GivenACorsConfiguration_WhenAllOriginsSet_PolicyHasAllowAnyOrigin()
     {
         _corsConfiguration.Origins.Add("*");
         _corsModule.Load(_servicesCollection);
 
-        Assert.True(_corsModule.DefaultCorsPolicy.AllowAnyOrigin);
+        Assert.IsTrue(_corsModule.DefaultCorsPolicy.AllowAnyOrigin);
     }
 
-    [Fact]
+    [TestMethod]
     public void GivenACorsConfiguration_WhenAllMethodsSet_PolicyHasAllowAnyMethod()
     {
         _corsConfiguration.Methods.Add("*");
         _corsModule.Load(_servicesCollection);
 
-        Assert.True(_corsModule.DefaultCorsPolicy.AllowAnyMethod);
+        Assert.IsTrue(_corsModule.DefaultCorsPolicy.AllowAnyMethod);
     }
 
-    [Fact]
+    [TestMethod]
     public void GivenACorsConfiguration_WhenAllHeadersSet_PolicyHasAllowAnyHeader()
     {
         _corsConfiguration.Headers.Add("*");
         _corsModule.Load(_servicesCollection);
 
-        Assert.True(_corsModule.DefaultCorsPolicy.AllowAnyHeader);
+        Assert.IsTrue(_corsModule.DefaultCorsPolicy.AllowAnyHeader);
     }
 
-    [Fact]
+    [TestMethod]
     public void GivenACorsConfiguration_WhenAllowCredentials_PolicyHasSupportsCredentials()
     {
         _corsConfiguration.AllowCredentials = true;
         _corsModule.Load(_servicesCollection);
 
-        Assert.True(_corsModule.DefaultCorsPolicy.SupportsCredentials);
+        Assert.IsTrue(_corsModule.DefaultCorsPolicy.SupportsCredentials);
     }
 
-    [Fact]
+    [TestMethod]
     public void GivenACorsConfiguration_WhenMaxAgeSet_PolicyHasMaxAge()
     {
         _corsConfiguration.MaxAge = 100;
         _corsModule.Load(_servicesCollection);
 
-        Assert.Equal(TimeSpan.FromSeconds(100), _corsModule.DefaultCorsPolicy.PreflightMaxAge);
+        Assert.AreEqual(TimeSpan.FromSeconds(100), _corsModule.DefaultCorsPolicy.PreflightMaxAge);
     }
 
-    [Fact]
+    [TestMethod]
     public void GivenACorsConfiguration_WhenMultipleValuesSet_PolicyHasSpecifiedValues()
     {
         _corsConfiguration.Origins.Add("https://example.com");
@@ -99,9 +100,9 @@ public class CorsModuleTests
 
         _corsModule.Load(_servicesCollection);
 
-        Assert.Equal(2, _corsModule.DefaultCorsPolicy.Origins.Count);
-        Assert.Equal(2, _corsModule.DefaultCorsPolicy.Methods.Count);
-        Assert.Equal(2, _corsModule.DefaultCorsPolicy.Headers.Count);
+        Assert.AreEqual(2, _corsModule.DefaultCorsPolicy.Origins.Count);
+        Assert.AreEqual(2, _corsModule.DefaultCorsPolicy.Methods.Count);
+        Assert.AreEqual(2, _corsModule.DefaultCorsPolicy.Headers.Count);
 
         Assert.Contains("https://example.com", _corsModule.DefaultCorsPolicy.Origins);
         Assert.Contains("https://contoso", _corsModule.DefaultCorsPolicy.Origins);

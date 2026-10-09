@@ -7,41 +7,41 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Health.SqlServer.Features.Schema;
-using Xunit;
-using Xunit.Abstractions;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Microsoft.Health.SqlServer.Tests.Integration.Features.Schema;
 
+[TestClass]
 public class SchemaInitializerTests : SqlIntegrationTestBase
 {
-    public SchemaInitializerTests(ITestOutputHelper outputHelper)
-        : base(outputHelper)
+    public SchemaInitializerTests(TestContext testContext)
+        : base(testContext)
     {
     }
 
-    [Fact]
+    [TestMethod]
     public async Task InvalidDatabaseName_CreateDatabaseAsync_ThrowsException()
     {
         await Assert.ThrowsAsync<ArgumentException>(
             () => SchemaInitializer.CreateDatabaseAsync(ConnectionWrapper, "[something] DROP DATABASE Production --", CancellationToken.None));
     }
 
-    [Fact]
+    [TestMethod]
     public async Task DatabaseDoesNotExist_DoesDatabaseExistAsync_ReturnsFalse()
     {
-        Assert.False(await SchemaInitializer.DoesDatabaseExistAsync(ConnectionWrapper, "doesnotexist", CancellationToken.None));
+        Assert.IsFalse(await SchemaInitializer.DoesDatabaseExistAsync(ConnectionWrapper, "doesnotexist", CancellationToken.None));
     }
 
-    [Fact]
+    [TestMethod]
     public async Task DatabaseExists_DoesDatabaseExistAsync_ReturnsTrue()
     {
         string dbName = $"Db_{Guid.NewGuid():N}";
 
         try
         {
-            Assert.False(await SchemaInitializer.DoesDatabaseExistAsync(ConnectionWrapper, dbName, CancellationToken.None));
-            Assert.True(await SchemaInitializer.CreateDatabaseAsync(ConnectionWrapper, dbName, CancellationToken.None));
-            Assert.True(await SchemaInitializer.DoesDatabaseExistAsync(ConnectionWrapper, dbName, CancellationToken.None));
+            Assert.IsFalse(await SchemaInitializer.DoesDatabaseExistAsync(ConnectionWrapper, dbName, CancellationToken.None));
+            Assert.IsTrue(await SchemaInitializer.CreateDatabaseAsync(ConnectionWrapper, dbName, CancellationToken.None));
+            Assert.IsTrue(await SchemaInitializer.DoesDatabaseExistAsync(ConnectionWrapper, dbName, CancellationToken.None));
         }
         finally
         {

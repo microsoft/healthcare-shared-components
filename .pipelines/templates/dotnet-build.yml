@@ -21,16 +21,18 @@ steps:
   displayName: Pre-Build Docker Cleanup
   continueOnError: true
 
-- task: DotNetCoreCLI@2
+- pwsh: |
+    # Use dotnet cli directly to resolve the MSTest.Sdk project
+    $PSNativeCommandUseErrorActionPreference = $true
+    dotnet restore Microsoft.Health.slnx `
+        "-p:ContinuousIntegrationBuild=true;AssemblyVersion=$env:ASSEMBLY_VERSION;FileVersion=$env:FILE_VERSION;InformationalVersion=$env:INFORMATIONAL_VERSION" `
+        -warnaserror
   displayName: Restore NuGet Packages
-  inputs:
-    command: restore
-    projects: Microsoft.Health.slnx
-    feedsToUse: config
-    nugetConfigPath: $(Build.SourcesDirectory)/nuget.config
-    restoreArguments: >-
-      "-p:ContinuousIntegrationBuild=true;AssemblyVersion=${{ parameters.assemblyVersion }};FileVersion=${{ parameters.fileVersion }};InformationalVersion=${{ parameters.informationalVersion }}"
-      -warnaserror
+  workingDirectory: $(Build.SourcesDirectory)
+  env:
+    ASSEMBLY_VERSION: ${{ parameters.assemblyVersion }}
+    FILE_VERSION: ${{ parameters.fileVersion }}
+    INFORMATIONAL_VERSION: ${{ parameters.informationalVersion }}
 
 - task: DotNetCoreCLI@2
   displayName: Build Solution
@@ -40,7 +42,8 @@ steps:
     arguments: >-
       --configuration "${{ parameters.buildConfiguration }}"
       "-p:ContinuousIntegrationBuild=true;AssemblyVersion=${{ parameters.assemblyVersion }};FileVersion=${{ parameters.fileVersion }};InformationalVersion=${{ parameters.informationalVersion }}"
-      -warnaserror --no-restore
+      --no-restore
+      -warnaserror
     workingDirectory: $(Build.SourcesDirectory)
 
 - bash: bash "$BUILD_SOURCESDIRECTORY/.pipelines/scripts/install-functions-core-tools.sh"
@@ -92,26 +95,6 @@ steps:
 
 - pwsh: |
     $PSNativeCommandUseErrorActionPreference = $true
-    dotnet test Microsoft.Health.slnx `
-        -c $env:BUILD_CONFIGURATION `
-        "-p:ContinuousIntegrationBuild=true;AssemblyVersion=$env:ASSEMBLY_VERSION;FileVersion=$env:FILE_VERSION;InformationalVersion=$env:INFORMATIONAL_VERSION" `
-        --filter 'FullyQualifiedName!~Microsoft.Health.Functions.Worker.Tests.Integration' `
-        -warnaserror --no-build `
-        --logger trx `
-        --results-directory (Join-Path $env:AGENT_TEMPDIRECTORY 'TestResults')
-  displayName: Run Tests
-  workingDirectory: $(Build.SourcesDirectory)
-  env:
-    BUILD_CONFIGURATION: ${{ parameters.buildConfiguration }}
-    ASSEMBLY_VERSION: ${{ parameters.assemblyVersion }}
-    FILE_VERSION: ${{ parameters.fileVersion }}
-    INFORMATIONAL_VERSION: ${{ parameters.informationalVersion }}
-    AzureWebJobsStorage: UseDevelopmentStorage=true
-    DurableTask__ConnectionName: AzureWebJobsStorage
-    TestSqlConnectionString: 'Server=(local);Persist Security Info=False;User ID=sa;Password=$(SqlPassword);MultipleActiveResultSets=False;Connection Timeout=30;TrustServerCertificate=true'
-
-- pwsh: |
-    $PSNativeCommandUseErrorActionPreference = $true
     $exampleDirectory = Join-Path $env:BUILD_SOURCESDIRECTORY 'test' 'Microsoft.Health.Functions.Worker.Examples'
     $outputDirectory = Join-Path $exampleDirectory 'bin' 'output'
     # func start --no-build expects the compiled app in bin/output.
@@ -124,44 +107,44 @@ steps:
         -WorkingDirectory $exampleDirectory
     try {
         # The integration fixture waits for the host's health endpoint before running tests.
-        $testProject = Join-Path $env:BUILD_SOURCESDIRECTORY 'test' `
-            'Microsoft.Health.Functions.Worker.Tests.Integration' 'Microsoft.Health.Functions.Worker.Tests.Integration.csproj'
-        dotnet test $testProject `
+        dotnet test `
             -c $env:BUILD_CONFIGURATION `
+            --coverage `
+            --coverage-output-format cobertura `
+            --coverage-settings "$(Build.SourcesDirectory)/CodeCoverage.config" `
             "-p:ContinuousIntegrationBuild=true;AssemblyVersion=$env:ASSEMBLY_VERSION;FileVersion=$env:FILE_VERSION;InformationalVersion=$env:INFORMATIONAL_VERSION" `
-            -warnaserror --no-build `
-            --logger trx `
-            --results-directory (Join-Path $env:AGENT_TEMPDIRECTORY 'TestResults')
+            --no-build `
+            --publish-azdo-test-results `
+            --report-azdo `
+            --results-directory (Join-Path $env:AGENT_TEMPDIRECTORY 'TestResults') `
+            --solution Microsoft.Health.slnx
     }
     finally {
         Stop-Job -Id $funcHost.Id
         Receive-Job -Id $funcHost.Id
         Remove-Job -Id $funcHost.Id
     }
-  displayName: Test Isolated Functions Worker
+  displayName: Test Solution
   env:
     BUILD_CONFIGURATION: ${{ parameters.buildConfiguration }}
     ASSEMBLY_VERSION: ${{ parameters.assemblyVersion }}
     FILE_VERSION: ${{ parameters.fileVersion }}
     INFORMATIONAL_VERSION: ${{ parameters.informationalVersion }}
+    SYSTEM_ACCESSTOKEN: $(System.AccessToken)
     AzureWebJobsStorage: UseDevelopmentStorage=true
     AzureFunctionsJobHost__Extensions__DurableTask__StorageProvider__ConnectionName: AzureWebJobsStorage
     AzureFunctionsJobHost__Extensions__DurableTask__HubName: WorkerIntegrationTests
+    DurableTask__ConnectionName: AzureWebJobsStorage
     FunctionWorkerTest__DurableTask__ConnectionString: UseDevelopmentStorage=true
     FunctionWorkerTest__DurableTask__TaskHubName: WorkerIntegrationTests
     FunctionWorkerTest__Port: '7071'
+    TestSqlConnectionString: 'Server=(local);Persist Security Info=False;User ID=sa;Password=$(SqlPassword);MultipleActiveResultSets=False;Connection Timeout=30;TrustServerCertificate=true'
 
-- task: PublishTestResults@2
-  displayName: Publish Test Results
+- task: PublishCodeCoverageResults@2
+  displayName: Publish Code Coverage
   condition: succeededOrFailed()
   inputs:
-    testResultsFormat: VSTest
-    testResultsFiles: '**/*.trx'
-    searchFolder: $(Agent.TempDirectory)/TestResults
-    mergeTestResults: true
-    failTaskOnFailedTests: true
-    failTaskOnFailureToPublishResults: true
-    testRunTitle: Healthcare Shared Components Tests
+    summaryFileLocation: $(Agent.TempDirectory)/TestResults/**/*.cobertura.xml
 
 - pwsh: |
     $PSNativeCommandUseErrorActionPreference = $true

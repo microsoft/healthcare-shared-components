@@ -8,22 +8,23 @@ using System.IO;
 using System.Text;
 using System.Text.Json;
 using Microsoft.Health.Operations.Serialization;
-using Xunit;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Microsoft.Health.Operations.UnitTests.Serialization;
 
+[TestClass]
 public class OperationIdJsonConverterTests
 {
     private static readonly JsonSerializerOptions DefaultOptions = new();
 
-    [Theory]
-    [InlineData("null")]
-    [InlineData("42")]
-    [InlineData("{ \"foo\": \"bar\" }")]
-    [InlineData("[ 1, 2, 3 ]")]
-    [InlineData("\"\"")]
-    [InlineData("\"bar\"")]
-    [InlineData("\"0123456789abcdef0123456789abcde\"")]
+    [TestMethod]
+    [DataRow("null")]
+    [DataRow("42")]
+    [DataRow("{ \"foo\": \"bar\" }")]
+    [DataRow("[ 1, 2, 3 ]")]
+    [DataRow("\"\"")]
+    [DataRow("\"bar\"")]
+    [DataRow("\"0123456789abcdef0123456789abcde\"")]
     public void GivenInvalidToken_WhenReadingJson_ThenThrowJsonReaderException(string json)
     {
         Assert.Throws<JsonException>(() =>
@@ -31,7 +32,7 @@ public class OperationIdJsonConverterTests
             Utf8JsonReader jsonReader = new(Encoding.UTF8.GetBytes(json));
             try
             {
-                Assert.True(jsonReader.Read());
+                Assert.IsTrue(jsonReader.Read());
             }
             catch (JsonException)
             {
@@ -42,18 +43,18 @@ public class OperationIdJsonConverterTests
         });
     }
 
-    [Fact]
+    [TestMethod]
     public void GivenValidToken_WhenReadingJson_ThenReturnOperationId()
     {
         Guid expected = Guid.NewGuid();
         Utf8JsonReader jsonReader = new(Encoding.UTF8.GetBytes("\"" + expected.ToString(OperationId.FormatSpecifier) + "\""));
 
-        Assert.True(jsonReader.Read());
+        Assert.IsTrue(jsonReader.Read());
         Guid actual = new OperationIdJsonConverter().Read(ref jsonReader, typeof(Guid), DefaultOptions);
-        Assert.Equal(expected, actual);
+        Assert.AreEqual(expected, actual);
     }
 
-    [Fact]
+    [TestMethod]
     public void GivenGuid_WhenWritingJson_ThenWriteStringToken()
     {
         Guid expected = Guid.NewGuid();
@@ -66,6 +67,6 @@ public class OperationIdJsonConverterTests
         buffer.Seek(0, SeekOrigin.Begin);
         Utf8JsonReader jsonReader = new(buffer.ToArray());
 
-        Assert.Equal(expected.ToString(OperationId.FormatSpecifier), JsonSerializer.Deserialize<string>(ref jsonReader, DefaultOptions));
+        Assert.AreEqual(expected.ToString(OperationId.FormatSpecifier), JsonSerializer.Deserialize<string>(ref jsonReader, DefaultOptions));
     }
 }

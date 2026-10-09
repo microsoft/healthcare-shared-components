@@ -12,10 +12,11 @@ using Azure.Storage.Blobs.Models;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Health.Blob.Features.Storage;
 using NSubstitute;
-using Xunit;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Microsoft.Health.Blob.UnitTests.Features.Storage;
 
+[TestClass]
 public class BlobContainerInitializerTests
 {
     private const string TestContainerName = "testcontainer1";
@@ -38,7 +39,7 @@ public class BlobContainerInitializerTests
         _blobClient.GetBlobContainerClient(TestContainerName).Returns(blobContainerClient);
     }
 
-    [Fact]
+    [TestMethod]
     public async Task GivenCancelation_WhenInitializingContainer_ThenOperationCanceledExceptionIsThrown()
     {
         var blobContainerInitializer = new BlobContainerInitializer(TestContainerName, _logger);

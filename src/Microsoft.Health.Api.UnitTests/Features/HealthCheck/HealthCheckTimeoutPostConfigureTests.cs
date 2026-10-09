@@ -1,4 +1,4 @@
-﻿// -------------------------------------------------------------------------------------------------
+// -------------------------------------------------------------------------------------------------
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License (MIT). See LICENSE in the repo root for license information.
 // -------------------------------------------------------------------------------------------------
@@ -8,13 +8,14 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Options;
 using NSubstitute;
-using Xunit;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Microsoft.Health.Api.UnitTests.Features.HealthCheck;
 
+[TestClass]
 public class HealthCheckTimeoutPostConfigureTests
 {
-    [Fact]
+    [TestMethod]
     public void GivenHealthChecks_WhenOverridingTimeout_ThenReplaceTimeout()
     {
         IServiceProvider provider = new ServiceCollection()
@@ -27,7 +28,9 @@ public class HealthCheckTimeoutPostConfigureTests
             .BuildServiceProvider();
 
         IOptions<HealthCheckServiceOptions> options = provider.GetRequiredService<IOptions<HealthCheckServiceOptions>>();
-        Assert.Equal(3, options.Value.Registrations.Count);
-        Assert.All(options.Value.Registrations, r => Assert.Equal(TimeSpan.FromSeconds(30), r.Timeout));
+        Assert.HasCount(3, options.Value.Registrations);
+
+        foreach (HealthCheckRegistration r in options.Value.Registrations)
+            Assert.AreEqual(TimeSpan.FromSeconds(30), r.Timeout);
     }
 }

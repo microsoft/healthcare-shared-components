@@ -18,10 +18,11 @@ using Microsoft.Health.SqlServer.Features.Schema;
 using Microsoft.Health.SqlServer.Features.Schema.Model;
 using Microsoft.Health.SqlServer.Features.Storage;
 using NSubstitute;
-using Xunit;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Microsoft.Health.SqlServer.UnitTests.Features.Schema;
 
+[TestClass]
 public sealed class SchemaJobWorkerTests : IDisposable
 {
     private readonly IServiceProvider _serviceProvider;
@@ -54,11 +55,10 @@ public sealed class SchemaJobWorkerTests : IDisposable
         _worker = new SchemaJobWorker(_serviceProvider, Options.Create(_sqlServerDataStoreConfiguration), _mediator, _processTerminator, _logger);
     }
 
-    [Fact]
+    [TestMethod]
     public async Task GivenSchemaInformation_WhenCurrentDoesNotMatchTerminateWhenSchemaVersionUpdatedTo_ProcessTerminatorNotCalled()
     {
-        SchemaInformation info = new SchemaInformation(1, 2);
-        info.Current = 1;
+        SchemaInformation info = new SchemaInformation(1, 2) { Current = 1 };
         _schemaDataStore.UpsertInstanceSchemaInformationAsync(default, default, default).ReturnsForAnyArgs(x =>
         {
             if (_callCount++ > 1)
@@ -80,11 +80,10 @@ public sealed class SchemaJobWorkerTests : IDisposable
         _processTerminator.DidNotReceiveWithAnyArgs().Terminate(default);
     }
 
-    [Fact]
+    [TestMethod]
     public async Task GivenSchemaInformation_WhenCurrentMatchesTerminateWhenSchemaVersionUpdatedTo_ProcessTerminatorCalled()
     {
-        SchemaInformation info = new SchemaInformation(1, 2);
-        info.Current = 1;
+        SchemaInformation info = new SchemaInformation(1, 2) { Current = 1 };
         _schemaDataStore.UpsertInstanceSchemaInformationAsync(default, default, default).ReturnsForAnyArgs(x =>
         {
             if (_callCount++ > 1)
@@ -106,11 +105,10 @@ public sealed class SchemaJobWorkerTests : IDisposable
         _processTerminator.ReceivedWithAnyArgs().Terminate(default);
     }
 
-    [Fact]
+    [TestMethod]
     public async Task GivenSchemaInformation_WhenCurrentIsNullAndTerminateWhenSchemaVersionUpdatedToIsNotNull_ProcessTerminatorNotCalled()
     {
-        SchemaInformation info = new SchemaInformation(1, 2);
-        info.Current = null;
+        SchemaInformation info = new SchemaInformation(1, 2) { Current = null };
         _schemaDataStore.UpsertInstanceSchemaInformationAsync(default, default, default).ReturnsForAnyArgs(x =>
         {
             if (_callCount++ > 1)
@@ -132,7 +130,7 @@ public sealed class SchemaJobWorkerTests : IDisposable
         _processTerminator.DidNotReceiveWithAnyArgs().Terminate(default);
     }
 
-    [Fact]
+    [TestMethod]
     public async Task GivenSchemaInformation_WhenCurrentIsNullAndTerminateWhenSchemaVersionUpdatedToIsNull_ProcessTerminatorNotCalled()
     {
         SchemaInformation info = new SchemaInformation(1, 2);
@@ -160,11 +158,10 @@ public sealed class SchemaJobWorkerTests : IDisposable
         _processTerminator.DidNotReceiveWithAnyArgs().Terminate(default);
     }
 
-    [Fact]
+    [TestMethod]
     public async Task GivenReadOnlyDatabase_WhenUpsertThrows3906_SchemaVersionIsReadFromCurrentVersions()
     {
-        SchemaInformation info = new SchemaInformation(1, 5);
-        info.Current = null;
+        SchemaInformation info = new SchemaInformation(1, 5) { Current = null };
 
         _schemaDataStore.UpsertInstanceSchemaInformationAsync(default, default, default).ReturnsForAnyArgs<int>(x =>
         {
@@ -190,15 +187,14 @@ public sealed class SchemaJobWorkerTests : IDisposable
         {
         }
 
-        Assert.Equal(3, info.Current);
+        Assert.AreEqual(3, info.Current);
         await _schemaDataStore.DidNotReceiveWithAnyArgs().DeleteExpiredInstanceSchemaAsync(default);
     }
 
-    [Fact]
+    [TestMethod]
     public async Task GivenReadOnlyDatabase_WhenUpsertThrows3906_DeleteExpiredInstanceSchemaIsSkipped()
     {
-        SchemaInformation info = new SchemaInformation(1, 5);
-        info.Current = 3;
+        SchemaInformation info = new SchemaInformation(1, 5) { Current = 3 };
 
         _schemaDataStore.UpsertInstanceSchemaInformationAsync(default, default, default).ReturnsForAnyArgs<int>(x =>
         {
@@ -227,11 +223,10 @@ public sealed class SchemaJobWorkerTests : IDisposable
         await _schemaDataStore.DidNotReceiveWithAnyArgs().DeleteExpiredInstanceSchemaAsync(default);
     }
 
-    [Fact]
+    [TestMethod]
     public async Task GivenReadOnlyDatabase_WhenUpsertThrows3906_OnlyCompletedVersionsAreConsidered()
     {
-        SchemaInformation info = new SchemaInformation(1, 5);
-        info.Current = null;
+        SchemaInformation info = new SchemaInformation(1, 5) { Current = null };
 
         _schemaDataStore.UpsertInstanceSchemaInformationAsync(default, default, default).ReturnsForAnyArgs<int>(x =>
         {
@@ -259,15 +254,14 @@ public sealed class SchemaJobWorkerTests : IDisposable
         }
 
         // Should pick version 3 (completed), not version 4 (started)
-        Assert.Equal(3, info.Current);
+        Assert.AreEqual(3, info.Current);
     }
 
-    [Fact]
+    [TestMethod]
     public async Task GivenReadOnlyDatabase_WhenCompletedVersionExceedsMaxSupported_CurrentIsCappedToMaxSupported()
     {
         // Pod supports up to version 5, but SQL has version 7 completed (replicated from a newer primary)
-        SchemaInformation info = new SchemaInformation(1, 5);
-        info.Current = null;
+        SchemaInformation info = new SchemaInformation(1, 5) { Current = null };
 
         _schemaDataStore.UpsertInstanceSchemaInformationAsync(default, default, default).ReturnsForAnyArgs<int>(x =>
         {
@@ -296,7 +290,7 @@ public sealed class SchemaJobWorkerTests : IDisposable
         }
 
         // Should pick version 5 (max supported), not version 7
-        Assert.Equal(5, info.Current);
+        Assert.AreEqual(5, info.Current);
     }
 
     public void Dispose()
@@ -305,13 +299,12 @@ public sealed class SchemaJobWorkerTests : IDisposable
         GC.SuppressFinalize(this);
     }
 
-    [Fact]
+    [TestMethod]
     public async Task GivenWriteGateReturnsFalse_WhenExecuting_UpsertIsSkipped()
     {
         _writeGate.CanWriteAsync(default).ReturnsForAnyArgs(Task.FromResult(false));
 
-        SchemaInformation info = new SchemaInformation(1, 5);
-        info.Current = null;
+        SchemaInformation info = new SchemaInformation(1, 5) { Current = null };
 
         _schemaDataStore.GetCurrentVersionAsync(default).ReturnsForAnyArgs(x =>
         {
@@ -337,16 +330,15 @@ public sealed class SchemaJobWorkerTests : IDisposable
         }
 
         await _schemaDataStore.DidNotReceive().UpsertInstanceSchemaInformationAsync(Arg.Any<string>(), Arg.Any<SchemaInformation>(), Arg.Any<CancellationToken>());
-        Assert.Equal(3, info.Current);
+        Assert.AreEqual(3, info.Current);
     }
 
-    [Fact]
+    [TestMethod]
     public async Task GivenWriteGateReturnsTrue_WhenExecuting_UpsertIsPerformed()
     {
         _writeGate.CanWriteAsync(default).ReturnsForAnyArgs(Task.FromResult(true));
 
-        SchemaInformation info = new SchemaInformation(1, 5);
-        info.Current = null;
+        SchemaInformation info = new SchemaInformation(1, 5) { Current = null };
 
         _schemaDataStore.UpsertInstanceSchemaInformationAsync(default, default, default).ReturnsForAnyArgs(x =>
         {
@@ -371,13 +363,12 @@ public sealed class SchemaJobWorkerTests : IDisposable
         await _schemaDataStore.Received().UpsertInstanceSchemaInformationAsync(Arg.Any<string>(), Arg.Any<SchemaInformation>(), Arg.Any<CancellationToken>());
     }
 
-    [Fact]
+    [TestMethod]
     public async Task GivenWriteGateReturnsTrue_WhenUpsertThrows3906_ReadOnlyFallbackIsUsed()
     {
         _writeGate.CanWriteAsync(default).ReturnsForAnyArgs(Task.FromResult(true));
 
-        SchemaInformation info = new SchemaInformation(1, 5);
-        info.Current = null;
+        SchemaInformation info = new SchemaInformation(1, 5) { Current = null };
 
         _schemaDataStore.UpsertInstanceSchemaInformationAsync(default, default, default).ReturnsForAnyArgs<int>(x =>
         {
@@ -405,6 +396,6 @@ public sealed class SchemaJobWorkerTests : IDisposable
         {
         }
 
-        Assert.Equal(3, info.Current);
+        Assert.AreEqual(3, info.Current);
     }
 }
