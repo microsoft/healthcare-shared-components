@@ -116,8 +116,6 @@ steps:
             --no-build `
             --publish-azdo-test-results `
             --report-azdo `
-            --report-azdo-upload-artifacts files `
-            --report-trx `
             --results-directory (Join-Path $env:AGENT_TEMPDIRECTORY 'TestResults') `
             --solution Microsoft.Health.slnx
     }
