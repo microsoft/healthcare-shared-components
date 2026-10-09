@@ -102,17 +102,6 @@ steps:
     Copy-Item (Join-Path $exampleDirectory 'bin' $env:BUILD_CONFIGURATION 'net10.0' '*') `
         -Destination $outputDirectory -Recurse -Force
 
-    # Microsoft.Testing.Platform's Azure DevOps reporting silently degrades if any of these are missing.
-    foreach ($name in 'TF_BUILD', 'SYSTEM_COLLECTIONURI', 'SYSTEM_TEAMPROJECT', 'BUILD_DEFINITIONID', 'BUILD_BUILDID') {
-        $value = [Environment]::GetEnvironmentVariable($name)
-        if ([string]::IsNullOrEmpty($value)) {
-            Write-Host "##vso[task.logissue type=warning]$name is not set; Azure DevOps test reporting will be incomplete."
-        }
-        else {
-            Write-Host "$name=$value"
-        }
-    }
-
     $funcHost = Start-Job -Name AzFuncStart `
         -ScriptBlock { & func start --port 7071 --no-build --prefix (Join-Path 'bin' 'output') } `
         -WorkingDirectory $exampleDirectory
@@ -127,7 +116,8 @@ steps:
             --no-build `
             --publish-azdo-test-results `
             --report-azdo `
-            --report-azdo-upload-artifacts all `
+            --report-azdo-upload-artifacts files `
+            --report-trx `
             --results-directory (Join-Path $env:AGENT_TEMPDIRECTORY 'TestResults') `
             --solution Microsoft.Health.slnx
     }
@@ -142,6 +132,7 @@ steps:
     ASSEMBLY_VERSION: ${{ parameters.assemblyVersion }}
     FILE_VERSION: ${{ parameters.fileVersion }}
     INFORMATIONAL_VERSION: ${{ parameters.informationalVersion }}
+    SYSTEM_ACCESSTOKEN: $(System.AccessToken)
     AzureWebJobsStorage: UseDevelopmentStorage=true
     AzureFunctionsJobHost__Extensions__DurableTask__StorageProvider__ConnectionName: AzureWebJobsStorage
     AzureFunctionsJobHost__Extensions__DurableTask__HubName: WorkerIntegrationTests
@@ -149,11 +140,11 @@ steps:
     FunctionWorkerTest__DurableTask__ConnectionString: UseDevelopmentStorage=true
     FunctionWorkerTest__DurableTask__TaskHubName: WorkerIntegrationTests
     FunctionWorkerTest__Port: '7071'
-    SYSTEM_ACCESSTOKEN: $(System.AccessToken)
     TestSqlConnectionString: 'Server=(local);Persist Security Info=False;User ID=sa;Password=$(SqlPassword);MultipleActiveResultSets=False;Connection Timeout=30;TrustServerCertificate=true'
 
 - task: PublishCodeCoverageResults@2
   displayName: Publish Code Coverage
+  condition: succeededOrFailed()
   inputs:
     summaryFileLocation: $(Agent.TempDirectory)/TestResults/**/*.cobertura.xml
 
