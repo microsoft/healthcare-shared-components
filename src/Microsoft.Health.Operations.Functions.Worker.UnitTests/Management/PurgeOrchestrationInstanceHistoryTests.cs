@@ -121,7 +121,7 @@ public class PurgeOrchestrationInstanceHistoryTests
     private static AsyncPageable<T> CreatePaginatedResults<T>(List<T> data, int pageSize)
         where T : notnull
     {
-        return Pageable.Create((string? continuation, CancellationToken token) =>
+        return Pageable.Create((continuation, token) =>
         {
             if (string.IsNullOrEmpty(continuation))
                 return Task.FromResult(new Page<T>(data.Take(pageSize).ToList(), pageSize.ToString(CultureInfo.InvariantCulture)));

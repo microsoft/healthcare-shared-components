@@ -30,7 +30,7 @@ public class OperationStateTests
         string json = JsonSerializer.Serialize(state, type);
         JsonElement element = JsonSerializer.Deserialize<JsonElement>(json);
 
-        Assert.IsTrue(element.TryGetProperty(nameof(IOperationState<int>.OperationId), out JsonElement property));
+        Assert.IsTrue(element.TryGetProperty(nameof(IOperationState<>.OperationId), out JsonElement property));
         Assert.AreEqual(state.OperationId.ToString(OperationId.FormatSpecifier), property.GetString());
     }
 

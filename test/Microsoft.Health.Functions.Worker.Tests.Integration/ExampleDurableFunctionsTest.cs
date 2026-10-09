@@ -51,6 +51,6 @@ public class ExampleDurableFunctionsTest : DurableFunctionsTest
 
         int[]? actual = metadata.ReadOutputAs<int[]>();
         Assert.IsNotNull(actual);
-        Assert.IsTrue(actual!.SequenceEqual([5, 4, 4, 3, 2, 1]), $"Received {string.Join(", ", actual)}");
+        Assert.IsTrue(actual.SequenceEqual([5, 4, 4, 3, 2, 1]), $"Received {string.Join(", ", actual)}");
     }
 }

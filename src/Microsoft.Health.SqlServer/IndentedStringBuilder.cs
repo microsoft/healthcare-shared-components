@@ -28,7 +28,7 @@ public partial class IndentedStringBuilder
 
     internal int IndentLevel
     {
-        get => field;
+        get;
         set => field = EnsureArg.IsGte(value, 0);
     }
 
