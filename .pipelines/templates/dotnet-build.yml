@@ -93,48 +93,71 @@ steps:
   env:
     SQLCMDPASSWORD: $(SqlPassword)
 
-- pwsh: |
-    $PSNativeCommandUseErrorActionPreference = $true
-    $exampleDirectory = Join-Path $env:BUILD_SOURCESDIRECTORY 'test' 'Microsoft.Health.Functions.Worker.Examples'
-    $outputDirectory = Join-Path $exampleDirectory 'bin' 'output'
+- bash: |
+    set -euo pipefail
+    exampleDirectory="$BUILD_SOURCESDIRECTORY/test/Microsoft.Health.Functions.Worker.Examples"
     # func start --no-build expects the compiled app in bin/output.
-    New-Item -ItemType Directory -Path $outputDirectory -Force | Out-Null
-    Copy-Item (Join-Path $exampleDirectory 'bin' $env:BUILD_CONFIGURATION 'net10.0' '*') `
-        -Destination $outputDirectory -Recurse -Force
+    mkdir -p "$exampleDirectory/bin/output"
+    cp -R "$exampleDirectory/bin/$BUILD_CONFIGURATION/net10.0/." "$exampleDirectory/bin/output"
 
-    $funcHost = Start-Job -Name AzFuncStart `
-        -ScriptBlock { & func start --port 7071 --no-build --prefix (Join-Path 'bin' 'output') } `
-        -WorkingDirectory $exampleDirectory
-    try {
-        # The integration fixture waits for the host's health endpoint before running tests.
-        dotnet test `
-            -c $env:BUILD_CONFIGURATION `
-            --coverage `
-            --coverage-output-format cobertura `
-            --coverage-settings "$(Build.SourcesDirectory)/CodeCoverage.config" `
-            "-p:ContinuousIntegrationBuild=true;AssemblyVersion=$env:ASSEMBLY_VERSION;FileVersion=$env:FILE_VERSION;InformationalVersion=$env:INFORMATIONAL_VERSION" `
-            --no-build `
-            --publish-azdo-test-results `
-            --report-azdo `
-            --results-directory (Join-Path $env:AGENT_TEMPDIRECTORY 'TestResults') `
-            --solution Microsoft.Health.slnx
-    }
-    finally {
-        Stop-Job -Id $funcHost.Id
-        Receive-Job -Id $funcHost.Id
-        Remove-Job -Id $funcHost.Id
-    }
-  displayName: Test Solution
+    # Redirect all streams so the host outlives this step without holding the agent's pipes.
+    cd "$exampleDirectory"
+    nohup func start --port 7071 --no-build --prefix bin/output \
+        < /dev/null > "$AGENT_TEMPDIRECTORY/azure-functions.log" 2>&1 &
+    echo "##vso[task.setvariable variable=AzureFunctionsPid]$!"
+    echo '##vso[task.setvariable variable=AzureFunctionsStarted]true'
+  displayName: Start Azure Functions
   env:
     BUILD_CONFIGURATION: ${{ parameters.buildConfiguration }}
-    ASSEMBLY_VERSION: ${{ parameters.assemblyVersion }}
-    FILE_VERSION: ${{ parameters.fileVersion }}
-    INFORMATIONAL_VERSION: ${{ parameters.informationalVersion }}
-    SYSTEM_ACCESSTOKEN: $(System.AccessToken)
     AzureWebJobsStorage: UseDevelopmentStorage=true
     AzureFunctionsJobHost__Extensions__DurableTask__StorageProvider__ConnectionName: AzureWebJobsStorage
     AzureFunctionsJobHost__Extensions__DurableTask__HubName: WorkerIntegrationTests
     DurableTask__ConnectionName: AzureWebJobsStorage
+
+- pwsh: |
+    # The host needs time to start; failed health checks are retried here only.
+    for ($attempt = 0; $attempt -lt 24; $attempt++) {
+        if (-not (Get-Process -Id $env:AZURE_FUNCTIONS_PID -ErrorAction SilentlyContinue)) {
+            throw 'Azure Functions host exited before becoming ready. See the Stop Azure Functions step for its logs.'
+        }
+
+        try {
+            Invoke-WebRequest -Uri 'http://localhost:7071/api/healthz' -TimeoutSec 5 | Out-Null
+            exit 0
+        }
+        catch {
+            Start-Sleep -Seconds 5
+        }
+    }
+
+    throw 'Azure Functions host did not become ready within two minutes. See the Stop Azure Functions step for its logs.'
+  displayName: Wait for Azure Functions
+  env:
+    AZURE_FUNCTIONS_PID: $(AzureFunctionsPid)
+
+- task: DotNetCoreCLI@2
+  displayName: Test Solution
+  inputs:
+    command: test
+    # Runs dotnet test --project once per matching test project.
+    projects: |
+      src/**/*Tests*.csproj
+      test/**/*Tests*.csproj
+    arguments: >-
+      --configuration "${{ parameters.buildConfiguration }}"
+      --coverage
+      --coverage-output-format cobertura
+      --coverage-settings "$(Build.SourcesDirectory)/CodeCoverage.config"
+      "-p:ContinuousIntegrationBuild=true;AssemblyVersion=${{ parameters.assemblyVersion }};FileVersion=${{ parameters.fileVersion }};InformationalVersion=${{ parameters.informationalVersion }}"
+      --no-build
+      --publish-azdo-test-results
+      --report-azdo
+      --results-directory "$(Agent.TempDirectory)/TestResults"
+    # Results are published by --publish-azdo-test-results instead of the task's TRX upload.
+    publishTestResults: false
+    workingDirectory: $(Build.SourcesDirectory)
+  env:
+    SYSTEM_ACCESSTOKEN: $(System.AccessToken)
     FunctionWorkerTest__DurableTask__ConnectionString: UseDevelopmentStorage=true
     FunctionWorkerTest__DurableTask__TaskHubName: WorkerIntegrationTests
     FunctionWorkerTest__Port: '7071'
@@ -145,6 +168,31 @@ steps:
   condition: succeededOrFailed()
   inputs:
     summaryFileLocation: $(Agent.TempDirectory)/TestResults/**/*.cobertura.xml
+
+- pwsh: |
+    $logPath = Join-Path $env:AGENT_TEMPDIRECTORY 'azure-functions.log'
+    try {
+        $funcHost = Get-Process -Id $env:AZURE_FUNCTIONS_PID -ErrorAction SilentlyContinue
+        if ($funcHost) {
+            # SIGINT lets the host shut down its worker gracefully before falling back to a forced kill.
+            kill -s INT $funcHost.Id
+            if (-not $funcHost.WaitForExit(30000)) {
+                $funcHost.Kill($true)
+            }
+        }
+        else {
+            Write-Host '##vso[task.logissue type=warning]Azure Functions host exited before it was stopped.'
+        }
+    }
+    finally {
+        if (Test-Path $logPath) {
+            Get-Content $logPath
+        }
+    }
+  displayName: Stop Azure Functions
+  condition: and(always(), eq(variables['AzureFunctionsStarted'], 'true'))
+  env:
+    AZURE_FUNCTIONS_PID: $(AzureFunctionsPid)
 
 - pwsh: |
     $PSNativeCommandUseErrorActionPreference = $true
