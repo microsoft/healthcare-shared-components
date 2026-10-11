@@ -151,8 +151,10 @@ steps:
       "-p:ContinuousIntegrationBuild=true;AssemblyVersion=${{ parameters.assemblyVersion }};FileVersion=${{ parameters.fileVersion }};InformationalVersion=${{ parameters.informationalVersion }}"
       --no-build
       --publish-azdo-test-results
+      --report-azdo-upload-artifacts files
+      --report-azdo-upload-artifact-include **/*.trx
       --report-azdo
-      --results-directory "$(Agent.TempDirectory)/TestResults"
+      --report-trx
     # Results are published by --publish-azdo-test-results instead of the task's TRX upload.
     publishTestResults: false
     workingDirectory: $(Build.SourcesDirectory)
@@ -167,7 +169,8 @@ steps:
   displayName: Publish Code Coverage
   condition: succeededOrFailed()
   inputs:
-    summaryFileLocation: $(Agent.TempDirectory)/TestResults/**/*.cobertura.xml
+    # Each test project writes its results to TestResults next to its test assembly.
+    summaryFileLocation: $(Build.SourcesDirectory)/**/TestResults/**/*.cobertura.xml
 
 - pwsh: |
     $logPath = Join-Path $env:AGENT_TEMPDIRECTORY 'azure-functions.log'

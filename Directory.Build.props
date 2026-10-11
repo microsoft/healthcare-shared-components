@@ -86,6 +86,7 @@
     <When Condition="$(MSBuildProjectName.Contains('Tests'))">
       <PropertyGroup>
         <EnableMicrosoftTestingExtensionsAzureDevOpsReport Condition="'$(ContinuousIntegrationBuild)' == 'true' And '$(EnableMicrosoftTestingExtensionsAzureDevOpsReport)' == ''">true</EnableMicrosoftTestingExtensionsAzureDevOpsReport>
+        <EnableMicrosoftTestingExtensionsTrxReport Condition="'$(ContinuousIntegrationBuild)' == 'true' And '$(EnableMicrosoftTestingExtensionsTrxReport)' == ''">true</EnableMicrosoftTestingExtensionsTrxReport>
         <IsPackable>false</IsPackable>
         <!-- CA1515: Consider making public types internal -->
         <!-- CA1707: Identifiers should not contain underscores -->
