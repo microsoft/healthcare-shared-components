@@ -17,6 +17,8 @@ namespace Microsoft.Health.Api.Features.Audit;
 [SuppressMessage("Performance", "CA1813:Avoid unsealed attributes", Justification = "This attribute is meant to be extended.")]
 public class AuditLoggingFilterAttribute : ActionFilterAttribute
 {
+    private const string TimerKey = "timer";
+
     public AuditLoggingFilterAttribute(
         IClaimsExtractor claimsExtractor,
         IAuditHelper auditHelper)
@@ -36,7 +38,7 @@ public class AuditLoggingFilterAttribute : ActionFilterAttribute
     {
         EnsureArg.IsNotNull(context, nameof(context));
 
-        context.HttpContext.Items["timer"] = Stopwatch.StartNew();
+        context.HttpContext.Items[TimerKey] = Stopwatch.StartNew();
 
         AuditHelper.LogExecuting(context.HttpContext, ClaimsExtractor);
 
@@ -54,8 +56,11 @@ public class AuditLoggingFilterAttribute : ActionFilterAttribute
     {
         EnsureArg.IsNotNull(context, nameof(context));
 
-        var stopwatch = (Stopwatch)context.HttpContext.Items["timer"];
-        long durationMs = stopwatch.ElapsedMilliseconds;
+        long durationMs = 0;
+        if (context.HttpContext.Items.TryGetValue(TimerKey, out object timerObj) && timerObj is Stopwatch stopwatch)
+        {
+            durationMs = stopwatch.ElapsedMilliseconds;
+        }
 
         AuditHelper.LogExecuted(context.HttpContext, ClaimsExtractor, durationMs: durationMs);
 
