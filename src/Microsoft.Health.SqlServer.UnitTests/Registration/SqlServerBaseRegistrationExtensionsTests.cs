@@ -13,10 +13,11 @@ using Microsoft.Health.SqlServer.Features.Schema;
 using Microsoft.Health.SqlServer.Features.Schema.Manager;
 using Microsoft.Health.SqlServer.Features.Storage;
 using Microsoft.Health.SqlServer.Registration;
-using Xunit;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Microsoft.Health.SqlServer.UnitTests.Registration;
 
+[TestClass]
 public class SqlServerBaseRegistrationExtensionsTests
 {
     private enum ExampleVersion
@@ -25,62 +26,62 @@ public class SqlServerBaseRegistrationExtensionsTests
         V1,
     }
 
-    [Fact]
+    [TestMethod]
     [Obsolete("To be removed when AddSqlServerBase is deleted.")]
     public void GivenEmptyServiceCollection_WhenAddingSqlServerBase_ThenAddNewServices()
     {
         var services = new ServiceCollection();
         services.AddSqlServerBase<ExampleVersion>(null);
 
-        Assert.True(services.ContainsScoped<ISchemaDataStore, SqlServerSchemaDataStore>());
-        Assert.True(services.ContainsScoped<ITransactionHandler, SqlTransactionHandler>());
-        Assert.True(services.ContainsScoped<SqlConnectionWrapperFactory>());
-        Assert.True(services.ContainsScoped<SqlServerSchemaDataStore>());
-        Assert.True(services.ContainsScoped<SqlTransactionHandler>());
+        Assert.IsTrue(services.ContainsScoped<ISchemaDataStore, SqlServerSchemaDataStore>());
+        Assert.IsTrue(services.ContainsScoped<ITransactionHandler, SqlTransactionHandler>());
+        Assert.IsTrue(services.ContainsScoped<SqlConnectionWrapperFactory>());
+        Assert.IsTrue(services.ContainsScoped<SqlServerSchemaDataStore>());
+        Assert.IsTrue(services.ContainsScoped<SqlTransactionHandler>());
 
-        Assert.True(services.ContainsSingleton<BaseScriptProvider>());
-        Assert.True(services.ContainsSingleton<IBaseScriptProvider, BaseScriptProvider>());
-        Assert.True(services.ContainsSingleton<IHostedService, SchemaInitializer>());
-        Assert.True(services.ContainsScoped<ISchemaManagerDataStore>());
-        Assert.True(services.ContainsSingleton<IScriptProvider, ScriptProvider<ExampleVersion>>());
-        Assert.True(services.ContainsSingleton<ISqlConnectionBuilder, DefaultSqlConnectionBuilder>());
-        Assert.True(services.ContainsSingleton<SchemaInitializer>());
-        Assert.True(services.ContainsSingleton<SchemaJobWorker>());
-        Assert.True(services.ContainsSingleton<SchemaWriteGateEvaluator>());
-        Assert.True(services.ContainsScoped<SchemaUpgradeRunner>());
-        Assert.True(services.ContainsScoped<SchemaManagerDataStore>());
-        Assert.True(services.ContainsSingleton<ScriptProvider<ExampleVersion>>());
-        Assert.True(services.ContainsSingleton<SqlServerDataStoreConfiguration>());
+        Assert.IsTrue(services.ContainsSingleton<BaseScriptProvider>());
+        Assert.IsTrue(services.ContainsSingleton<IBaseScriptProvider, BaseScriptProvider>());
+        Assert.IsTrue(services.ContainsSingleton<IHostedService, SchemaInitializer>());
+        Assert.IsTrue(services.ContainsScoped<ISchemaManagerDataStore>());
+        Assert.IsTrue(services.ContainsSingleton<IScriptProvider, ScriptProvider<ExampleVersion>>());
+        Assert.IsTrue(services.ContainsSingleton<ISqlConnectionBuilder, DefaultSqlConnectionBuilder>());
+        Assert.IsTrue(services.ContainsSingleton<SchemaInitializer>());
+        Assert.IsTrue(services.ContainsSingleton<SchemaJobWorker>());
+        Assert.IsTrue(services.ContainsSingleton<SchemaWriteGateEvaluator>());
+        Assert.IsTrue(services.ContainsScoped<SchemaUpgradeRunner>());
+        Assert.IsTrue(services.ContainsScoped<SchemaManagerDataStore>());
+        Assert.IsTrue(services.ContainsSingleton<ScriptProvider<ExampleVersion>>());
+        Assert.IsTrue(services.ContainsSingleton<SqlServerDataStoreConfiguration>());
     }
 
-    [Fact]
+    [TestMethod]
     public void GivenEmptyServiceCollection_WhenAddingSqlServerConnection_ThenAddNewServices()
     {
         var services = new ServiceCollection();
         services.AddSqlServerConnection();
 
-        Assert.True(services.ContainsScoped<SqlConnectionWrapperFactory>());
-        Assert.True(services.ContainsScoped<SqlTransactionHandler>());
-        Assert.True(services.ContainsScoped<ITransactionHandler, SqlTransactionHandler>());
+        Assert.IsTrue(services.ContainsScoped<SqlConnectionWrapperFactory>());
+        Assert.IsTrue(services.ContainsScoped<SqlTransactionHandler>());
+        Assert.IsTrue(services.ContainsScoped<ITransactionHandler, SqlTransactionHandler>());
 
-        Assert.True(services.ContainsSingleton<ISqlConnectionBuilder, DefaultSqlConnectionBuilder>());
-        Assert.True(services.ContainsScoped<IReadOnlySchemaManagerDataStore, SchemaManagerDataStore>());
+        Assert.IsTrue(services.ContainsSingleton<ISqlConnectionBuilder, DefaultSqlConnectionBuilder>());
+        Assert.IsTrue(services.ContainsScoped<IReadOnlySchemaManagerDataStore, SchemaManagerDataStore>());
     }
 
-    [Fact]
+    [TestMethod]
     public void GivenEmptyServiceCollection_WhenAddingSqlServerManagement_ThenAddNewServices()
     {
         var services = new ServiceCollection();
         services.AddSqlServerManagement<ExampleVersion>();
 
-        Assert.True(services.ContainsScoped<ISchemaDataStore, SqlServerSchemaDataStore>());
+        Assert.IsTrue(services.ContainsScoped<ISchemaDataStore, SqlServerSchemaDataStore>());
 
-        Assert.True(services.ContainsSingleton<IBaseScriptProvider, BaseScriptProvider>());
-        Assert.True(services.ContainsSingleton<IHostedService, SchemaInitializer>());
-        Assert.True(services.ContainsScoped<ISchemaManagerDataStore>());
-        Assert.True(services.ContainsSingleton<IScriptProvider, ScriptProvider<ExampleVersion>>());
-        Assert.True(services.ContainsSingleton<SchemaJobWorker>());
-        Assert.True(services.ContainsSingleton<SchemaWriteGateEvaluator>());
-        Assert.True(services.ContainsScoped<SchemaUpgradeRunner>());
+        Assert.IsTrue(services.ContainsSingleton<IBaseScriptProvider, BaseScriptProvider>());
+        Assert.IsTrue(services.ContainsSingleton<IHostedService, SchemaInitializer>());
+        Assert.IsTrue(services.ContainsScoped<ISchemaManagerDataStore>());
+        Assert.IsTrue(services.ContainsSingleton<IScriptProvider, ScriptProvider<ExampleVersion>>());
+        Assert.IsTrue(services.ContainsSingleton<SchemaJobWorker>());
+        Assert.IsTrue(services.ContainsSingleton<SchemaWriteGateEvaluator>());
+        Assert.IsTrue(services.ContainsScoped<SchemaUpgradeRunner>());
     }
 }

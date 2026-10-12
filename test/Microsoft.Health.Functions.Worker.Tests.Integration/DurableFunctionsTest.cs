@@ -4,55 +4,82 @@
 // -------------------------------------------------------------------------------------------------
 
 using System;
-using System.Collections.Generic;
-using System.Linq;
+using System.Net.Http;
 using System.Threading.Tasks;
+using DurableTask.AzureStorage;
+using DurableTask.Core;
 using Microsoft.DurableTask.Client;
-using Microsoft.Health.Operations.Functions.Worker.DurableTask;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using Polly;
 using Polly.Retry;
-using Polly.Timeout;
-using Xunit;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Microsoft.Health.Functions.Worker.Tests.Integration;
 
-public class DurableFunctionsTest : IClassFixture<FunctionsCoreToolsTestFixture>
+public abstract class DurableFunctionsTest
 {
-    private readonly DurableTaskClient _client;
-    private readonly ResiliencePipeline<OrchestrationMetadata?> _pipeline;
+    private readonly IServiceProvider _serviceProvider;
 
-    public DurableFunctionsTest(FunctionsCoreToolsTestFixture fixture)
+    private static readonly ResiliencePipeline<HttpResponseMessage> HealthCheckPipeline = new ResiliencePipelineBuilder<HttpResponseMessage>()
+        .AddTimeout(TimeSpan.FromMinutes(3))
+        .AddRetry(new RetryStrategyOptions<HttpResponseMessage>
+        {
+            Delay = TimeSpan.FromSeconds(1),
+            MaxRetryAttempts = int.MaxValue,
+            ShouldHandle = new PredicateBuilder<HttpResponseMessage>()
+                .Handle<OperationCanceledException>()
+                .Handle<HttpRequestException>()
+                .HandleInner<HttpRequestException>()
+                .HandleResult(m => !m.IsSuccessStatusCode),
+        })
+        .Build();
+
+    protected DurableFunctionsTest(TestContext testContext)
     {
-        ArgumentNullException.ThrowIfNull(fixture);
+        // Create the Durable Client
+        IServiceCollection services = new ServiceCollection()
+            .AddSingleton<IConfiguration>(new ConfigurationBuilder()
+                .AddEnvironmentVariables()
+                .Build());
 
-        _client = fixture.DurableClient;
-        _pipeline = new ResiliencePipelineBuilder<OrchestrationMetadata?>()
-            .AddTimeout(new TimeoutStrategyOptions { Timeout = TimeSpan.FromMinutes(1) })
-            .AddRetry(new RetryStrategyOptions<OrchestrationMetadata?>
-            {
-                Delay = TimeSpan.FromSeconds(1),
-                MaxRetryAttempts = int.MaxValue,
-                ShouldHandle = new PredicateBuilder<OrchestrationMetadata?>()
-                    .HandleResult(m => m is not null && m.RuntimeStatus.IsInProgress()),
-            })
-            .Build();
+        _ = services
+            .AddOptions<FunctionWorkerOptions>()
+            .BindConfiguration(FunctionWorkerOptions.DefaultSectionName)
+            .ValidateDataAnnotations();
+
+        _serviceProvider = services
+            .AddLogging(b => b.AddProvider(new TestLoggerProvider(testContext)))
+            .AddSingleton(sp => sp
+                .GetRequiredService<IOptions<FunctionWorkerOptions>>()
+                .Value
+                .DurableTask
+                .ToOrchestrationServiceSettings())
+            .AddSingleton<IOrchestrationServiceClient>(sp => new AzureStorageOrchestrationService(sp.GetRequiredService<AzureStorageOrchestrationServiceSettings>()))
+            .AddDurableTaskClient(b => b.UseOrchestrationService())
+        .BuildServiceProvider();
+
+        DurableClient = _serviceProvider.GetRequiredService<DurableTaskClient>();
     }
 
-    [Fact]
-    public async Task GivenWorkerOrchestration_WhenStarting_ThenCompleteSuccessfully()
+    protected DurableTaskClient DurableClient { get; }
+
+    protected async Task InitializeAsync()
     {
-        string instanceId = await _client.ScheduleNewOrchestrationInstanceAsync(
-            "InsertionSortAsync",
-            new { Values = new List<int> { 3, 4, 1, 5, 4, 2 } });
+        // Wait for host to start at an address like http://localhost:7071/api/healthz
+        FunctionWorkerOptions options = _serviceProvider.GetRequiredService<IOptions<FunctionWorkerOptions>>().Value;
+        UriBuilder builder = new()
+        {
+            Scheme = "http://",
+            Host = "localhost",
+            Port = options.Port,
+            Path = "api/"
+        };
 
-        OrchestrationMetadata? metadata = await _pipeline
-            .ExecuteAsync(async t => await _client.GetInstanceAsync(instanceId, getInputsAndOutputs: true, cancellation: t));
-
-        Assert.NotNull(metadata);
-        Assert.Equal(OrchestrationRuntimeStatus.Completed, metadata.RuntimeStatus);
-
-        int[]? actual = metadata.ReadOutputAs<int[]>();
-        Assert.NotNull(actual);
-        Assert.True(actual!.SequenceEqual([5, 4, 4, 3, 2, 1]), $"Received {string.Join(", ", actual)}");
+        using HttpClient client = new() { BaseAddress = builder.Uri };
+        Uri healthCheck = new("healthz", UriKind.Relative);
+        await HealthCheckPipeline.ExecuteAsync(async t => await client.GetAsync(healthCheck, t));
     }
 }

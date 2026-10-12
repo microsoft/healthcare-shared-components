@@ -5,7 +5,6 @@
 
 using System;
 using System.IO;
-using System.Linq;
 using System.Text;
 using Microsoft.Build.Utilities;
 using Microsoft.SqlServer.TransactSql.ScriptDom;
@@ -38,7 +37,7 @@ public static class SqlScriptParser
             var parser = new TSql150Parser(true);
             sqlFragment = parser.Parse(reader, out var errors);
 
-            if (errors != null && errors.Any())
+            if (errors != null && errors.Count > 0)
             {
                 StringBuilder sb = new StringBuilder();
                 foreach (var error in errors)

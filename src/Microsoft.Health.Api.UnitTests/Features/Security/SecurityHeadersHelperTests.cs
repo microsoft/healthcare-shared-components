@@ -4,21 +4,24 @@
 // -------------------------------------------------------------------------------------------------
 
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Primitives;
 using Microsoft.Health.Api.Features.Security;
-using Xunit;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Microsoft.Health.Api.UnitTests.Features.Security;
 
+[SuppressMessage("Design", "MSTEST0032:Assertion condition is always true", Justification = "Validating constants")]
+[TestClass]
 public class SecurityHeadersHelperTests
 {
-    [Fact]
+    [TestMethod]
     public async Task GivenANullContext_WhenSettingSecurityHeaders_ThenExceptionIsThrown()
         => await Assert.ThrowsAsync<ArgumentNullException>(() => SecurityHeadersHelper.SetSecurityHeaders(null));
 
-    [Fact]
+    [TestMethod]
     public async Task GivenAnIncorrectType_WhenSettingSecurityHeaders_ThenExceptionIsThrown()
     {
         int notAContext = 1;
@@ -26,42 +29,42 @@ public class SecurityHeadersHelperTests
         await Assert.ThrowsAsync<ArgumentException>(() => SecurityHeadersHelper.SetSecurityHeaders(notAContext));
     }
 
-    [Fact]
+    [TestMethod]
     public async Task GivenAContext_WhenSettingSecurityHeaders_TheXContentTypeOptionsHeaderIsSet()
     {
         var defaultHttpContext = new DefaultHttpContext();
         await SecurityHeadersHelper.SetSecurityHeaders(defaultHttpContext);
 
-        Assert.NotNull(defaultHttpContext.Response.Headers);
-        Assert.NotEmpty(defaultHttpContext.Response.Headers);
-        Assert.Equal("X-Content-Type-Options", SecurityHeadersHelper.XContentTypeOptions);
-        Assert.True(defaultHttpContext.Response.Headers.TryGetValue(SecurityHeadersHelper.XContentTypeOptions, out StringValues headerValue));
-        Assert.Equal("nosniff", headerValue);
+        Assert.IsNotNull(defaultHttpContext.Response.Headers);
+        Assert.IsNotEmpty(defaultHttpContext.Response.Headers);
+        Assert.AreEqual("X-Content-Type-Options", SecurityHeadersHelper.XContentTypeOptions);
+        Assert.IsTrue(defaultHttpContext.Response.Headers.TryGetValue(SecurityHeadersHelper.XContentTypeOptions, out StringValues headerValue));
+        Assert.AreEqual<string>("nosniff", headerValue);
     }
 
-    [Fact]
+    [TestMethod]
     public async Task GivenAContext_WhenSettingSecurityHeaders_TheXFrameOptionsHeaderIsSet()
     {
         var defaultHttpContext = new DefaultHttpContext();
         await SecurityHeadersHelper.SetSecurityHeaders(defaultHttpContext);
 
-        Assert.NotNull(defaultHttpContext.Response.Headers);
-        Assert.NotEmpty(defaultHttpContext.Response.Headers);
-        Assert.Equal("X-Frame-Options", SecurityHeadersHelper.XFrameOptions);
-        Assert.True(defaultHttpContext.Response.Headers.TryGetValue(SecurityHeadersHelper.XFrameOptions, out StringValues headerValue));
-        Assert.Equal("SAMEORIGIN", headerValue);
+        Assert.IsNotNull(defaultHttpContext.Response.Headers);
+        Assert.IsNotEmpty(defaultHttpContext.Response.Headers);
+        Assert.AreEqual("X-Frame-Options", SecurityHeadersHelper.XFrameOptions);
+        Assert.IsTrue(defaultHttpContext.Response.Headers.TryGetValue(SecurityHeadersHelper.XFrameOptions, out StringValues headerValue));
+        Assert.AreEqual<string>("SAMEORIGIN", headerValue);
     }
 
-    [Fact]
+    [TestMethod]
     public async Task GivenAContext_WhenSettingSecurityHeaders_TheContentSecurityPolicyHeaderIsSet()
     {
         var defaultHttpContext = new DefaultHttpContext();
         await SecurityHeadersHelper.SetSecurityHeaders(defaultHttpContext);
 
-        Assert.NotNull(defaultHttpContext.Response.Headers);
-        Assert.NotEmpty(defaultHttpContext.Response.Headers);
-        Assert.Equal("Content-Security-Policy", SecurityHeadersHelper.ContentSecurityPolicy);
-        Assert.True(defaultHttpContext.Response.Headers.TryGetValue(SecurityHeadersHelper.ContentSecurityPolicy, out StringValues headerValue));
-        Assert.Equal("frame-src 'self';", headerValue);
+        Assert.IsNotNull(defaultHttpContext.Response.Headers);
+        Assert.IsNotEmpty(defaultHttpContext.Response.Headers);
+        Assert.AreEqual("Content-Security-Policy", SecurityHeadersHelper.ContentSecurityPolicy);
+        Assert.IsTrue(defaultHttpContext.Response.Headers.TryGetValue(SecurityHeadersHelper.ContentSecurityPolicy, out StringValues headerValue));
+        Assert.AreEqual<string>("frame-src 'self';", headerValue);
     }
 }

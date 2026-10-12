@@ -58,6 +58,12 @@ extends:
             version: 9.x
 
         - task: UseDotNet@2
+          displayName: Install .NET 10 SDK
+          inputs:
+            packageType: sdk
+            version: 10.x
+
+        - task: UseDotNet@2
           displayName: Install SDK from global.json
           inputs:
             packageType: sdk

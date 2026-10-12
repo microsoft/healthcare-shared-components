@@ -25,6 +25,7 @@ jobs:
         dotnet-version: |
           8.x
           9.x
+          10.x
 
     # Note that CodeQL does not officially support .NET 10 yet, so we have to use a nightly build
     - name: Initialize CodeQL

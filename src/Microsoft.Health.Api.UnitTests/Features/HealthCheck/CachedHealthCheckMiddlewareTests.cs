@@ -14,13 +14,14 @@ using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Time.Testing;
 using Microsoft.Health.Api.Features.HealthChecks;
 using Microsoft.Health.Core.Features.Health;
-using Xunit;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Microsoft.Health.Api.UnitTests.Features.HealthCheck;
 
+[TestClass]
 public class CachedHealthCheckMiddlewareTests
 {
-    [Fact]
+    [TestMethod]
     public async Task GivenFreshHealthyReport_WhenInvoked_ThenReturns200()
     {
         ValueCache<HealthReport> cache = new ValueCache<HealthReport>();
@@ -31,11 +32,11 @@ public class CachedHealthCheckMiddlewareTests
         CachedHealthCheckMiddleware middleware = new CachedHealthCheckMiddleware(_ => Task.CompletedTask, cache);
         await middleware.InvokeAsync(httpContext);
 
-        Assert.Equal(StatusCodes.Status200OK, httpContext.Response.StatusCode);
-        Assert.Equal("Healthy", await ReadOverallStatusAsync(httpContext));
+        Assert.AreEqual(StatusCodes.Status200OK, httpContext.Response.StatusCode);
+        Assert.AreEqual("Healthy", await ReadOverallStatusAsync(httpContext));
     }
 
-    [Fact]
+    [TestMethod]
     public async Task GivenFreshUnhealthyReport_WhenInvoked_ThenReturns503()
     {
         ValueCache<HealthReport> cache = new ValueCache<HealthReport>();
@@ -46,10 +47,10 @@ public class CachedHealthCheckMiddlewareTests
         CachedHealthCheckMiddleware middleware = new CachedHealthCheckMiddleware(_ => Task.CompletedTask, cache);
         await middleware.InvokeAsync(httpContext);
 
-        Assert.Equal(StatusCodes.Status503ServiceUnavailable, httpContext.Response.StatusCode);
+        Assert.AreEqual(StatusCodes.Status503ServiceUnavailable, httpContext.Response.StatusCode);
     }
 
-    [Fact]
+    [TestMethod]
     public async Task GivenStalePublishedReport_WhenInvoked_ThenReturns503AndUnhealthy()
     {
         // Reproduces the production scenario where the publisher last published a Healthy report long ago
@@ -66,8 +67,8 @@ public class CachedHealthCheckMiddlewareTests
         CachedHealthCheckMiddleware middleware = new CachedHealthCheckMiddleware(_ => Task.CompletedTask, cache);
         await middleware.InvokeAsync(httpContext);
 
-        Assert.Equal(StatusCodes.Status503ServiceUnavailable, httpContext.Response.StatusCode);
-        Assert.Equal("Unhealthy", await ReadOverallStatusAsync(httpContext));
+        Assert.AreEqual(StatusCodes.Status503ServiceUnavailable, httpContext.Response.StatusCode);
+        Assert.AreEqual("Unhealthy", await ReadOverallStatusAsync(httpContext));
     }
 
     private static HealthReport CreateReport(HealthStatus status)

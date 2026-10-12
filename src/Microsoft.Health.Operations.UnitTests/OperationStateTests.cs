@@ -9,10 +9,11 @@ using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using Microsoft.Health.Operations.Serialization;
-using Xunit;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Microsoft.Health.Operations.UnitTests;
 
+[TestClass]
 public class OperationStateTests
 {
     public static IEnumerable<object[]> SerializationTestArguments =>
@@ -21,19 +22,19 @@ public class OperationStateTests
         [typeof(OperationState<int, string>), new OperationState<int, string> { OperationId = Guid.NewGuid(), Results = "Hello World" }]
     ];
 
-    [Theory]
-    [MemberData(nameof(SerializationTestArguments))]
+    [TestMethod]
+    [DynamicData(nameof(SerializationTestArguments))]
     [SuppressMessage("Design", "CA1062:Validate arguments of public methods", Justification = "Test method.")]
     public void GivenState_WhenSerializing_OperationIdUsesProperFormat(Type type, IOperationState<int> state)
     {
         string json = JsonSerializer.Serialize(state, type);
         JsonElement element = JsonSerializer.Deserialize<JsonElement>(json);
 
-        Assert.True(element.TryGetProperty(nameof(IOperationState<int>.OperationId), out JsonElement property));
-        Assert.Equal(state.OperationId.ToString(OperationId.FormatSpecifier), property.GetString());
+        Assert.IsTrue(element.TryGetProperty(nameof(IOperationState<>.OperationId), out JsonElement property));
+        Assert.AreEqual(state.OperationId.ToString(OperationId.FormatSpecifier), property.GetString());
     }
 
-    [Fact]
+    [TestMethod]
     public void GivenDateTimeRepresentations_WhenSerializing_ThenBothAreEquivalent()
     {
         IOperationState<int> after = new LatestOperationState()
@@ -60,7 +61,7 @@ public class OperationStateTests
             Type = after.Type,
         };
 
-        Assert.Equal(JsonSerializer.Serialize(before), JsonSerializer.Serialize(after));
+        Assert.AreEqual(JsonSerializer.Serialize(before), JsonSerializer.Serialize(after));
     }
 
     private sealed class LegacyOperationState

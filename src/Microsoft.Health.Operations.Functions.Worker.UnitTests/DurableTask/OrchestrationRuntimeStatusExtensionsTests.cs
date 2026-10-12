@@ -6,65 +6,66 @@
 using System;
 using Microsoft.DurableTask.Client;
 using Microsoft.Health.Operations.Functions.Worker.DurableTask;
-using Xunit;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Microsoft.Health.Operations.Functions.Worker.UnitTests.DurableTask;
 
 #pragma warning disable CS0618 // Allow the user of obsolete OrchestrationRuntimeStatus values methods
 
+[TestClass]
 public class OrchestrationRuntimeStatusExtensionsTests
 {
-    [Theory]
-    [InlineData(OrchestrationRuntimeStatus.Running, true)]
-    [InlineData(OrchestrationRuntimeStatus.Completed, false)]
-    [InlineData(OrchestrationRuntimeStatus.ContinuedAsNew, true)]
-    [InlineData(OrchestrationRuntimeStatus.Failed, false)]
-    [InlineData(OrchestrationRuntimeStatus.Canceled, false)]
-    [InlineData(OrchestrationRuntimeStatus.Terminated, false)]
-    [InlineData(OrchestrationRuntimeStatus.Pending, true)]
-    [InlineData(OrchestrationRuntimeStatus.Suspended, false)]
+    [TestMethod]
+    [DataRow(OrchestrationRuntimeStatus.Running, true)]
+    [DataRow(OrchestrationRuntimeStatus.Completed, false)]
+    [DataRow(OrchestrationRuntimeStatus.ContinuedAsNew, true)]
+    [DataRow(OrchestrationRuntimeStatus.Failed, false)]
+    [DataRow(OrchestrationRuntimeStatus.Canceled, false)]
+    [DataRow(OrchestrationRuntimeStatus.Terminated, false)]
+    [DataRow(OrchestrationRuntimeStatus.Pending, true)]
+    [DataRow(OrchestrationRuntimeStatus.Suspended, false)]
     public void GivenOrchestrationRuntimeStatus_WhenCheckingIfInProgress_ThenReturnProperValue(OrchestrationRuntimeStatus runtimeStatus, bool expected)
-        => Assert.Equal(expected, runtimeStatus.IsInProgress());
+        => Assert.AreEqual(expected, runtimeStatus.IsInProgress());
 
-    [Theory]
-    [InlineData(OrchestrationRuntimeStatus.Running, false)]
-    [InlineData(OrchestrationRuntimeStatus.Completed, true)]
-    [InlineData(OrchestrationRuntimeStatus.ContinuedAsNew, false)]
-    [InlineData(OrchestrationRuntimeStatus.Failed, true)]
-    [InlineData(OrchestrationRuntimeStatus.Canceled, true)]
-    [InlineData(OrchestrationRuntimeStatus.Terminated, true)]
-    [InlineData(OrchestrationRuntimeStatus.Pending, false)]
-    [InlineData(OrchestrationRuntimeStatus.Suspended, true)]
+    [TestMethod]
+    [DataRow(OrchestrationRuntimeStatus.Running, false)]
+    [DataRow(OrchestrationRuntimeStatus.Completed, true)]
+    [DataRow(OrchestrationRuntimeStatus.ContinuedAsNew, false)]
+    [DataRow(OrchestrationRuntimeStatus.Failed, true)]
+    [DataRow(OrchestrationRuntimeStatus.Canceled, true)]
+    [DataRow(OrchestrationRuntimeStatus.Terminated, true)]
+    [DataRow(OrchestrationRuntimeStatus.Pending, false)]
+    [DataRow(OrchestrationRuntimeStatus.Suspended, true)]
     public void GivenOrchestrationRuntimeStatus_WhenCheckingIfStopped_ThenReturnProperValue(OrchestrationRuntimeStatus runtimeStatus, bool expected)
-        => Assert.Equal(expected, runtimeStatus.IsStopped());
+        => Assert.AreEqual(expected, runtimeStatus.IsStopped());
 
-    [Theory]
-    [InlineData((OrchestrationRuntimeStatus)47, OperationStatus.Unknown)]
-    [InlineData(OrchestrationRuntimeStatus.Running, OperationStatus.Running)]
-    [InlineData(OrchestrationRuntimeStatus.Completed, OperationStatus.Succeeded)]
-    [InlineData(OrchestrationRuntimeStatus.ContinuedAsNew, OperationStatus.Running)]
-    [InlineData(OrchestrationRuntimeStatus.Failed, OperationStatus.Failed)]
-    [InlineData(OrchestrationRuntimeStatus.Canceled, OperationStatus.Canceled)]
-    [InlineData(OrchestrationRuntimeStatus.Terminated, OperationStatus.Canceled)]
-    [InlineData(OrchestrationRuntimeStatus.Pending, OperationStatus.NotStarted)]
-    [InlineData(OrchestrationRuntimeStatus.Suspended, OperationStatus.Paused)]
+    [TestMethod]
+    [DataRow((OrchestrationRuntimeStatus)47, OperationStatus.Unknown)]
+    [DataRow(OrchestrationRuntimeStatus.Running, OperationStatus.Running)]
+    [DataRow(OrchestrationRuntimeStatus.Completed, OperationStatus.Succeeded)]
+    [DataRow(OrchestrationRuntimeStatus.ContinuedAsNew, OperationStatus.Running)]
+    [DataRow(OrchestrationRuntimeStatus.Failed, OperationStatus.Failed)]
+    [DataRow(OrchestrationRuntimeStatus.Canceled, OperationStatus.Canceled)]
+    [DataRow(OrchestrationRuntimeStatus.Terminated, OperationStatus.Canceled)]
+    [DataRow(OrchestrationRuntimeStatus.Pending, OperationStatus.NotStarted)]
+    [DataRow(OrchestrationRuntimeStatus.Suspended, OperationStatus.Paused)]
     public void GivenOrchestrationRuntimeStatus_WhenConvertingToOperationStatus_ThenReturnCorrespondingValue(OrchestrationRuntimeStatus runtimeStatus, OperationStatus expected)
-        => Assert.Equal(expected, runtimeStatus.ToOperationStatus());
+        => Assert.AreEqual(expected, runtimeStatus.ToOperationStatus());
 
-    [Theory]
-    [InlineData(OperationStatus.NotStarted, OrchestrationRuntimeStatus.Pending)]
-    [InlineData(OperationStatus.Running, OrchestrationRuntimeStatus.Running)]
-    [InlineData(OperationStatus.Completed, OrchestrationRuntimeStatus.Completed)]
-    [InlineData(OperationStatus.Failed, OrchestrationRuntimeStatus.Failed)]
-    [InlineData(OperationStatus.Canceled, OrchestrationRuntimeStatus.Terminated)]
-    [InlineData(OperationStatus.Succeeded, OrchestrationRuntimeStatus.Completed)]
-    [InlineData(OperationStatus.Paused, OrchestrationRuntimeStatus.Suspended)]
+    [TestMethod]
+    [DataRow(OperationStatus.NotStarted, OrchestrationRuntimeStatus.Pending)]
+    [DataRow(OperationStatus.Running, OrchestrationRuntimeStatus.Running)]
+    [DataRow(OperationStatus.Completed, OrchestrationRuntimeStatus.Completed)]
+    [DataRow(OperationStatus.Failed, OrchestrationRuntimeStatus.Failed)]
+    [DataRow(OperationStatus.Canceled, OrchestrationRuntimeStatus.Terminated)]
+    [DataRow(OperationStatus.Succeeded, OrchestrationRuntimeStatus.Completed)]
+    [DataRow(OperationStatus.Paused, OrchestrationRuntimeStatus.Suspended)]
     public void GivenOperationStatus_WhenConvertingToOrchestrationRuntimeStatus_ThenReturnCorrespondingValue(OperationStatus status, OrchestrationRuntimeStatus expected)
-        => Assert.Equal(expected, status.ToOrchestrationRuntimeStatus());
+        => Assert.AreEqual(expected, status.ToOrchestrationRuntimeStatus());
 
-    [Theory]
-    [InlineData((OperationStatus)47)]
-    [InlineData(OperationStatus.Unknown)]
+    [TestMethod]
+    [DataRow((OperationStatus)47)]
+    [DataRow(OperationStatus.Unknown)]
     public void GivenUnknownOperationStatus_WhenConvertingToOrchestrationRuntimeStatus_ThenThrowArgumentOutOfRangeException(OperationStatus status)
         => Assert.Throws<ArgumentOutOfRangeException>(() => status.ToOrchestrationRuntimeStatus());
 }

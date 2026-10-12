@@ -4,6 +4,7 @@
 // -------------------------------------------------------------------------------------------------
 
 using System;
+using System.Net.Http;
 using System.Security.Cryptography;
 using System.Threading;
 using System.Threading.Tasks;
@@ -69,9 +70,11 @@ internal class KeyWrapUnwrapTestProvider : IKeyTestProvider
 
             return new CustomerKeyHealth();
         }
-        catch (Exception ex) when (
-            ex is RequestFailedException or CryptographicException or InvalidOperationException or NotSupportedException
-            || (ex is AggregateException aggregate && aggregate.Message.Contains("vault.azure.net", StringComparison.OrdinalIgnoreCase) && aggregate.Message.Contains("Name or service not known", StringComparison.OrdinalIgnoreCase)))
+        catch (Exception ex) when
+        (
+            (ex is RequestFailedException or CryptographicException or InvalidOperationException or NotSupportedException) ||
+            (ex is AggregateException ae && IsNameResolutionError(ae))
+        )
         {
             return HandleKeyAccessFailure(ex);
         }
@@ -87,5 +90,23 @@ internal class KeyWrapUnwrapTestProvider : IKeyTestProvider
             Reason = HealthStatusReason.CustomerManagedKeyAccessLost,
             Exception = ex,
         };
+    }
+
+    private static bool IsNameResolutionError(AggregateException ex)
+    {
+        if (ex?.InnerExceptions is null)
+            return false;
+
+        foreach (Exception inner in ex.InnerExceptions)
+        {
+            // For simplicity's sake, we only look at the InnerException property
+            for (Exception next = inner; next is not null; next = next.InnerException)
+            {
+                if (next is HttpRequestException hre && hre.HttpRequestError is HttpRequestError.NameResolutionError)
+                    return true;
+            }
+        }
+
+        return false;
     }
 }

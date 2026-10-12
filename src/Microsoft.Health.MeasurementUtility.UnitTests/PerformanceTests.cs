@@ -4,25 +4,26 @@
 // -------------------------------------------------------------------------------------------------
 
 using System.Threading;
-using Xunit;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Microsoft.Health.MeasurementUtility.UnitTests;
 
+[TestClass]
 public class PerformanceTests
 {
-    [Fact]
+    [TestMethod]
     public void GivenTheITimed_WhenBeingDisposed_ThenHandlerShouldBeInvoked()
     {
         bool hasHandlerInvoked = false;
         using (ITimed timedHandler = Performance.TrackDuration(duration =>
         {
             hasHandlerInvoked = true;
-            Assert.True(duration > 1000);
+            Assert.IsGreaterThan(1000, duration);
         }))
         {
             Thread.Sleep(1000);
         }
 
-        Assert.True(hasHandlerInvoked);
+        Assert.IsTrue(hasHandlerInvoked);
     }
 }

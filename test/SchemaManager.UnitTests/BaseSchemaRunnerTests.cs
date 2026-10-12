@@ -15,13 +15,14 @@ using Microsoft.Health.SqlServer.Features.Schema;
 using Microsoft.Health.SqlServer.Features.Schema.Manager;
 using Microsoft.Health.SqlServer.Features.Storage;
 using NSubstitute;
-using Xunit;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace SchemaManager.UnitTests;
 
+[TestClass]
 public class BaseSchemaRunnerTests
 {
-    [Fact]
+    [TestMethod]
     public async Task GivenWriteGateReturnsFalse_WhenEnsuringBaseSchema_ThenDoesNotInitializeDatabase()
     {
         ISchemaWriteGate writeGate = Substitute.For<ISchemaWriteGate>();

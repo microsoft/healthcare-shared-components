@@ -1,0 +1,13 @@
+# Each line is a file pattern followed by one or more owners. When several patterns match
+# a file, the last one wins. Approval from any one listed owner satisfies the review rule.
+
+# Default owners for everything in the repository
+*                    @microsoft/fhir-server-team @microsoft/Medical-Imaging-Team
+
+# Build, release, and supply-chain configuration. Changes here can alter what the pipelines
+# run with publishing credentials, so keep these owners limited to trusted maintainers.
+/.github/            @microsoft/fhir-server-team @microsoft/Medical-Imaging-Team
+/.pipelines/         @microsoft/fhir-server-team @microsoft/Medical-Imaging-Team
+/GitVersion.yml      @microsoft/fhir-server-team @microsoft/Medical-Imaging-Team
+/nuget.config        @microsoft/fhir-server-team @microsoft/Medical-Imaging-Team
+/renovate.json       @microsoft/fhir-server-team @microsoft/Medical-Imaging-Team

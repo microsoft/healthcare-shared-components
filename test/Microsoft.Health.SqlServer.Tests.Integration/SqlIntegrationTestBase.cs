@@ -13,17 +13,18 @@ using Microsoft.Health.SqlServer.Configs;
 using Microsoft.Health.SqlServer.Features.Client;
 using Microsoft.Health.SqlServer.Features.Schema;
 using Microsoft.Health.SqlServer.Features.Storage;
-using Xunit;
-using Xunit.Abstractions;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Microsoft.Health.SqlServer.Tests.Integration;
 
-[SuppressMessage("Maintainability", "CA1515:Consider making public types internal", Justification = "Used by test framework.")]
-public abstract class SqlIntegrationTestBase : IAsyncLifetime
+public abstract class SqlIntegrationTestBase : IAsyncDisposable
 {
-    protected SqlIntegrationTestBase(ITestOutputHelper outputHelper)
+    private readonly TestContext _testContext;
+    private bool _disposed;
+
+    protected SqlIntegrationTestBase(TestContext testContext)
     {
-        Output = outputHelper;
+        _testContext = testContext;
         DatabaseName = $"IntegrationTests_BaseSchemaRunner_{Guid.NewGuid().ToString().Replace("-", string.Empty, StringComparison.Ordinal)}";
         var builder = new SqlConnectionStringBuilder(Environment.GetEnvironmentVariable("TestSqlConnectionString") ?? $"server=(local);Integrated Security=true;TrustServerCertificate=true;")
         {
@@ -39,8 +40,6 @@ public abstract class SqlIntegrationTestBase : IAsyncLifetime
 
     protected string DatabaseName { get; set; }
 
-    protected ITestOutputHelper Output { get; set; }
-
     protected SqlTransactionHandler TransactionHandler { get; set; }
 
     protected SqlConnectionWrapperFactory ConnectionFactory { get; set; }
@@ -49,6 +48,7 @@ public abstract class SqlIntegrationTestBase : IAsyncLifetime
 
     protected SqlServerDataStoreConfiguration Config { get; set; }
 
+    [TestInitialize]
     public virtual async Task InitializeAsync()
     {
         TransactionHandler = new SqlTransactionHandler();
@@ -64,25 +64,43 @@ public abstract class SqlIntegrationTestBase : IAsyncLifetime
 
         await SchemaInitializer.CreateDatabaseAsync(ConnectionWrapper, DatabaseName, CancellationToken.None).ConfigureAwait(false);
         await ConnectionWrapper.SqlConnection.ChangeDatabaseAsync(DatabaseName).ConfigureAwait(false);
-        Output.WriteLine($"Using database '{DatabaseName}'.");
+        _testContext.WriteLine($"Using database '{DatabaseName}'.");
     }
 
-    public virtual async Task DisposeAsync()
+    public async ValueTask DisposeAsync()
     {
-        await ConnectionWrapper.SqlConnection.ChangeDatabaseAsync("master").ConfigureAwait(false);
-        try
-        {
-            await DeleteDatabaseAsync(DatabaseName).ConfigureAwait(false);
-        }
-        catch (Exception e)
-        {
-            Output.WriteLine($"Failed to delete test database after test run: {e.Message}{Environment.NewLine}{Environment.NewLine}{e.StackTrace}");
-            throw;
-        }
+        await DisposeAsync(disposing: true);
+        GC.SuppressFinalize(this);
+    }
 
-        await ConnectionWrapper.SqlConnection.CloseAsync().ConfigureAwait(false);
-        ConnectionWrapper.Dispose();
-        TransactionHandler.Dispose();
+    public virtual async ValueTask DisposeAsync(bool disposing)
+    {
+        if (!_disposed)
+        {
+            if (disposing)
+            {
+                if (ConnectionWrapper is not null)
+                {
+                    await ConnectionWrapper.SqlConnection.ChangeDatabaseAsync("master").ConfigureAwait(false);
+                    try
+                    {
+                        await DeleteDatabaseAsync(DatabaseName).ConfigureAwait(false);
+                    }
+                    catch (Exception e)
+                    {
+                        _testContext.WriteLine($"Failed to delete test database after test run: {e.Message}{Environment.NewLine}{Environment.NewLine}{e.StackTrace}");
+                        throw;
+                    }
+
+                    await ConnectionWrapper.SqlConnection.CloseAsync().ConfigureAwait(false);
+                    ConnectionWrapper.Dispose();
+                }
+
+                TransactionHandler?.Dispose();
+            }
+
+            _disposed = true;
+        }
     }
 
     protected async Task DeleteDatabaseAsync(string dbName)
@@ -97,15 +115,14 @@ public abstract class SqlIntegrationTestBase : IAsyncLifetime
 
         if (ConnectionWrapper.SqlConnection.Database == dbName)
         {
-            Output.WriteLine($"Switching from '{dbName}' to master prior to delete.");
+            _testContext.WriteLine($"Switching from '{dbName}' to master prior to delete.");
             await ConnectionWrapper.SqlConnection.ChangeDatabaseAsync("master", CancellationToken.None).ConfigureAwait(false);
         }
 
         int result = await deleteDatabaseCommand.ExecuteNonQueryAsync(CancellationToken.None).ConfigureAwait(false);
         if (result != -1)
         {
-            Output.WriteLine($"Clean up of {dbName} failed with result code {result}.");
-            Assert.False(true);
+            Assert.Fail($"Clean up of {dbName} failed with result code {result}.");
         }
     }
 

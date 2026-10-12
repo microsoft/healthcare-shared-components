@@ -13,10 +13,11 @@ using Microsoft.Health.Core.Features.Health;
 using Microsoft.Health.Core.Features.HealthPublisher;
 using Microsoft.Health.Core.Features.Metric;
 using NSubstitute;
-using Xunit;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Microsoft.Health.Core.UnitTests.Features.HealthPublisher;
 
+[TestClass]
 public class HealthCheckMetricPublisherTests
 {
     private readonly IResourceHealthSignalProvider _resourceHealthSignalProvider = Substitute.For<IResourceHealthSignalProvider>();
@@ -38,7 +39,7 @@ public class HealthCheckMetricPublisherTests
         _healthCheckMetricPublisher = new HealthCheckMetricPublisher(_resourceHealthSignalProvider, _resourceHealthDimensionOptions, new NullLogger<HealthCheckMetricPublisher>());
     }
 
-    [Fact]
+    [TestMethod]
     public void GivenReportWithServiceUnavailable_PublishAsync_ServiceUnavailableIsPublished()
     {
         HealthReport report = CreateDummyHealthReport(
@@ -53,7 +54,7 @@ public class HealthCheckMetricPublisherTests
         _resourceHealthSignalProvider.Received(1).EmitHealthMetric(HealthStatusReason.ServiceUnavailable, _resourceHealthDimensions);
     }
 
-    [Fact]
+    [TestMethod]
     public void GivenReportWithCMKAccessLost_PublishAsync_CMKAccessLostIsPublished()
     {
         HealthReport report = CreateDummyHealthReport(
@@ -69,7 +70,7 @@ public class HealthCheckMetricPublisherTests
         _resourceHealthSignalProvider.Received(1).EmitHealthMetric(HealthStatusReason.CustomerManagedKeyAccessLost, _resourceHealthDimensions);
     }
 
-    [Fact]
+    [TestMethod]
     public void GivenReportWithConnectedStoreDegraded_PublishAsync_ConnectedStoreDegradedPublished()
     {
         HealthReport report = CreateDummyHealthReport(
@@ -85,7 +86,7 @@ public class HealthCheckMetricPublisherTests
         _resourceHealthSignalProvider.Received(1).EmitHealthMetric(HealthStatusReason.ConnectedStoreDegraded, _resourceHealthDimensions);
     }
 
-    [Fact]
+    [TestMethod]
     public void GivenReportWithServiceDegraded_PublishAsync_ServiceDegradedIsPublished()
     {
         HealthReport report = CreateDummyHealthReport(
@@ -99,7 +100,7 @@ public class HealthCheckMetricPublisherTests
         _resourceHealthSignalProvider.Received(1).EmitHealthMetric(HealthStatusReason.ServiceDegraded, _resourceHealthDimensions);
     }
 
-    [Fact]
+    [TestMethod]
     public void GivenReportWithNone_PublishAsync_NoneIsPublished()
     {
         HealthReport report = CreateDummyHealthReport(
@@ -113,7 +114,7 @@ public class HealthCheckMetricPublisherTests
         _resourceHealthSignalProvider.Received(1).EmitHealthMetric(HealthStatusReason.None, _resourceHealthDimensions);
     }
 
-    [Fact]
+    [TestMethod]
     public void GivenDegradedReportWithNoneReason_PublishAsync_ServiceDegradedIsPublished()
     {
         HealthReport report = CreateDummyHealthReport(
@@ -127,7 +128,7 @@ public class HealthCheckMetricPublisherTests
         _resourceHealthSignalProvider.Received(1).EmitHealthMetric(HealthStatusReason.ServiceDegraded, _resourceHealthDimensions);
     }
 
-    [Fact]
+    [TestMethod]
     public void GivenUnhealthyReportWithNoneReason_PublishAsync_ServiceUnavailableIsPublished()
     {
         HealthReport report = CreateDummyHealthReport(

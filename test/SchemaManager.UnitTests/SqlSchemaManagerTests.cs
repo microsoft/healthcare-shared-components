@@ -17,10 +17,11 @@ using Microsoft.Health.SqlServer.Features.Schema.Manager;
 using Microsoft.Health.SqlServer.Features.Schema.Manager.Exceptions;
 using Microsoft.Health.SqlServer.Features.Schema.Manager.Model;
 using NSubstitute;
-using Xunit;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace SchemaManager.UnitTests;
 
+[TestClass]
 public class SqlSchemaManagerTests
 {
     private readonly SqlSchemaManager _sqlSchemaManager;
@@ -58,60 +59,60 @@ public class SqlSchemaManagerTests
             NullLogger<SqlSchemaManager>.Instance);
     }
 
-    [Fact]
+    [TestMethod]
     public async Task GetCurrentSchema_OneSchema_Succeeds()
     {
         _client.GetCurrentVersionInformationAsync(Arg.Any<CancellationToken>()).ReturnsForAnyArgs(new List<CurrentVersion> { new CurrentVersion(1, "Complete", new List<string> { "server1" }) });
 
         IReadOnlyList<CurrentVersion> current = await _sqlSchemaManager.GetCurrentSchema();
 
-        Assert.NotNull(current);
-        Assert.Single(current);
-        Assert.Equal(1, current[0].Id);
+        Assert.IsNotNull(current);
+        Assert.ContainsSingle(current);
+        Assert.AreEqual(1, current[0].Id);
         await _baseSchemaRunner.ReceivedWithAnyArgs().EnsureBaseSchemaExistsAsync(default);
         await _baseSchemaRunner.ReceivedWithAnyArgs().EnsureInstanceSchemaRecordExistsAsync(default);
     }
 
-    [Fact]
+    [TestMethod]
     public async Task GetCurrentSchema_EmptyList_Succeeds()
     {
         _client.GetCurrentVersionInformationAsync(Arg.Any<CancellationToken>()).ReturnsForAnyArgs(new List<CurrentVersion> { });
 
         IReadOnlyList<CurrentVersion> current = await _sqlSchemaManager.GetCurrentSchema();
 
-        Assert.NotNull(current);
-        Assert.Empty(current);
+        Assert.IsNotNull(current);
+        Assert.IsEmpty(current);
         await _baseSchemaRunner.ReceivedWithAnyArgs().EnsureBaseSchemaExistsAsync(default);
         await _baseSchemaRunner.ReceivedWithAnyArgs().EnsureInstanceSchemaRecordExistsAsync(default);
     }
 
-    [Fact]
+    [TestMethod]
     public async Task GetAvailableSchema_SingleList_Succeeds()
     {
         _client.GetAvailabilityAsync(Arg.Any<CancellationToken>()).ReturnsForAnyArgs(new List<AvailableVersion> { new AvailableVersion(1, "_script/1.sql", "_script/1.diff.sql") });
         IReadOnlyList<AvailableVersion> available = await _sqlSchemaManager.GetAvailableSchema();
 
-        Assert.NotNull(available);
-        Assert.Single(available);
-        Assert.Equal(1, available[0].Id);
-        Assert.Equal("_script/1.sql", available[0].ScriptUri);
-        Assert.Equal("_script/1.diff.sql", available[0].DiffUri);
+        Assert.IsNotNull(available);
+        Assert.ContainsSingle(available);
+        Assert.AreEqual(1, available[0].Id);
+        Assert.AreEqual("_script/1.sql", available[0].ScriptUri);
+        Assert.AreEqual("_script/1.diff.sql", available[0].DiffUri);
     }
 
-    [Fact]
+    [TestMethod]
     public async Task GetAvailableSchema_ContainsVersionZero_RemovesZero()
     {
         _client.GetAvailabilityAsync(Arg.Any<CancellationToken>()).ReturnsForAnyArgs(new List<AvailableVersion> { new AvailableVersion(0, "_script/0.sql", "_script/0.diff.sql"), new AvailableVersion(1, "_script/1.sql", "_script/1.diff.sql") });
         IReadOnlyList<AvailableVersion> available = await _sqlSchemaManager.GetAvailableSchema();
 
-        Assert.NotNull(available);
-        Assert.Single(available);
-        Assert.Equal(1, available[0].Id);
-        Assert.Equal("_script/1.sql", available[0].ScriptUri);
-        Assert.Equal("_script/1.diff.sql", available[0].DiffUri);
+        Assert.IsNotNull(available);
+        Assert.ContainsSingle(available);
+        Assert.AreEqual(1, available[0].Id);
+        Assert.AreEqual("_script/1.sql", available[0].ScriptUri);
+        Assert.AreEqual("_script/1.diff.sql", available[0].DiffUri);
     }
 
-    [Fact]
+    [TestMethod]
     public async Task ApplySchema_UsingDiffScript_Succeeds()
     {
         _schemaManagerDataStore.GetCurrentSchemaVersionAsync(default).ReturnsForAnyArgs(Task.FromResult(1));
@@ -123,7 +124,7 @@ public class SqlSchemaManagerTests
         await _schemaManagerDataStore.Received(1).ExecuteScriptAndCompleteSchemaVersionAsync(Arg.Is("script"), Arg.Is(2), Arg.Is(false), Arg.Any<CancellationToken>());
     }
 
-    [Fact]
+    [TestMethod]
     public async Task ApplySchema_UsingSnapshotScript_Succeeds()
     {
         var list1 = new List<AvailableVersion> { new AvailableVersion(0, "_script/0.sql", "_script/0.diff.sql"), new AvailableVersion(1, "_script/1.sql", "_script/1.diff.sql"), new AvailableVersion(2, "_script/2.sql", "_script/2.diff.sql") };
@@ -139,9 +140,9 @@ public class SqlSchemaManagerTests
         await _schemaManagerDataStore.Received(1).ExecuteScriptAndCompleteSchemaVersionAsync(Arg.Is("script"), Arg.Is(2), Arg.Is(true), Arg.Any<CancellationToken>());
     }
 
-    [Theory]
-    [InlineData(true)]
-    [InlineData(false)]
+    [TestMethod]
+    [DataRow(true)]
+    [DataRow(false)]
     public async Task ApplySchema_UsingMultipleDiffScriptAndOlderVersionInstance_ThrowsSchemaManagerExceptionOrSucceedsDependingOnForceFlag(bool force)
     {
         // Set a zero retry sleep duration to expedite fail-case unit test.
@@ -167,7 +168,7 @@ public class SqlSchemaManagerTests
         }
     }
 
-    [Fact]
+    [TestMethod]
     public async Task ApplySchema_OnDependencyThrowSchemaManagerException_ThrowsSchemaManagerException()
     {
         // Set a zero retry sleep duration to expedite fail-case unit test.
@@ -181,7 +182,7 @@ public class SqlSchemaManagerTests
         await Assert.ThrowsAsync<SchemaManagerException>(() => _sqlSchemaManager.ApplySchema(new MutuallyExclusiveType { Latest = false, Version = 2, Next = false }));
     }
 
-    [Fact]
+    [TestMethod]
     public async Task ApplySchema_OnDependencyThrowInvalidOperationException_ThrowsInvalidOperationException()
     {
         _schemaManagerDataStore.GetCurrentSchemaVersionAsync(default).ReturnsForAnyArgs(Task.FromResult(1));
@@ -192,7 +193,7 @@ public class SqlSchemaManagerTests
         await Assert.ThrowsAsync<InvalidOperationException>(() => _sqlSchemaManager.ApplySchema(new MutuallyExclusiveType { Latest = false, Version = 2, Next = false }));
     }
 
-    [Fact]
+    [TestMethod]
     public async Task ApplySchema_TargetVersionIsLessThanOrEqualsToTheTheCurrentSchemaVersion_ShouldNotThrowException()
     {
         _schemaManagerDataStore.GetCurrentSchemaVersionAsync(default).ReturnsForAnyArgs(Task.FromResult(2));
@@ -206,7 +207,7 @@ public class SqlSchemaManagerTests
         await _schemaManagerDataStore.DidNotReceive().ExecuteScriptAndCompleteSchemaVersionAsync(Arg.Is("script"), Arg.Is(2), Arg.Is(false), Arg.Any<CancellationToken>());
     }
 
-    [Fact]
+    [TestMethod]
     public async Task GivenWriteGateReturnsFalse_WhenApplySchema_ThenSkipsWithoutApplyingAnySchema()
     {
         _schemaWriteGate.CanWriteAsync(default).ReturnsForAnyArgs(Task.FromResult(false));
@@ -217,7 +218,7 @@ public class SqlSchemaManagerTests
         await _schemaManagerDataStore.DidNotReceiveWithAnyArgs().ExecuteScriptAndCompleteSchemaVersionAsync(default, default, default, default);
     }
 
-    [Fact]
+    [TestMethod]
     public async Task GivenWriteGateReturnsFalseAndSchemaBehind_WhenApplySchema_ThenEmitsSchemaBehindMetric()
     {
         SqlSchemaManager sqlSchemaManager = CreateSchemaManager(FalseGate(), _schemaMetrics, region: "eastus2");
@@ -229,9 +230,9 @@ public class SqlSchemaManagerTests
         _schemaMetrics.Received(1).SchemaBehind("TestDb", 3, "eastus2");
     }
 
-    [Theory]
-    [InlineData(5)] // current
-    [InlineData(7)] // ahead
+    [TestMethod]
+    [DataRow(5)] // current
+    [DataRow(7)] // ahead
     public async Task GivenWriteGateReturnsFalseAndSchemaNotBehind_WhenApplySchema_ThenDoesNotEmitMetric(int currentVersion)
     {
         SqlSchemaManager sqlSchemaManager = CreateSchemaManager(FalseGate(), _schemaMetrics);
@@ -243,7 +244,7 @@ public class SqlSchemaManagerTests
         _schemaMetrics.DidNotReceiveWithAnyArgs().SchemaBehind(default, default, default);
     }
 
-    [Fact]
+    [TestMethod]
     public async Task GivenWriteGateReturnsFalseAndAvailabilityLookupFails_WhenApplySchema_ThenSkipsWithoutThrowing()
     {
         SqlSchemaManager sqlSchemaManager = CreateSchemaManager(FalseGate(), _schemaMetrics);
@@ -256,7 +257,7 @@ public class SqlSchemaManagerTests
         await _schemaManagerDataStore.DidNotReceiveWithAnyArgs().ExecuteScriptAndCompleteSchemaVersionAsync(default, default, default, default);
     }
 
-    [Fact]
+    [TestMethod]
     public async Task GivenWriteGateReturnsTrue_WhenApplySchema_ThenDoesNotEmitMetric()
     {
         _schemaManagerDataStore.GetCurrentSchemaVersionAsync(default).ReturnsForAnyArgs(Task.FromResult(1));

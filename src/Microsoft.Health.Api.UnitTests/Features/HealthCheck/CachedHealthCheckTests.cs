@@ -12,10 +12,11 @@ using Microsoft.Health.Api.Features.HealthChecks;
 using Microsoft.Health.Api.Modules;
 using Microsoft.Health.Extensions.DependencyInjection;
 using NSubstitute;
-using Xunit;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Microsoft.Health.Api.UnitTests.Features.HealthCheck;
 
+[TestClass]
 public class CachedHealthCheckTests
 {
     public CachedHealthCheckTests()
@@ -45,7 +46,7 @@ public class CachedHealthCheckTests
     private readonly IHealthCheck _healthCheck;
     private readonly ServiceProvider _serviceProvider;
 
-    [Fact]
+    [TestMethod]
     public async Task GivenCachedHealthCheck_WhenRunningHealthCheckService_ThenPreserveCacheBetweenInvocations()
     {
         HealthCheckService service = _serviceProvider.GetRequiredService<HealthCheckService>();
@@ -61,14 +62,16 @@ public class CachedHealthCheckTests
             service.CheckHealthAsync(cts.Token),
             service.CheckHealthAsync(cts.Token));
 
-        Assert.All(reports, AssertHealthReport);
+        foreach (HealthReport report in reports)
+            AssertHealthReport(report);
+
         await _healthCheck.ReceivedWithAnyArgs(1).CheckHealthAsync(default, default);
     }
 
     private static void AssertHealthReport(HealthReport actual)
     {
-        Assert.Equal(HealthStatus.Healthy, actual.Status);
-        Assert.True(actual.Entries.TryGetValue(HealthCheckName, out HealthReportEntry entry));
-        Assert.Equal(HealthStatus.Healthy, entry.Status);
+        Assert.AreEqual(HealthStatus.Healthy, actual.Status);
+        Assert.IsTrue(actual.Entries.TryGetValue(HealthCheckName, out HealthReportEntry entry));
+        Assert.AreEqual(HealthStatus.Healthy, entry.Status);
     }
 }

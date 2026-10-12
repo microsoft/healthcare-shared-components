@@ -7,13 +7,14 @@ using System.Data.SqlTypes;
 using System.IO;
 using Microsoft.Data.SqlClient.Server;
 using Microsoft.Health.SqlServer.Features.Schema.Model;
-using Xunit;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Microsoft.Health.SqlServer.UnitTests.Features.Schema;
 
+[TestClass]
 public class ColumnsTests
 {
-    [Fact]
+    [TestMethod]
     public void GivenSqlDataRecordWithVarBinaryColumn_WhenSetVarBinaryValueTwice_ThenFirstValueShouldBeCleaned()
     {
         VarBinaryColumn varBinaryColumn = new VarBinaryColumn("Col1", -1);
@@ -25,12 +26,13 @@ public class ColumnsTests
         using Stream input2 = new MemoryStream(data2);
 
         varBinaryColumn.Set(record, 0, input1);
-        Assert.Equal(data1, ((SqlBinary)record.GetSqlValue(0)).Value);
+        Assert.AreSequenceEqual(data1, ((SqlBinary)record.GetSqlValue(0)).Value);
         varBinaryColumn.Set(record, 0, input2);
-        Assert.Equal(data2, ((SqlBinary)record.GetSqlValue(0)).Value);
+        Assert.AreSequenceEqual(data2, ((SqlBinary)record.GetSqlValue(0)).Value);
     }
 
-    [Fact(Skip = "true")]
+    [TestMethod]
+    [Ignore("Renable after User Story 92202")]
     public void GivenStringValueGreaterThanColumnMax_WhenSettingStringValue_ThenSqlTruncateExceptionThrown()
     {
         var varCharColumn = new VarCharColumn("text", 10);
@@ -39,7 +41,7 @@ public class ColumnsTests
         Assert.Throws<SqlTruncateException>(() => varCharColumn.Set(record, 0, "Astringwhichislongerthan10characters"));
     }
 
-    [Fact]
+    [TestMethod]
     public void GivenANullStringValue_WhenSettingStringValue_ThenSqlDBNullIsSet()
     {
         var varCharColumn = new VarCharColumn("text", 10);
@@ -47,10 +49,10 @@ public class ColumnsTests
 
         varCharColumn.Set(record, 0, null);
 
-        Assert.True(record.GetSqlString(0).IsNull);
+        Assert.IsTrue(record.GetSqlString(0).IsNull);
     }
 
-    [Fact]
+    [TestMethod]
     public void GivenANVarCharColumnColumnWithMaxLength_WhenSettingAValue_ThenSqlDBNullIsSet()
     {
         var nVarCharColumn = new NVarCharColumn("textOverflowColumn", -1);
@@ -58,11 +60,11 @@ public class ColumnsTests
 
         nVarCharColumn.Set(record, 0, "text");
 
-        Assert.Equal("text", record.GetSqlString(0).Value);
+        Assert.AreEqual("text", record.GetSqlString(0).Value);
     }
 
-
-    [Fact(Skip = "Renable after User Story 92202")]
+    [TestMethod]
+    [Ignore("Renable after User Story 92202")]
     public void GivenDecimalValueGreaterThanDefinedColumnPrecisionAndScaleMax_WhenSettingDecimalValue_ThenSqlTruncateExceptionThrown()
     {
         var decimalColumn = new DecimalColumn("decimalColumn", 18, 6);

@@ -12,10 +12,11 @@ using Microsoft.Health.SqlServer.Api.Controllers;
 using Microsoft.Health.SqlServer.Features.Schema;
 using Newtonsoft.Json.Linq;
 using NSubstitute;
-using Xunit;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Microsoft.Health.SqlServer.Api.UnitTests.Controllers;
 
+[TestClass]
 public sealed class SchemaControllerTests : IDisposable
 {
     private readonly SchemaController _schemaController;
@@ -37,48 +38,48 @@ public sealed class SchemaControllerTests : IDisposable
         _schemaController = new SchemaController(_schemaInformation, scriptProvider, urlHelperFactory, _mediator, NullLogger<SchemaController>.Instance);
     }
 
-    [Fact]
+    [TestMethod]
     public void GivenAnAvailableVersionsRequest_WhenCurrentVersionIsNull_ThenAllVersionsReturned()
     {
         ActionResult result = _schemaController.AvailableVersions();
 
         var jsonResult = result as JsonResult;
-        Assert.NotNull(jsonResult);
+        Assert.IsNotNull(jsonResult);
 
         var jArrayResult = JArray.FromObject(jsonResult.Value);
-        Assert.Equal(Enum.GetNames<TestSchemaVersion>().Length - 1, jArrayResult.Count);
+        Assert.AreEqual(Enum.GetNames<TestSchemaVersion>().Length - 1, jArrayResult.Count);
 
         JToken firstResult = jArrayResult.First;
-        Assert.Equal(1, firstResult["id"]);
-        Assert.Equal("https://localhost/script", firstResult["script"]);
-        Assert.Equal(string.Empty, firstResult["diff"]);
+        Assert.AreEqual(1, firstResult["id"].Value<int>());
+        Assert.AreEqual("https://localhost/script", firstResult["script"].Value<string>());
+        Assert.AreEqual(string.Empty, firstResult["diff"].Value<string>());
 
         // Ensure available versions are in the ascending order
         jArrayResult.RemoveAt(0);
-        var previousId = (int)firstResult["id"];
+        var previousId = firstResult["id"].Value<int>();
         foreach (JToken item in jArrayResult)
         {
             var currentId = (int)item["id"];
-            Assert.True(previousId < currentId, "The available versions are not in the ascending order");
+            Assert.IsLessThan(currentId, previousId, "The available versions are not in the ascending order");
         }
     }
 
-    [Fact]
+    [TestMethod]
     public void GivenAnAvailableVersionsRequest_WhenCurrentVersionNotNull_ThenCorrectVersionsReturned()
     {
         _schemaInformation.Current = (int)TestSchemaVersion.Version2;
         ActionResult result = _schemaController.AvailableVersions();
 
         var jsonResult = result as JsonResult;
-        Assert.NotNull(jsonResult);
+        Assert.IsNotNull(jsonResult);
 
         var jArrayResult = JArray.FromObject(jsonResult.Value);
-        Assert.Equal(Enum.GetNames<TestSchemaVersion>().Length - 2, jArrayResult.Count);
+        Assert.AreEqual(Enum.GetNames<TestSchemaVersion>().Length - 2, jArrayResult.Count);
 
         JToken firstResult = jArrayResult.First;
-        Assert.Equal(2, firstResult["id"]);
-        Assert.Equal("https://localhost/script", firstResult["script"]);
-        Assert.Equal("https://localhost/script", firstResult["diff"]);
+        Assert.AreEqual(2, firstResult["id"].Value<int>());
+        Assert.AreEqual("https://localhost/script", firstResult["script"].Value<string>());
+        Assert.AreEqual("https://localhost/script", firstResult["diff"].Value<string>());
     }
 
     public void Dispose()

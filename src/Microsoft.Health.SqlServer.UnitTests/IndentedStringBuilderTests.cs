@@ -1,17 +1,18 @@
-﻿// -------------------------------------------------------------------------------------------------
+// -------------------------------------------------------------------------------------------------
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License (MIT). See LICENSE in the repo root for license information.
 // -------------------------------------------------------------------------------------------------
 
 using System;
 using System.Text;
-using Xunit;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Microsoft.Health.SqlServer.UnitTests;
 
+[TestClass]
 public class IndentedStringBuilderTests
 {
-    [Fact]
+    [TestMethod]
     public void GivenAnIndentedStringBuilder_WhenUsingIndentedScopes_KeepsTrackOfIndentation()
     {
         IndentedStringBuilder sb = new IndentedStringBuilder(new StringBuilder())
@@ -31,6 +32,6 @@ public class IndentedStringBuilderTests
 
         sb.Append("}");
 
-        Assert.Equal($"class Foo{Environment.NewLine}{{{Environment.NewLine}    Foo(){Environment.NewLine}    {{{Environment.NewLine}        // hello{Environment.NewLine}    }}{Environment.NewLine}}}", sb.ToString());
+        Assert.AreEqual($"class Foo{Environment.NewLine}{{{Environment.NewLine}    Foo(){Environment.NewLine}    {{{Environment.NewLine}        // hello{Environment.NewLine}    }}{Environment.NewLine}}}", sb.ToString());
     }
 }

@@ -1,34 +1,35 @@
-﻿// -------------------------------------------------------------------------------------------------
+// -------------------------------------------------------------------------------------------------
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License (MIT). See LICENSE in the repo root for license information.
 // -------------------------------------------------------------------------------------------------
 
 using System;
 using System.Collections.Generic;
-using Xunit;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Microsoft.Health.SqlServer.UnitTests;
 
+[TestClass]
 public class EnumerableExtensionsTests
 {
-    [InlineData(null)]
-    [InlineData("")]
-    [Theory]
+    [DataRow(null)]
+    [DataRow("")]
+    [TestMethod]
     public void GivenAnNullOrEmptyEnumerable_WhenCallingNullIfEmpty_ReturnsNull(string commaSeparatedInput)
     {
         string[] input = commaSeparatedInput?.Split(',', StringSplitOptions.RemoveEmptyEntries);
-        Assert.Null(input.NullIfEmpty());
+        Assert.IsNull(input.NullIfEmpty());
     }
 
-    [InlineData("1")]
-    [InlineData("1,2")]
-    [InlineData("1,2,3")]
-    [Theory]
+    [DataRow("1")]
+    [DataRow("1,2")]
+    [DataRow("1,2,3")]
+    [TestMethod]
     public void GivenANonEmptyEnumerable_WhenCallingNullIfEmpty_ReturnsTheExpectedSequence(string commaSeparatedInput)
     {
         string[] inputSequence = commaSeparatedInput?.Split(',', StringSplitOptions.RemoveEmptyEntries);
         IEnumerable<string> wrappedSequence = inputSequence.NullIfEmpty();
-        Assert.Equal(commaSeparatedInput, string.Join(",", wrappedSequence));
-        Assert.Equal(commaSeparatedInput, string.Join(",", wrappedSequence));
+        Assert.AreEqual(commaSeparatedInput, string.Join(",", wrappedSequence));
+        Assert.AreEqual(commaSeparatedInput, string.Join(",", wrappedSequence));
     }
 }

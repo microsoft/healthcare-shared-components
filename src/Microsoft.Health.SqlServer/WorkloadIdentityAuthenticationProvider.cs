@@ -42,7 +42,7 @@ internal sealed class WorkloadIdentityAuthenticationProvider : SqlAuthentication
         TokenRequestContext tokenRequestContext = new(scopes);
 
         int seperatorIndex = parameters.Authority.LastIndexOf('/');
-        string authority = parameters.Authority.Remove(seperatorIndex + 1);
+        string authority = parameters.Authority[..(seperatorIndex + 1)];
         string clientId = string.IsNullOrWhiteSpace(parameters.UserId) ? null : parameters.UserId;
 
         WorkloadIdentityCredentialOptions options = new()

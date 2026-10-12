@@ -1,6 +1,6 @@
 
 # Healthcare Shared Components
-[![Packages CI](https://github.com/microsoft/healthcare-shared-components/actions/workflows/packages-ci.yml/badge.svg)](https://github.com/microsoft/healthcare-shared-components/actions/workflows/packages-ci.yml)
+[![Build Status](https://microsofthealthoss.visualstudio.com/HealthcareSharedComponents/_apis/build/status%2FPackages%20CI?branchName=main)](https://microsofthealthoss.visualstudio.com/HealthcareSharedComponents/_build/latest?definitionId=122&branchName=main)
 
 This repository is a collection of components used by the Microsoft Healthcare team which develops services such as
 the [FHIR Server for Azure](https://github.com/microsoft/fhir-server), the [IoMT FHIR Connector for Azure](https://github.com/microsoft/iomt-fhir),

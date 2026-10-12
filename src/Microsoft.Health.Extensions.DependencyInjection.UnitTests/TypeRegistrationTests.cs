@@ -9,10 +9,11 @@ using System.IO;
 using System.Linq;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Health.Extensions.DependencyInjection.UnitTests.TestObjects;
-using Xunit;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Microsoft.Health.Extensions.DependencyInjection.UnitTests;
 
+[TestClass]
 public class TypeRegistrationTests
 {
     private readonly ServiceCollection _collection;
@@ -22,17 +23,17 @@ public class TypeRegistrationTests
         _collection = new ServiceCollection();
     }
 
-    [Fact]
+    [TestMethod]
     public void GivenAType_WhenRegisteringTransientAsSelf_ThenTheServicesIsRegistered()
     {
         new TypeRegistration(_collection, typeof(string))
             .Transient()
             .AsSelf();
 
-        Assert.Equal(typeof(string), _collection.Single().ServiceType);
+        Assert.AreEqual(typeof(string), _collection.Single().ServiceType);
     }
 
-    [Fact]
+    [TestMethod]
     public void GivenAType_WhenRegisteringTransientAsSelf_ThenTheServiceGivesNewInstances()
     {
         new TypeRegistration(_collection, typeof(List<string>))
@@ -41,10 +42,10 @@ public class TypeRegistrationTests
 
         var ioc = _collection.BuildServiceProvider();
 
-        Assert.NotEqual(ioc.GetService<List<string>>().GetHashCode(), ioc.GetService<List<string>>().GetHashCode());
+        Assert.AreNotEqual(ioc.GetService<List<string>>().GetHashCode(), ioc.GetService<List<string>>().GetHashCode());
     }
 
-    [Fact]
+    [TestMethod]
     public void GivenAType_WhenRegisteringTransientAsSelfAsService_ThenTheServicesIsRegistered()
     {
         new TypeRegistration(_collection, typeof(StreamReader))
@@ -52,11 +53,11 @@ public class TypeRegistrationTests
             .AsSelf()
             .AsService<TextReader>();
 
-        Assert.Equal(typeof(StreamReader), _collection.First().ServiceType);
-        Assert.Equal(typeof(TextReader), _collection.Skip(1).First().ServiceType);
+        Assert.AreEqual(typeof(StreamReader), _collection.First().ServiceType);
+        Assert.AreEqual(typeof(TextReader), _collection.Skip(1).First().ServiceType);
     }
 
-    [Fact]
+    [TestMethod]
     public void GivenAType_WhenRegisteringAndReplacingService_ThenTheNewServicesIsRegistered()
     {
         new TypeRegistration(_collection, typeof(StreamReader))
@@ -67,14 +68,14 @@ public class TypeRegistrationTests
             .Transient()
             .ReplaceService<TextReader>();
 
-        Assert.Collection(_collection, x =>
+        foreach (ServiceDescriptor d in _collection)
         {
-            Assert.Equal(typeof(StringReader), x.ImplementationType);
-            Assert.Equal(typeof(TextReader), x.ServiceType);
-        });
+            Assert.AreEqual(typeof(StringReader), d.ImplementationType);
+            Assert.AreEqual(typeof(TextReader), d.ServiceType);
+        }
     }
 
-    [Fact]
+    [TestMethod]
     public void GivenAFactory_WhenReplacingSelf_ThenOnlyTheNewServiceIsRegistered()
     {
         _collection
@@ -87,10 +88,10 @@ public class TypeRegistrationTests
             .Transient()
             .ReplaceSelf();
 
-        Assert.Single(_collection.BuildServiceProvider().GetService<IEnumerable<string>>(), "b");
+        Assert.ContainsSingle(_collection.BuildServiceProvider().GetService<IEnumerable<string>>(), "b");
     }
 
-    [Fact]
+    [TestMethod]
     public void GivenADelegate_WhenRegisteringTransientAsSelf_ThenTheServicesIsRegistered()
     {
         new TypeRegistration(_collection, typeof(StreamReader), provider => new StreamReader(new MemoryStream()))
@@ -98,41 +99,41 @@ public class TypeRegistrationTests
             .AsSelf()
             .AsService<TextReader>();
 
-        Assert.Equal(typeof(StreamReader), _collection.First().ServiceType);
-        Assert.Equal(typeof(TextReader), _collection.Skip(1).First().ServiceType);
+        Assert.AreEqual(typeof(StreamReader), _collection.First().ServiceType);
+        Assert.AreEqual(typeof(TextReader), _collection.Skip(1).First().ServiceType);
     }
 
-    [Fact]
+    [TestMethod]
     public void GivenADelegate_WhenRegisteringTransientAsImplementedInterfaces_ThenIDisposableIsNotRegistered()
     {
         new TypeRegistration(_collection, typeof(TestDisposableObjectWithInterface))
             .Transient()
             .AsImplementedInterfaces();
 
-        Assert.True(_collection.All(x => x.ServiceType != typeof(IDisposable)));
+        Assert.IsTrue(_collection.All(x => x.ServiceType != typeof(IDisposable)));
     }
 
-    [Fact]
+    [TestMethod]
     public void GivenADelegate_WhenRegisteringTransientAsImplementedInterfaces_ThenTheServicesIsRegistered()
     {
         new TypeRegistration(_collection, typeof(TestDisposableObjectWithInterface))
             .Transient()
             .AsImplementedInterfaces();
 
-        Assert.Equal(typeof(IEquatable<string>), _collection.Single().ServiceType);
+        Assert.AreEqual(typeof(IEquatable<string>), _collection.Single().ServiceType);
     }
 
-    [Fact]
+    [TestMethod]
     public void GivenADelegate_WhenRegisteringTransientAsImplementedInterfaces_ThenTheServicesWithDelegateIsRegistered()
     {
         new TypeRegistration(_collection, typeof(TestDisposableObjectWithInterface))
             .Transient()
             .AsImplementedInterfaces(x => typeof(IEquatable<string>).IsAssignableFrom(x));
 
-        Assert.Equal(typeof(IEquatable<string>), _collection.Single().ServiceType);
+        Assert.AreEqual(typeof(IEquatable<string>), _collection.Single().ServiceType);
     }
 
-    [Fact]
+    [TestMethod]
     public void GivenADelegate_WhenRegisteringScopedAsSelfAsServices_ThenTheSameInstanceIsResolvedForBoth()
     {
         new TypeRegistration(_collection, typeof(List<string>), provider => new List<string> { Guid.NewGuid().ToString() })
@@ -147,11 +148,11 @@ public class TypeRegistrationTests
         var b = ioc.GetService<IList<string>>();
         var c = ioc.GetService<IEnumerable<string>>();
 
-        Assert.Equal(a.First(), b.First());
-        Assert.Equal(a.First(), c.First());
+        Assert.AreEqual(a.First(), b.First());
+        Assert.AreEqual(a.First(), c.First());
     }
 
-    [Fact]
+    [TestMethod]
     public void GivenAType_WhenRegisteringScopedAsSelfAsServices_ThenTheSameInstanceIsResolvedForBoth()
     {
         new TypeRegistration(_collection, typeof(List<string>))
@@ -164,10 +165,10 @@ public class TypeRegistrationTests
         var a = ioc.GetService<List<string>>();
         var b = ioc.GetService<IList<string>>();
 
-        Assert.Equal(a.GetHashCode(), b.GetHashCode());
+        Assert.AreEqual(a.GetHashCode(), b.GetHashCode());
     }
 
-    [Fact]
+    [TestMethod]
     public void GivenADelegate_WhenRegisteringSingletonAsSelfAsServices_ThenTheSameInstanceIsResolvedForBoth()
     {
         new TypeRegistration(_collection, typeof(List<string>), provider => new List<string> { Guid.NewGuid().ToString() })
@@ -182,11 +183,11 @@ public class TypeRegistrationTests
         var b = ioc.GetService<IList<string>>();
         var c = ioc.GetService<IEnumerable<string>>();
 
-        Assert.Equal(a.First(), b.First());
-        Assert.Equal(a.First(), c.First());
+        Assert.AreEqual(a.First(), b.First());
+        Assert.AreEqual(a.First(), c.First());
     }
 
-    [Fact]
+    [TestMethod]
     public void GivenAType_WhenRegisteringSingletonAsSelfAsServices_ThenTheSameInstanceIsResolvedForBoth()
     {
         new TypeRegistration(_collection, typeof(List<string>))
@@ -199,10 +200,10 @@ public class TypeRegistrationTests
         var a = ioc.GetService<List<string>>();
         var b = ioc.GetService<IList<string>>();
 
-        Assert.Equal(a.GetHashCode(), b.GetHashCode());
+        Assert.AreEqual(a.GetHashCode(), b.GetHashCode());
     }
 
-    [Fact]
+    [TestMethod]
     public void GivenAType_WhenRegisteringLazy_ThenTypeCanBeResolved()
     {
         new TypeRegistration(_collection, typeof(List<string>))
@@ -217,10 +218,10 @@ public class TypeRegistrationTests
         var a = ioc.GetService<Lazy<List<string>>>();
         var b = ioc.GetService<Lazy<IList<string>>>();
 
-        Assert.Equal(a.Value.GetHashCode(), b.Value.GetHashCode());
+        Assert.AreEqual(a.Value.GetHashCode(), b.Value.GetHashCode());
     }
 
-    [Fact]
+    [TestMethod]
     public void GivenAType_WhenRegisteringAFactory_ThenTypeCanBeResolved()
     {
         new TypeRegistration(_collection, typeof(List<string>))
@@ -235,10 +236,10 @@ public class TypeRegistrationTests
         var a = ioc.GetService<Func<List<string>>>();
         var b = ioc.GetService<Func<IList<string>>>();
 
-        Assert.Equal(a().GetHashCode(), b().GetHashCode());
+        Assert.AreEqual(a().GetHashCode(), b().GetHashCode());
     }
 
-    [Fact]
+    [TestMethod]
     public void GivenAType_WhenRegisteringOwned_ThenTypeCanBeResolvedInDifferentScope()
     {
         new TypeRegistration(_collection, typeof(List<string>))
@@ -253,10 +254,10 @@ public class TypeRegistrationTests
         var a = ioc.GetService<IScoped<List<string>>>();
         var b = ioc.GetService<IScoped<IList<string>>>();
 
-        Assert.NotEqual(a.Value.GetHashCode(), b.Value.GetHashCode());
+        Assert.AreNotEqual(a.Value.GetHashCode(), b.Value.GetHashCode());
     }
 
-    [Fact]
+    [TestMethod]
     public void GivenAType_WhenRegisteringScopedWithExplicitRegistration_ThenOnlyExplicitRegistrationIsReturned()
     {
         // Add open generic first
@@ -276,10 +277,10 @@ public class TypeRegistrationTests
 
         var resolvedService = ioc.GetService<IScoped<IList<string>>>();
 
-        Assert.IsType<TestScope>(resolvedService);
+        Assert.IsExactInstanceOfType<TestScope>(resolvedService);
     }
 
-    [Fact]
+    [TestMethod]
     public void GivenAType_WhenRegisteringScopedWithExplicitRegistrationReverseOrder_ThenOnlyExplicitRegistrationIsReturned()
     {
         // Adds actual List
@@ -299,20 +300,20 @@ public class TypeRegistrationTests
 
         var resolvedService = ioc.GetService<IScoped<IList<string>>>();
 
-        Assert.IsType<TestScope>(resolvedService);
+        Assert.IsExactInstanceOfType<TestScope>(resolvedService);
     }
 
-    [Fact]
+    [TestMethod]
     public void GivenAType_WhenRegisteringAsSelf_ThenTheTypeAppearsAsMetadataOnTheServiceDescriptor()
     {
         _collection.Add<List<string>>()
             .Transient()
             .AsSelf();
 
-        Assert.Equal(typeof(List<string>), (_collection.Single() as ServiceDescriptorWithMetadata)?.Metadata);
+        Assert.AreEqual(typeof(List<string>), (_collection.Single() as ServiceDescriptorWithMetadata)?.Metadata);
     }
 
-    [Fact]
+    [TestMethod]
     public void GivenAType_WhenRegisteringAsSelfAndAsAnotherService_ThenTheTypeAppearsAsMetadataOnTheServiceDescriptor()
     {
         _collection.Add<List<string>>()
@@ -320,20 +321,22 @@ public class TypeRegistrationTests
             .AsSelf()
             .AsService<IList<string>>();
 
-        Assert.All(_collection, sd => Assert.Equal(typeof(List<string>), (sd as ServiceDescriptorWithMetadata)?.Metadata));
+        foreach (ServiceDescriptor d in _collection)
+            Assert.AreEqual(typeof(List<string>), (d as ServiceDescriptorWithMetadata)?.Metadata);
     }
 
-    [Fact]
+    [TestMethod]
     public void GivenFactory_WhenRegisteringAsSelfAsAService_ThenTheTypeAppearsAsMetadataOnTheServiceDescriptor()
     {
         _collection.Add(sp => new List<string>())
             .Transient()
             .AsService<IList<string>>();
 
-        Assert.All(_collection, sd => Assert.Equal(typeof(List<string>), (sd as ServiceDescriptorWithMetadata)?.Metadata));
+        foreach (ServiceDescriptor d in _collection)
+            Assert.AreEqual(typeof(List<string>), (d as ServiceDescriptorWithMetadata)?.Metadata);
     }
 
-    [Fact]
+    [TestMethod]
     public void GivenADelegate_WhenResolvingComponent_ThenResolverReturnsRegisteredService()
     {
         _collection.Add<ComponentA>()
@@ -352,10 +355,10 @@ public class TypeRegistrationTests
         var componentFactory = provider.GetService<ComponentB.Factory>();
         IComponent instance = componentFactory.Invoke();
 
-        Assert.IsType<ComponentB>(instance);
+        Assert.IsExactInstanceOfType<ComponentB>(instance);
     }
 
-    [Fact]
+    [TestMethod]
     public void GivenADelegateFromTypeBuilder_WhenResolvingComponent_ThenResolverReturnsRegisteredService()
     {
         _collection.Add<ComponentA>()
@@ -376,10 +379,10 @@ public class TypeRegistrationTests
         var componentFactory = provider.GetService<ComponentB.Factory>();
         IComponent instance = componentFactory.Invoke();
 
-        Assert.IsType<ComponentB>(instance);
+        Assert.IsExactInstanceOfType<ComponentB>(instance);
     }
 
-    [Fact]
+    [TestMethod]
     public void GivenADelegateWithIncompatibleType_WhenResolvingComponent_ThenExceptionIsThrown()
     {
         Assert.Throws<InvalidOperationException>(_collection.AddDelegate<ComponentB.Factory, int>);

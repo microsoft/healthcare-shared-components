@@ -17,46 +17,47 @@ using Microsoft.Health.Blob.Configs;
 using Microsoft.Health.Blob.Features.Storage;
 using Microsoft.IO;
 using NSubstitute;
-using Xunit;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Microsoft.Health.Blob.UnitTests.Registration;
 
+[TestClass]
 public class BlobClientRegistrationExtensionsTest
 {
-    [Fact]
+    [TestMethod]
     public void GivenEmptyServiceCollection_WhenAddingBlobDataStore_ThenAddNewServices()
     {
         var services = new ServiceCollection();
         services.AddBlobDataStore();
 
-        Assert.True(services.ContainsSingleton<IHostedService, BlobHostedService>());
-        Assert.True(services.ContainsSingleton<BlobServiceClient, BlobServiceClient>());
-        Assert.True(services.ContainsSingleton<IBlobClientTestProvider, BlobClientContainerGetTestProvider>());
-        Assert.True(services.ContainsSingleton<IBlobInitializer, BlobInitializer>());
-        Assert.True(services.ContainsSingleton<RecyclableMemoryStreamManager>());
+        Assert.IsTrue(services.ContainsSingleton<IHostedService, BlobHostedService>());
+        Assert.IsTrue(services.ContainsSingleton<BlobServiceClient, BlobServiceClient>());
+        Assert.IsTrue(services.ContainsSingleton<IBlobClientTestProvider, BlobClientContainerGetTestProvider>());
+        Assert.IsTrue(services.ContainsSingleton<IBlobInitializer, BlobInitializer>());
+        Assert.IsTrue(services.ContainsSingleton<RecyclableMemoryStreamManager>());
 
         // New
-        Assert.True(services.ContainsSingleton<IPostConfigureOptions<BlobDataStoreConfiguration>>());
-        Assert.True(services.ContainsTransient<IConfigureOptions<BlobDataStoreConfiguration>>());
+        Assert.IsTrue(services.ContainsSingleton<IPostConfigureOptions<BlobDataStoreConfiguration>>());
+        Assert.IsTrue(services.ContainsTransient<IConfigureOptions<BlobDataStoreConfiguration>>());
 
         // Backward Compatability
-        Assert.True(services.ContainsSingleton<BlobDataStoreConfiguration>());
+        Assert.IsTrue(services.ContainsSingleton<BlobDataStoreConfiguration>());
     }
 
-    [Fact]
+    [TestMethod]
     public void GivenEmptyServiceCollection_WhenAddingBlobServiceClient_ThenAddNewServices()
     {
         var services = new ServiceCollection();
         services.AddBlobServiceClient();
 
-        Assert.True(services.ContainsSingleton<IPostConfigureOptions<BlobDataStoreConfiguration>>());
-        Assert.True(services.ContainsSingleton<BlobServiceClient>());
+        Assert.IsTrue(services.ContainsSingleton<IPostConfigureOptions<BlobDataStoreConfiguration>>());
+        Assert.IsTrue(services.ContainsSingleton<BlobServiceClient>());
     }
 
-    [Theory]
-    [InlineData(null, BlobDataStoreAuthenticationType.ConnectionString, BlobLocalEmulator.ConnectionString)]
-    [InlineData("foo", BlobDataStoreAuthenticationType.ConnectionString, "foo")]
-    [InlineData(null, BlobDataStoreAuthenticationType.ManagedIdentity, null)]
+    [TestMethod]
+    [DataRow(null, BlobDataStoreAuthenticationType.ConnectionString, BlobLocalEmulator.ConnectionString)]
+    [DataRow("foo", BlobDataStoreAuthenticationType.ConnectionString, "foo")]
+    [DataRow(null, BlobDataStoreAuthenticationType.ManagedIdentity, null)]
     public void GivenConfigurationDelegate_WhenAddingBlobServiceClient_ThenUpdateConfigWithDefaults(
         string actualConnectionString,
         BlobDataStoreAuthenticationType authenticationType,
@@ -77,11 +78,11 @@ public class BlobClientRegistrationExtensionsTest
             .GetRequiredService<IOptions<BlobDataStoreConfiguration>>()
             .Value;
 
-        Assert.Equal(expectedConnectionString, actual.ConnectionString);
-        Assert.Equal(authenticationType, actual.AuthenticationType);
+        Assert.AreEqual(expectedConnectionString, actual.ConnectionString);
+        Assert.AreEqual(authenticationType, actual.AuthenticationType);
     }
 
-    [Fact]
+    [TestMethod]
     public void GivenNoConnectionString_WhenAddingBlobDataStore_ThenUpdateConfig()
     {
         IConfiguration config = new ConfigurationBuilder()
@@ -101,13 +102,13 @@ public class BlobClientRegistrationExtensionsTest
             .GetRequiredService<IOptions<BlobDataStoreConfiguration>>()
             .Value;
 
-        Assert.Equal(BlobLocalEmulator.ConnectionString, actual.ConnectionString);
-        Assert.Equal(BlobDataStoreAuthenticationType.ConnectionString, actual.AuthenticationType);
-        Assert.Equal(1, actual.RequestOptions.ExponentialRetryMaxAttempts);
-        Assert.Equal(100, actual.RequestOptions.ServerTimeoutInMinutes);
+        Assert.AreEqual(BlobLocalEmulator.ConnectionString, actual.ConnectionString);
+        Assert.AreEqual(BlobDataStoreAuthenticationType.ConnectionString, actual.AuthenticationType);
+        Assert.AreEqual(1, actual.RequestOptions.ExponentialRetryMaxAttempts);
+        Assert.AreEqual(100, actual.RequestOptions.ServerTimeoutInMinutes);
     }
 
-    [Fact]
+    [TestMethod]
     public void GivenConnectionString_WhenAddingBlobDataStore_ThenUpdateConfig()
     {
         IConfiguration config = new ConfigurationBuilder()
@@ -128,11 +129,11 @@ public class BlobClientRegistrationExtensionsTest
             .GetRequiredService<IOptions<BlobDataStoreConfiguration>>()
             .Value;
 
-        Assert.Equal("foo", actual.ConnectionString);
-        Assert.Equal(2, actual.RequestOptions.DownloadMaximumConcurrency);
+        Assert.AreEqual("foo", actual.ConnectionString);
+        Assert.AreEqual(2, actual.RequestOptions.DownloadMaximumConcurrency);
     }
 
-    [Fact]
+    [TestMethod]
     public void GivenBlobDataStoreConfiguration_WhenAddingBlobDataStore_ThenMapInitializerSettings()
     {
         var services = new ServiceCollection();
@@ -145,11 +146,11 @@ public class BlobClientRegistrationExtensionsTest
 
         ServiceProvider provider = services.BuildServiceProvider();
         var options = provider.GetRequiredService<IOptions<BlobInitializerOptions>>();
-        Assert.Equal(TimeSpan.FromSeconds(4567), options.Value.RetryDelay);
-        Assert.Equal(TimeSpan.FromMinutes(123), options.Value.Timeout);
+        Assert.AreEqual(TimeSpan.FromSeconds(4567), options.Value.RetryDelay);
+        Assert.AreEqual(TimeSpan.FromMinutes(123), options.Value.Timeout);
     }
 
-    [Fact]
+    [TestMethod]
     public void GivenNoConnectionString_WhenAddingBlobServiceClient_ThenUseDefault()
     {
         IConfiguration config = new ConfigurationBuilder()
@@ -169,10 +170,10 @@ public class BlobClientRegistrationExtensionsTest
             .BuildServiceProvider()
             .GetRequiredService<BlobServiceClient>();
 
-        Assert.Equal("devstoreaccount1", actual.AccountName);
+        Assert.AreEqual("devstoreaccount1", actual.AccountName);
     }
 
-    [Fact]
+    [TestMethod]
     public async Task GivenServices_WhenConfiguringContainerInitialization_ThenRegisterAppropriateServices()
     {
         var services = new ServiceCollection();
@@ -191,19 +192,19 @@ public class BlobClientRegistrationExtensionsTest
         ServiceProvider provider = services.BuildServiceProvider();
 
         IOptionsMonitor<BlobContainerConfiguration> optionsMonitor = provider.GetRequiredService<IOptionsMonitor<BlobContainerConfiguration>>();
-        Assert.Equal("FooContainer", optionsMonitor.Get("foo").ContainerName);
-        Assert.Equal("BarContainer", optionsMonitor.Get("bar").ContainerName);
-        Assert.Equal("BazContainer", optionsMonitor.Get("baz").ContainerName);
+        Assert.AreEqual("FooContainer", optionsMonitor.Get("foo").ContainerName);
+        Assert.AreEqual("BarContainer", optionsMonitor.Get("bar").ContainerName);
+        Assert.AreEqual("BazContainer", optionsMonitor.Get("baz").ContainerName);
 
         List<IBlobContainerInitializer> intializers = provider.GetRequiredService<IEnumerable<IBlobContainerInitializer>>().ToList();
 
-        Assert.Equal(3, intializers.Count);
+        Assert.AreEqual(3, intializers.Count);
         await AssertBlobInitializationAsync(intializers[0], "FooContainer");
         await AssertBlobInitializationAsync(intializers[1], "BarContainer");
         await AssertBlobInitializationAsync(intializers[2], "BazContainer");
     }
 
-    [Fact]
+    [TestMethod]
     public void GivenServices_WhenConfiguringTransportOverride_ThenCreateNewTransport()
     {
         IConfiguration config = new ConfigurationBuilder()
@@ -222,7 +223,7 @@ public class BlobClientRegistrationExtensionsTest
             .BuildServiceProvider();
 
         var options = provider.GetRequiredService<IOptionsMonitor<BlobClientOptions>>();
-        Assert.NotSame(HttpClientTransport.Shared, options.CurrentValue.Transport);
+        Assert.AreNotSame(HttpClientTransport.Shared, options.CurrentValue.Transport);
     }
 
     private static async Task AssertBlobInitializationAsync(IBlobContainerInitializer initializer, string expectedContainer)

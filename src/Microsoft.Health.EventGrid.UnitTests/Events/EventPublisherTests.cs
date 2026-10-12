@@ -5,67 +5,40 @@
 
 using System;
 using System.Net.Http;
-using Xunit;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Microsoft.Health.EventGrid.UnitTests.Events;
 
-/// <summary>
-/// EventPublisherTests.
-/// </summary>
+[TestClass]
 public class EventPublisherTests
 {
     /// <summary>
     /// TestCreateEventPublisherWithNullEndPoint.
     /// </summary>
-    [Fact]
+    [TestMethod]
     public void CreateEventPublisherWithNullEndPoint_ShouldThrowArgumentNullException()
     {
-        Assert.Throws<ArgumentNullException>(() =>
-        {
-            var eventGridPublisher = new EventGridPublisher(null, "some key");
-        });
-
-        Assert.Throws<ArgumentNullException>(() =>
-        {
-            var eventGridPublisher = new EventGridPublisher(null, new HttpClient(), "some key");
-        });
+        Assert.Throws<ArgumentNullException>(() => new EventGridPublisher(null, "some key"));
+        Assert.Throws<ArgumentNullException>(() => new EventGridPublisher(null, new HttpClient(), "some key"));
     }
 
     /// <summary>
     /// TestCreateEventPublisherWithNullAccessKey.
     /// </summary>
-    [Fact]
+    [TestMethod]
     public void CreateEventPublisherWithNullAccessKey_ShouldThrowArgumentNullException()
     {
-        Assert.Throws<ArgumentNullException>(() =>
-        {
-            var testTopicEndPoint = new Uri("https://microsoft-healthcareapis-workspaces.westus2-1.eventgrid-int.azure.net/eventGrid/api/events");
-            var eventGridPublisher = new EventGridPublisher(testTopicEndPoint, key: null);
-        });
-
-        Assert.Throws<ArgumentNullException>(() =>
-        {
-            var testTopicEndPoint = new Uri("https://microsoft-healthcareapis-workspaces.westus2-1.eventgrid-int.azure.net/eventGrid/api/events");
-            var eventGridPublisher = new EventGridPublisher(testTopicEndPoint, credential: null);
-        });
-
-        Assert.Throws<ArgumentNullException>(() =>
-        {
-            var testTopicEndPoint = new Uri("https://microsoft-healthcareapis-workspaces.westus2-1.eventgrid-int.azure.net/eventGrid/api/events");
-            var eventGridPublisher = new EventGridPublisher(testTopicEndPoint, new HttpClient(), null);
-        });
+        Assert.Throws<ArgumentNullException>(() => new EventGridPublisher(new Uri("https://microsoft-healthcareapis-workspaces.westus2-1.eventgrid-int.azure.net/eventGrid/api/events"), key: null));
+        Assert.Throws<ArgumentNullException>(() => new EventGridPublisher(new Uri("https://microsoft-healthcareapis-workspaces.westus2-1.eventgrid-int.azure.net/eventGrid/api/events"), credential: null));
+        Assert.Throws<ArgumentNullException>(() => new EventGridPublisher(new Uri("https://microsoft-healthcareapis-workspaces.westus2-1.eventgrid-int.azure.net/eventGrid/api/events"), new HttpClient(), null));
     }
 
     /// <summary>
     /// Test CreateEventPublisherWithNull httpClient.
     /// </summary>
-    [Fact]
+    [TestMethod]
     public void CreateEventPublisherWithNullHttpClient_ShouldThrowArgumentNullException()
     {
-        Assert.Throws<ArgumentNullException>(() =>
-        {
-            var testTopicEndPoint = new Uri("https://microsoft-healthcareapis-workspaces.westus2-1.eventgrid-int.azure.net/eventGrid/api/events");
-            var eventGridPublisher = new EventGridPublisher(testTopicEndPoint, null, "some key name");
-        });
+        Assert.Throws<ArgumentNullException>(() => new EventGridPublisher(new Uri("https://microsoft-healthcareapis-workspaces.westus2-1.eventgrid-int.azure.net/eventGrid/api/events"), null, "some key name"));
     }
 }

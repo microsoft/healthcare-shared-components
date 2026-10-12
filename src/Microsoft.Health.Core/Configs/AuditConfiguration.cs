@@ -17,7 +17,7 @@ public class AuditConfiguration
 
     public string CustomAuditHeaderPrefix
     {
-        get => field;
+        get;
         set => field = !string.IsNullOrEmpty(value) ? value : throw new InvalidDefinitionException(Resources.CustomHeaderPrefixCannotBeEmpty);
     }
 }

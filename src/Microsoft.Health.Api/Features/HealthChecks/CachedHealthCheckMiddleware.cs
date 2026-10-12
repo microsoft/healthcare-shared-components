@@ -17,7 +17,6 @@ namespace Microsoft.Health.Api.Features.HealthChecks;
 
 internal class CachedHealthCheckMiddleware
 {
-    private readonly RequestDelegate _next;
     private readonly ValueCache<HealthReport> _healthCheckReportCache;
 
     private static readonly ImmutableDictionary<HealthStatus, int> DefaultStatusCodesMapping = ImmutableDictionary.CreateRange(
@@ -30,7 +29,8 @@ internal class CachedHealthCheckMiddleware
 
     public CachedHealthCheckMiddleware(RequestDelegate next, ValueCache<HealthReport> healthCheckReportCache)
     {
-        _next = EnsureArg.IsNotNull(next, nameof(next));
+        // This middleware always writes the response, so it never invokes the next delegate.
+        EnsureArg.IsNotNull(next, nameof(next));
         _healthCheckReportCache = EnsureArg.IsNotNull(healthCheckReportCache, nameof(healthCheckReportCache));
     }
 

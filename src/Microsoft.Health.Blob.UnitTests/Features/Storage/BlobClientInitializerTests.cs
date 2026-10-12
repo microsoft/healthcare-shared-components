@@ -10,10 +10,11 @@ using Azure.Storage.Blobs;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Health.Blob.Features.Storage;
 using NSubstitute;
-using Xunit;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Microsoft.Health.Blob.UnitTests.Features.Storage;
 
+[TestClass]
 public class BlobClientInitializerTests
 {
     private const string TestContainerName1 = "testcontainer1";
@@ -42,7 +43,7 @@ public class BlobClientInitializerTests
         _collectionInitializers = new List<IBlobContainerInitializer> { _containerInitializer1, _containerInitializer2 };
     }
 
-    [Fact]
+    [TestMethod]
     public async Task GivenMultipleCollections_WhenInitializing_ThenEachContainerInitializeMethodIsCalled()
     {
         await _blobInitializer.InitializeDataStoreAsync(_collectionInitializers);
@@ -51,7 +52,7 @@ public class BlobClientInitializerTests
         await _containerInitializer2.Received(1).InitializeContainerAsync(_blobClient);
     }
 
-    [Fact]
+    [TestMethod]
     public async Task GivenAConfiguration_WhenInitializing_ThenCreateContainerIfNotExistsIsCalled()
     {
         await _blobInitializer.InitializeDataStoreAsync(_collectionInitializers);

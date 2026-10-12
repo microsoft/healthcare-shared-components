@@ -4,13 +4,14 @@
 // -------------------------------------------------------------------------------------------------
 
 using System;
-using Xunit;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Microsoft.Health.Test.Utilities.UnitTests;
 
+[TestClass]
 public class MockTests
 {
-    [Fact]
+    [TestMethod]
     public void GivenAnInstance_WhenMockingAProperty_ThenThePropertyIsMockedAndReset()
     {
         var magic = "magic";
@@ -23,29 +24,29 @@ public class MockTests
 
         using (Mock.Property(() => p.Property1, newvalue))
         {
-            Assert.Equal(newvalue, p.Property1);
+            Assert.AreEqual(newvalue, p.Property1);
         }
 
-        Assert.Equal(magic, p.Property1);
+        Assert.AreEqual(magic, p.Property1);
     }
 
-    [Fact]
+    [TestMethod]
     public void GivenAStatic_WhenMockingAProperty_ThenThePropertyIsMockedAndReset()
     {
         var initial = "Initial";
         var newvalue = "newValue";
 
-        Assert.Equal(initial, TestType.StaticProperty);
+        Assert.AreEqual(initial, TestType.StaticProperty);
 
         using (Mock.Property(() => TestType.StaticProperty, newvalue))
         {
-            Assert.Equal(newvalue, TestType.StaticProperty);
+            Assert.AreEqual(newvalue, TestType.StaticProperty);
         }
 
-        Assert.Equal(initial, TestType.StaticProperty);
+        Assert.AreEqual(initial, TestType.StaticProperty);
     }
 
-    [Fact]
+    [TestMethod]
     public void GivenAnInstance_WhenMockingAMethod_ThenANotSupportedExceptionIsThrown()
     {
         var p = new TestType();
@@ -53,32 +54,32 @@ public class MockTests
         Assert.Throws<NotSupportedException>(() => Mock.Property(() => p.CallMe(), "test"));
     }
 
-    [Fact]
+    [TestMethod]
     public void GivenAType_WhenMockingAnInstance_TheConstructorWithLeastArgumentsIsUsed()
     {
         var instance = Mock.TypeWithArguments<TestTypeWithArgs>();
 
-        Assert.NotNull(instance);
-        Assert.NotNull(instance.OneArg);
-        Assert.Null(instance.SecondArg);
+        Assert.IsNotNull(instance);
+        Assert.IsNotNull(instance.OneArg);
+        Assert.IsNull(instance.SecondArg);
     }
 
-    [Fact]
+    [TestMethod]
     public void GivenAType_WhenMockingAnInstance_ParametersCanBeUsed()
     {
         var parameter = new TestType();
         var instance = Mock.TypeWithArguments<TestTypeWithArgs>(parameter);
 
-        Assert.Equal(parameter, instance.OneArg);
+        Assert.AreEqual(parameter, instance.OneArg);
     }
 
-    [Fact]
+    [TestMethod]
     public void GivenAType_WhenMockingAnInstance_ParameterWithDerivedTypeCanBeUsed()
     {
         var parameter = new DerivedTestType();
         var instance = Mock.TypeWithArguments<TestTypeWithArgs>(parameter);
 
-        Assert.Equal(parameter, instance.OneArg);
+        Assert.AreEqual(parameter, instance.OneArg);
     }
 
     private sealed class DerivedTestType : TestType
