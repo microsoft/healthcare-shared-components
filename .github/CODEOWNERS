@@ -2,12 +2,12 @@
 # a file, the last one wins. Approval from any one listed owner satisfies the review rule.
 
 # Default owners for everything in the repository
-*                    @microsoft/fhir-server-team @microsoft/Medical-Imaging-Team
+*                    @microsoft/resolute
 
 # Build, release, and supply-chain configuration. Changes here can alter what the pipelines
 # run with publishing credentials, so keep these owners limited to trusted maintainers.
-/.github/            @microsoft/fhir-server-team @microsoft/Medical-Imaging-Team
-/.pipelines/         @microsoft/fhir-server-team @microsoft/Medical-Imaging-Team
-/GitVersion.yml      @microsoft/fhir-server-team @microsoft/Medical-Imaging-Team
-/nuget.config        @microsoft/fhir-server-team @microsoft/Medical-Imaging-Team
-/renovate.json       @microsoft/fhir-server-team @microsoft/Medical-Imaging-Team
+/.github/            @microsoft/resolute
+/.pipelines/         @microsoft/resolute
+/GitVersion.yml      @microsoft/resolute
+/nuget.config        @microsoft/resolute
+/renovate.json       @microsoft/resolute
