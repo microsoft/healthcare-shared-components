@@ -38,6 +38,7 @@
     <PackageReference Include="Polly.Contrib.WaitAndRetry" />
     <PackageReference Include="DistributedLock.SqlServer" />
     <PackageReference Include="System.Drawing.Common" PrivateAssets="All" />
+    <PackageReference Include="System.Security.Cryptography.Pkcs" />
   </ItemGroup>
 
   <!-- These aren't truly direct dependencies, but we'll treat them as such to enforce the package tree in downstream dependencies -->

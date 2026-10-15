@@ -78,6 +78,7 @@
     <PackageVersion Include="System.CommandLine.Rendering" Version="0.2.0-alpha.19174.3" />
     <PackageVersion Include="System.Drawing.Common" Version="$(SdkPackageVersion)" />
     <PackageVersion Include="System.IO.Packaging" Version="$(IOPackagingVersion)" />
+    <PackageVersion Include="System.Security.Cryptography.Pkcs" Version="$(CryptographyPackageVersion)" />
     <PackageVersion Include="System.Text.Json" Version="$(SystemTextJsonVersion)" />
   </ItemGroup>
 
