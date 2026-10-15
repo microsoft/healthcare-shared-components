@@ -32,6 +32,7 @@
   <Choose>
     <When Condition="'$(TargetFramework)' == '$(LtsVersion)'">
       <PropertyGroup>
+        <CryptographyPackageVersion>8.0.2</CryptographyPackageVersion>
         <IOPackagingVersion>8.0.1</IOPackagingVersion>
         <SdkPackageVersion>8.0.0</SdkPackageVersion>
         <SystemTextJsonVersion>8.0.5</SystemTextJsonVersion>
@@ -39,16 +40,18 @@
     </When>
     <When Condition="'$(TargetFramework)' == '$(StsVersion)'">
       <PropertyGroup>
-        <IOPackagingVersion>9.0.11</IOPackagingVersion>
-        <SdkPackageVersion>9.0.11</SdkPackageVersion>
-        <SystemTextJsonVersion>9.0.11</SystemTextJsonVersion>
+        <CryptographyPackageVersion>9.0.21</CryptographyPackageVersion>
+        <IOPackagingVersion>9.0.21</IOPackagingVersion>
+        <SdkPackageVersion>9.0.21</SdkPackageVersion>
+        <SystemTextJsonVersion>9.0.21</SystemTextJsonVersion>
     </PropertyGroup>
     </When>
     <Otherwise>
       <PropertyGroup>
-        <IOPackagingVersion>10.0.7</IOPackagingVersion>
-        <SdkPackageVersion>10.0.7</SdkPackageVersion>
-        <SystemTextJsonVersion>10.0.7</SystemTextJsonVersion>
+        <CryptographyPackageVersion>10.0.13</CryptographyPackageVersion>
+        <IOPackagingVersion>10.0.13</IOPackagingVersion>
+        <SdkPackageVersion>10.0.13</SdkPackageVersion>
+        <SystemTextJsonVersion>10.0.13</SystemTextJsonVersion>
       </PropertyGroup>
     </Otherwise>
   </Choose>
