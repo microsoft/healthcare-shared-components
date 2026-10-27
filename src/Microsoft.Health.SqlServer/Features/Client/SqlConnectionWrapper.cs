@@ -18,35 +18,24 @@ namespace Microsoft.Health.SqlServer.Features.Client;
 public class SqlConnectionWrapper : IDisposable
 {
     private readonly bool _enlistInTransactionIfPresent;
+    [SuppressMessage("Usage", "CA2213:Disposable fields should be disposed", Justification = "Caller owns the disposal of the object")]
     private readonly SqlTransactionHandler _sqlTransactionHandler;
     private readonly ISqlConnectionBuilder _sqlConnectionBuilder;
     private readonly SqlRetryLogicBaseProvider _sqlRetryLogicBaseProvider;
-    private readonly SqlServerDataStoreConfiguration _sqlServerDataStoreConfiguration;
+    private readonly SqlServerOptions _options;
 
     internal SqlConnectionWrapper(
         SqlTransactionHandler sqlTransactionHandler,
         ISqlConnectionBuilder connectionBuilder,
         SqlRetryLogicBaseProvider sqlRetryLogicBaseProvider,
         bool enlistInTransactionIfPresent,
-        SqlServerDataStoreConfiguration sqlServerDataStoreConfiguration)
+        SqlServerOptions options)
     {
-        EnsureArg.IsNotNull(sqlTransactionHandler, nameof(sqlTransactionHandler));
-        EnsureArg.IsNotNull(connectionBuilder, nameof(connectionBuilder));
-        EnsureArg.IsNotNull(sqlRetryLogicBaseProvider, nameof(sqlRetryLogicBaseProvider));
-        EnsureArg.IsNotNull(sqlServerDataStoreConfiguration, nameof(sqlServerDataStoreConfiguration));
-
-        _sqlServerDataStoreConfiguration = EnsureArg.IsNotNull(sqlServerDataStoreConfiguration, nameof(sqlServerDataStoreConfiguration));
-
-        if (_sqlServerDataStoreConfiguration.MaxPoolSize.HasValue)
-        {
-            EnsureArg.IsGt(_sqlServerDataStoreConfiguration.MaxPoolSize.Value, 0, nameof(_sqlServerDataStoreConfiguration.MaxPoolSize));
-            EnsureArg.IsLt(_sqlServerDataStoreConfiguration.MaxPoolSize.Value, SqlConstants.MaxPoolSizeLimit, nameof(_sqlServerDataStoreConfiguration.MaxPoolSize));
-        }
-
-        _sqlTransactionHandler = sqlTransactionHandler;
+        _options = EnsureArg.IsNotNull(options, nameof(options));
+        _sqlTransactionHandler = EnsureArg.IsNotNull(sqlTransactionHandler, nameof(sqlTransactionHandler));
         _enlistInTransactionIfPresent = enlistInTransactionIfPresent;
-        _sqlConnectionBuilder = connectionBuilder;
-        _sqlRetryLogicBaseProvider = sqlRetryLogicBaseProvider;
+        _sqlConnectionBuilder = EnsureArg.IsNotNull(connectionBuilder, nameof(connectionBuilder));
+        _sqlRetryLogicBaseProvider = EnsureArg.IsNotNull(sqlRetryLogicBaseProvider, nameof(sqlRetryLogicBaseProvider));
     }
 
     public SqlConnection SqlConnection { get; private set; }
@@ -62,15 +51,13 @@ public class SqlConnectionWrapper : IDisposable
         }
         else
         {
-            Action<SqlConnectionStringBuilder> configureBuilder = b =>
+            SqlConnection = _sqlConnectionBuilder.CreateConnection(b =>
             {
-                if (_sqlServerDataStoreConfiguration.MaxPoolSize.HasValue)
-                    b.MaxPoolSize = _sqlServerDataStoreConfiguration.MaxPoolSize.GetValueOrDefault();
+                if (_options.MaxPoolSize.HasValue)
+                    b.MaxPoolSize = _options.MaxPoolSize.GetValueOrDefault();
 
                 configure?.Invoke(b);
-            };
-
-            SqlConnection = await _sqlConnectionBuilder.CreateConnectionAsync(configureBuilder, cancellationToken).ConfigureAwait(false);
+            });
         }
 
         if (_enlistInTransactionIfPresent && _sqlTransactionHandler.SqlTransactionScope != null && _sqlTransactionHandler.SqlTransactionScope.SqlConnection == null)
@@ -107,7 +94,7 @@ public class SqlConnectionWrapper : IDisposable
     public SqlCommandWrapper CreateRetrySqlCommand()
     {
         SqlCommand sqlCommand = SqlConnection.CreateCommand();
-        sqlCommand.CommandTimeout = (int)_sqlServerDataStoreConfiguration.CommandTimeout.TotalSeconds;
+        sqlCommand.CommandTimeout = (int)_options.CommandTimeout.TotalSeconds;
         sqlCommand.Transaction = SqlTransaction;
         sqlCommand.RetryLogicProvider = _sqlRetryLogicBaseProvider;
         return new SqlCommandWrapper(sqlCommand);
@@ -120,7 +107,7 @@ public class SqlConnectionWrapper : IDisposable
     public SqlCommandWrapper CreateNonRetrySqlCommand()
     {
         SqlCommand sqlCommand = SqlConnection.CreateCommand();
-        sqlCommand.CommandTimeout = (int)_sqlServerDataStoreConfiguration.CommandTimeout.TotalSeconds;
+        sqlCommand.CommandTimeout = (int)_options.CommandTimeout.TotalSeconds;
         sqlCommand.Transaction = SqlTransaction;
         return new SqlCommandWrapper(sqlCommand);
     }

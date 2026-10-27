@@ -29,21 +29,21 @@ public static class SqlServerBaseRegistrationExtensions
     public static IServiceCollection AddSqlServerBase<TSchemaVersionEnum>(
         this IServiceCollection services,
         IConfiguration configurationRoot,
-        Action<SqlServerDataStoreConfiguration> configureAction = null)
+        Action<SqlServerOptions> configureAction = null)
         where TSchemaVersionEnum : Enum
     {
         services
             .AddSqlServerConnection(
                 config =>
                 {
-                    configurationRoot?.GetSection(SqlServerDataStoreConfiguration.SectionName).Bind(config);
+                    configurationRoot?.GetSection(SqlServerOptions.SectionName).Bind(config);
                     configureAction?.Invoke(config);
                 })
             .AddSqlServerManagement<TSchemaVersionEnum>();
 
         // Add more services for backward compatibility
         services.TryAddScoped(p => p.GetRequiredService<ISchemaDataStore>() as SqlServerSchemaDataStore);
-        services.TryAddSingleton(provider => provider.GetRequiredService<IOptions<SqlServerDataStoreConfiguration>>().Value);
+        services.TryAddSingleton(provider => provider.GetRequiredService<IOptions<SqlServerOptions>>().Value);
         services.TryAddSingleton(p => p.GetServices<IHostedService>().First(x => x is SchemaInitializer) as SchemaInitializer);
         services.TryAddSingleton(p => p.GetRequiredService<IScriptProvider>() as ScriptProvider<TSchemaVersionEnum>);
         services.TryAddSingleton(p => p.GetRequiredService<IBaseScriptProvider>() as BaseScriptProvider);
@@ -85,14 +85,14 @@ public static class SqlServerBaseRegistrationExtensions
     /// Adds a collection of services for connecting to SQL Server to the specified <see cref="IServiceCollection"/>.
     /// </summary>
     /// <param name="services">The <see cref="IServiceCollection"/> to be updated.</param>
-    /// <param name="configure">A delegate for configuring the <see cref="SqlServerDataStoreConfiguration"/>.</param>
+    /// <param name="configure">A delegate for configuring the <see cref="SqlServerOptions"/>.</param>
     /// <returns>The <paramref name="services"/> for additional method invocations.</returns>
     /// <exception cref="ArgumentNullException">
     /// <paramref name="services"/> or <paramref name="configure"/> is <see langword="null"/>.
     /// </exception>
     public static IServiceCollection AddSqlServerConnection(
         this IServiceCollection services,
-        Action<SqlServerDataStoreConfiguration> configure)
+        Action<SqlServerOptions> configure)
     {
         EnsureArg.IsNotNull(configure, nameof(configure));
 
@@ -130,8 +130,8 @@ public static class SqlServerBaseRegistrationExtensions
         services.TryAddSingleton<IProcessTerminator>(
             p =>
             {
-                SqlServerDataStoreConfiguration config = p.GetRequiredService<IOptions<SqlServerDataStoreConfiguration>>().Value;
-                return config.TerminateWhenSchemaVersionUpdatedTo.HasValue
+                SqlServerOptions config = p.GetRequiredService<IOptions<SqlServerOptions>>().Value;
+                return config.SchemaOptions?.CompletionSchemaVersion is not null
                     ? new ProcessTerminator(p.GetRequiredService<IHostApplicationLifetime>())
                     : new NoOpProcessTerminator(p.GetRequiredService<ILogger<NoOpProcessTerminator>>());
             });
@@ -141,9 +141,7 @@ public static class SqlServerBaseRegistrationExtensions
             p =>
             {
                 var schemaManagerDataStore = p.GetService<IReadOnlySchemaManagerDataStore>() as SchemaManagerDataStore;
-                return schemaManagerDataStore != null
-                    ? schemaManagerDataStore
-                    : new SchemaManagerDataStore(p.GetRequiredService<SqlConnectionWrapperFactory>(), p.GetRequiredService<IOptions<SqlServerDataStoreConfiguration>>(), p.GetRequiredService<ILogger<SchemaManagerDataStore>>());
+                return schemaManagerDataStore ?? new SchemaManagerDataStore(p.GetRequiredService<SqlConnectionWrapperFactory>(), p.GetRequiredService<IOptions<SqlServerOptions>>(), p.GetRequiredService<ILogger<SchemaManagerDataStore>>());
             });
 
         return services;
@@ -182,7 +180,7 @@ public static class SqlServerBaseRegistrationExtensions
     {
         services.TryAddSingleton(p =>
         {
-            SqlServerDataStoreConfiguration config = p.GetRequiredService<IOptions<SqlServerDataStoreConfiguration>>().Value;
+            SqlServerOptions config = p.GetRequiredService<IOptions<SqlServerOptions>>().Value;
 
             return config.Retry.Mode switch
             {

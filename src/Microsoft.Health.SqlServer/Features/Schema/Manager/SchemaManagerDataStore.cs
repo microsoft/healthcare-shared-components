@@ -20,15 +20,15 @@ namespace Microsoft.Health.SqlServer.Features.Schema.Manager;
 public class SchemaManagerDataStore : ISchemaManagerDataStore
 {
     private readonly SqlConnectionWrapperFactory _sqlConnectionWrapperFactory;
-    private readonly SqlServerDataStoreConfiguration _sqlServerDataStoreConfiguration;
+    private readonly TimeSpan _statementTimeout;
     private readonly ILogger<SchemaManagerDataStore> _logger;
 
     public SchemaManagerDataStore(
         SqlConnectionWrapperFactory sqlConnectionWrapperFactory,
-        IOptions<SqlServerDataStoreConfiguration> sqlServerDataStoreConfiguration,
+        IOptions<SqlServerOptions> options,
         ILogger<SchemaManagerDataStore> logger)
     {
-        _sqlServerDataStoreConfiguration = EnsureArg.IsNotNull(sqlServerDataStoreConfiguration?.Value, nameof(sqlServerDataStoreConfiguration));
+        _statementTimeout = EnsureArg.IsNotNull(options?.Value.StatementTimeout, nameof(options)).GetValueOrDefault();
         _sqlConnectionWrapperFactory = EnsureArg.IsNotNull(sqlConnectionWrapperFactory, nameof(sqlConnectionWrapperFactory));
         _logger = EnsureArg.IsNotNull(logger, nameof(logger));
     }
@@ -124,7 +124,7 @@ public class SchemaManagerDataStore : ISchemaManagerDataStore
 
     private async Task ExecuteWithGoSupport(string script, SqlCommandWrapper sqlCommandWrapper, CancellationToken cancellationToken)
     {
-        sqlCommandWrapper.CommandTimeout = (int)_sqlServerDataStoreConfiguration.StatementTimeout.TotalSeconds;
+        sqlCommandWrapper.CommandTimeout = (int)_statementTimeout.TotalSeconds;
         _logger.LogInformation("SqlCommandWrapper timeout sets to {StatementTimeout} seconds", sqlCommandWrapper.CommandTimeout);
 
         foreach (string statement in script.Split(["\nGO"], StringSplitOptions.RemoveEmptyEntries))

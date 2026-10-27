@@ -32,7 +32,7 @@ public sealed class SchemaInitializer : IHostedService
 {
     private const string MasterDatabase = "master";
     private readonly IServiceProvider _serviceProvider;
-    private readonly SqlServerDataStoreConfiguration _options;
+    private readonly SqlServerOptions _options;
     private readonly SchemaInformation _schemaInformation;
     private readonly ILogger<SchemaInitializer> _logger;
     private readonly IMediator _mediator;
@@ -42,7 +42,7 @@ public sealed class SchemaInitializer : IHostedService
 
     public SchemaInitializer(
         IServiceProvider services,
-        IOptions<SqlServerDataStoreConfiguration> options,
+        IOptions<SqlServerOptions> options,
         SchemaInformation schemaInformation,
         IMediator mediator,
         SchemaWriteGateEvaluator schemaWriteGateEvaluator,
@@ -59,14 +59,13 @@ public sealed class SchemaInitializer : IHostedService
     public async Task InitializeAsync(bool forceIncrementalSchemaUpgrade = false, CancellationToken cancellationToken = default)
     {
         using IServiceScope scope = _serviceProvider.CreateScope();
-        if (!string.IsNullOrWhiteSpace(_options.ConnectionString))
+        if (_options.Databases?.Count > 0)
         {
             await InitializeAsync(scope, forceIncrementalSchemaUpgrade, cancellationToken).ConfigureAwait(false);
         }
         else
         {
-            _logger.LogCritical(
-                "There was no connection string supplied. Schema initialization can not be completed.");
+            _logger.LogCritical("There was no connection string supplied. Schema initialization can not be completed.");
         }
     }
 

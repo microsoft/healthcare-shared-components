@@ -4,7 +4,9 @@
 // -------------------------------------------------------------------------------------------------
 
 using System;
+using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Data.SqlClient;
@@ -31,10 +33,13 @@ public abstract class SqlIntegrationTestBase : IAsyncDisposable
             InitialCatalog = DatabaseName
         };
 
-        Config = new SqlServerDataStoreConfiguration
+        Options = new SqlServerOptions
         {
-            ConnectionString = builder.ToString(),
             AllowDatabaseCreation = true,
+            Databases = new Dictionary<string, SqlServerDatabaseOptions>()
+            {
+                { "Default", new SqlServerDatabaseOptions { ConnectionString = builder.ToString() } }
+            },
         };
     }
 
@@ -46,17 +51,17 @@ public abstract class SqlIntegrationTestBase : IAsyncDisposable
 
     protected SqlConnectionWrapper ConnectionWrapper { get; set; }
 
-    protected SqlServerDataStoreConfiguration Config { get; set; }
+    protected SqlServerOptions Options { get; set; }
 
     [TestInitialize]
     public virtual async Task InitializeAsync()
     {
         TransactionHandler = new SqlTransactionHandler();
 
-        IOptions<SqlServerDataStoreConfiguration> options = Options.Create(Config);
+        IOptions<SqlServerOptions> options = Microsoft.Extensions.Options.Options.Create(Options);
         ConnectionFactory = new SqlConnectionWrapperFactory(
             TransactionHandler,
-            new DefaultSqlConnectionBuilder(Options.Create(Config), SqlConfigurableRetryFactory.CreateNoneRetryProvider()),
+            new DefaultSqlConnectionBuilder(Microsoft.Extensions.Options.Options.Create(Options), SqlConfigurableRetryFactory.CreateNoneRetryProvider()),
             SqlConfigurableRetryFactory.CreateFixedRetryProvider(new SqlClientRetryOptions().Settings),
             options);
 
@@ -129,7 +134,7 @@ public abstract class SqlIntegrationTestBase : IAsyncDisposable
     [SuppressMessage("Reliability", "CA2000:Dispose objects before losing scope", Justification = "Callers are responsible for disposal.")]
     protected SqlConnection GetSqlConnection()
     {
-        var connectionBuilder = new SqlConnectionStringBuilder(Config.ConnectionString);
+        var connectionBuilder = new SqlConnectionStringBuilder(Options.Databases.Values.Single().ConnectionString);
         return new SqlConnection(connectionBuilder.ToString());
     }
 }
