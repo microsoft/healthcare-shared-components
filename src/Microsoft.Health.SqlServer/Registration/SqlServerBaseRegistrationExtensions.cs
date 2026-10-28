@@ -37,7 +37,10 @@ public static class SqlServerBaseRegistrationExtensions
     {
         EnsureArg.IsNotNull(services, nameof(services));
 
-        services.AddOptions();
+        services
+            .AddOptions<SqlServerDataStoreOptions>()
+            .ValidateDataAnnotations();
+
         services.AddSqlRetryLogicProvider();
         services.TryAddSingleton<ISqlConnectionBuilder, DefaultSqlConnectionBuilder>();
 
@@ -121,19 +124,6 @@ public static class SqlServerBaseRegistrationExtensions
     /// Adds support for connecting to one of multiple SQL databases, selected per scope by an
     /// <see cref="ISqlServerDatabaseContext"/>, to the specified <see cref="IServiceCollection"/>.
     /// </summary>
-    /// <remarks>
-    /// <para>
-    /// This method registers <typeparamref name="TContext"/> as the scoped <see cref="ISqlServerDatabaseContext"/>, unless one
-    /// is already registered, and replaces the <see cref="ISqlConnectionBuilder"/> with a scoped
-    /// <see cref="ScopedSqlConnectionBuilder"/>. Each connection builder resolves the database whose key in
-    /// <see cref="SqlServerDataStoreOptions.Databases"/> matches <see cref="ISqlServerDatabaseContext.Key"/>.
-    /// </para>
-    /// <para>
-    /// Schema management, as added by
-    /// <see cref="AddSqlServerManagement{TVersion}(IServiceCollection)"/>, does not support multiple databases and throws a
-    /// <see cref="NotSupportedException"/> at run time if an <see cref="ISqlServerDatabaseContext"/> is registered.
-    /// </para>
-    /// </remarks>
     /// <typeparam name="TContext">The type of <see cref="ISqlServerDatabaseContext"/> that identifies the database for the current scope.</typeparam>
     /// <param name="services">The <see cref="IServiceCollection"/> to be updated.</param>
     /// <returns>The <paramref name="services"/> for additional method invocations.</returns>

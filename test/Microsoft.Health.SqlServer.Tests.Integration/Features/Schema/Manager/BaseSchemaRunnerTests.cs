@@ -29,8 +29,8 @@ public sealed class BaseSchemaRunnerTests : SqlIntegrationTestBase
     public BaseSchemaRunnerTests(TestContext testContext)
         : base(testContext)
     {
-        IOptions<SqlServerDataStoreConfiguration> options = Microsoft.Extensions.Options.Options.Create(new SqlServerDataStoreConfiguration());
-        var sqlConnection = new DefaultSqlConnectionBuilder(Microsoft.Extensions.Options.Options.Create(Options), SqlConfigurableRetryFactory.CreateNoneRetryProvider());
+        IOptions<SqlServerDataStoreOptions> options = Microsoft.Extensions.Options.Options.Create(Options);
+        var sqlConnection = new DefaultSqlConnectionBuilder(options, SqlConfigurableRetryFactory.CreateNoneRetryProvider());
         SqlRetryLogicBaseProvider sqlRetryLogicBaseProvider = SqlConfigurableRetryFactory.CreateFixedRetryProvider(new SqlClientRetryOptions().Settings);
 
         var sqlConnectionWrapperFactory = new SqlConnectionWrapperFactory(_sqlTransactionHandler, sqlConnection, sqlRetryLogicBaseProvider, options);

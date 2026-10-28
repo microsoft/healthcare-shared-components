@@ -64,12 +64,11 @@ public static class Program
             client.BaseAddress = args.Server;
         });
 
-        // TODO: this won't work in OSS if the AuthenticationType is set to ManagedIdentity
         services.AddSingleton<ISqlConnectionBuilder, DefaultSqlConnectionBuilder>();
 
         services.TryAddSingleton(p =>
         {
-            SqlServerDataStoreConfiguration config = p.GetRequiredService<IOptions<SqlServerDataStoreConfiguration>>().Value;
+            SqlServerDataStoreOptions config = p.GetRequiredService<IOptions<SqlServerDataStoreOptions>>().Value;
 
             return config.Retry.Mode switch
             {
@@ -81,7 +80,7 @@ public static class Program
             };
         });
 
-        services.AddOptions<SqlServerDataStoreConfiguration>().Configure<IOptions<CommandLineOptions>>((s, c) =>
+        services.AddOptions<SqlServerDataStoreOptions>().Configure<IOptions<CommandLineOptions>>((s, c) =>
         {
             s.ConnectionString = c.Value.ConnectionString;
         });

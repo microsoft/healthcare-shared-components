@@ -8,11 +8,15 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using Medino;
+using Microsoft.Data.SqlClient;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 using Microsoft.Health.SqlServer.Configs;
+using Microsoft.Health.SqlServer.Features.Client;
 using Microsoft.Health.SqlServer.Features.Schema;
+using Microsoft.Health.SqlServer.Features.Storage;
 using NSubstitute;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -147,6 +151,64 @@ public sealed class SchemaInitializerTests
         metrics.DidNotReceiveWithAnyArgs().SchemaBehind(default, default, default);
     }
 
+    [TestMethod]
+    public async Task GivenNoDatabases_WhenInitializing_ThenLogCriticalAndSkipInitialization()
+    {
+        using ServiceProvider provider = new ServiceCollection().BuildServiceProvider();
+        var logger = new ListLogger<SchemaInitializer>();
+        var options = new SqlServerDataStoreOptions { Initialize = true, Databases = new Dictionary<string, SqlServerDatabaseOptions>() };
+        SchemaInitializer initializer = CreateInitializer(provider, options, logger);
+
+        await initializer.InitializeAsync(cancellationToken: CancellationToken.None);
+
+        (LogLevel level, _) = Assert.ContainsSingle(logger.Entries);
+        Assert.AreEqual(LogLevel.Critical, level);
+    }
+
+    [TestMethod]
+    public async Task GivenDatabaseContextAndInitializeDisabled_WhenInitializing_ThenSkipInitialization()
+    {
+        using ServiceProvider provider = CreateServiceProviderWithDatabaseContext();
+        var options = new SqlServerDataStoreOptions { Initialize = false, Databases = CreateDatabases() };
+        SchemaInitializer initializer = CreateInitializer(provider, options, NullLogger<SchemaInitializer>.Instance);
+
+        await initializer.InitializeAsync(cancellationToken: CancellationToken.None);
+    }
+
+    [TestMethod]
+    public async Task GivenDatabaseContextAndInitializeEnabled_WhenInitializing_ThenThrowNotSupportedException()
+    {
+        using ServiceProvider provider = CreateServiceProviderWithDatabaseContext();
+        var options = new SqlServerDataStoreOptions { Initialize = true, Databases = CreateDatabases() };
+        SchemaInitializer initializer = CreateInitializer(provider, options, NullLogger<SchemaInitializer>.Instance);
+
+        await Assert.ThrowsExactlyAsync<NotSupportedException>(() => initializer.InitializeAsync(cancellationToken: CancellationToken.None));
+    }
+
+    private static ServiceProvider CreateServiceProviderWithDatabaseContext()
+    {
+        SqlConnectionWrapperFactory factory = Substitute.For<SqlConnectionWrapperFactory>(
+            Substitute.For<SqlTransactionHandler>(),
+            Substitute.For<ISqlConnectionBuilder>(),
+            Substitute.For<SqlRetryLogicBaseProvider>(),
+            Options.Create(new SqlServerDataStoreOptions()));
+
+        return new ServiceCollection()
+            .AddSingleton(factory)
+            .AddScoped(_ => Substitute.For<ISqlServerDatabaseContext>())
+            .BuildServiceProvider();
+    }
+
+    private static Dictionary<string, SqlServerDatabaseOptions> CreateDatabases()
+        => new() { ["default"] = new SqlServerDatabaseOptions { ConnectionString = "server=(local);Initial Catalog=testdb" } };
+
+    private static SchemaInitializer CreateInitializer(IServiceProvider provider, SqlServerDataStoreOptions options, ILogger<SchemaInitializer> logger)
+    {
+        IOptions<SqlServerDataStoreOptions> wrapper = Options.Create(options);
+        var evaluator = new SchemaWriteGateEvaluator(FalseGate(), Substitute.For<ISchemaMetrics>(), Substitute.For<ISqlConnectionBuilder>(), wrapper, NullLogger<SchemaWriteGateEvaluator>.Instance);
+        return new SchemaInitializer(provider, wrapper, new SchemaInformation(1, 2), Substitute.For<IMediator>(), evaluator, logger);
+    }
+
     private static ISchemaWriteGate FalseGate()
     {
         ISchemaWriteGate gate = Substitute.For<ISchemaWriteGate>();
@@ -164,7 +226,7 @@ public sealed class SchemaInitializerTests
     {
         ISqlConnectionBuilder connectionBuilder = Substitute.For<ISqlConnectionBuilder>();
         connectionBuilder.DefaultDatabase.Returns(databaseName);
-        var options = Options.Create(new SqlServerDataStoreConfiguration { Region = region });
+        var options = Options.Create(new SqlServerDataStoreOptions { Region = region });
         var evaluator = new SchemaWriteGateEvaluator(gate ?? FalseGate(), schemaMetrics ?? Substitute.For<ISchemaMetrics>(), connectionBuilder, options, logger);
         return new SchemaInitializer(
             Substitute.For<IServiceProvider>(),

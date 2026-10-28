@@ -18,6 +18,6 @@ public class SqlServerDatabaseOptions
     /// Gets or sets the SQL connection string for the database.
     /// </summary>
     /// <value>The connection string value.</value>
-    [Required]
+    [Required(AllowEmptyStrings = false)]
     public string ConnectionString { get; set; } = default!;
 }

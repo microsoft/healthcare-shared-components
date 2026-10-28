@@ -6,6 +6,7 @@
 #nullable enable
 
 using System;
+using System.ComponentModel.DataAnnotations;
 
 namespace Microsoft.Health.SqlServer.Configs;
 
@@ -24,12 +25,14 @@ public class SqlServerSchemaOptions
     /// Gets or sets the polling frequency for the schema updates.
     /// </summary>
     /// <value>The time between polls. The default is <c>60</c> seconds.</value>
+    [Range(typeof(TimeSpan), "00:00:01", "1.00:00:00", ConvertValueInInvariantCulture = true)]
     public TimeSpan JobPollingFrequency { get; set; } = TimeSpan.FromMinutes(1);
 
     /// <summary>
     /// Gets or sets the amount of time after which an expired instance record may be deleted.
     /// </summary>
     /// <value>The expiration time. The default is <c>2</c> minutes.</value>
+    [Range(typeof(TimeSpan), "00:01:00", "1.00:00:00", ConvertValueInInvariantCulture = true)]
     public TimeSpan InstanceRecordExpirationTime { get; set; } = TimeSpan.FromMinutes(2);
 
     /// <summary>
@@ -39,5 +42,6 @@ public class SqlServerSchemaOptions
     /// The schema version that, once reached, instructs the service to terminate;
     /// otherwise, <see langword="null"/> if the service should not terminate on schema updates.
     /// </value>
+    [Range(1, int.MaxValue, ConvertValueInInvariantCulture = true)]
     public int? CompletionSchemaVersion { get; set; }
 }

@@ -28,14 +28,10 @@ public class SqlConnectionWrapperFactory
         SqlRetryLogicBaseProvider sqlRetryLogicBaseProvider,
         IOptions<SqlServerDataStoreOptions> options)
     {
-        EnsureArg.IsNotNull(sqlTransactionHandler, nameof(sqlTransactionHandler));
-        EnsureArg.IsNotNull(sqlConnectionBuilder, nameof(sqlConnectionBuilder));
-        EnsureArg.IsNotNull(sqlRetryLogicBaseProvider, nameof(sqlRetryLogicBaseProvider));
-
+        _sqlTransactionHandler = EnsureArg.IsNotNull(sqlTransactionHandler, nameof(sqlTransactionHandler));
+        _sqlConnectionBuilder = EnsureArg.IsNotNull(sqlConnectionBuilder, nameof(sqlConnectionBuilder));
+        _sqlRetryLogicBaseProvider = EnsureArg.IsNotNull(sqlRetryLogicBaseProvider, nameof(sqlRetryLogicBaseProvider));
         _options = EnsureArg.IsNotNull(options?.Value, nameof(options));
-        _sqlTransactionHandler = sqlTransactionHandler;
-        _sqlConnectionBuilder = sqlConnectionBuilder;
-        _sqlRetryLogicBaseProvider = sqlRetryLogicBaseProvider;
     }
 
     public string DefaultDatabase => _sqlConnectionBuilder.DefaultDatabase;

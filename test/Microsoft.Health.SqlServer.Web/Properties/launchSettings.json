@@ -8,7 +8,8 @@
             "SqlServer:SchemaOptions:AutomaticUpdatesEnabled": "true",
             "SqlServer:AllowDatabaseCreation": "false",
             "SqlServer:ConnectionString": "server=(local);Initial Catalog=SHARED_HEALTHCARE;Integrated Security=true",
-            "SqlServer:StatementTimeout": "04:00:00"
+            "SqlServer:StatementTimeout": "04:00:00",
+            "SqlServer:Region": "local"
         },
       "applicationUrl": "https://localhost:63637/"
     }
