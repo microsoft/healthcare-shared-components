@@ -33,7 +33,7 @@ public abstract class SqlIntegrationTestBase : IAsyncDisposable
             InitialCatalog = DatabaseName
         };
 
-        Options = new SqlServerOptions
+        Options = new SqlServerDataStoreOptions
         {
             AllowDatabaseCreation = true,
             Databases = new Dictionary<string, SqlServerDatabaseOptions>()
@@ -51,14 +51,14 @@ public abstract class SqlIntegrationTestBase : IAsyncDisposable
 
     protected SqlConnectionWrapper ConnectionWrapper { get; set; }
 
-    protected SqlServerOptions Options { get; set; }
+    protected SqlServerDataStoreOptions Options { get; set; }
 
     [TestInitialize]
     public virtual async Task InitializeAsync()
     {
         TransactionHandler = new SqlTransactionHandler();
 
-        IOptions<SqlServerOptions> options = Microsoft.Extensions.Options.Options.Create(Options);
+        IOptions<SqlServerDataStoreOptions> options = Microsoft.Extensions.Options.Options.Create(Options);
         ConnectionFactory = new SqlConnectionWrapperFactory(
             TransactionHandler,
             new DefaultSqlConnectionBuilder(Microsoft.Extensions.Options.Options.Create(Options), SqlConfigurableRetryFactory.CreateNoneRetryProvider()),

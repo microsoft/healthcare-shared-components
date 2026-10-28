@@ -22,14 +22,14 @@ public class SqlConnectionWrapper : IDisposable
     private readonly SqlTransactionHandler _sqlTransactionHandler;
     private readonly ISqlConnectionBuilder _sqlConnectionBuilder;
     private readonly SqlRetryLogicBaseProvider _sqlRetryLogicBaseProvider;
-    private readonly SqlServerOptions _options;
+    private readonly SqlServerDataStoreOptions _options;
 
     internal SqlConnectionWrapper(
         SqlTransactionHandler sqlTransactionHandler,
         ISqlConnectionBuilder connectionBuilder,
         SqlRetryLogicBaseProvider sqlRetryLogicBaseProvider,
         bool enlistInTransactionIfPresent,
-        SqlServerOptions options)
+        SqlServerDataStoreOptions options)
     {
         _options = EnsureArg.IsNotNull(options, nameof(options));
         _sqlTransactionHandler = EnsureArg.IsNotNull(sqlTransactionHandler, nameof(sqlTransactionHandler));
@@ -79,12 +79,6 @@ public class SqlConnectionWrapper : IDisposable
                 _sqlTransactionHandler.SqlTransactionScope.SqlTransaction = SqlTransaction;
             }
         }
-    }
-
-    [Obsolete("Please use " + nameof(CreateRetrySqlCommand) + " or " + nameof(CreateNonRetrySqlCommand) + " instead.")]
-    public SqlCommandWrapper CreateSqlCommand()
-    {
-        return CreateRetrySqlCommand();
     }
 
     /// <summary>

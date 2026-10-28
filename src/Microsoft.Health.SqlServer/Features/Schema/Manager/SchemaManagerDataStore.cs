@@ -25,7 +25,7 @@ public class SchemaManagerDataStore : ISchemaManagerDataStore
 
     public SchemaManagerDataStore(
         SqlConnectionWrapperFactory sqlConnectionWrapperFactory,
-        IOptions<SqlServerOptions> options,
+        IOptions<SqlServerDataStoreOptions> options,
         ILogger<SchemaManagerDataStore> logger)
     {
         _statementTimeout = EnsureArg.IsNotNull(options?.Value.StatementTimeout, nameof(options)).GetValueOrDefault();

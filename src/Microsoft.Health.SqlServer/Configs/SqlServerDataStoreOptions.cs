@@ -14,9 +14,9 @@ using Microsoft.Health.SqlServer.Features.Client;
 namespace Microsoft.Health.SqlServer.Configs;
 
 /// <summary>
-/// Represents the settings for connection to one or more databases.
+/// Represents the settings for connection to one or more databases as the provider for a data store.
 /// </summary>
-public class SqlServerOptions
+public class SqlServerDataStoreOptions
 {
     /// <summary>
     /// The default section name used in configurations.

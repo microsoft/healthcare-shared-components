@@ -20,19 +20,19 @@ public class SqlConnectionWrapperFactory
     private readonly SqlTransactionHandler _sqlTransactionHandler;
     private readonly ISqlConnectionBuilder _sqlConnectionBuilder;
     private readonly SqlRetryLogicBaseProvider _sqlRetryLogicBaseProvider;
-    private readonly SqlServerDataStoreConfiguration _sqlServerDataStoreConfiguration;
+    private readonly SqlServerDataStoreOptions _options;
 
     public SqlConnectionWrapperFactory(
         SqlTransactionHandler sqlTransactionHandler,
         ISqlConnectionBuilder sqlConnectionBuilder,
         SqlRetryLogicBaseProvider sqlRetryLogicBaseProvider,
-        IOptions<SqlServerDataStoreConfiguration> sqlServerDataStoreConfiguration)
+        IOptions<SqlServerDataStoreOptions> options)
     {
         EnsureArg.IsNotNull(sqlTransactionHandler, nameof(sqlTransactionHandler));
         EnsureArg.IsNotNull(sqlConnectionBuilder, nameof(sqlConnectionBuilder));
         EnsureArg.IsNotNull(sqlRetryLogicBaseProvider, nameof(sqlRetryLogicBaseProvider));
 
-        _sqlServerDataStoreConfiguration = EnsureArg.IsNotNull(sqlServerDataStoreConfiguration?.Value, nameof(sqlServerDataStoreConfiguration));
+        _options = EnsureArg.IsNotNull(options?.Value, nameof(options));
         _sqlTransactionHandler = sqlTransactionHandler;
         _sqlConnectionBuilder = sqlConnectionBuilder;
         _sqlRetryLogicBaseProvider = sqlRetryLogicBaseProvider;
@@ -43,7 +43,7 @@ public class SqlConnectionWrapperFactory
     [SuppressMessage("Reliability", "CA2000:Dispose objects before losing scope", Justification = "Callers are responsible for disposal.")]
     public virtual async Task<SqlConnectionWrapper> GetConnectionWrapperAsync(Action<SqlConnectionStringBuilder> configure = null, bool enlistInTransaction = false, CancellationToken cancellationToken = default)
     {
-        var sqlConnectionWrapper = new SqlConnectionWrapper(_sqlTransactionHandler, _sqlConnectionBuilder, _sqlRetryLogicBaseProvider, enlistInTransaction, _sqlServerDataStoreConfiguration);
+        var sqlConnectionWrapper = new SqlConnectionWrapper(_sqlTransactionHandler, _sqlConnectionBuilder, _sqlRetryLogicBaseProvider, enlistInTransaction, _options);
         await sqlConnectionWrapper.InitializeAsync(configure, cancellationToken: cancellationToken).ConfigureAwait(false);
 
         return sqlConnectionWrapper;
@@ -52,7 +52,7 @@ public class SqlConnectionWrapperFactory
     [SuppressMessage("Reliability", "CA2000:Dispose objects before losing scope", Justification = "Callers are responsible for disposal.")]
     public virtual async Task<SqlConnectionWrapper> ObtainSqlConnectionWrapperAsync(CancellationToken cancellationToken, bool enlistInTransaction = false)
     {
-        var sqlConnectionWrapper = new SqlConnectionWrapper(_sqlTransactionHandler, _sqlConnectionBuilder, _sqlRetryLogicBaseProvider, enlistInTransaction, _sqlServerDataStoreConfiguration);
+        var sqlConnectionWrapper = new SqlConnectionWrapper(_sqlTransactionHandler, _sqlConnectionBuilder, _sqlRetryLogicBaseProvider, enlistInTransaction, _options);
         await sqlConnectionWrapper.InitializeAsync(cancellationToken: cancellationToken).ConfigureAwait(false);
 
         return sqlConnectionWrapper;
@@ -61,7 +61,7 @@ public class SqlConnectionWrapperFactory
     [SuppressMessage("Reliability", "CA2000:Dispose objects before losing scope", Justification = "Callers are responsible for disposal.")]
     public async Task<SqlConnectionWrapper> ObtainSqlConnectionWrapperAsync(string initialCatalog, CancellationToken cancellationToken, bool enlistInTransaction = false)
     {
-        var sqlConnectionWrapper = new SqlConnectionWrapper(_sqlTransactionHandler, _sqlConnectionBuilder, _sqlRetryLogicBaseProvider, enlistInTransaction, _sqlServerDataStoreConfiguration);
+        var sqlConnectionWrapper = new SqlConnectionWrapper(_sqlTransactionHandler, _sqlConnectionBuilder, _sqlRetryLogicBaseProvider, enlistInTransaction, _options);
         await sqlConnectionWrapper.InitializeAsync(
             initialCatalog is not null ? b => b.InitialCatalog = initialCatalog : null,
             cancellationToken: cancellationToken).ConfigureAwait(false);

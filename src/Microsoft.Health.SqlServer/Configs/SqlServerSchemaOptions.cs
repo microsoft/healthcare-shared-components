@@ -24,7 +24,7 @@ public class SqlServerSchemaOptions
     /// Gets or sets the polling frequency for the schema updates.
     /// </summary>
     /// <value>The time between polls. The default is <c>60</c> seconds.</value>
-    public TimeSpan JobPollingFrequencyInSeconds { get; set; } = TimeSpan.FromMinutes(1);
+    public TimeSpan JobPollingFrequency { get; set; } = TimeSpan.FromMinutes(1);
 
     /// <summary>
     /// Gets or sets the amount of time after which an expired instance record may be deleted.

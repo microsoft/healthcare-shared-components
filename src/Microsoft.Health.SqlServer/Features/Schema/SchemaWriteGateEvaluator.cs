@@ -22,21 +22,20 @@ public sealed class SchemaWriteGateEvaluator
     private readonly ISchemaWriteGate _writeGate;
     private readonly ISchemaMetrics _schemaMetrics;
     private readonly ISqlConnectionBuilder _sqlConnectionBuilder;
-    private readonly IOptions<SqlServerDataStoreConfiguration> _options;
+    private readonly SqlServerDataStoreOptions _options;
     private readonly ILogger<SchemaWriteGateEvaluator> _logger;
 
     public SchemaWriteGateEvaluator(
         ISchemaWriteGate writeGate,
         ISchemaMetrics schemaMetrics,
         ISqlConnectionBuilder sqlConnectionBuilder,
-        IOptions<SqlServerDataStoreConfiguration> options,
+        IOptions<SqlServerDataStoreOptions> options,
         ILogger<SchemaWriteGateEvaluator> logger)
     {
         _writeGate = EnsureArg.IsNotNull(writeGate, nameof(writeGate));
         _schemaMetrics = EnsureArg.IsNotNull(schemaMetrics, nameof(schemaMetrics));
         _sqlConnectionBuilder = EnsureArg.IsNotNull(sqlConnectionBuilder, nameof(sqlConnectionBuilder));
-        EnsureArg.IsNotNull(options?.Value, nameof(options));
-        _options = options;
+        _options = EnsureArg.IsNotNull(options?.Value, nameof(options));
         _logger = EnsureArg.IsNotNull(logger, nameof(logger));
     }
 
@@ -56,7 +55,7 @@ public sealed class SchemaWriteGateEvaluator
 
         if (status == SecondarySchemaStatus.Behind)
         {
-            _schemaMetrics.SchemaBehind(_sqlConnectionBuilder.DefaultDatabase, currentVersion.Value, _options.Value.Region);
+            _schemaMetrics.SchemaBehind(_sqlConnectionBuilder.DefaultDatabase, currentVersion.Value, _options.Region);
         }
 
         return false;

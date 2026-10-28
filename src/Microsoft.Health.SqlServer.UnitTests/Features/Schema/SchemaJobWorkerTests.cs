@@ -51,7 +51,7 @@ public sealed class SchemaJobWorkerTests : IDisposable
         _serviceProvider = collection.BuildServiceProvider();
         _schemaDataStore.DeleteExpiredInstanceSchemaAsync(default).ReturnsForAnyArgs(Task.CompletedTask);
 
-        _sqlServerDataStoreConfiguration = new SqlServerDataStoreConfiguration { TerminateWhenSchemaVersionUpdatedTo = 2, SchemaOptions = new SqlServerSchemaOptions { JobPollingFrequencyInSeconds = 0 } };
+        _sqlServerDataStoreConfiguration = new SqlServerDataStoreConfiguration { TerminateWhenSchemaVersionUpdatedTo = 2, SchemaOptions = new SqlServerSchemaOptions { JobPollingFrequency = 0 } };
         _worker = new SchemaJobWorker(_serviceProvider, Options.Create(_sqlServerDataStoreConfiguration), _mediator, _processTerminator, _logger);
     }
 
