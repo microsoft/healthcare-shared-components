@@ -111,17 +111,6 @@ public static class TypeRegistrationExtensions
         serviceCollection.AddTransient(typeof(Lazy<>), typeof(LazyProvider<>));
     }
 
-    /// <summary>
-    /// Register Scope as an Open Generic, this can resolve any service with an owned lifetime scope
-    /// </summary>
-    /// <param name="serviceCollection">The service collection.</param>
-    public static void AddScoped(this IServiceCollection serviceCollection)
-    {
-        EnsureArg.IsNotNull(serviceCollection, nameof(serviceCollection));
-
-        serviceCollection.AddTransient(typeof(IScoped<>), typeof(Scoped<>));
-    }
-
     private static object Factory<T>(IServiceProvider provider)
     {
         EnsureArg.IsNotNull(provider, nameof(provider));
