@@ -21,6 +21,7 @@ using Microsoft.Health.SqlServer.Features.Client;
 using Microsoft.Health.SqlServer.Features.Schema.Extensions;
 using Microsoft.Health.SqlServer.Features.Schema.Manager;
 using Microsoft.Health.SqlServer.Features.Storage;
+using Microsoft.Health.SqlServer.Registration;
 
 namespace Microsoft.Health.SqlServer.Features.Schema;
 
@@ -32,7 +33,7 @@ public sealed class SchemaInitializer : IHostedService
 {
     private const string MasterDatabase = "master";
     private readonly IServiceProvider _serviceProvider;
-    private readonly SqlServerDataStoreConfiguration _options;
+    private readonly SqlServerDataStoreOptions _options;
     private readonly SchemaInformation _schemaInformation;
     private readonly ILogger<SchemaInitializer> _logger;
     private readonly IMediator _mediator;
@@ -42,7 +43,7 @@ public sealed class SchemaInitializer : IHostedService
 
     public SchemaInitializer(
         IServiceProvider services,
-        IOptions<SqlServerDataStoreConfiguration> options,
+        IOptions<SqlServerDataStoreOptions> options,
         SchemaInformation schemaInformation,
         IMediator mediator,
         SchemaWriteGateEvaluator schemaWriteGateEvaluator,
@@ -59,14 +60,13 @@ public sealed class SchemaInitializer : IHostedService
     public async Task InitializeAsync(bool forceIncrementalSchemaUpgrade = false, CancellationToken cancellationToken = default)
     {
         using IServiceScope scope = _serviceProvider.CreateScope();
-        if (!string.IsNullOrWhiteSpace(_options.ConnectionString))
+        if (_options.Databases?.Count > 0)
         {
             await InitializeAsync(scope, forceIncrementalSchemaUpgrade, cancellationToken).ConfigureAwait(false);
         }
         else
         {
-            _logger.LogCritical(
-                "There was no connection string supplied. Schema initialization can not be completed.");
+            _logger.LogCritical("There was no connection string supplied. Schema initialization can not be completed.");
         }
     }
 
@@ -80,7 +80,7 @@ public sealed class SchemaInitializer : IHostedService
     {
         bool schemaUpgradedNotificationSent = false;
         SqlConnectionWrapperFactory connectionFactory = scope.ServiceProvider.GetRequiredService<SqlConnectionWrapperFactory>();
-        if (!await CanInitializeAsync(connectionFactory, cancellationToken).ConfigureAwait(false))
+        if (!await CanInitializeAsync(scope, connectionFactory, cancellationToken).ConfigureAwait(false))
         {
             return;
         }
@@ -89,8 +89,7 @@ public sealed class SchemaInitializer : IHostedService
 
         _logger.LogInformation("Initial check of schema version is {Version}", _schemaInformation.Current?.ToString(CultureInfo.InvariantCulture) ?? "NULL");
 
-        if (_options.SchemaOptions.AutomaticUpdatesEnabled &&
-            await CanApplySchemaUpdatesAsync(cancellationToken).ConfigureAwait(false))
+        if (_options.SchemaOptions.AutomaticUpdatesEnabled && await CanApplySchemaUpdatesAsync(cancellationToken).ConfigureAwait(false))
         {
             SchemaUpgradeRunner _schemaUpgradeRunner = scope.ServiceProvider.GetRequiredService<SchemaUpgradeRunner>();
 
@@ -217,13 +216,14 @@ public sealed class SchemaInitializer : IHostedService
         }
     }
 
-    private async Task<bool> CanInitializeAsync(SqlConnectionWrapperFactory factory, CancellationToken cancellationToken)
+    private async Task<bool> CanInitializeAsync(IServiceScope scope, SqlConnectionWrapperFactory factory, CancellationToken cancellationToken)
     {
         if (!_options.Initialize)
         {
             return false;
         }
 
+        scope.ServiceProvider.ThrowIfMultipleDatabasesSupported();
         string databaseName = ValidateDatabaseName(factory.DefaultDatabase);
 
         if (_options.AllowDatabaseCreation)

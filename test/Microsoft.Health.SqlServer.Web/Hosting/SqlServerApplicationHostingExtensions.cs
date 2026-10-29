@@ -27,8 +27,8 @@ public static class SqlServerApplicationHostingExtensions
         services.AddMvc(options => options.EnableEndpointRouting = false);
 
         services
-            .AddOptions<SqlServerDataStoreConfiguration>()
-            .BindConfiguration(SqlServerDataStoreConfiguration.SectionName);
+            .AddOptions<SqlServerDataStoreOptions>()
+            .BindConfiguration(SqlServerDataStoreOptions.SectionName);
 
         services
             .AddSqlServerConnection()

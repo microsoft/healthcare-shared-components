@@ -25,21 +25,17 @@ namespace Microsoft.Health.SqlServer.Features.Storage;
 internal class SqlServerSchemaDataStore : ISchemaDataStore
 {
     private readonly SqlConnectionWrapperFactory _sqlConnectionWrapperFactory;
-    private readonly SqlServerDataStoreConfiguration _configuration;
+    private readonly SqlServerSchemaOptions _options;
     private readonly ILogger<SqlServerSchemaDataStore> _logger;
 
     public SqlServerSchemaDataStore(
         SqlConnectionWrapperFactory sqlConnectionWrapperFactory,
-        IOptions<SqlServerDataStoreConfiguration> sqlServerDataStoreConfiguration,
+        IOptions<SqlServerDataStoreOptions> options,
         ILogger<SqlServerSchemaDataStore> logger)
     {
-        EnsureArg.IsNotNull(sqlConnectionWrapperFactory, nameof(sqlConnectionWrapperFactory));
-        EnsureArg.IsNotNull(sqlServerDataStoreConfiguration?.Value, nameof(sqlServerDataStoreConfiguration));
-        EnsureArg.IsNotNull(logger, nameof(logger));
-
-        _sqlConnectionWrapperFactory = sqlConnectionWrapperFactory;
-        _configuration = sqlServerDataStoreConfiguration.Value;
-        _logger = logger;
+        _sqlConnectionWrapperFactory = EnsureArg.IsNotNull(sqlConnectionWrapperFactory, nameof(sqlConnectionWrapperFactory));
+        _options = EnsureArg.IsNotNull(options?.Value.SchemaOptions, nameof(options));
+        _logger = EnsureArg.IsNotNull(logger, nameof(logger));
     }
 
     public async Task<CompatibleVersions> GetLatestCompatibleVersionsAsync(CancellationToken cancellationToken)
@@ -99,7 +95,7 @@ internal class SqlServerSchemaDataStore : ISchemaDataStore
                      name,
                      schemaInformation.MaximumSupportedVersion,
                      schemaInformation.MinimumSupportedVersion,
-                     _configuration.SchemaOptions.InstanceRecordExpirationTimeInMinutes);
+                     (int)_options.InstanceRecordExpirationTime.TotalMinutes);
 
                 return (int)await sqlCommandWrapper.ExecuteScalarAsync(cancellationToken).ConfigureAwait(false);
             }

@@ -48,7 +48,7 @@ public class SqlSchemaManagerTests
             schemaWriteGate,
             schemaMetrics,
             _sqlConnectionBuilder,
-            Options.Create(new SqlServerDataStoreConfiguration { ConnectionString = "Server=(local);Database=TestDb;", Region = region }),
+            Options.Create(new SqlServerDataStoreOptions { Region = region }),
             NullLogger<SchemaWriteGateEvaluator>.Instance);
         return new SqlSchemaManager(
             _baseSchemaRunner,

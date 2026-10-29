@@ -26,7 +26,7 @@ namespace Microsoft.Health.SqlServer.UnitTests.Features.Schema;
 public sealed class SchemaJobWorkerTests : IDisposable
 {
     private readonly IServiceProvider _serviceProvider;
-    private readonly SqlServerDataStoreConfiguration _sqlServerDataStoreConfiguration;
+    private readonly SqlServerDataStoreOptions _options;
     private readonly IMediator _mediator;
     private readonly IProcessTerminator _processTerminator;
     private readonly ILogger<SchemaJobWorker> _logger;
@@ -51,12 +51,12 @@ public sealed class SchemaJobWorkerTests : IDisposable
         _serviceProvider = collection.BuildServiceProvider();
         _schemaDataStore.DeleteExpiredInstanceSchemaAsync(default).ReturnsForAnyArgs(Task.CompletedTask);
 
-        _sqlServerDataStoreConfiguration = new SqlServerDataStoreConfiguration { TerminateWhenSchemaVersionUpdatedTo = 2, SchemaOptions = new SqlServerSchemaOptions { JobPollingFrequencyInSeconds = 0 } };
-        _worker = new SchemaJobWorker(_serviceProvider, Options.Create(_sqlServerDataStoreConfiguration), _mediator, _processTerminator, _logger);
+        _options = new SqlServerDataStoreOptions { SchemaOptions = new SqlServerSchemaOptions { CompletionSchemaVersion = 2, JobPollingFrequency = TimeSpan.Zero } };
+        _worker = new SchemaJobWorker(_serviceProvider, Options.Create(_options), _mediator, _processTerminator, _logger);
     }
 
     [TestMethod]
-    public async Task GivenSchemaInformation_WhenCurrentDoesNotMatchTerminateWhenSchemaVersionUpdatedTo_ProcessTerminatorNotCalled()
+    public async Task GivenSchemaInformation_WhenCurrentDoesNotMatchCompletionSchemaVersion_ProcessTerminatorNotCalled()
     {
         SchemaInformation info = new SchemaInformation(1, 2) { Current = 1 };
         _schemaDataStore.UpsertInstanceSchemaInformationAsync(default, default, default).ReturnsForAnyArgs(x =>
@@ -81,7 +81,7 @@ public sealed class SchemaJobWorkerTests : IDisposable
     }
 
     [TestMethod]
-    public async Task GivenSchemaInformation_WhenCurrentMatchesTerminateWhenSchemaVersionUpdatedTo_ProcessTerminatorCalled()
+    public async Task GivenSchemaInformation_WhenCurrentMatchesCompletionSchemaVersion_ProcessTerminatorCalled()
     {
         SchemaInformation info = new SchemaInformation(1, 2) { Current = 1 };
         _schemaDataStore.UpsertInstanceSchemaInformationAsync(default, default, default).ReturnsForAnyArgs(x =>
@@ -106,7 +106,7 @@ public sealed class SchemaJobWorkerTests : IDisposable
     }
 
     [TestMethod]
-    public async Task GivenSchemaInformation_WhenCurrentIsNullAndTerminateWhenSchemaVersionUpdatedToIsNotNull_ProcessTerminatorNotCalled()
+    public async Task GivenSchemaInformation_WhenCurrentIsNullAndCompletionSchemaVersionIsNotNull_ProcessTerminatorNotCalled()
     {
         SchemaInformation info = new SchemaInformation(1, 2) { Current = null };
         _schemaDataStore.UpsertInstanceSchemaInformationAsync(default, default, default).ReturnsForAnyArgs(x =>
@@ -131,10 +131,10 @@ public sealed class SchemaJobWorkerTests : IDisposable
     }
 
     [TestMethod]
-    public async Task GivenSchemaInformation_WhenCurrentIsNullAndTerminateWhenSchemaVersionUpdatedToIsNull_ProcessTerminatorNotCalled()
+    public async Task GivenSchemaInformation_WhenCurrentIsNullAndCompletionSchemaVersionIsNull_ProcessTerminatorNotCalled()
     {
         SchemaInformation info = new SchemaInformation(1, 2);
-        _sqlServerDataStoreConfiguration.TerminateWhenSchemaVersionUpdatedTo = null;
+        _options.SchemaOptions.CompletionSchemaVersion = null;
 
         info.Current = null;
         _schemaDataStore.UpsertInstanceSchemaInformationAsync(default, default, default).ReturnsForAnyArgs(x =>
@@ -291,6 +291,36 @@ public sealed class SchemaJobWorkerTests : IDisposable
 
         // Should pick version 5 (max supported), not version 7
         Assert.AreEqual(5, info.Current);
+    }
+
+    [TestMethod]
+    public async Task GivenDatabaseContext_WhenExecuting_ThenLogNotSupportedAndSkipSchemaWork()
+    {
+        var collection = new ServiceCollection();
+        collection.AddSingleton(_schemaDataStore);
+        collection.AddSingleton(_writeGate);
+        collection.AddScoped(_ => Substitute.For<ISqlServerDatabaseContext>());
+        using ServiceProvider serviceProvider = collection.BuildServiceProvider();
+
+        using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(30));
+        ILogger<SchemaJobWorker> logger = Substitute.For<ILogger<SchemaJobWorker>>();
+        logger
+            .When(x => x.Log(LogLevel.Error, Arg.Any<EventId>(), Arg.Any<Arg.AnyType>(), Arg.Any<Exception>(), Arg.Any<Func<Arg.AnyType, Exception, string>>()))
+            .Do(_ => cts.Cancel());
+
+        var worker = new SchemaJobWorker(serviceProvider, Options.Create(_options), _mediator, _processTerminator, logger);
+
+        await worker.ExecuteAsync(new SchemaInformation(1, 2), "instance", cts.Token);
+
+        logger.Received(1).Log(
+            LogLevel.Error,
+            Arg.Any<EventId>(),
+            Arg.Any<Arg.AnyType>(),
+            Arg.Is<Exception>(e => e is NotSupportedException),
+            Arg.Any<Func<Arg.AnyType, Exception, string>>());
+        await _writeGate.DidNotReceiveWithAnyArgs().CanWriteAsync(default);
+        await _schemaDataStore.DidNotReceiveWithAnyArgs().UpsertInstanceSchemaInformationAsync(default, default, default);
+        _processTerminator.DidNotReceiveWithAnyArgs().Terminate(default);
     }
 
     public void Dispose()

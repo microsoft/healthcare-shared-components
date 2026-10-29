@@ -29,7 +29,7 @@ public sealed class SqlServerHealthCheckTests
     private readonly SqlTransactionHandler _sqlTransactionHandler;
     private readonly ISqlConnectionBuilder _sqlConnectionBuilder;
     private readonly SqlRetryLogicBaseProvider _sqlRetryLogicBaseProvider;
-    private readonly IOptions<SqlServerDataStoreConfiguration> _sqlServerDataStoreConfiguration;
+    private readonly IOptions<SqlServerDataStoreOptions> _options;
     private readonly ValueCache<CustomerKeyHealth> _cache;
 
     public SqlServerHealthCheckTests()
@@ -39,8 +39,7 @@ public sealed class SqlServerHealthCheckTests
         _sqlConnectionBuilder = Substitute.For<ISqlConnectionBuilder>();
         _sqlRetryLogicBaseProvider = Substitute.For<SqlRetryLogicBaseProvider>();
 
-        _sqlServerDataStoreConfiguration = Substitute.For<IOptions<SqlServerDataStoreConfiguration>>();
-        _sqlServerDataStoreConfiguration.Value.Returns(new SqlServerDataStoreConfiguration());
+        _options = Options.Create(new SqlServerDataStoreOptions());
 
         _cache = new ValueCache<CustomerKeyHealth>();
         _cache.Set(new CustomerKeyHealth() { IsHealthy = true });
@@ -75,7 +74,7 @@ public sealed class SqlServerHealthCheckTests
             _sqlTransactionHandler,
             _sqlConnectionBuilder,
             _sqlRetryLogicBaseProvider,
-            _sqlServerDataStoreConfiguration);
+            _options);
 
         // Setting up the ObtainSqlConnectionWrapperAsync method to throw an exception.
         connectionWrapperFactory.ObtainSqlConnectionWrapperAsync(Arg.Any<CancellationToken>()).Returns(Task.FromException<SqlConnectionWrapper>(httpRequestException));

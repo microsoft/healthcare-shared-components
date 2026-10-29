@@ -3,20 +3,21 @@
 // Licensed under the MIT License (MIT). See LICENSE in the repo root for license information.
 // -------------------------------------------------------------------------------------------------
 
-using System;
+#nullable enable
+
+using System.ComponentModel.DataAnnotations;
 
 namespace Microsoft.Health.SqlServer.Configs;
 
-[Obsolete("Include authentication method in connection string.")]
-public enum SqlServerAuthenticationType
+/// <summary>
+/// Represents the settings for a given database.
+/// </summary>
+public class SqlServerDatabaseOptions
 {
-    ManagedIdentity,
-
     /// <summary>
-    /// Works for
-    /// 1. Windows Integrated Authentication
-    /// 2. Sql User name and Password
-    /// as they both completely rely on the connection string.
+    /// Gets or sets the SQL connection string for the database.
     /// </summary>
-    ConnectionString,
+    /// <value>The connection string value.</value>
+    [Required(AllowEmptyStrings = false)]
+    public string ConnectionString { get; set; } = default!;
 }

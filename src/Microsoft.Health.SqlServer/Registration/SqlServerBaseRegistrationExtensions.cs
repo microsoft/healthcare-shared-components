@@ -3,11 +3,11 @@
 // Licensed under the MIT License (MIT). See LICENSE in the repo root for license information.
 // -------------------------------------------------------------------------------------------------
 
+#nullable enable
+
 using System;
-using System.Linq;
 using EnsureThat;
 using Microsoft.Data.SqlClient;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Hosting;
@@ -25,34 +25,6 @@ namespace Microsoft.Health.SqlServer.Registration;
 
 public static class SqlServerBaseRegistrationExtensions
 {
-    [Obsolete("Please use " + nameof(AddSqlServerConnection) + " and " + nameof(AddSqlServerManagement) + " instead.")]
-    public static IServiceCollection AddSqlServerBase<TSchemaVersionEnum>(
-        this IServiceCollection services,
-        IConfiguration configurationRoot,
-        Action<SqlServerDataStoreConfiguration> configureAction = null)
-        where TSchemaVersionEnum : Enum
-    {
-        services
-            .AddSqlServerConnection(
-                config =>
-                {
-                    configurationRoot?.GetSection(SqlServerDataStoreConfiguration.SectionName).Bind(config);
-                    configureAction?.Invoke(config);
-                })
-            .AddSqlServerManagement<TSchemaVersionEnum>();
-
-        // Add more services for backward compatibility
-        services.TryAddScoped(p => p.GetRequiredService<ISchemaDataStore>() as SqlServerSchemaDataStore);
-        services.TryAddSingleton(provider => provider.GetRequiredService<IOptions<SqlServerDataStoreConfiguration>>().Value);
-        services.TryAddSingleton(p => p.GetServices<IHostedService>().First(x => x is SchemaInitializer) as SchemaInitializer);
-        services.TryAddSingleton(p => p.GetRequiredService<IScriptProvider>() as ScriptProvider<TSchemaVersionEnum>);
-        services.TryAddSingleton(p => p.GetRequiredService<IBaseScriptProvider>() as BaseScriptProvider);
-        services.TryAddScoped(p => p.GetRequiredService<ISchemaManagerDataStore>() as SchemaManagerDataStore);
-        services.AddSqlRetryLogicProvider();
-
-        return services;
-    }
-
     /// <summary>
     /// Adds a collection of services for connecting to SQL Server to the specified <see cref="IServiceCollection"/>.
     /// </summary>
@@ -65,7 +37,10 @@ public static class SqlServerBaseRegistrationExtensions
     {
         EnsureArg.IsNotNull(services, nameof(services));
 
-        services.AddOptions();
+        services
+            .AddOptions<SqlServerDataStoreOptions>()
+            .ValidateDataAnnotations();
+
         services.AddSqlRetryLogicProvider();
         services.TryAddSingleton<ISqlConnectionBuilder, DefaultSqlConnectionBuilder>();
 
@@ -85,14 +60,12 @@ public static class SqlServerBaseRegistrationExtensions
     /// Adds a collection of services for connecting to SQL Server to the specified <see cref="IServiceCollection"/>.
     /// </summary>
     /// <param name="services">The <see cref="IServiceCollection"/> to be updated.</param>
-    /// <param name="configure">A delegate for configuring the <see cref="SqlServerDataStoreConfiguration"/>.</param>
+    /// <param name="configure">A delegate for configuring the <see cref="SqlServerDataStoreOptions"/>.</param>
     /// <returns>The <paramref name="services"/> for additional method invocations.</returns>
     /// <exception cref="ArgumentNullException">
     /// <paramref name="services"/> or <paramref name="configure"/> is <see langword="null"/>.
     /// </exception>
-    public static IServiceCollection AddSqlServerConnection(
-        this IServiceCollection services,
-        Action<SqlServerDataStoreConfiguration> configure)
+    public static IServiceCollection AddSqlServerConnection(this IServiceCollection services, Action<SqlServerDataStoreOptions> configure)
     {
         EnsureArg.IsNotNull(configure, nameof(configure));
 
@@ -130,8 +103,8 @@ public static class SqlServerBaseRegistrationExtensions
         services.TryAddSingleton<IProcessTerminator>(
             p =>
             {
-                SqlServerDataStoreConfiguration config = p.GetRequiredService<IOptions<SqlServerDataStoreConfiguration>>().Value;
-                return config.TerminateWhenSchemaVersionUpdatedTo.HasValue
+                SqlServerDataStoreOptions config = p.GetRequiredService<IOptions<SqlServerDataStoreOptions>>().Value;
+                return config.SchemaOptions?.CompletionSchemaVersion is not null
                     ? new ProcessTerminator(p.GetRequiredService<IHostApplicationLifetime>())
                     : new NoOpProcessTerminator(p.GetRequiredService<ILogger<NoOpProcessTerminator>>());
             });
@@ -141,35 +114,39 @@ public static class SqlServerBaseRegistrationExtensions
             p =>
             {
                 var schemaManagerDataStore = p.GetService<IReadOnlySchemaManagerDataStore>() as SchemaManagerDataStore;
-                return schemaManagerDataStore != null
-                    ? schemaManagerDataStore
-                    : new SchemaManagerDataStore(p.GetRequiredService<SqlConnectionWrapperFactory>(), p.GetRequiredService<IOptions<SqlServerDataStoreConfiguration>>(), p.GetRequiredService<ILogger<SchemaManagerDataStore>>());
+                return schemaManagerDataStore ?? new SchemaManagerDataStore(p.GetRequiredService<SqlConnectionWrapperFactory>(), p.GetRequiredService<IOptions<SqlServerDataStoreOptions>>(), p.GetRequiredService<ILogger<SchemaManagerDataStore>>());
             });
 
         return services;
     }
 
     /// <summary>
-    /// Replaces the SQL authentication provider for managed identity to use workload identity instead.
+    /// Adds support for connecting to one of multiple SQL databases, selected per scope by an
+    /// <see cref="ISqlServerDatabaseContext"/>, to the specified <see cref="IServiceCollection"/>.
     /// </summary>
-    /// <remarks>
-    /// The authentication type must either be <see cref="SqlAuthenticationMethod.ActiveDirectoryManagedIdentity"/>
-    /// or <see cref="SqlAuthenticationMethod.ActiveDirectoryMSI"/>.
-    /// </remarks>
+    /// <typeparam name="TContext">The type of <see cref="ISqlServerDatabaseContext"/> that identifies the database for the current scope.</typeparam>
     /// <param name="services">The <see cref="IServiceCollection"/> to be updated.</param>
     /// <returns>The <paramref name="services"/> for additional method invocations.</returns>
     /// <exception cref="ArgumentNullException">
     /// <paramref name="services"/> is <see langword="null"/>.
     /// </exception>
-    public static IServiceCollection EnableWorkloadManagedIdentity(this IServiceCollection services)
+    public static IServiceCollection AddSqlServerDatabaseContext<TContext>(this IServiceCollection services)
+        where TContext : class, ISqlServerDatabaseContext
     {
         EnsureArg.IsNotNull(services, nameof(services));
 
-        WorkloadIdentityAuthenticationProvider provider = new();
-        SqlAuthenticationProvider.SetProvider(SqlAuthenticationMethod.ActiveDirectoryManagedIdentity, provider);
-        SqlAuthenticationProvider.SetProvider(SqlAuthenticationMethod.ActiveDirectoryMSI, provider);
+        services.TryAddScoped<ISqlServerDatabaseContext, TContext>();
+        services.Replace(ServiceDescriptor.Scoped<ISqlConnectionBuilder, ScopedSqlConnectionBuilder>());
 
         return services;
+    }
+
+    internal static void ThrowIfMultipleDatabasesSupported(this IServiceProvider serviceProvider)
+    {
+        EnsureArg.IsNotNull(serviceProvider, nameof(serviceProvider));
+
+        if (serviceProvider.GetService<ISqlServerDatabaseContext>() is not null)
+            throw new NotSupportedException("Multiple databases are not supported.");
     }
 
     /// <summary>
@@ -182,7 +159,7 @@ public static class SqlServerBaseRegistrationExtensions
     {
         services.TryAddSingleton(p =>
         {
-            SqlServerDataStoreConfiguration config = p.GetRequiredService<IOptions<SqlServerDataStoreConfiguration>>().Value;
+            SqlServerDataStoreOptions config = p.GetRequiredService<IOptions<SqlServerDataStoreOptions>>().Value;
 
             return config.Retry.Mode switch
             {

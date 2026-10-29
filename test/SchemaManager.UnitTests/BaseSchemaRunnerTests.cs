@@ -32,7 +32,7 @@ public class BaseSchemaRunnerTests
             Substitute.For<SqlTransactionHandler>(),
             Substitute.For<ISqlConnectionBuilder>(),
             Substitute.For<SqlRetryLogicBaseProvider>(),
-            Options.Create(new SqlServerDataStoreConfiguration()));
+            Options.Create(new SqlServerDataStoreOptions()));
         var runner = new BaseSchemaRunner(connectionFactory, dataStore, writeGate, NullLogger<BaseSchemaRunner>.Instance);
 
         using var cancellationTokenSource = new CancellationTokenSource();
