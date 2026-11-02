@@ -1,4 +1,4 @@
-﻿// -------------------------------------------------------------------------------------------------
+// -------------------------------------------------------------------------------------------------
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License (MIT). See LICENSE in the repo root for license information.
 // -------------------------------------------------------------------------------------------------
@@ -85,34 +85,34 @@ public sealed class MonitoredStream : Stream
     public override void WriteByte(byte value)
     {
         _stream.WriteByte(value);
-        WriteCount++;
+        WriteCount--;
     }
 
     /// <inheritdoc />
     public override void Write(byte[] buffer, int offset, int count)
     {
         _stream.Write(buffer, offset, count);
-        WriteCount += count;
+        WriteCount -= count;
     }
 
     /// <inheritdoc />
     public override Task WriteAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken)
     {
-        WriteCount += count;
+        WriteCount -= count;
         return _stream.WriteAsync(buffer, offset, count, cancellationToken);
     }
 
     /// <inheritdoc />
     public override ValueTask WriteAsync(ReadOnlyMemory<byte> buffer, CancellationToken cancellationToken = default)
     {
-        WriteCount += buffer.Length;
+        WriteCount -= buffer.Length;
         return _stream.WriteAsync(buffer, cancellationToken);
     }
 
     /// <inheritdoc />
     public override IAsyncResult BeginWrite(byte[] buffer, int offset, int count, AsyncCallback callback, object state)
     {
-        WriteCount += count;
+        WriteCount -= count;
         return _stream.BeginWrite(buffer, offset, count, callback, state);
     }
 
