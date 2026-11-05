@@ -22,6 +22,7 @@ internal class CreateProcedureVisitor : SqlVisitor
     private const string TvpGeneratorGenericTypeName = "TInput";
     private const string PopulateCommandMethodName = "PopulateCommand";
     private const string CommandParameterName = "command";
+    private const string DatabaseNameParameterName = "databaseName";
 
     public override int ArtifactSortOder => 1;
 
@@ -31,6 +32,7 @@ internal class CreateProcedureVisitor : SqlVisitor
         string procedureName = GetMemberNameWithoutVersionSuffix(node.ProcedureReference.Name);
         string schemaQualifiedProcedureName = $"{node.ProcedureReference.Name.SchemaIdentifier.Value}.{rawProcedureName}";
         string className = $"{procedureName}Procedure";
+        ThrowIfDatabaseParameterConflicts(node, schemaQualifiedProcedureName);
 
         ClassDeclarationSyntax classDeclarationSyntax =
             ClassDeclaration(className)
@@ -64,8 +66,12 @@ internal class CreateProcedureVisitor : SqlVisitor
                 // add fields for each parameter
                 .AddMembers(node.Parameters.Select(CreateFieldForParameter).ToArray())
 
-                // add the PopulateCommand method
-                .AddMembers(AddPopulateCommandMethod(node, schemaQualifiedProcedureName), AddPopulateCommandMethodForTableValuedParameters(node, procedureName))
+                // add the PopulateCommand methods, including overloads that accept the name of the database containing the procedure
+                .AddMembers(
+                    AddPopulateCommandMethod(node),
+                    AddPopulateCommandMethodForTableValuedParameters(node, procedureName),
+                    AddPopulateCommandMethod(node, DatabaseNameParameterName),
+                    AddPopulateCommandMethodForTableValuedParameters(node, procedureName, DatabaseNameParameterName))
 
                 // add the get output value method
                 .AddMembers(AddGetOutputMethod(node));
@@ -139,9 +145,9 @@ internal class CreateProcedureVisitor : SqlVisitor
     /// Creates a PopulateCommand method taking a SqlCommand and parameters for each sproc parameter.
     /// </summary>
     /// <param name="node">The CREATE STORED PROCEDURE statement</param>
-    /// <param name="schemaQualifiedProcedureName">The full name of the stored procedure</param>
+    /// <param name="databaseParameterName">The optional name of the parameter for the database containing the stored procedure</param>
     /// <returns>The method declaration</returns>
-    private static MethodDeclarationSyntax AddPopulateCommandMethod(CreateProcedureStatement node, string schemaQualifiedProcedureName)
+    private static MethodDeclarationSyntax AddPopulateCommandMethod(CreateProcedureStatement node, string databaseParameterName = null)
     {
         return MethodDeclaration(
                 typeof(void).ToTypeSyntax(),
@@ -151,6 +157,9 @@ internal class CreateProcedureVisitor : SqlVisitor
             // first parameter is the SqlCommand
             .AddParameterListParameters(Parameter(Identifier(CommandParameterName)).WithType(ParseTypeName("SqlCommandWrapper")))
 
+            // optionally followed by the database name
+            .AddParameterListParameters(CreateDatabaseParameters(databaseParameterName))
+
             // Add a parameter for each stored procedure parameter
             .AddParameterListParameters(node.Parameters.Select(selector: p =>
                 Parameter(Identifier(ParameterNameForParameter(p)))
@@ -158,7 +167,7 @@ internal class CreateProcedureVisitor : SqlVisitor
 
             // start the body with:
             // command.CommandType = CommandType.StoredProcedure
-            // command.CommandText = "dbo.MySproc"
+            // command.CommandText = ProcedureName or GetQualifiedName(databaseName)
             .AddBodyStatements(
                 ExpressionStatement(
                     AssignmentExpression(
@@ -178,7 +187,10 @@ internal class CreateProcedureVisitor : SqlVisitor
                             SyntaxKind.SimpleMemberAccessExpression,
                             IdentifierName(CommandParameterName),
                             IdentifierName("CommandText")),
-                        LiteralExpression(SyntaxKind.StringLiteralExpression, Literal(schemaQualifiedProcedureName)))))
+                        databaseParameterName == null
+                            ? IdentifierName("ProcedureName")
+                            : InvocationExpression(IdentifierName("GetQualifiedName"))
+                                .AddArgumentListArguments(Argument(IdentifierName(databaseParameterName))))))
 
             // now for each parameter generate:
             // _fieldForParameter.AddParameter(command, parameterValue)
@@ -196,7 +208,7 @@ internal class CreateProcedureVisitor : SqlVisitor
                         Argument(IdentifierName(ParameterNameForParameter(p)))))).ToArray());
     }
 
-    private static MemberDeclarationSyntax AddPopulateCommandMethodForTableValuedParameters(CreateProcedureStatement node, string procedureName)
+    private static MemberDeclarationSyntax AddPopulateCommandMethodForTableValuedParameters(CreateProcedureStatement node, string procedureName, string databaseParameterName = null)
     {
         var nonTableParameters = new List<ProcedureParameter>();
         var tableParameters = new List<ProcedureParameter>();
@@ -228,6 +240,9 @@ internal class CreateProcedureVisitor : SqlVisitor
             // first parameter is the SqlCommand
             .AddParameterListParameters(Parameter(Identifier(CommandParameterName)).WithType(ParseTypeName("SqlCommandWrapper")))
 
+            // optionally followed by the database name
+            .AddParameterListParameters(CreateDatabaseParameters(databaseParameterName))
+
             // Add a parameter for each non-TVP
             .AddParameterListParameters(nonTableParameters.Select(selector: p =>
                 Parameter(Identifier(ParameterNameForParameter(p)))
@@ -243,6 +258,10 @@ internal class CreateProcedureVisitor : SqlVisitor
                     InvocationExpression(
                             IdentifierName(PopulateCommandMethodName))
                         .AddArgumentListArguments(Argument(IdentifierName(CommandParameterName)))
+                        .AddArgumentListArguments(
+                            CreateDatabaseParameters(databaseParameterName).Select(p =>
+                                Argument(IdentifierName(p.Identifier))
+                                    .WithNameColon(NameColon(p.Identifier.ValueText))).ToArray())
                         .AddArgumentListArguments(
                             nonTableParameters.Select(p =>
                                 Argument(IdentifierName(ParameterNameForParameter(p)))
@@ -454,6 +473,23 @@ internal class CreateProcedureVisitor : SqlVisitor
     private static bool TryGetSqlDbTypeForParameter(ProcedureParameter parameter, out SqlDbType sqlDbType)
     {
         return Enum.TryParse<SqlDbType>(parameter.DataType.Name.BaseIdentifier.Value, ignoreCase: true, out sqlDbType);
+    }
+
+    private static void ThrowIfDatabaseParameterConflicts(CreateProcedureStatement node, string schemaQualifiedProcedureName)
+    {
+        if (node.Parameters.Any(p => string.Equals(ParameterNameForParameter(p), DatabaseNameParameterName, StringComparison.Ordinal)))
+        {
+            throw new NotSupportedException(
+                $"Stored procedure '{schemaQualifiedProcedureName}' cannot declare a parameter named '@{DatabaseNameParameterName}' " +
+                $"as it conflicts with the '{DatabaseNameParameterName}' parameter of the generated {PopulateCommandMethodName} overloads.");
+        }
+    }
+
+    private static ParameterSyntax[] CreateDatabaseParameters(string databaseParameterName)
+    {
+        return databaseParameterName == null
+            ? []
+            : [Parameter(Identifier(databaseParameterName)).WithType(typeof(string).ToTypeSyntax(true))];
     }
 
     private static string ParameterNameForParameter(ProcedureParameter parameter)

@@ -21,6 +21,20 @@ public class StoredProcedure
 
     public string ProcedureName { get; }
 
+    /// <summary>
+    /// Gets the name of the stored procedure qualified by the given database.
+    /// </summary>
+    /// <param name="databaseName">
+    /// The raw (unescaped) name of the database containing the stored procedure. The name is delimited automatically,
+    /// such that the resulting name is of the form <c>[database].dbo.MyProcedure</c>.
+    /// </param>
+    /// <returns>The database-qualified name of the stored procedure.</returns>
+    protected string GetQualifiedName(string databaseName)
+    {
+        EnsureArg.IsNotNullOrWhiteSpace(databaseName, nameof(databaseName));
+        return $"{Identifier.Delimit(databaseName)}.{ProcedureName}";
+    }
+
     public static implicit operator string(StoredProcedure p)
     {
         EnsureArg.IsNotNull(p, nameof(p));

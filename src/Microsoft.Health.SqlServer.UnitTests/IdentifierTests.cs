@@ -70,4 +70,19 @@ public class IdentifierTests
     {
         Assert.IsTrue(Identifier.IsValidDatabase(databaseName), $"'{databaseName}' should be considered valid");
     }
+
+    [TestMethod]
+    [DataRow("SomethingNormal", "[SomethingNormal]")]
+    [DataRow("foo-bar baz", "[foo-bar baz]")]
+    [DataRow("Escaped]Delimiter", "[Escaped]]Delimiter]")]
+    [DataRow("]]", "[]]]]]")]
+    [DataRow("\"Quoted\"", "[\"Quoted\"]")]
+    [DataRow("foo] DROP DATABASE Production --", "[foo]] DROP DATABASE Production --]")] // SQL Injection
+    public void GivenRawName_WhenDelimited_ThenReturnValidBracketDelimitedName(string name, string expected)
+    {
+        string actual = Identifier.Delimit(name);
+
+        Assert.AreEqual(expected, actual);
+        Assert.IsTrue(Identifier.IsValidDatabase(actual), $"'{actual}' should be considered valid");
+    }
 }
