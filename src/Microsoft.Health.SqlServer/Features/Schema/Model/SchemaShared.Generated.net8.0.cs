@@ -57,7 +57,7 @@ namespace Microsoft.Health.SqlServer.Features.Schema.Model
             public void PopulateCommand(SqlCommandWrapper command)
             {
                 command.CommandType = global::System.Data.CommandType.StoredProcedure;
-                command.CommandText = "dbo.DeleteInstanceSchema";
+                command.CommandText = ProcedureName;
             }
 
             public void PopulateCommand(SqlCommandWrapper command, System.String databaseName)
@@ -78,7 +78,7 @@ namespace Microsoft.Health.SqlServer.Features.Schema.Model
             public void PopulateCommand(SqlCommandWrapper command, System.String name)
             {
                 command.CommandType = global::System.Data.CommandType.StoredProcedure;
-                command.CommandText = "dbo.GetInstanceSchemaByName";
+                command.CommandText = ProcedureName;
                 _name.AddParameter(command.Parameters, name);
             }
 
@@ -99,7 +99,7 @@ namespace Microsoft.Health.SqlServer.Features.Schema.Model
             public void PopulateCommand(SqlCommandWrapper command)
             {
                 command.CommandType = global::System.Data.CommandType.StoredProcedure;
-                command.CommandText = "dbo.SelectCompatibleSchemaVersions";
+                command.CommandText = ProcedureName;
             }
 
             public void PopulateCommand(SqlCommandWrapper command, System.String databaseName)
@@ -118,7 +118,7 @@ namespace Microsoft.Health.SqlServer.Features.Schema.Model
             public void PopulateCommand(SqlCommandWrapper command)
             {
                 command.CommandType = global::System.Data.CommandType.StoredProcedure;
-                command.CommandText = "dbo.SelectCurrentSchemaVersion";
+                command.CommandText = ProcedureName;
             }
 
             public void PopulateCommand(SqlCommandWrapper command, System.String databaseName)
@@ -137,7 +137,7 @@ namespace Microsoft.Health.SqlServer.Features.Schema.Model
             public void PopulateCommand(SqlCommandWrapper command)
             {
                 command.CommandType = global::System.Data.CommandType.StoredProcedure;
-                command.CommandText = "dbo.SelectCurrentVersionsInformation";
+                command.CommandText = ProcedureName;
             }
 
             public void PopulateCommand(SqlCommandWrapper command, System.String databaseName)
@@ -161,7 +161,7 @@ namespace Microsoft.Health.SqlServer.Features.Schema.Model
             public void PopulateCommand(SqlCommandWrapper command, System.String name, System.Int32 maxVersion, System.Int32 minVersion, System.Int32 addMinutesOnTimeout)
             {
                 command.CommandType = global::System.Data.CommandType.StoredProcedure;
-                command.CommandText = "dbo.UpsertInstanceSchema";
+                command.CommandText = ProcedureName;
                 _name.AddParameter(command.Parameters, name);
                 _maxVersion.AddParameter(command.Parameters, maxVersion);
                 _minVersion.AddParameter(command.Parameters, minVersion);
@@ -191,7 +191,7 @@ namespace Microsoft.Health.SqlServer.Features.Schema.Model
             public void PopulateCommand(SqlCommandWrapper command, System.Int32 version, System.String status)
             {
                 command.CommandType = global::System.Data.CommandType.StoredProcedure;
-                command.CommandText = "dbo.UpsertSchemaVersion";
+                command.CommandText = ProcedureName;
                 _version.AddParameter(command.Parameters, version);
                 _status.AddParameter(command.Parameters, status);
             }

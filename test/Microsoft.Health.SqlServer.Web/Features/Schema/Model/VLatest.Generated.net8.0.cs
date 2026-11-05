@@ -49,7 +49,7 @@ namespace Microsoft.Health.SqlServer.Web.Features.Schema.Model
             public void PopulateCommand(SqlCommandWrapper command, global::System.Collections.Generic.IEnumerable<ComplexNumberV1Row> names)
             {
                 command.CommandType = global::System.Data.CommandType.StoredProcedure;
-                command.CommandText = "dbo.InsertNumbers";
+                command.CommandText = ProcedureName;
                 _names.AddParameter(command.Parameters, names);
             }
 
@@ -107,7 +107,7 @@ namespace Microsoft.Health.SqlServer.Web.Features.Schema.Model
             public void PopulateCommand(SqlCommandWrapper command, global::System.Collections.Generic.IEnumerable<NameTypeV1Row> names)
             {
                 command.CommandType = global::System.Data.CommandType.StoredProcedure;
-                command.CommandText = "dbo.MyProcedure_2";
+                command.CommandText = ProcedureName;
                 _names.AddParameter(command.Parameters, names);
             }
 

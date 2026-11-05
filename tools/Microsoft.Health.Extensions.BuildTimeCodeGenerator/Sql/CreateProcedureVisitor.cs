@@ -68,9 +68,9 @@ internal class CreateProcedureVisitor : SqlVisitor
 
                 // add the PopulateCommand methods, including overloads that accept the name of the database containing the procedure
                 .AddMembers(
-                    AddPopulateCommandMethod(node, schemaQualifiedProcedureName),
+                    AddPopulateCommandMethod(node),
                     AddPopulateCommandMethodForTableValuedParameters(node, procedureName),
-                    AddPopulateCommandMethod(node, schemaQualifiedProcedureName, DatabaseNameParameterName),
+                    AddPopulateCommandMethod(node, DatabaseNameParameterName),
                     AddPopulateCommandMethodForTableValuedParameters(node, procedureName, DatabaseNameParameterName))
 
                 // add the get output value method
@@ -145,10 +145,9 @@ internal class CreateProcedureVisitor : SqlVisitor
     /// Creates a PopulateCommand method taking a SqlCommand and parameters for each sproc parameter.
     /// </summary>
     /// <param name="node">The CREATE STORED PROCEDURE statement</param>
-    /// <param name="schemaQualifiedProcedureName">The full name of the stored procedure</param>
     /// <param name="databaseParameterName">The optional name of the parameter for the database containing the stored procedure</param>
     /// <returns>The method declaration</returns>
-    private static MethodDeclarationSyntax AddPopulateCommandMethod(CreateProcedureStatement node, string schemaQualifiedProcedureName, string databaseParameterName = null)
+    private static MethodDeclarationSyntax AddPopulateCommandMethod(CreateProcedureStatement node, string databaseParameterName = null)
     {
         return MethodDeclaration(
                 typeof(void).ToTypeSyntax(),
@@ -168,7 +167,7 @@ internal class CreateProcedureVisitor : SqlVisitor
 
             // start the body with:
             // command.CommandType = CommandType.StoredProcedure
-            // command.CommandText = "dbo.MySproc" or GetQualifiedName(databaseName)
+            // command.CommandText = ProcedureName or GetQualifiedName(databaseName)
             .AddBodyStatements(
                 ExpressionStatement(
                     AssignmentExpression(
@@ -189,7 +188,7 @@ internal class CreateProcedureVisitor : SqlVisitor
                             IdentifierName(CommandParameterName),
                             IdentifierName("CommandText")),
                         databaseParameterName == null
-                            ? LiteralExpression(SyntaxKind.StringLiteralExpression, Literal(schemaQualifiedProcedureName))
+                            ? IdentifierName("ProcedureName")
                             : InvocationExpression(IdentifierName("GetQualifiedName"))
                                 .AddArgumentListArguments(Argument(IdentifierName(databaseParameterName))))))
 
