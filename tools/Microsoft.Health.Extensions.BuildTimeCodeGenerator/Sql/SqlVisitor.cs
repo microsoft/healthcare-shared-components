@@ -165,44 +165,6 @@ public abstract class SqlVisitor : TSqlFragmentVisitor
     }
 
     /// <summary>
-    /// Creates the internal constructors for a class that derives from a schema-scoped SQL object type, like Table or StoredProcedure.
-    /// The first constructor is parameterless and passes only the schema-qualified name to the base constructor, while
-    /// the second constructor accepts an additional database name to scope the object to a particular database.
-    /// </summary>
-    /// <param name="className">The class name</param>
-    /// <param name="schemaQualifiedName">The schema-qualified name of the SQL object</param>
-    /// <returns>The constructor declarations.</returns>
-    protected static MemberDeclarationSyntax[] CreateConstructorsForSchemaObject(string className, string schemaQualifiedName)
-    {
-        const string DatabaseNameParameterName = "databaseName";
-
-        ArgumentSyntax nameArgument = Argument(LiteralExpression(SyntaxKind.StringLiteralExpression, Literal(schemaQualifiedName)));
-
-        return new MemberDeclarationSyntax[]
-        {
-            // internal MyClass() : base("dbo.MyObject") { }
-            ConstructorDeclaration(Identifier(className))
-                .WithModifiers(TokenList(Token(SyntaxKind.InternalKeyword)))
-                .WithInitializer(
-                    ConstructorInitializer(
-                        SyntaxKind.BaseConstructorInitializer,
-                        ArgumentList(SingletonSeparatedList(nameArgument))))
-                .WithBody(Block()),
-
-            // internal MyClass(string databaseName) : base("dbo.MyObject", databaseName) { }
-            ConstructorDeclaration(Identifier(className))
-                .WithModifiers(TokenList(Token(SyntaxKind.InternalKeyword)))
-                .AddParameterListParameters(
-                    Parameter(Identifier(DatabaseNameParameterName)).WithType(typeof(string).ToTypeSyntax(true)))
-                .WithInitializer(
-                    ConstructorInitializer(
-                        SyntaxKind.BaseConstructorInitializer,
-                        ArgumentList(SeparatedList(new[] { nameArgument, Argument(IdentifierName(DatabaseNameParameterName)) }))))
-                .WithBody(Block()),
-        };
-    }
-
-    /// <summary>
     /// Gets the arguments for SQL database types, like the length, precision, and scale.
     /// </summary>
     /// <param name="dataType">The column data type</param>

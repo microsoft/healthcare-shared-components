@@ -53,7 +53,22 @@ internal class CreateTableVisitor : SqlVisitor
                     SingletonSeparatedList<BaseTypeSyntax>(
                         SimpleBaseType(
                             IdentifierName("Table")))))
-            .AddMembers(CreateConstructorsForSchemaObject(className, schemaQualifiedTableName));
+            .AddMembers(
+                ConstructorDeclaration(
+                        Identifier(className))
+                    .WithModifiers(
+                        TokenList(
+                            Token(SyntaxKind.InternalKeyword)))
+                    .WithInitializer(
+                        ConstructorInitializer(
+                            SyntaxKind.BaseConstructorInitializer,
+                            ArgumentList(
+                                SingletonSeparatedList(
+                                    Argument(
+                                        LiteralExpression(
+                                            SyntaxKind.StringLiteralExpression,
+                                            Literal(schemaQualifiedTableName)))))))
+                    .WithBody(Block()));
     }
 
     public override void Visit(CreateViewStatement node)
