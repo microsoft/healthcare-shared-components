@@ -32,7 +32,7 @@ internal class CreateProcedureVisitor : SqlVisitor
         string procedureName = GetMemberNameWithoutVersionSuffix(node.ProcedureReference.Name);
         string schemaQualifiedProcedureName = $"{node.ProcedureReference.Name.SchemaIdentifier.Value}.{rawProcedureName}";
         string className = $"{procedureName}Procedure";
-        string databaseParameterName = GetDatabaseParameterName(node);
+        ThrowIfDatabaseParameterConflicts(node, schemaQualifiedProcedureName);
 
         ClassDeclarationSyntax classDeclarationSyntax =
             ClassDeclaration(className)
@@ -70,8 +70,8 @@ internal class CreateProcedureVisitor : SqlVisitor
                 .AddMembers(
                     AddPopulateCommandMethod(node, schemaQualifiedProcedureName),
                     AddPopulateCommandMethodForTableValuedParameters(node, procedureName),
-                    AddPopulateCommandMethod(node, schemaQualifiedProcedureName, databaseParameterName),
-                    AddPopulateCommandMethodForTableValuedParameters(node, procedureName, databaseParameterName))
+                    AddPopulateCommandMethod(node, schemaQualifiedProcedureName, DatabaseNameParameterName),
+                    AddPopulateCommandMethodForTableValuedParameters(node, procedureName, DatabaseNameParameterName))
 
                 // add the get output value method
                 .AddMembers(AddGetOutputMethod(node));
@@ -476,16 +476,14 @@ internal class CreateProcedureVisitor : SqlVisitor
         return Enum.TryParse<SqlDbType>(parameter.DataType.Name.BaseIdentifier.Value, ignoreCase: true, out sqlDbType);
     }
 
-    private static string GetDatabaseParameterName(CreateProcedureStatement node)
+    private static void ThrowIfDatabaseParameterConflicts(CreateProcedureStatement node, string schemaQualifiedProcedureName)
     {
-        // Ensure the parameter name does not conflict with any other parameter of the PopulateCommand methods
-        string name = DatabaseNameParameterName;
-        while (name == CommandParameterName || node.Parameters.Any(p => ParameterNameForParameter(p) == name))
+        if (node.Parameters.Any(p => string.Equals(ParameterNameForParameter(p), DatabaseNameParameterName, StringComparison.Ordinal)))
         {
-            name = "_" + name;
+            throw new NotSupportedException(
+                $"Stored procedure '{schemaQualifiedProcedureName}' cannot declare a parameter named '@{DatabaseNameParameterName}' " +
+                $"as it conflicts with the '{DatabaseNameParameterName}' parameter of the generated {PopulateCommandMethodName} overloads.");
         }
-
-        return name;
     }
 
     private static ParameterSyntax[] CreateDatabaseParameters(string databaseParameterName)
