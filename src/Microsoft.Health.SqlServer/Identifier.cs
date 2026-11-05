@@ -3,6 +3,7 @@
 // Licensed under the MIT License (MIT). See LICENSE in the repo root for license information.
 // -------------------------------------------------------------------------------------------------
 
+using System;
 using System.Text.RegularExpressions;
 
 namespace Microsoft.Health.SqlServer;
@@ -44,4 +45,8 @@ internal static class Identifier
             return NameRegex.IsMatch(name) && !Keywords.SqlServer.Contains(name);
         }
     }
+
+    // Wraps the raw (unescaped) name in brackets, escaping any closing brackets within the name
+    public static string Delimit(string name)
+        => "[" + name.Replace("]", "]]", StringComparison.Ordinal) + "]";
 }

@@ -43,29 +43,14 @@ internal class CreateOrAlterProcedureVisitor : SqlVisitor
                             SimpleBaseType(
                                 IdentifierName("StoredProcedure")))))
 
-                // call base("dbo.StoredProcedure")
-                .AddMembers(
-                    ConstructorDeclaration(
-                            Identifier(className))
-                        .WithModifiers(
-                            TokenList(
-                                Token(SyntaxKind.InternalKeyword)))
-                        .WithInitializer(
-                            ConstructorInitializer(
-                                SyntaxKind.BaseConstructorInitializer,
-                                ArgumentList(
-                                    SingletonSeparatedList(
-                                        Argument(
-                                            LiteralExpression(
-                                                SyntaxKind.StringLiteralExpression,
-                                                Literal(schemaQualifiedProcedureName)))))))
-                        .WithBody(Block()))
+                // call base("dbo.StoredProcedure") and base("dbo.StoredProcedure", databaseName)
+                .AddMembers(CreateConstructorsForSchemaObject(className, schemaQualifiedProcedureName))
 
                 // add fields for each parameter
                 .AddMembers(node.Parameters.Select(CreateFieldForParameter).ToArray())
 
                 // add the PopulateCommand method
-                .AddMembers(AddPopulateCommandMethod(node, schemaQualifiedProcedureName), AddPopulateCommandMethodForTableValuedParameters(node, procedureName))
+                .AddMembers(AddPopulateCommandMethod(node), AddPopulateCommandMethodForTableValuedParameters(node, procedureName))
 
                 // add the get output value method
                 .AddMembers(AddGetOutputMethod(node));
@@ -139,9 +124,8 @@ internal class CreateOrAlterProcedureVisitor : SqlVisitor
     /// Creates a PopulateCommand method taking a SqlCommand and parameters for each sproc parameter.
     /// </summary>
     /// <param name="node">The CREATE STORED PROCEDURE statement</param>
-    /// <param name="schemaQualifiedProcedureName">The full name of the stored procedure</param>
     /// <returns>The method declaration</returns>
-    private static MethodDeclarationSyntax AddPopulateCommandMethod(CreateOrAlterProcedureStatement node, string schemaQualifiedProcedureName)
+    private static MethodDeclarationSyntax AddPopulateCommandMethod(CreateOrAlterProcedureStatement node)
     {
         return MethodDeclaration(
                 typeof(void).ToTypeSyntax(),
@@ -158,7 +142,7 @@ internal class CreateOrAlterProcedureVisitor : SqlVisitor
 
             // start the body with:
             // command.CommandType = CommandType.StoredProcedure
-            // command.CommandText = "dbo.MySproc"
+            // command.CommandText = ToString()
             .AddBodyStatements(
                 ExpressionStatement(
                     AssignmentExpression(
@@ -178,7 +162,7 @@ internal class CreateOrAlterProcedureVisitor : SqlVisitor
                             SyntaxKind.SimpleMemberAccessExpression,
                             IdentifierName(CommandParameterName),
                             IdentifierName("CommandText")),
-                        LiteralExpression(SyntaxKind.StringLiteralExpression, Literal(schemaQualifiedProcedureName)))))
+                        InvocationExpression(IdentifierName("ToString")))))
 
             // now for each parameter generate:
             // _fieldForParameter.AddParameter(command, parameterValue)

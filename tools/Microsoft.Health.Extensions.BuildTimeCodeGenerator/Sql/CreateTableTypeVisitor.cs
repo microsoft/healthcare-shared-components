@@ -35,6 +35,8 @@ public class CreateTableTypeVisitor : SqlVisitor
             return;
         }
 
+        // Note: Unlike tables and stored procedures, table types cannot be scoped to a database,
+        // as SQL Server rejects table-valued parameters whose type name includes a database name.
         string schemaQualifiedTableTypeName = $"{node.Name.SchemaIdentifier.Value}.{tableTypeName}";
         string className = GetClassNameForTableValuedParameterDefinition(node.Name);
         string rowStructName = GetRowStructNameForTableType(node.Name);

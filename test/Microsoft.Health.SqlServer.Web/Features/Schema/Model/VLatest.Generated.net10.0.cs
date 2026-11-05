@@ -24,6 +24,10 @@ namespace Microsoft.Health.SqlServer.Web.Features.Schema.Model
             {
             }
 
+            internal Table1Table(System.String databaseName) : base("dbo.Table1", databaseName)
+            {
+            }
+
             internal readonly IntColumn Id = new IntColumn("Id");
             internal readonly NVarCharColumn Name = new NVarCharColumn("Name", 20);
         }
@@ -31,6 +35,10 @@ namespace Microsoft.Health.SqlServer.Web.Features.Schema.Model
         internal class Table2Table : Table
         {
             internal Table2Table() : base("dbo.Table2")
+            {
+            }
+
+            internal Table2Table(System.String databaseName) : base("dbo.Table2", databaseName)
             {
             }
 
@@ -44,12 +52,16 @@ namespace Microsoft.Health.SqlServer.Web.Features.Schema.Model
             {
             }
 
+            internal InsertNumbersProcedure(System.String databaseName) : base("dbo.InsertNumbers", databaseName)
+            {
+            }
+
             private readonly ComplexNumberV1TableValuedParameterDefinition _names = new ComplexNumberV1TableValuedParameterDefinition("@names");
 
             public void PopulateCommand(SqlCommandWrapper command, global::System.Collections.Generic.IEnumerable<ComplexNumberV1Row> names)
             {
                 command.CommandType = global::System.Data.CommandType.StoredProcedure;
-                command.CommandText = "dbo.InsertNumbers";
+                command.CommandText = ToString();
                 _names.AddParameter(command.Parameters, names);
             }
 
@@ -90,12 +102,16 @@ namespace Microsoft.Health.SqlServer.Web.Features.Schema.Model
             {
             }
 
+            internal MyProcedureProcedure(System.String databaseName) : base("dbo.MyProcedure_2", databaseName)
+            {
+            }
+
             private readonly NameTypeV1TableValuedParameterDefinition _names = new NameTypeV1TableValuedParameterDefinition("@names");
 
             public void PopulateCommand(SqlCommandWrapper command, global::System.Collections.Generic.IEnumerable<NameTypeV1Row> names)
             {
                 command.CommandType = global::System.Data.CommandType.StoredProcedure;
-                command.CommandText = "dbo.MyProcedure_2";
+                command.CommandText = ToString();
                 _names.AddParameter(command.Parameters, names);
             }
 
