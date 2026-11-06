@@ -43,6 +43,8 @@ public class SchemaUpgradeRunner
         _schemaManagerDataStore = schemaManagerDataStore;
     }
 
+    public string DatabaseName => _schemaManagerDataStore.DatabaseName;
+
     public async Task ApplySchemaAsync(int version, bool applyFullSchemaSnapshot, CancellationToken cancellationToken)
     {
         try

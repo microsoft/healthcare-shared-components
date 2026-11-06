@@ -1,4 +1,4 @@
-﻿// -------------------------------------------------------------------------------------------------
+// -------------------------------------------------------------------------------------------------
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License (MIT). See LICENSE in the repo root for license information.
 // -------------------------------------------------------------------------------------------------
@@ -14,6 +14,12 @@ namespace Microsoft.Health.SqlServer.Features.Schema.Manager;
 /// </summary>
 public interface IReadOnlySchemaManagerDataStore
 {
+    /// <summary>
+    /// Gets the name of the target database for all operations.
+    /// </summary>
+    /// <value>The name of the database.</value>
+    string DatabaseName { get; }
+
     /// <summary>
     /// Asynchronously retrieves the current application database version whose status indicates completion.
     /// </summary>

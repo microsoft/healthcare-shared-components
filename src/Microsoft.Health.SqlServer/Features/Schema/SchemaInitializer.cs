@@ -58,20 +58,54 @@ public sealed class SchemaInitializer : IHostedService
 
     public async Task InitializeAsync(bool forceIncrementalSchemaUpgrade = false, CancellationToken cancellationToken = default)
     {
-        using IServiceScope scope = _serviceProvider.CreateScope();
-        if (!string.IsNullOrWhiteSpace(_options.ConnectionString))
+        if (string.IsNullOrWhiteSpace(_options.ConnectionString))
         {
-            await InitializeAsync(scope, forceIncrementalSchemaUpgrade, cancellationToken).ConfigureAwait(false);
+            _logger.LogCritical("There was no connection string supplied. Schema initialization can not be completed.");
         }
         else
         {
-            _logger.LogCritical(
-                "There was no connection string supplied. Schema initialization can not be completed.");
+        using IServiceScope scope = _serviceProvider.CreateScope();
+            await InitializeAsync(scope, forceIncrementalSchemaUpgrade, cancellationToken).ConfigureAwait(false);
+        }
+    }
+
+    public async Task InitializeAsync(IEnumerable<string> databases, bool forceIncrementalSchemaUpgrade = false, CancellationToken cancellationToken = default)
+    {
+        EnsureArg.IsNotNull(databases, nameof(databases));
+
+        if (string.IsNullOrWhiteSpace(_options.ConnectionString))
+        {
+            _logger.LogCritical("There was no connection string supplied. Schema initialization can not be completed.");
+        }
+        else
+        {
+            SqlConnectionStringBuilder builder = new(_options.ConnectionString);
+            foreach (string databaseName in databases)
+            {
+                builder.InitialCatalog = databaseName;
+                await InitializeDatabaseAsync(builder.ConnectionString, forceIncrementalSchemaUpgrade, cancellationToken).ConfigureAwait(false);
+        }
+    }
+
+        async Task InitializeDatabaseAsync(string connectionString, bool forceIncrementalSchemaUpgrade, CancellationToken cancellationToken)
+        {
+            using IServiceScope scope = _serviceProvider.CreateScope();
+
+            // Update the connection string for this scope
+            IOptionsSnapshot<SqlServerDataStoreConfiguration> snapshot = scope.ServiceProvider.GetRequiredService<IOptionsSnapshot<SqlServerDataStoreConfiguration>>();
+            snapshot.Value.ConnectionString = connectionString;
+
+            await InitializeAsync(scope, forceIncrementalSchemaUpgrade, cancellationToken).ConfigureAwait(false);
         }
     }
 
     Task IHostedService.StartAsync(CancellationToken cancellationToken)
-        => InitializeAsync(forceIncrementalSchemaUpgrade: false, cancellationToken: cancellationToken);
+    {
+        IDatabasePool pool = _serviceProvider.GetService<IDatabasePool>();
+        return pool is null
+            ? InitializeAsync(forceIncrementalSchemaUpgrade: false, cancellationToken: cancellationToken)
+            : InitializeAsync(pool.GetDatabases(), forceIncrementalSchemaUpgrade: false, cancellationToken: cancellationToken);
+    }
 
     Task IHostedService.StopAsync(CancellationToken cancellationToken)
         => Task.CompletedTask;

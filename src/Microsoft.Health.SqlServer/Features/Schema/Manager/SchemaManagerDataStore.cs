@@ -33,6 +33,8 @@ public class SchemaManagerDataStore : ISchemaManagerDataStore
         _logger = EnsureArg.IsNotNull(logger, nameof(logger));
     }
 
+    public string DatabaseName => _sqlConnectionWrapperFactory.DefaultDatabase;
+
     /// <inheritdoc />
     public async Task ExecuteScriptAndCompleteSchemaVersionAsync(string script, int version, bool applyFullSchemaSnapshot, CancellationToken cancellationToken)
     {

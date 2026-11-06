@@ -32,10 +32,10 @@ public static class SchemaMediatorExtensions
         return mediator.SendAsync(request, cancellationToken);
     }
 
-    public static Task NotifySchemaUpgradedAsync(this IMediator mediator, int version, bool isFullSchemaSnapshotUpgrade, CancellationToken cancellationToken = default)
+    public static Task NotifySchemaUpgradedAsync(this IMediator mediator, string databaseName, int version, bool isFullSchemaSnapshotUpgrade, CancellationToken cancellationToken = default)
     {
         EnsureArg.IsNotNull(mediator, nameof(mediator));
 
-        return mediator.PublishAsync(new SchemaUpgradedNotification(version, isFullSchemaSnapshotUpgrade), cancellationToken);
+        return mediator.PublishAsync(new SchemaUpgradedNotification(databaseName, version, isFullSchemaSnapshotUpgrade), cancellationToken);
     }
 }
