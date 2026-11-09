@@ -41,17 +41,11 @@ public class SchemaJobWorker
         IProcessTerminator processTerminator,
         ILogger<SchemaJobWorker> logger)
     {
-        EnsureArg.IsNotNull(services, nameof(services));
-        EnsureArg.IsNotNull(sqlServerDataStoreConfiguration?.Value, nameof(sqlServerDataStoreConfiguration));
-        EnsureArg.IsNotNull(mediator, nameof(mediator));
-        EnsureArg.IsNotNull(logger, nameof(logger));
-        EnsureArg.IsNotNull(processTerminator, nameof(processTerminator));
-
-        _serviceProvider = services;
-        _sqlServerDataStoreConfiguration = sqlServerDataStoreConfiguration.Value;
-        _mediator = mediator;
-        _processTerminator = processTerminator;
-        _logger = logger;
+        _serviceProvider = EnsureArg.IsNotNull(services, nameof(services));
+        _sqlServerDataStoreConfiguration = EnsureArg.IsNotNull(sqlServerDataStoreConfiguration?.Value, nameof(sqlServerDataStoreConfiguration));
+        _mediator = EnsureArg.IsNotNull(mediator, nameof(mediator));
+        _processTerminator = EnsureArg.IsNotNull(processTerminator, nameof(processTerminator));
+        _logger = EnsureArg.IsNotNull(logger, nameof(logger));
     }
 
     [SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "Continue trying despite errors.")]
@@ -112,7 +106,7 @@ public class SchemaJobWorker
                 {
                     var isFullSchemaSnapshot = previous == 0;
 
-                    await _mediator.NotifySchemaUpgradedAsync((int)schemaInformation.Current, isFullSchemaSnapshot, cancellationToken).ConfigureAwait(false);
+                    await _mediator.NotifySchemaUpgradedAsync(schemaDataStore.DatabaseName, (int)schemaInformation.Current, isFullSchemaSnapshot, cancellationToken).ConfigureAwait(false);
                 }
 
                 if (!isReadOnlyDatabase)

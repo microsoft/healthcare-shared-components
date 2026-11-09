@@ -81,16 +81,6 @@ public static class SqlServerBaseRegistrationExtensions
         return services;
     }
 
-    public static IServiceCollection AddMultipleDatabases<TDatabasePool>(this IServiceCollection services)
-        where TDatabasePool : class, IDatabasePool
-    {
-        EnsureArg.IsNotNull(services, nameof(services));
-        services.TryAddSingleton<IDatabasePool, TDatabasePool>();
-        services.Replace(ServiceDescriptor.Scoped<ISqlConnectionBuilder, ScopedSqlConnectionBuilder>());
-        services.Replace(ServiceDescriptor.Scoped<SchemaInformation, SchemaInformation>());
-        return services;
-    }
-
     /// <summary>
     /// Adds a collection of services for connecting to SQL Server to the specified <see cref="IServiceCollection"/>.
     /// </summary>
@@ -155,6 +145,12 @@ public static class SqlServerBaseRegistrationExtensions
                     ? schemaManagerDataStore
                     : new SchemaManagerDataStore(p.GetRequiredService<SqlConnectionWrapperFactory>(), p.GetRequiredService<IOptions<SqlServerDataStoreConfiguration>>(), p.GetRequiredService<ILogger<SchemaManagerDataStore>>());
             });
+
+        services
+            .AddOptions<SqlSchemaVersionOptions>()
+            .ValidateDataAnnotations();
+
+        services.TryAddEnumerable(ServiceDescriptor.Singleton<IPostConfigureOptions<SqlSchemaVersionOptions>, ConfigureSchemaInformation>());
 
         return services;
     }

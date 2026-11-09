@@ -56,62 +56,16 @@ public sealed class SchemaInitializer : IHostedService
         _logger = EnsureArg.IsNotNull(logger, nameof(logger));
     }
 
-    public async Task InitializeAsync(bool forceIncrementalSchemaUpgrade = false, CancellationToken cancellationToken = default)
+    public async Task InitializeAsync(IServiceScope scope, bool forceIncrementalSchemaUpgrade = false, CancellationToken cancellationToken = default)
     {
-        if (string.IsNullOrWhiteSpace(_options.ConnectionString))
-        {
-            _logger.LogCritical("There was no connection string supplied. Schema initialization can not be completed.");
-        }
-        else
-        {
-        using IServiceScope scope = _serviceProvider.CreateScope();
-            await InitializeAsync(scope, forceIncrementalSchemaUpgrade, cancellationToken).ConfigureAwait(false);
-        }
-    }
-
-    public async Task InitializeAsync(IEnumerable<string> databases, bool forceIncrementalSchemaUpgrade = false, CancellationToken cancellationToken = default)
-    {
-        EnsureArg.IsNotNull(databases, nameof(databases));
+        EnsureArg.IsNotNull(scope, nameof(scope));
 
         if (string.IsNullOrWhiteSpace(_options.ConnectionString))
         {
             _logger.LogCritical("There was no connection string supplied. Schema initialization can not be completed.");
+            return;
         }
-        else
-        {
-            SqlConnectionStringBuilder builder = new(_options.ConnectionString);
-            foreach (string databaseName in databases)
-            {
-                builder.InitialCatalog = databaseName;
-                await InitializeDatabaseAsync(builder.ConnectionString, forceIncrementalSchemaUpgrade, cancellationToken).ConfigureAwait(false);
-        }
-    }
 
-        async Task InitializeDatabaseAsync(string connectionString, bool forceIncrementalSchemaUpgrade, CancellationToken cancellationToken)
-        {
-            using IServiceScope scope = _serviceProvider.CreateScope();
-
-            // Update the connection string for this scope
-            IOptionsSnapshot<SqlServerDataStoreConfiguration> snapshot = scope.ServiceProvider.GetRequiredService<IOptionsSnapshot<SqlServerDataStoreConfiguration>>();
-            snapshot.Value.ConnectionString = connectionString;
-
-            await InitializeAsync(scope, forceIncrementalSchemaUpgrade, cancellationToken).ConfigureAwait(false);
-        }
-    }
-
-    Task IHostedService.StartAsync(CancellationToken cancellationToken)
-    {
-        IDatabasePool pool = _serviceProvider.GetService<IDatabasePool>();
-        return pool is null
-            ? InitializeAsync(forceIncrementalSchemaUpgrade: false, cancellationToken: cancellationToken)
-            : InitializeAsync(pool.GetDatabases(), forceIncrementalSchemaUpgrade: false, cancellationToken: cancellationToken);
-    }
-
-    Task IHostedService.StopAsync(CancellationToken cancellationToken)
-        => Task.CompletedTask;
-
-    private async Task InitializeAsync(IServiceScope scope, bool forceIncrementalSchemaUpgrade = false, CancellationToken cancellationToken = default)
-    {
         bool schemaUpgradedNotificationSent = false;
         SqlConnectionWrapperFactory connectionFactory = scope.ServiceProvider.GetRequiredService<SqlConnectionWrapperFactory>();
         if (!await CanInitializeAsync(connectionFactory, cancellationToken).ConfigureAwait(false))
@@ -169,7 +123,7 @@ public sealed class SchemaInitializer : IHostedService
 
                         await GetCurrentSchemaVersionAsync(cancellationToken).ConfigureAwait(false);
 
-                        await _mediator.NotifySchemaUpgradedAsync((int)_schemaInformation.Current, true, cancellationToken).ConfigureAwait(false);
+                        await _mediator.NotifySchemaUpgradedAsync(_schemaUpgradeRunner.DatabaseName, (int)_schemaInformation.Current, true, cancellationToken).ConfigureAwait(false);
 
                         schemaUpgradedNotificationSent = true;
                     }
@@ -186,7 +140,7 @@ public sealed class SchemaInitializer : IHostedService
                             // we need to ensure that the schema upgrade notification is sent after updating the _schemaInformation.Current for each upgraded version
                             await GetCurrentSchemaVersionAsync(cancellationToken).ConfigureAwait(false);
 
-                            await _mediator.NotifySchemaUpgradedAsync((int)_schemaInformation.Current, false, cancellationToken).ConfigureAwait(false);
+                            await _mediator.NotifySchemaUpgradedAsync(_schemaUpgradeRunner.DatabaseName, (int)_schemaInformation.Current, false, cancellationToken).ConfigureAwait(false);
                         }
 
                         schemaUpgradedNotificationSent = true;
@@ -209,9 +163,18 @@ public sealed class SchemaInitializer : IHostedService
         // There is a dependency on this notification in FHIR server to enable some background jobs
         if (!schemaUpgradedNotificationSent && _schemaInformation.Current.HasValue)
         {
-            await _mediator.NotifySchemaUpgradedAsync((int)_schemaInformation.Current, false, cancellationToken).ConfigureAwait(false);
+            await _mediator.NotifySchemaUpgradedAsync(connectionFactory.DefaultDatabase, (int)_schemaInformation.Current, false, cancellationToken).ConfigureAwait(false);
         }
     }
+
+    async Task IHostedService.StartAsync(CancellationToken cancellationToken)
+    {
+        using IServiceScope scope = _serviceProvider.CreateScope();
+        await InitializeAsync(scope, forceIncrementalSchemaUpgrade: false, cancellationToken: cancellationToken).ConfigureAwait(false);
+    }
+
+    Task IHostedService.StopAsync(CancellationToken cancellationToken)
+        => Task.CompletedTask;
 
     // On a read-only geo-replication secondary the schema is replicated from the primary and cannot
     // be advanced from here, so ISchemaWriteGate returns false. In that case we log whether the
