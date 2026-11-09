@@ -8,11 +8,16 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using Medino;
+using Microsoft.Data.SqlClient;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 using Microsoft.Health.SqlServer.Configs;
+using Microsoft.Health.SqlServer.Features.Client;
 using Microsoft.Health.SqlServer.Features.Schema;
+using Microsoft.Health.SqlServer.Features.Storage;
 using NSubstitute;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -152,6 +157,101 @@ public sealed class SchemaInitializerTests
         ISchemaWriteGate gate = Substitute.For<ISchemaWriteGate>();
         gate.CanWriteAsync(default).ReturnsForAnyArgs(Task.FromResult(false));
         return gate;
+    }
+
+    [TestMethod]
+    public async Task GivenNullScope_WhenInitializing_ThenThrowsArgumentNullException()
+    {
+        SchemaInitializer initializer = CreateInitializer(new SchemaInformation(1, 5), NullLogger<SchemaWriteGateEvaluator>.Instance);
+
+        await Assert.ThrowsAsync<ArgumentNullException>(() => initializer.InitializeAsync(null, cancellationToken: CancellationToken.None));
+    }
+
+    [TestMethod]
+    public async Task GivenNoConnectionString_WhenInitializing_ThenSkipsWithoutUsingScopeOrPublishing()
+    {
+        IServiceProvider rootProvider = Substitute.For<IServiceProvider>();
+        IMediator mediator = Substitute.For<IMediator>();
+        IServiceScope scope = Substitute.For<IServiceScope>();
+        SchemaInitializer initializer = CreateInitializer(rootProvider, new SqlServerDataStoreConfiguration { ConnectionString = null }, mediator);
+
+        await initializer.InitializeAsync(scope, cancellationToken: CancellationToken.None);
+
+        _ = scope.DidNotReceive().ServiceProvider;
+        rootProvider.DidNotReceiveWithAnyArgs().GetService(default);
+        Assert.IsEmpty(mediator.ReceivedCalls());
+    }
+
+    [TestMethod]
+    public async Task GivenScope_WhenInitializing_ThenResolvesConnectionFactoryFromProvidedScope()
+    {
+        IServiceProvider rootProvider = Substitute.For<IServiceProvider>();
+        IMediator mediator = Substitute.For<IMediator>();
+        IServiceProvider scopedProvider = Substitute.For<IServiceProvider>();
+        using var transactionHandler = new SqlTransactionHandler();
+        SqlConnectionWrapperFactory connectionFactory = CreateConnectionWrapperFactory(transactionHandler, "ScopedDb");
+        scopedProvider.GetService(typeof(SqlConnectionWrapperFactory)).Returns(connectionFactory);
+        IServiceScope scope = Substitute.For<IServiceScope>();
+        scope.ServiceProvider.Returns(scopedProvider);
+
+        // Initialize = false stops processing right after the connection factory is resolved
+        SchemaInitializer initializer = CreateInitializer(
+            rootProvider,
+            new SqlServerDataStoreConfiguration { ConnectionString = "Server=(local);Database=ScopedDb;", Initialize = false },
+            mediator);
+
+        await initializer.InitializeAsync(scope, cancellationToken: CancellationToken.None);
+
+        scopedProvider.Received(1).GetService(typeof(SqlConnectionWrapperFactory));
+        rootProvider.DidNotReceiveWithAnyArgs().GetService(default);
+        scope.DidNotReceive().Dispose();
+        Assert.IsEmpty(mediator.ReceivedCalls());
+    }
+
+    [TestMethod]
+    public async Task GivenHostedService_WhenStarting_ThenCreatesAndDisposesScope()
+    {
+        IServiceScope scope = Substitute.For<IServiceScope>();
+        IServiceScopeFactory scopeFactory = Substitute.For<IServiceScopeFactory>();
+        scopeFactory.CreateScope().Returns(scope);
+        IServiceProvider rootProvider = Substitute.For<IServiceProvider>();
+        rootProvider.GetService(typeof(IServiceScopeFactory)).Returns(scopeFactory);
+        IHostedService initializer = CreateInitializer(rootProvider, new SqlServerDataStoreConfiguration { ConnectionString = null }, Substitute.For<IMediator>());
+
+        await initializer.StartAsync(CancellationToken.None);
+
+        scopeFactory.Received(1).CreateScope();
+        scope.Received(1).Dispose();
+    }
+
+    private static SqlConnectionWrapperFactory CreateConnectionWrapperFactory(SqlTransactionHandler transactionHandler, string databaseName)
+    {
+        ISqlConnectionBuilder connectionBuilder = Substitute.For<ISqlConnectionBuilder>();
+        connectionBuilder.DefaultDatabase.Returns(databaseName);
+        return new SqlConnectionWrapperFactory(
+            transactionHandler,
+            connectionBuilder,
+            SqlConfigurableRetryFactory.CreateNoneRetryProvider(),
+            Options.Create(new SqlServerDataStoreConfiguration()));
+    }
+
+    private static SchemaInitializer CreateInitializer(IServiceProvider serviceProvider, SqlServerDataStoreConfiguration configuration, IMediator mediator)
+    {
+        var options = Options.Create(configuration);
+        var evaluator = new SchemaWriteGateEvaluator(
+            FalseGate(),
+            Substitute.For<ISchemaMetrics>(),
+            Substitute.For<ISqlConnectionBuilder>(),
+            options,
+            NullLogger<SchemaWriteGateEvaluator>.Instance);
+
+        return new SchemaInitializer(
+            serviceProvider,
+            options,
+            new SchemaInformation(1, 5),
+            mediator,
+            evaluator,
+            NullLogger<SchemaInitializer>.Instance);
     }
 
     private static SchemaInitializer CreateInitializer(

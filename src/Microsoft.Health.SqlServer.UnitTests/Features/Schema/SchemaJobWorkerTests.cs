@@ -15,6 +15,7 @@ using Microsoft.Extensions.Options;
 using Microsoft.Health.Core.Features.Control;
 using Microsoft.Health.SqlServer.Configs;
 using Microsoft.Health.SqlServer.Features.Schema;
+using Microsoft.Health.SqlServer.Features.Schema.Messages.Notifications;
 using Microsoft.Health.SqlServer.Features.Schema.Model;
 using Microsoft.Health.SqlServer.Features.Storage;
 using NSubstitute;
@@ -43,6 +44,7 @@ public sealed class SchemaJobWorkerTests : IDisposable
         _processTerminator = Substitute.For<IProcessTerminator>();
         _logger = NullLogger<SchemaJobWorker>.Instance;
         _schemaDataStore = Substitute.For<ISchemaDataStore>();
+        _schemaDataStore.DatabaseName.Returns("TestDb");
         _writeGate = Substitute.For<ISchemaWriteGate>();
         _writeGate.CanWriteAsync(default).ReturnsForAnyArgs(Task.FromResult(true));
         var collection = new ServiceCollection();
@@ -103,6 +105,31 @@ public sealed class SchemaJobWorkerTests : IDisposable
         }
 
         _processTerminator.ReceivedWithAnyArgs().Terminate(default);
+    }
+
+    [TestMethod]
+    [DataRow(0, true)]
+    [DataRow(1, false)]
+    public async Task GivenSchemaVersionChanged_WhenExecuting_ThenPublishesNotificationWithDatabaseName(int previousVersion, bool expectedFullSnapshot)
+    {
+        SchemaInformation info = new SchemaInformation(1, 2) { Current = previousVersion };
+        _schemaDataStore.UpsertInstanceSchemaInformationAsync(default, default, default).ReturnsForAnyArgs(x =>
+        {
+            _cts.Cancel();
+            return 2;
+        });
+
+        try
+        {
+            await _worker.ExecuteAsync(info, "blah", _cts.Token);
+        }
+        catch (TaskCanceledException)
+        {
+        }
+
+        await _mediator.Received(1).PublishAsync(
+            Arg.Is<SchemaUpgradedNotification>(n => n.DatabaseName == "TestDb" && n.Version == 2 && n.IsFullSchemaSnapshot == expectedFullSnapshot),
+            Arg.Any<CancellationToken>());
     }
 
     [TestMethod]

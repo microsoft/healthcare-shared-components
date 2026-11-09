@@ -37,7 +37,6 @@ public sealed class SchemaInitializer : IHostedService
     private readonly ILogger<SchemaInitializer> _logger;
     private readonly IMediator _mediator;
     private readonly SchemaWriteGateEvaluator _schemaWriteGateEvaluator;
-    private bool _canCallGetCurrentSchema;
     public const string SchemaUpgradeLockName = "SchemaUpgrade";
 
     public SchemaInitializer(
@@ -73,7 +72,7 @@ public sealed class SchemaInitializer : IHostedService
             return;
         }
 
-        await GetCurrentSchemaVersionAsync(cancellationToken).ConfigureAwait(false);
+        bool sprocExists = await GetCurrentSchemaVersionAsync(scope, false, cancellationToken).ConfigureAwait(false);
 
         _logger.LogInformation("Initial check of schema version is {Version}", _schemaInformation.Current?.ToString(CultureInfo.InvariantCulture) ?? "NULL");
 
@@ -100,7 +99,7 @@ public sealed class SchemaInitializer : IHostedService
                     _logger.LogInformation("Schema upgrade lock acquired");
 
                     // Recheck the version with lock
-                    await GetCurrentSchemaVersionAsync(cancellationToken).ConfigureAwait(false);
+                    sprocExists = await GetCurrentSchemaVersionAsync(scope, sprocExists, cancellationToken).ConfigureAwait(false);
                     _logger.LogInformation("Schema version is {Version}", _schemaInformation.Current?.ToString(CultureInfo.InvariantCulture) ?? "NULL");
 
                     // If the stored procedure to get the current schema version doesn't exist
@@ -121,7 +120,7 @@ public sealed class SchemaInitializer : IHostedService
                             await _schemaUpgradeRunner.ApplySchemaAsync(_schemaInformation.MaximumSupportedVersion, applyFullSchemaSnapshot: true, cancellationToken).ConfigureAwait(false);
                         }
 
-                        await GetCurrentSchemaVersionAsync(cancellationToken).ConfigureAwait(false);
+                        sprocExists = await GetCurrentSchemaVersionAsync(scope, sprocExists, cancellationToken).ConfigureAwait(false);
 
                         await _mediator.NotifySchemaUpgradedAsync(_schemaUpgradeRunner.DatabaseName, (int)_schemaInformation.Current, true, cancellationToken).ConfigureAwait(false);
 
@@ -138,7 +137,7 @@ public sealed class SchemaInitializer : IHostedService
                             await _schemaUpgradeRunner.ApplySchemaAsync(version: i, applyFullSchemaSnapshot: false, cancellationToken).ConfigureAwait(false);
 
                             // we need to ensure that the schema upgrade notification is sent after updating the _schemaInformation.Current for each upgraded version
-                            await GetCurrentSchemaVersionAsync(cancellationToken).ConfigureAwait(false);
+                            sprocExists = await GetCurrentSchemaVersionAsync(scope, sprocExists, cancellationToken).ConfigureAwait(false);
 
                             await _mediator.NotifySchemaUpgradedAsync(_schemaUpgradeRunner.DatabaseName, (int)_schemaInformation.Current, false, cancellationToken).ConfigureAwait(false);
                         }
@@ -186,17 +185,16 @@ public sealed class SchemaInitializer : IHostedService
             _ => Task.FromResult((_schemaInformation.Current, (int?)_schemaInformation.MaximumSupportedVersion)),
             cancellationToken);
 
-    private async Task GetCurrentSchemaVersionAsync(CancellationToken cancellationToken)
+    private async Task<bool> GetCurrentSchemaVersionAsync(IServiceScope scope, bool sprocExists, CancellationToken cancellationToken)
     {
-        using IServiceScope scope = _serviceProvider.CreateScope();
         IReadOnlySchemaManagerDataStore _schemaManagerDataStore = scope.ServiceProvider.GetRequiredService<IReadOnlySchemaManagerDataStore>();
 
-        if (!_canCallGetCurrentSchema)
+        if (!sprocExists)
         {
-            _canCallGetCurrentSchema = await _schemaManagerDataStore.ObjectExistsAsync("SelectCurrentSchemaVersion", "P", cancellationToken).ConfigureAwait(false);
+            sprocExists = await _schemaManagerDataStore.ObjectExistsAsync("SelectCurrentSchemaVersion", "P", cancellationToken).ConfigureAwait(false);
         }
 
-        if (_canCallGetCurrentSchema)
+        if (sprocExists)
         {
             int version = await _schemaManagerDataStore.GetCurrentSchemaVersionAsync(cancellationToken).ConfigureAwait(false);
             if (version != 0)
@@ -207,10 +205,13 @@ public sealed class SchemaInitializer : IHostedService
             {
                 _logger.LogInformation("No version found. It must be new database");
             }
+
+            return true;
         }
         else
         {
             _logger.LogWarning("Could not find stored procedure - dbo.SelectCurrentSchemaVersion");
+            return false;
         }
     }
 

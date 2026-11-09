@@ -16,6 +16,7 @@ using Microsoft.Health.SqlServer.Features.Schema;
 using Microsoft.Health.SqlServer.Features.Schema.Manager;
 using Microsoft.Health.SqlServer.Features.Schema.Manager.Exceptions;
 using Microsoft.Health.SqlServer.Features.Schema.Manager.Model;
+using Microsoft.Health.SqlServer.Features.Schema.Messages.Notifications;
 using NSubstitute;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -39,6 +40,7 @@ public class SqlSchemaManagerTests
         _baseSchemaRunner.EnsureInstanceSchemaRecordExistsAsync(default).ReturnsForAnyArgs(Task.FromResult(true));
         _schemaWriteGate.CanWriteAsync(default).ReturnsForAnyArgs(Task.FromResult(true));
         _sqlConnectionBuilder.DefaultDatabase.Returns("TestDb");
+        _schemaManagerDataStore.DatabaseName.Returns("TestDb");
         _sqlSchemaManager = CreateSchemaManager(_schemaWriteGate, _schemaMetrics);
     }
 
@@ -122,6 +124,23 @@ public class SqlSchemaManagerTests
         _client.GetDiffScriptAsync(2, Arg.Any<CancellationToken>()).Returns("script");
         await _sqlSchemaManager.ApplySchema(new MutuallyExclusiveType { Latest = false, Version = 2, Next = false });
         await _schemaManagerDataStore.Received(1).ExecuteScriptAndCompleteSchemaVersionAsync(Arg.Is("script"), Arg.Is(2), Arg.Is(false), Arg.Any<CancellationToken>());
+    }
+
+    [TestMethod]
+    public async Task GivenSchemaApplied_WhenApplySchema_ThenPublishesNotificationWithDatabaseName()
+    {
+        _schemaManagerDataStore.DatabaseName.Returns("OtherDb");
+        _schemaManagerDataStore.GetCurrentSchemaVersionAsync(default).ReturnsForAnyArgs(Task.FromResult(1));
+        _client.GetCurrentVersionInformationAsync(Arg.Any<CancellationToken>()).ReturnsForAnyArgs(new List<CurrentVersion> { });
+        _client.GetAvailabilityAsync(Arg.Any<CancellationToken>()).ReturnsForAnyArgs(new List<AvailableVersion> { new AvailableVersion(1, "_script/1.sql", "_script/1.diff.sql"), new AvailableVersion(2, "_script/2.sql", "_script/2.diff.sql") });
+        _client.GetCompatibilityAsync(Arg.Any<CancellationToken>()).ReturnsForAnyArgs(new CompatibleVersion(1, 2));
+        _client.GetDiffScriptAsync(2, Arg.Any<CancellationToken>()).Returns("script");
+
+        await _sqlSchemaManager.ApplySchema(new MutuallyExclusiveType { Latest = false, Version = 2, Next = false });
+
+        await _mediator.Received(1).PublishAsync(
+            Arg.Is<SchemaUpgradedNotification>(n => n.DatabaseName == "OtherDb" && n.Version == 2 && !n.IsFullSchemaSnapshot),
+            Arg.Any<CancellationToken>());
     }
 
     [TestMethod]
