@@ -1,10 +1,11 @@
 {
   "msbuild-sdks": {
+    "Azure.Functions.Sdk": "1.0.2",
     "MSTest.Sdk": "4.5.2"
   },
   "sdk": {
     "allowPrerelease": true,
-    "version": "11.0.100-rc.2.26504.105"
+    "version": "11.0.100"
   },
   "test": {
     "runner": "Microsoft.Testing.Platform"

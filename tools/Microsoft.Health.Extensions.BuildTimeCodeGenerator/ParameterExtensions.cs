@@ -1,4 +1,4 @@
-﻿// -------------------------------------------------------------------------------------------------
+// -------------------------------------------------------------------------------------------------
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License (MIT). See LICENSE in the repo root for license information.
 // -------------------------------------------------------------------------------------------------
@@ -16,6 +16,16 @@ namespace Microsoft.Health.Extensions.BuildTimeCodeGenerator;
 
 internal static class ParameterExtensions
 {
+    public static TypeSyntax ToTypeSyntax(this ParameterInfo p, bool useGlobalAlias = false)
+    {
+        TypeSyntax syntax = p.ParameterType.ToTypeSyntax(useGlobalAlias);
+
+        if (syntax is RefTypeSyntax rts && (p.IsOut || p.IsIn))
+            return rts.Type;
+
+        return syntax;
+    }
+
     public static ParameterSyntax WithOptionalAttributeLists(this ParameterSyntax parameter, IEnumerable<CustomAttributeData> attributes)
     {
         // Skip internal attributes which are not meant to be used by developers
