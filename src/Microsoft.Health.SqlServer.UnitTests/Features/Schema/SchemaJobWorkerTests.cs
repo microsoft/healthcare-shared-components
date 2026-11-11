@@ -26,7 +26,7 @@ namespace Microsoft.Health.SqlServer.UnitTests.Features.Schema;
 [TestClass]
 public sealed class SchemaJobWorkerTests : IDisposable
 {
-    private readonly IServiceProvider _serviceProvider;
+    private readonly ServiceProvider _serviceProvider;
     private readonly SqlServerDataStoreConfiguration _sqlServerDataStoreConfiguration;
     private readonly IMediator _mediator;
     private readonly IProcessTerminator _processTerminator;
@@ -34,12 +34,9 @@ public sealed class SchemaJobWorkerTests : IDisposable
     private readonly ISchemaDataStore _schemaDataStore;
     private readonly ISchemaWriteGate _writeGate;
     private readonly SchemaJobWorker _worker;
-    private int _callCount;
-    private readonly CancellationTokenSource _cts = new CancellationTokenSource(1000);
 
     public SchemaJobWorkerTests()
     {
-        _serviceProvider = Substitute.For<IServiceProvider>();
         _mediator = Substitute.For<IMediator>();
         _processTerminator = Substitute.For<IProcessTerminator>();
         _logger = NullLogger<SchemaJobWorker>.Instance;
@@ -61,23 +58,9 @@ public sealed class SchemaJobWorkerTests : IDisposable
     public async Task GivenSchemaInformation_WhenCurrentDoesNotMatchTerminateWhenSchemaVersionUpdatedTo_ProcessTerminatorNotCalled()
     {
         SchemaInformation info = new SchemaInformation(1, 2) { Current = 1 };
-        _schemaDataStore.UpsertInstanceSchemaInformationAsync(default, default, default).ReturnsForAnyArgs(x =>
-        {
-            if (_callCount++ > 1)
-            {
-                _cts.Cancel();
-            }
+        _schemaDataStore.UpsertInstanceSchemaInformationAsync(default, default, default).ReturnsForAnyArgs(1);
 
-            return 1;
-        });
-
-        try
-        {
-            await _worker.ExecuteAsync(info, "blah", _cts.Token);
-        }
-        catch (TaskCanceledException)
-        {
-        }
+        await ExecuteOnceAsync(info, "blah");
 
         _processTerminator.DidNotReceiveWithAnyArgs().Terminate(default);
     }
@@ -86,23 +69,9 @@ public sealed class SchemaJobWorkerTests : IDisposable
     public async Task GivenSchemaInformation_WhenCurrentMatchesTerminateWhenSchemaVersionUpdatedTo_ProcessTerminatorCalled()
     {
         SchemaInformation info = new SchemaInformation(1, 2) { Current = 1 };
-        _schemaDataStore.UpsertInstanceSchemaInformationAsync(default, default, default).ReturnsForAnyArgs(x =>
-        {
-            if (_callCount++ > 1)
-            {
-                _cts.Cancel();
-            }
+        _schemaDataStore.UpsertInstanceSchemaInformationAsync(default, default, default).ReturnsForAnyArgs(2);
 
-            return 2;
-        });
-
-        try
-        {
-            await _worker.ExecuteAsync(info, "blah", _cts.Token);
-        }
-        catch (TaskCanceledException)
-        {
-        }
+        await ExecuteOnceAsync(info, "blah");
 
         _processTerminator.ReceivedWithAnyArgs().Terminate(default);
     }
@@ -113,19 +82,9 @@ public sealed class SchemaJobWorkerTests : IDisposable
     public async Task GivenSchemaVersionChanged_WhenExecuting_ThenPublishesNotificationWithDatabaseName(int previousVersion, bool expectedFullSnapshot)
     {
         SchemaInformation info = new SchemaInformation(1, 2) { Current = previousVersion };
-        _schemaDataStore.UpsertInstanceSchemaInformationAsync(default, default, default).ReturnsForAnyArgs(x =>
-        {
-            _cts.Cancel();
-            return 2;
-        });
+        _schemaDataStore.UpsertInstanceSchemaInformationAsync(default, default, default).ReturnsForAnyArgs(2);
 
-        try
-        {
-            await _worker.ExecuteAsync(info, "blah", _cts.Token);
-        }
-        catch (TaskCanceledException)
-        {
-        }
+        await ExecuteOnceAsync(info, "blah");
 
         await _mediator.Received(1).PublishAsync(
             Arg.Is<SchemaUpgradedNotification>(n => n.DatabaseName == "TestDb" && n.Version == 2 && n.IsFullSchemaSnapshot == expectedFullSnapshot),
@@ -133,26 +92,35 @@ public sealed class SchemaJobWorkerTests : IDisposable
     }
 
     [TestMethod]
+    public async Task GivenSchemaVersionUnchanged_WhenExecutingOnce_ThenNoNotificationIsPublished()
+    {
+        SchemaInformation info = new SchemaInformation(1, 2) { Current = 1 };
+        _schemaDataStore.UpsertInstanceSchemaInformationAsync(default, default, default).ReturnsForAnyArgs(1);
+
+        await ExecuteOnceAsync(info, "blah");
+
+        await _mediator.DidNotReceive().PublishAsync(Arg.Any<SchemaUpgradedNotification>(), Arg.Any<CancellationToken>());
+    }
+
+    [TestMethod]
+    public async Task GivenWritableDatabase_WhenExecutingOnce_ThenExpiredInstanceSchemaIsDeleted()
+    {
+        SchemaInformation info = new SchemaInformation(1, 2) { Current = 1 };
+        _schemaDataStore.UpsertInstanceSchemaInformationAsync(default, default, default).ReturnsForAnyArgs(1);
+
+        await ExecuteOnceAsync(info, "blah");
+
+        await _schemaDataStore.Received(1).UpsertInstanceSchemaInformationAsync("blah", info, Arg.Any<CancellationToken>());
+        await _schemaDataStore.Received(1).DeleteExpiredInstanceSchemaAsync(Arg.Any<CancellationToken>());
+    }
+
+    [TestMethod]
     public async Task GivenSchemaInformation_WhenCurrentIsNullAndTerminateWhenSchemaVersionUpdatedToIsNotNull_ProcessTerminatorNotCalled()
     {
         SchemaInformation info = new SchemaInformation(1, 2) { Current = null };
-        _schemaDataStore.UpsertInstanceSchemaInformationAsync(default, default, default).ReturnsForAnyArgs(x =>
-        {
-            if (_callCount++ > 1)
-            {
-                _cts.Cancel();
-            }
+        _schemaDataStore.UpsertInstanceSchemaInformationAsync(default, default, default).ReturnsForAnyArgs(0);
 
-            return 0;
-        });
-
-        try
-        {
-            await _worker.ExecuteAsync(info, "blah", _cts.Token);
-        }
-        catch (TaskCanceledException)
-        {
-        }
+        await ExecuteOnceAsync(info, "blah");
 
         _processTerminator.DidNotReceiveWithAnyArgs().Terminate(default);
     }
@@ -164,23 +132,9 @@ public sealed class SchemaJobWorkerTests : IDisposable
         _sqlServerDataStoreConfiguration.TerminateWhenSchemaVersionUpdatedTo = null;
 
         info.Current = null;
-        _schemaDataStore.UpsertInstanceSchemaInformationAsync(default, default, default).ReturnsForAnyArgs(x =>
-        {
-            if (_callCount++ > 1)
-            {
-                _cts.Cancel();
-            }
+        _schemaDataStore.UpsertInstanceSchemaInformationAsync(default, default, default).ReturnsForAnyArgs(0);
 
-            return 0;
-        });
-
-        try
-        {
-            await _worker.ExecuteAsync(info, "blah", _cts.Token);
-        }
-        catch (TaskCanceledException)
-        {
-        }
+        await ExecuteOnceAsync(info, "blah");
 
         _processTerminator.DidNotReceiveWithAnyArgs().Terminate(default);
     }
@@ -190,15 +144,7 @@ public sealed class SchemaJobWorkerTests : IDisposable
     {
         SchemaInformation info = new SchemaInformation(1, 5) { Current = null };
 
-        _schemaDataStore.UpsertInstanceSchemaInformationAsync(default, default, default).ReturnsForAnyArgs<int>(x =>
-        {
-            if (_callCount++ > 0)
-            {
-                _cts.Cancel();
-            }
-
-            throw SqlExceptionFactory.Create(SqlErrorCodes.ReadOnlyDatabase);
-        });
+        _schemaDataStore.UpsertInstanceSchemaInformationAsync(default, default, default).ReturnsForAnyArgs<int>(x => throw SqlExceptionFactory.Create(SqlErrorCodes.ReadOnlyDatabase));
 
         _schemaDataStore.GetCurrentVersionAsync(default).ReturnsForAnyArgs(
             Task.FromResult(new List<CurrentVersionInformation>
@@ -206,13 +152,7 @@ public sealed class SchemaJobWorkerTests : IDisposable
                 new CurrentVersionInformation(3, SchemaVersionStatus.completed, new List<string> { "primary-pod" }),
             }));
 
-        try
-        {
-            await _worker.ExecuteAsync(info, "secondary-pod", _cts.Token);
-        }
-        catch (TaskCanceledException)
-        {
-        }
+        await ExecuteOnceAsync(info, "secondary-pod");
 
         Assert.AreEqual(3, info.Current);
         await _schemaDataStore.DidNotReceiveWithAnyArgs().DeleteExpiredInstanceSchemaAsync(default);
@@ -223,15 +163,7 @@ public sealed class SchemaJobWorkerTests : IDisposable
     {
         SchemaInformation info = new SchemaInformation(1, 5) { Current = 3 };
 
-        _schemaDataStore.UpsertInstanceSchemaInformationAsync(default, default, default).ReturnsForAnyArgs<int>(x =>
-        {
-            if (_callCount++ > 0)
-            {
-                _cts.Cancel();
-            }
-
-            throw SqlExceptionFactory.Create(SqlErrorCodes.ReadOnlyDatabase);
-        });
+        _schemaDataStore.UpsertInstanceSchemaInformationAsync(default, default, default).ReturnsForAnyArgs<int>(x => throw SqlExceptionFactory.Create(SqlErrorCodes.ReadOnlyDatabase));
 
         _schemaDataStore.GetCurrentVersionAsync(default).ReturnsForAnyArgs(
             Task.FromResult(new List<CurrentVersionInformation>
@@ -239,13 +171,7 @@ public sealed class SchemaJobWorkerTests : IDisposable
                 new CurrentVersionInformation(3, SchemaVersionStatus.completed, new List<string> { "primary-pod" }),
             }));
 
-        try
-        {
-            await _worker.ExecuteAsync(info, "secondary-pod", _cts.Token);
-        }
-        catch (TaskCanceledException)
-        {
-        }
+        await ExecuteOnceAsync(info, "secondary-pod");
 
         await _schemaDataStore.DidNotReceiveWithAnyArgs().DeleteExpiredInstanceSchemaAsync(default);
     }
@@ -255,15 +181,7 @@ public sealed class SchemaJobWorkerTests : IDisposable
     {
         SchemaInformation info = new SchemaInformation(1, 5) { Current = null };
 
-        _schemaDataStore.UpsertInstanceSchemaInformationAsync(default, default, default).ReturnsForAnyArgs<int>(x =>
-        {
-            if (_callCount++ > 0)
-            {
-                _cts.Cancel();
-            }
-
-            throw SqlExceptionFactory.Create(SqlErrorCodes.ReadOnlyDatabase);
-        });
+        _schemaDataStore.UpsertInstanceSchemaInformationAsync(default, default, default).ReturnsForAnyArgs<int>(x => throw SqlExceptionFactory.Create(SqlErrorCodes.ReadOnlyDatabase));
 
         _schemaDataStore.GetCurrentVersionAsync(default).ReturnsForAnyArgs(
             Task.FromResult(new List<CurrentVersionInformation>
@@ -272,13 +190,7 @@ public sealed class SchemaJobWorkerTests : IDisposable
                 new CurrentVersionInformation(4, SchemaVersionStatus.started, new List<string> { "primary-pod" }),
             }));
 
-        try
-        {
-            await _worker.ExecuteAsync(info, "secondary-pod", _cts.Token);
-        }
-        catch (TaskCanceledException)
-        {
-        }
+        await ExecuteOnceAsync(info, "secondary-pod");
 
         // Should pick version 3 (completed), not version 4 (started)
         Assert.AreEqual(3, info.Current);
@@ -290,15 +202,7 @@ public sealed class SchemaJobWorkerTests : IDisposable
         // Pod supports up to version 5, but SQL has version 7 completed (replicated from a newer primary)
         SchemaInformation info = new SchemaInformation(1, 5) { Current = null };
 
-        _schemaDataStore.UpsertInstanceSchemaInformationAsync(default, default, default).ReturnsForAnyArgs<int>(x =>
-        {
-            if (_callCount++ > 0)
-            {
-                _cts.Cancel();
-            }
-
-            throw SqlExceptionFactory.Create(SqlErrorCodes.ReadOnlyDatabase);
-        });
+        _schemaDataStore.UpsertInstanceSchemaInformationAsync(default, default, default).ReturnsForAnyArgs<int>(x => throw SqlExceptionFactory.Create(SqlErrorCodes.ReadOnlyDatabase));
 
         _schemaDataStore.GetCurrentVersionAsync(default).ReturnsForAnyArgs(
             Task.FromResult(new List<CurrentVersionInformation>
@@ -308,13 +212,7 @@ public sealed class SchemaJobWorkerTests : IDisposable
                 new CurrentVersionInformation(7, SchemaVersionStatus.completed, new List<string> { "primary-pod" }),
             }));
 
-        try
-        {
-            await _worker.ExecuteAsync(info, "secondary-pod", _cts.Token);
-        }
-        catch (TaskCanceledException)
-        {
-        }
+        await ExecuteOnceAsync(info, "secondary-pod");
 
         // Should pick version 5 (max supported), not version 7
         Assert.AreEqual(5, info.Current);
@@ -322,7 +220,7 @@ public sealed class SchemaJobWorkerTests : IDisposable
 
     public void Dispose()
     {
-        _cts.Dispose();
+        _serviceProvider.Dispose();
         GC.SuppressFinalize(this);
     }
 
@@ -333,28 +231,13 @@ public sealed class SchemaJobWorkerTests : IDisposable
 
         SchemaInformation info = new SchemaInformation(1, 5) { Current = null };
 
-        _schemaDataStore.GetCurrentVersionAsync(default).ReturnsForAnyArgs(x =>
-        {
-#pragma warning disable CA1849
-            if (_callCount++ > 0)
-            {
-                _cts.Cancel();
-            }
-#pragma warning restore CA1849
-
-            return Task.FromResult(new List<CurrentVersionInformation>
+        _schemaDataStore.GetCurrentVersionAsync(default).ReturnsForAnyArgs(
+            Task.FromResult(new List<CurrentVersionInformation>
             {
                 new CurrentVersionInformation(3, SchemaVersionStatus.completed, new List<string> { "primary-pod" }),
-            });
-        });
+            }));
 
-        try
-        {
-            await _worker.ExecuteAsync(info, "secondary-pod", _cts.Token);
-        }
-        catch (TaskCanceledException)
-        {
-        }
+        await ExecuteOnceAsync(info, "secondary-pod");
 
         await _schemaDataStore.DidNotReceive().UpsertInstanceSchemaInformationAsync(Arg.Any<string>(), Arg.Any<SchemaInformation>(), Arg.Any<CancellationToken>());
         Assert.AreEqual(3, info.Current);
@@ -367,27 +250,12 @@ public sealed class SchemaJobWorkerTests : IDisposable
 
         SchemaInformation info = new SchemaInformation(1, 5) { Current = null };
 
-        _schemaDataStore.UpsertInstanceSchemaInformationAsync(default, default, default).ReturnsForAnyArgs(x =>
-        {
-#pragma warning disable CA1849
-            if (_callCount++ > 0)
-            {
-                _cts.Cancel();
-            }
-#pragma warning restore CA1849
+        _schemaDataStore.UpsertInstanceSchemaInformationAsync(default, default, default).ReturnsForAnyArgs(3);
 
-            return Task.FromResult(3);
-        });
+        await ExecuteOnceAsync(info, "secondary-pod");
 
-        try
-        {
-            await _worker.ExecuteAsync(info, "secondary-pod", _cts.Token);
-        }
-        catch (TaskCanceledException)
-        {
-        }
-
-        await _schemaDataStore.Received().UpsertInstanceSchemaInformationAsync(Arg.Any<string>(), Arg.Any<SchemaInformation>(), Arg.Any<CancellationToken>());
+        await _schemaDataStore.Received(1).UpsertInstanceSchemaInformationAsync(Arg.Any<string>(), Arg.Any<SchemaInformation>(), Arg.Any<CancellationToken>());
+        Assert.AreEqual(3, info.Current);
     }
 
     [TestMethod]
@@ -397,17 +265,7 @@ public sealed class SchemaJobWorkerTests : IDisposable
 
         SchemaInformation info = new SchemaInformation(1, 5) { Current = null };
 
-        _schemaDataStore.UpsertInstanceSchemaInformationAsync(default, default, default).ReturnsForAnyArgs<int>(x =>
-        {
-#pragma warning disable CA1849
-            if (_callCount++ > 0)
-            {
-                _cts.Cancel();
-            }
-#pragma warning restore CA1849
-
-            throw SqlExceptionFactory.Create(SqlErrorCodes.ReadOnlyDatabase);
-        });
+        _schemaDataStore.UpsertInstanceSchemaInformationAsync(default, default, default).ReturnsForAnyArgs<int>(x => throw SqlExceptionFactory.Create(SqlErrorCodes.ReadOnlyDatabase));
 
         _schemaDataStore.GetCurrentVersionAsync(default).ReturnsForAnyArgs(
             Task.FromResult(new List<CurrentVersionInformation>
@@ -415,14 +273,87 @@ public sealed class SchemaJobWorkerTests : IDisposable
                 new CurrentVersionInformation(3, SchemaVersionStatus.completed, new List<string> { "primary-pod" }),
             }));
 
-        try
-        {
-            await _worker.ExecuteAsync(info, "secondary-pod", _cts.Token);
-        }
-        catch (TaskCanceledException)
-        {
-        }
+        await ExecuteOnceAsync(info, "secondary-pod");
 
         Assert.AreEqual(3, info.Current);
+    }
+
+    [TestMethod]
+    public async Task GivenUnhandledException_WhenExecutingOnce_ThenExceptionIsNotPropagated()
+    {
+        SchemaInformation info = new SchemaInformation(1, 2) { Current = 1 };
+        _schemaDataStore.UpsertInstanceSchemaInformationAsync(default, default, default).ReturnsForAnyArgs<int>(x => throw new InvalidOperationException());
+
+        await ExecuteOnceAsync(info, "blah");
+
+        Assert.AreEqual(1, info.Current);
+        await _schemaDataStore.DidNotReceiveWithAnyArgs().DeleteExpiredInstanceSchemaAsync(default);
+        _processTerminator.DidNotReceiveWithAnyArgs().Terminate(default);
+    }
+
+    [TestMethod]
+    public async Task GivenNullScope_WhenExecutingOnce_ThenThrowsArgumentNullException()
+        => await Assert.ThrowsExactlyAsync<ArgumentNullException>(() => _worker.ExecuteOnceAsync(null, new SchemaInformation(1, 2), "blah"));
+
+    [TestMethod]
+    public async Task GivenNullSchemaInformation_WhenExecutingOnce_ThenThrowsArgumentNullException()
+    {
+        using IServiceScope scope = _serviceProvider.CreateScope();
+        await Assert.ThrowsExactlyAsync<ArgumentNullException>(() => _worker.ExecuteOnceAsync(scope, null, "blah"));
+    }
+
+    [TestMethod]
+    public async Task GivenNullSchemaInformation_WhenExecuting_ThenThrowsArgumentNullException()
+        => await Assert.ThrowsExactlyAsync<ArgumentNullException>(() => _worker.ExecuteAsync(null, "blah", CancellationToken.None));
+
+    [TestMethod]
+    public async Task GivenPollingLoop_WhenExecuting_ThenEachIterationUsesNewScopeUntilCancelled()
+    {
+        int scopedResolutions = 0;
+        var collection = new ServiceCollection();
+        collection.AddScoped<ISchemaDataStore>(_ =>
+        {
+            scopedResolutions++;
+            return _schemaDataStore;
+        });
+        collection.AddSingleton<ISchemaWriteGate>(_writeGate);
+        using ServiceProvider serviceProvider = collection.BuildServiceProvider();
+
+        var worker = new SchemaJobWorker(serviceProvider, Options.Create(_sqlServerDataStoreConfiguration), _mediator, _processTerminator, _logger);
+
+        // Safety net so a regression in the loop fails the test instead of hanging it.
+        using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(30));
+        int upserts = 0;
+        _schemaDataStore.UpsertInstanceSchemaInformationAsync(default, default, default).ReturnsForAnyArgs(x =>
+        {
+            if (++upserts == 3)
+            {
+                cts.Cancel();
+            }
+
+            return 1;
+        });
+
+        await worker.ExecuteAsync(new SchemaInformation(1, 2) { Current = 1 }, "blah", cts.Token);
+
+        Assert.AreEqual(3, upserts);
+        Assert.AreEqual(3, scopedResolutions);
+    }
+
+    [TestMethod]
+    public async Task GivenCancelledToken_WhenExecuting_ThenReturnsWithoutPolling()
+    {
+        using var cts = new CancellationTokenSource();
+        await cts.CancelAsync();
+
+        await _worker.ExecuteAsync(new SchemaInformation(1, 2), "blah", cts.Token);
+
+        await _writeGate.DidNotReceiveWithAnyArgs().CanWriteAsync(default);
+    }
+
+    private async Task ExecuteOnceAsync(SchemaInformation schemaInformation, string instanceName)
+    {
+        using IServiceScope scope = _serviceProvider.CreateScope();
+        await _worker.ExecuteOnceAsync(scope, schemaInformation, instanceName);
     }
 }

@@ -57,81 +57,8 @@ public class SchemaJobWorker
 
         while (!cancellationToken.IsCancellationRequested)
         {
-            try
-            {
-                using IServiceScope scope = _serviceProvider.CreateScope();
-                ISchemaDataStore schemaDataStore = scope.ServiceProvider.GetRequiredService<ISchemaDataStore>();
-                ISchemaWriteGate writeGate = scope.ServiceProvider.GetRequiredService<ISchemaWriteGate>();
-
-                int? previous = schemaInformation.Current;
-                bool isReadOnlyDatabase = false;
-
-                if (!await writeGate.CanWriteAsync(cancellationToken).ConfigureAwait(false))
-                {
-                    // The gate indicates the database is a read-only secondary; skip the write entirely
-                    // to avoid a connection failure before the write reaches the server.
-                    isReadOnlyDatabase = true;
-                    _logger.LogInformation("Schema write gate returned false; database is a read-only secondary. Reading schema version from replicated data.");
-                }
-                else
-                {
-                    try
-                    {
-                        schemaInformation.Current = await schemaDataStore.UpsertInstanceSchemaInformationAsync(instanceName, schemaInformation, cancellationToken).ConfigureAwait(false);
-                    }
-                    catch (SqlException ex) when (ex.Number == SqlErrorCodes.ReadOnlyDatabase)
-                    {
-                        // Race condition: the gate returned true but the database became a read-only
-                        // secondary between the gate check and the write. Fall back to reading the
-                        // current schema version from the replicated data.
-                        isReadOnlyDatabase = true;
-                        _logger.LogInformation("Database is read-only (geo-replication secondary). Skipping instance schema write.");
-                    }
-                }
-
-                if (isReadOnlyDatabase)
-                {
-                    var versions = await schemaDataStore.GetCurrentVersionAsync(cancellationToken).ConfigureAwait(false);
-                    var completedVersions = versions
-                        .Where(v => v.Status == SchemaVersionStatus.completed && v.Id <= schemaInformation.MaximumSupportedVersion)
-                        .ToList();
-                    if (completedVersions.Count > 0)
-                    {
-                        schemaInformation.Current = completedVersions.Max(v => v.Id);
-                    }
-                }
-
-                // If there was a change in the schema version and this isn't the base schema
-                if (schemaInformation.Current != previous && schemaInformation.Current > 0)
-                {
-                    var isFullSchemaSnapshot = previous == 0;
-
-                    await _mediator.NotifySchemaUpgradedAsync(schemaDataStore.DatabaseName, (int)schemaInformation.Current, isFullSchemaSnapshot, cancellationToken).ConfigureAwait(false);
-                }
-
-                if (!isReadOnlyDatabase)
-                {
-                    await schemaDataStore.DeleteExpiredInstanceSchemaAsync(cancellationToken).ConfigureAwait(false);
-                }
-
-                if (_sqlServerDataStoreConfiguration.TerminateWhenSchemaVersionUpdatedTo.HasValue && _sqlServerDataStoreConfiguration.TerminateWhenSchemaVersionUpdatedTo.Value == schemaInformation.Current)
-                {
-                    _processTerminator.Terminate(cancellationToken);
-                }
-            }
-            catch (SqlException se) when (se.Number == SqlErrorCodes.CouldNotFoundStoredProc && schemaInformation.Current == null)
-            {
-                // this could happen during schema initialization until base schema is not executed so can be ignored
-            }
-            catch (SqlException ex) when (ex.IsCMKError())
-            {
-                _logger.LogInformation(ex, "The customer-managed key is misconfigured by the customer.");
-            }
-            catch (Exception ex)
-            {
-                // The job failed.
-                _logger.LogError(ex, "Unhandled exception in the worker.");
-            }
+            using IServiceScope scope = _serviceProvider.CreateScope();
+            await ExecuteOnceAsync(scope, schemaInformation, instanceName, cancellationToken).ConfigureAwait(false);
 
             try
             {
@@ -142,6 +69,88 @@ public class SchemaJobWorker
                 // Cancel requested.
                 break;
             }
+        }
+    }
+
+    [SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "Continue trying despite errors.")]
+    public async Task ExecuteOnceAsync(IServiceScope scope, SchemaInformation schemaInformation, string instanceName, CancellationToken cancellationToken = default)
+    {
+        EnsureArg.IsNotNull(scope, nameof(scope));
+        EnsureArg.IsNotNull(schemaInformation, nameof(schemaInformation));
+
+        try
+        {
+            ISchemaDataStore schemaDataStore = scope.ServiceProvider.GetRequiredService<ISchemaDataStore>();
+            ISchemaWriteGate writeGate = scope.ServiceProvider.GetRequiredService<ISchemaWriteGate>();
+
+            int? previous = schemaInformation.Current;
+            bool isReadOnlyDatabase = false;
+
+            if (!await writeGate.CanWriteAsync(cancellationToken).ConfigureAwait(false))
+            {
+                // The gate indicates the database is a read-only secondary; skip the write entirely
+                // to avoid a connection failure before the write reaches the server.
+                isReadOnlyDatabase = true;
+                _logger.LogInformation("Schema write gate returned false; database is a read-only secondary. Reading schema version from replicated data.");
+            }
+            else
+            {
+                try
+                {
+                    schemaInformation.Current = await schemaDataStore.UpsertInstanceSchemaInformationAsync(instanceName, schemaInformation, cancellationToken).ConfigureAwait(false);
+                }
+                catch (SqlException ex) when (ex.Number == SqlErrorCodes.ReadOnlyDatabase)
+                {
+                    // Race condition: the gate returned true but the database became a read-only
+                    // secondary between the gate check and the write. Fall back to reading the
+                    // current schema version from the replicated data.
+                    isReadOnlyDatabase = true;
+                    _logger.LogInformation("Database is read-only (geo-replication secondary). Skipping instance schema write.");
+                }
+            }
+
+            if (isReadOnlyDatabase)
+            {
+                var versions = await schemaDataStore.GetCurrentVersionAsync(cancellationToken).ConfigureAwait(false);
+                var completedVersions = versions
+                    .Where(v => v.Status == SchemaVersionStatus.completed && v.Id <= schemaInformation.MaximumSupportedVersion)
+                    .ToList();
+                if (completedVersions.Count > 0)
+                {
+                    schemaInformation.Current = completedVersions.Max(v => v.Id);
+                }
+            }
+
+            // If there was a change in the schema version and this isn't the base schema
+            if (schemaInformation.Current != previous && schemaInformation.Current > 0)
+            {
+                var isFullSchemaSnapshot = previous == 0;
+
+                await _mediator.NotifySchemaUpgradedAsync(schemaDataStore.DatabaseName, (int)schemaInformation.Current, isFullSchemaSnapshot, cancellationToken).ConfigureAwait(false);
+            }
+
+            if (!isReadOnlyDatabase)
+            {
+                await schemaDataStore.DeleteExpiredInstanceSchemaAsync(cancellationToken).ConfigureAwait(false);
+            }
+
+            if (_sqlServerDataStoreConfiguration.TerminateWhenSchemaVersionUpdatedTo.HasValue && _sqlServerDataStoreConfiguration.TerminateWhenSchemaVersionUpdatedTo.Value == schemaInformation.Current)
+            {
+                _processTerminator.Terminate(cancellationToken);
+            }
+        }
+        catch (SqlException se) when (se.Number == SqlErrorCodes.CouldNotFoundStoredProc && schemaInformation.Current == null)
+        {
+            // this could happen during schema initialization until base schema is not executed so can be ignored
+        }
+        catch (SqlException ex) when (ex.IsCMKError())
+        {
+            _logger.LogInformation(ex, "The customer-managed key is misconfigured by the customer.");
+        }
+        catch (Exception ex)
+        {
+            // The job failed.
+            _logger.LogError(ex, "Unhandled exception in the worker.");
         }
     }
 }
