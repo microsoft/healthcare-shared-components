@@ -41,7 +41,11 @@ internal sealed class WorkloadIdentityAuthenticationProvider : SqlAuthentication
         string[] scopes = new string[] { scope };
         TokenRequestContext tokenRequestContext = new(scopes);
 
+#if NET11_0_OR_GREATER
+        int seperatorIndex = parameters.Authority.LastIndexOf('/', StringComparison.Ordinal);
+#else
         int seperatorIndex = parameters.Authority.LastIndexOf('/');
+#endif
         string authority = parameters.Authority[..(seperatorIndex + 1)];
         string clientId = string.IsNullOrWhiteSpace(parameters.UserId) ? null : parameters.UserId;
 

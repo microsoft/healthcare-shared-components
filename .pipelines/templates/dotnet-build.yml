@@ -98,7 +98,7 @@ steps:
     exampleDirectory="$BUILD_SOURCESDIRECTORY/test/Microsoft.Health.Functions.Worker.Examples"
     # func start --no-build expects the compiled app in bin/output.
     mkdir -p "$exampleDirectory/bin/output"
-    cp -R "$exampleDirectory/bin/$BUILD_CONFIGURATION/net10.0/." "$exampleDirectory/bin/output"
+    cp -R "$exampleDirectory/bin/$BUILD_CONFIGURATION/net11.0/." "$exampleDirectory/bin/output"
 
     # Redirect all streams so the host outlives this step without holding the agent's pipes.
     cd "$exampleDirectory"
