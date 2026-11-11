@@ -3,19 +3,19 @@
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
 
   <Choose>
-    <When Condition="'$(TargetFramework)' == 'net8.0'">
+    <When Condition="'$(TargetFramework)' == 'net10.0'">
       <PropertyGroup>
-        <ToolTargetFramework>net8.0</ToolTargetFramework>
+        <ToolTargetFramework>net10.0</ToolTargetFramework>
       </PropertyGroup>
     </When>
-    <When Condition="'$(TargetFramework)' == 'net9.0'">
+    <When Condition="'$(TargetFramework)' == 'net11.0'">
       <PropertyGroup>
-        <ToolTargetFramework>net9.0</ToolTargetFramework>
+        <ToolTargetFramework>net11.0</ToolTargetFramework>
       </PropertyGroup>
     </When>
     <Otherwise>
       <PropertyGroup>
-        <ToolTargetFramework>net10.0</ToolTargetFramework>
+        <ToolTargetFramework>net11.0</ToolTargetFramework>
       </PropertyGroup>
     </Otherwise>
   </Choose>

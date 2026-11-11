@@ -213,6 +213,14 @@ namespace Microsoft.Health.SqlServer
         }
 
         [System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverageAttribute]
+        public IndentedStringBuilder Append(System.Text.Rune value)
+        {
+            AppendIndent();
+            _inner.Append(value);
+            return this;
+        }
+
+        [System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverageAttribute]
         public IndentedStringBuilder Append(System.Text.StringBuilder value)
         {
             AppendIndent();
@@ -496,6 +504,12 @@ namespace Microsoft.Health.SqlServer
         }
 
         [System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverageAttribute]
+        public System.Text.StringBuilderRuneEnumerator EnumerateRunes()
+        {
+            return _inner.EnumerateRunes();
+        }
+
+        [System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverageAttribute]
         public override System.Boolean Equals(System.Object obj)
         {
             return _inner.Equals(obj);
@@ -523,6 +537,12 @@ namespace Microsoft.Health.SqlServer
         public override System.Int32 GetHashCode()
         {
             return _inner.GetHashCode();
+        }
+
+        [System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverageAttribute]
+        public System.Text.Rune GetRuneAt(System.Int32 index)
+        {
+            return _inner.GetRuneAt(index);
         }
 
         [System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverageAttribute]
@@ -638,6 +658,13 @@ namespace Microsoft.Health.SqlServer
         }
 
         [System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverageAttribute]
+        public IndentedStringBuilder Insert(System.Int32 index, System.Text.Rune value)
+        {
+            _inner.Insert(index, value);
+            return this;
+        }
+
+        [System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverageAttribute]
         public IndentedStringBuilder Insert(System.Int32 index, System.UInt16 value)
         {
             _inner.Insert(index, value);
@@ -708,6 +735,20 @@ namespace Microsoft.Health.SqlServer
         }
 
         [System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverageAttribute]
+        public IndentedStringBuilder Replace(System.Text.Rune oldRune, System.Text.Rune newRune)
+        {
+            _inner.Replace(oldRune, newRune);
+            return this;
+        }
+
+        [System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverageAttribute]
+        public IndentedStringBuilder Replace(System.Text.Rune oldRune, System.Text.Rune newRune, System.Int32 startIndex, System.Int32 count)
+        {
+            _inner.Replace(oldRune, newRune, startIndex, count);
+            return this;
+        }
+
+        [System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverageAttribute]
         public override System.String ToString()
         {
             return _inner.ToString();
@@ -717,6 +758,12 @@ namespace Microsoft.Health.SqlServer
         public System.String ToString(System.Int32 startIndex, System.Int32 length)
         {
             return _inner.ToString(startIndex, length);
+        }
+
+        [System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverageAttribute]
+        public System.Boolean TryGetRuneAt(System.Int32 index, out System.Text.Rune value)
+        {
+            return _inner.TryGetRuneAt(index, out value);
         }
     }
 }

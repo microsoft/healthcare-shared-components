@@ -1,10 +1,8 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Azure.Functions.Sdk">
 
   <PropertyGroup>
-    <AzureFunctionsVersion>v4</AzureFunctionsVersion>
     <NoWarn>$(NoWarn);CA1515</NoWarn>
     <Nullable>enable</Nullable>
-    <OutputType>Exe</OutputType>
     <TargetFrameworks>$(LatestVersion)</TargetFrameworks>
   </PropertyGroup>
 
@@ -14,7 +12,6 @@
     <PackageReference Include="Microsoft.Azure.Functions.Worker.Extensions.DurableTask" />
     <PackageReference Include="Microsoft.Azure.Functions.Worker.Extensions.Http" />
     <PackageReference Include="Microsoft.Azure.Functions.Worker.Extensions.Http.AspNetCore" />
-    <PackageReference Include="Microsoft.Azure.Functions.Worker.Sdk" PrivateAssets="All" />
     <PackageReference Include="Microsoft.DurableTask.Client.Grpc" />
     <PackageReference Include="Microsoft.DurableTask.Worker.Grpc" />
     <PackageReference Include="Microsoft.Extensions.Options.DataAnnotations" />
@@ -22,10 +19,6 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\src\Microsoft.Health.Operations.Functions.Worker\Microsoft.Health.Operations.Functions.Worker.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Using Include="System.Threading.ExecutionContext" Alias="ExecutionContext" />
   </ItemGroup>
 
   <ItemGroup>

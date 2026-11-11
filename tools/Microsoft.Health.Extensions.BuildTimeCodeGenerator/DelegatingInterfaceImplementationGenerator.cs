@@ -8,6 +8,8 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
@@ -78,7 +80,7 @@ internal class DelegatingInterfaceImplementationGenerator : ICodeGenerator
             var typedFieldName = interfaceIndex == 0 ? (ExpressionSyntax)FieldName : ParenthesizedExpression(CastExpression(interfaceType.ToTypeSyntax(), FieldName));
             var explicitInterfaceSpecifier = ExplicitInterfaceSpecifier((NameSyntax)interfaceType.ToTypeSyntax());
 
-            foreach (var propertyInfo in interfaceType.GetProperties().OrderBy(p => p.Name, StringComparer.Ordinal))
+            foreach (var propertyInfo in interfaceType.GetProperties(BindingFlags.Public | BindingFlags.Instance).OrderBy(p => p.Name, StringComparer.Ordinal))
             {
                 ParameterInfo[] indexParameters = propertyInfo.GetIndexParameters();
                 MethodInfo getter = propertyInfo.GetGetMethod();
@@ -87,7 +89,7 @@ internal class DelegatingInterfaceImplementationGenerator : ICodeGenerator
                 BasePropertyDeclarationSyntax propertyDeclarationSyntax = (indexParameters.Length == 0
                         ? (BasePropertyDeclarationSyntax)PropertyDeclaration(propertyInfo.PropertyType.ToTypeSyntax(), propertyInfo.Name)
                         : IndexerDeclaration(propertyInfo.PropertyType.ToTypeSyntax())
-                            .AddParameterListParameters(indexParameters.Select(p => Parameter(Identifier(p.Name)).WithType(p.ParameterType.ToTypeSyntax())).ToArray()))
+                            .AddParameterListParameters(indexParameters.Select(p => Parameter(Identifier(p.Name)).WithType(p.ToTypeSyntax()).WithModifiers(p.GetRefKindModifiers())).ToArray()))
                     .WithExplicitInterfaceSpecifier(explicitInterfaceSpecifier)
                     .AddAttributeLists(ExcludeFromCodeCoverageAttributeSyntax)
                     .WithAdditionalAnnotations(new SyntaxAnnotation(DeclaringTypeKind, (getter?.GetBaseDefinition() ?? setter?.GetBaseDefinition())?.DeclaringType.FullName));
@@ -122,8 +124,8 @@ internal class DelegatingInterfaceImplementationGenerator : ICodeGenerator
             }
 
             IOrderedEnumerable<MethodInfo> orderedMethods = interfaceType
-                .GetMethods()
-                .Except(interfaceType.GetProperties().SelectMany(p => p.GetAccessors()))
+                .GetMethods(BindingFlags.Public | BindingFlags.Instance)
+                .Except(interfaceType.GetProperties(BindingFlags.Public | BindingFlags.Instance).SelectMany(p => p.GetAccessors()))
                 .OrderBy(m => m.Name, StringComparer.Ordinal)
                 .ThenBy(m => string.Join(", ", m.GetParameters().Select(p => p.ParameterType.FullName)), StringComparer.Ordinal);
 
@@ -135,7 +137,7 @@ internal class DelegatingInterfaceImplementationGenerator : ICodeGenerator
                         methodInfo
                             .GetParameters()
                             .Select(p => Parameter(Identifier(p.Name))
-                                .WithType(p.ParameterType.ToTypeSyntax())
+                                .WithType(p.ToTypeSyntax())
                                 .WithModifiers(ParamsTokenList(p))
                                 .WithOptionalAttributeLists(CustomAttributeList(p)))
                             .ToArray())
@@ -161,10 +163,7 @@ internal class DelegatingInterfaceImplementationGenerator : ICodeGenerator
                         SeparatedList(
                             methodInfo
                                 .GetParameters()
-                                .Select(p => Argument(
-                                    default,
-                                    p.ParameterType.IsByRef ? Token(SyntaxKind.RefKeyword) : default,
-                                    IdentifierName(p.Name))))));
+                                .Select(p => Argument(default, p.GetRefKindKeyword(), IdentifierName(p.Name))))));
 
                 var block = Block(methodInfo.ReturnType == typeof(void) ? ExpressionStatement(invocation) : ReturnStatement(invocation));
 
@@ -180,28 +179,25 @@ internal class DelegatingInterfaceImplementationGenerator : ICodeGenerator
         if (p.IsDefined(typeof(ParamArrayAttribute), false))
             return TokenList(Token(SyntaxKind.ParamsKeyword));
 
-#if NET9_0_OR_GREATER
-        if (p.IsDefined(typeof(System.Runtime.CompilerServices.ParamCollectionAttribute), false) &&
-            p.IsDefined(typeof(System.Runtime.CompilerServices.ScopedRefAttribute), false))
-        {
+        if (p.IsDefined(typeof(ParamCollectionAttribute), false) && p.IsDefined(typeof(ScopedRefAttribute), false))
             return TokenList(Token(SyntaxKind.ParamsKeyword), Token(SyntaxKind.ScopedKeyword));
-        }
-#endif
 
-        return TokenList();
+        return p.GetRefKindModifiers();
     }
 
     private static IEnumerable<CustomAttributeData> CustomAttributeList(ParameterInfo p)
     {
-#if NET9_0_OR_GREATER
-        if (p.IsDefined(typeof(System.Runtime.CompilerServices.ParamCollectionAttribute), false) &&
-            p.IsDefined(typeof(System.Runtime.CompilerServices.ScopedRefAttribute), false))
+        // The 'in' and 'out' modifiers imply [In] and [Out]; otherwise they are interop marshaling hints that must be preserved
+        IEnumerable<CustomAttributeData> attributes = p.GetRefKind() switch
         {
-            return p
-                .CustomAttributes
-                .Where(a => a.AttributeType != typeof(System.Runtime.CompilerServices.ParamCollectionAttribute) && a.AttributeType != typeof(System.Runtime.CompilerServices.ScopedRefAttribute));
-        }
-#endif
-        return p.CustomAttributes;
+            RefKind.In => p.CustomAttributes.Where(x => x.AttributeType != typeof(InAttribute)),
+            RefKind.Out => p.CustomAttributes.Where(x => x.AttributeType != typeof(OutAttribute)),
+            _ => p.CustomAttributes,
+        };
+
+        if (p.IsDefined(typeof(ParamCollectionAttribute), false) && p.IsDefined(typeof(ScopedRefAttribute), false))
+            attributes = attributes.Where(a => a.AttributeType != typeof(ParamCollectionAttribute) && a.AttributeType != typeof(ScopedRefAttribute));
+
+        return attributes;
     }
 }

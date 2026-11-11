@@ -22,10 +22,7 @@ jobs:
       uses: actions/setup-dotnet@0f4a354dd5547a28c70b7853dbd95d5b67886e73 # v6.1.0
       with:
         global-json-file: 'global.json'
-        dotnet-version: |
-          8.x
-          9.x
-          10.x
+        dotnet-version: 10.x
 
     # Note that CodeQL does not officially support .NET 10 yet, so we have to use a nightly build
     - name: Initialize CodeQL

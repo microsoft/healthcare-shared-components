@@ -12,8 +12,8 @@
     <HighEntropyVA>true</HighEntropyVA>
     <IsPackable>true</IsPackable>
     <LangVersion>latest</LangVersion>
-    <LatestVersion>net10.0</LatestVersion>
-    <LtsVersion>net8.0</LtsVersion>
+    <LatestVersion>net11.0</LatestVersion>
+    <LtsVersion>net10.0</LtsVersion>
     <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
     <NoWarn>($NoWarn);CA1873</NoWarn>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
@@ -21,8 +21,8 @@
     <PublishRepositoryUrl>true</PublishRepositoryUrl>
     <RootDirectory>$(MSBuildThisFileDirectory)</RootDirectory>
     <RunSettingsFilePath>$(RootDirectory)CodeCoverage.runsettings</RunSettingsFilePath>
-    <StsVersion>net9.0</StsVersion>
-    <SupportedFrameworks>$(LtsVersion);$(StsVersion);$(LatestVersion)</SupportedFrameworks>
+    <StsVersion>net11.0</StsVersion>
+    <SupportedFrameworks>$(LtsVersion);$(StsVersion)</SupportedFrameworks>
     <TargetLatestRuntimePatch>true</TargetLatestRuntimePatch>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <WarningsAsErrors />
@@ -32,26 +32,20 @@
   <Choose>
     <When Condition="'$(TargetFramework)' == '$(LtsVersion)'">
       <PropertyGroup>
-        <CryptographyPackageVersion>8.0.2</CryptographyPackageVersion>
-        <IOPackagingVersion>8.0.1</IOPackagingVersion>
-        <SdkPackageVersion>8.0.0</SdkPackageVersion>
-        <SystemTextJsonVersion>8.0.5</SystemTextJsonVersion>
+        <R9PackageVersion>10.11.0</R9PackageVersion>
+        <SdkPackageVersion>10.0.15</SdkPackageVersion>
       </PropertyGroup>
     </When>
     <When Condition="'$(TargetFramework)' == '$(StsVersion)'">
       <PropertyGroup>
-        <CryptographyPackageVersion>9.0.21</CryptographyPackageVersion>
-        <IOPackagingVersion>9.0.21</IOPackagingVersion>
-        <SdkPackageVersion>9.0.21</SdkPackageVersion>
-        <SystemTextJsonVersion>9.0.21</SystemTextJsonVersion>
+        <R9PackageVersion>10.11.0</R9PackageVersion>
+        <SdkPackageVersion>11.0.0</SdkPackageVersion>
     </PropertyGroup>
     </When>
     <Otherwise>
       <PropertyGroup>
-        <CryptographyPackageVersion>10.0.13</CryptographyPackageVersion>
-        <IOPackagingVersion>10.0.13</IOPackagingVersion>
-        <SdkPackageVersion>10.0.13</SdkPackageVersion>
-        <SystemTextJsonVersion>10.0.13</SystemTextJsonVersion>
+        <R9PackageVersion>10.11.0</R9PackageVersion>
+        <SdkPackageVersion>11.0.0</SdkPackageVersion>
       </PropertyGroup>
     </Otherwise>
   </Choose>
