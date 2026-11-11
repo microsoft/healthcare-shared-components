@@ -89,7 +89,7 @@ internal class DelegatingInterfaceImplementationGenerator : ICodeGenerator
                 BasePropertyDeclarationSyntax propertyDeclarationSyntax = (indexParameters.Length == 0
                         ? (BasePropertyDeclarationSyntax)PropertyDeclaration(propertyInfo.PropertyType.ToTypeSyntax(), propertyInfo.Name)
                         : IndexerDeclaration(propertyInfo.PropertyType.ToTypeSyntax())
-                            .AddParameterListParameters(indexParameters.Select(p => Parameter(Identifier(p.Name)).WithType(p.ToTypeSyntax())).ToArray()))
+                            .AddParameterListParameters(indexParameters.Select(p => Parameter(Identifier(p.Name)).WithType(p.ToTypeSyntax()).WithModifiers(p.GetRefKindModifiers())).ToArray()))
                     .WithExplicitInterfaceSpecifier(explicitInterfaceSpecifier)
                     .AddAttributeLists(ExcludeFromCodeCoverageAttributeSyntax)
                     .WithAdditionalAnnotations(new SyntaxAnnotation(DeclaringTypeKind, (getter?.GetBaseDefinition() ?? setter?.GetBaseDefinition())?.DeclaringType.FullName));
@@ -163,7 +163,7 @@ internal class DelegatingInterfaceImplementationGenerator : ICodeGenerator
                         SeparatedList(
                             methodInfo
                                 .GetParameters()
-                                .Select(p => Argument(default, GetRefKindKeyword(p), IdentifierName(p.Name))))));
+                                .Select(p => Argument(default, p.GetRefKindKeyword(), IdentifierName(p.Name))))));
 
                 var block = Block(methodInfo.ReturnType == typeof(void) ? ExpressionStatement(invocation) : ReturnStatement(invocation));
 
@@ -171,14 +171,6 @@ internal class DelegatingInterfaceImplementationGenerator : ICodeGenerator
 
                 yield return method;
             }
-        }
-
-        static SyntaxToken GetRefKindKeyword(ParameterInfo info)
-        {
-            if (info.ParameterType.IsByRef)
-                return info.IsOut ? Token(SyntaxKind.OutKeyword) : Token(SyntaxKind.RefKeyword);
-
-            return default;
         }
     }
 
@@ -190,18 +182,18 @@ internal class DelegatingInterfaceImplementationGenerator : ICodeGenerator
         if (p.IsDefined(typeof(ParamCollectionAttribute), false) && p.IsDefined(typeof(ScopedRefAttribute), false))
             return TokenList(Token(SyntaxKind.ParamsKeyword), Token(SyntaxKind.ScopedKeyword));
 
-        if (p.IsDefined(typeof(InAttribute), false))
-            return TokenList(Token(SyntaxKind.InKeyword));
-
-        if (p.IsDefined(typeof(OutAttribute), false))
-            return TokenList(Token(SyntaxKind.OutKeyword));
-
-        return TokenList();
+        return p.GetRefKindModifiers();
     }
 
     private static IEnumerable<CustomAttributeData> CustomAttributeList(ParameterInfo p)
     {
-        IEnumerable<CustomAttributeData> attributes = p.CustomAttributes.Where(x => x.AttributeType != typeof(OutAttribute) && x.AttributeType != typeof(InAttribute));
+        // The 'in' and 'out' modifiers imply [In] and [Out]; otherwise they are interop marshaling hints that must be preserved
+        IEnumerable<CustomAttributeData> attributes = p.GetRefKind() switch
+        {
+            RefKind.In => p.CustomAttributes.Where(x => x.AttributeType != typeof(InAttribute)),
+            RefKind.Out => p.CustomAttributes.Where(x => x.AttributeType != typeof(OutAttribute)),
+            _ => p.CustomAttributes,
+        };
 
         if (p.IsDefined(typeof(ParamCollectionAttribute), false) && p.IsDefined(typeof(ScopedRefAttribute), false))
             attributes = attributes.Where(a => a.AttributeType != typeof(ParamCollectionAttribute) && a.AttributeType != typeof(ScopedRefAttribute));

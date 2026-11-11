@@ -8,6 +8,7 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.CompilerServices;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
@@ -18,12 +19,41 @@ internal static class ParameterExtensions
 {
     public static TypeSyntax ToTypeSyntax(this ParameterInfo p, bool useGlobalAlias = false)
     {
-        TypeSyntax syntax = p.ParameterType.ToTypeSyntax(useGlobalAlias);
+        // The ref kind is expressed as a parameter modifier (see GetRefKindKeyword) rather than as part of the type
+        Type type = p.GetRefKind() is RefKind.None ? p.ParameterType : p.ParameterType.GetElementType();
+        return type.ToTypeSyntax(useGlobalAlias);
+    }
 
-        if (syntax is RefTypeSyntax rts && (p.IsOut || p.IsIn))
-            return rts.Type;
+    public static RefKind GetRefKind(this ParameterInfo p)
+    {
+        if (!p.ParameterType.IsByRef)
+            return RefKind.None;
 
-        return syntax;
+        if (p.IsOut && !p.IsIn)
+            return RefKind.Out;
+
+        // 'in' and 'ref readonly' parameters are distinguished from 'ref' by compiler-reserved attributes rather than by [In]
+        if (p.CustomAttributes.Any(x => x.AttributeType == typeof(RequiresLocationAttribute)))
+            throw new NotSupportedException($"Parameter '{p.Name}' of '{p.Member.DeclaringType}.{p.Member.Name}' is a 'ref readonly' parameter. Only 'ref', 'out', and 'in' by-ref parameters are supported.");
+
+        return p.CustomAttributes.Any(x => x.AttributeType == typeof(IsReadOnlyAttribute)) ? RefKind.In : RefKind.Ref;
+    }
+
+    public static SyntaxToken GetRefKindKeyword(this ParameterInfo p)
+    {
+        return p.GetRefKind() switch
+        {
+            RefKind.Ref => SyntaxFactory.Token(SyntaxKind.RefKeyword),
+            RefKind.Out => SyntaxFactory.Token(SyntaxKind.OutKeyword),
+            RefKind.In => SyntaxFactory.Token(SyntaxKind.InKeyword),
+            _ => default,
+        };
+    }
+
+    public static SyntaxTokenList GetRefKindModifiers(this ParameterInfo p)
+    {
+        SyntaxToken keyword = p.GetRefKindKeyword();
+        return keyword.IsKind(SyntaxKind.None) ? SyntaxFactory.TokenList() : SyntaxFactory.TokenList(keyword);
     }
 
     public static ParameterSyntax WithOptionalAttributeLists(this ParameterSyntax parameter, IEnumerable<CustomAttributeData> attributes)
@@ -35,7 +65,10 @@ internal static class ParameterExtensions
             .Where(x =>
             {
                 // Used internally to record whether a reference type may be nullable. Developers should use '?' instead
-                return x.AttributeType.FullName != "System.Runtime.CompilerServices.NullableAttribute" &&
+                return x.AttributeType != typeof(NullableAttribute) &&
+
+                    // Used internally for "in" parameters. Developers should use the 'in' modifier instead
+                    x.AttributeType != typeof(IsReadOnlyAttribute) &&
 
                     // Used internally for "params" parameters
                     x.AttributeType != typeof(ParamArrayAttribute) &&
