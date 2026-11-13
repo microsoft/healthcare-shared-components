@@ -42,6 +42,8 @@ internal class SqlServerSchemaDataStore : ISchemaDataStore
         _logger = logger;
     }
 
+    public string DatabaseName => _sqlConnectionWrapperFactory.DefaultDatabase;
+
     public async Task<CompatibleVersions> GetLatestCompatibleVersionsAsync(CancellationToken cancellationToken)
     {
         CompatibleVersions compatibleVersions;

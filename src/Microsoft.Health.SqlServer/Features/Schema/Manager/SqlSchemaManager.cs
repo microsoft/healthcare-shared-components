@@ -287,7 +287,7 @@ public class SqlSchemaManager : ISchemaManager
 
         // It is to publish the SchemaUpgraded event to notify the service that schema initialization or upgrade is completed to this version
         // for e.g. fhir service listents to this event and initialize its dictionaries after schema is initialized.
-        await _mediator.NotifySchemaUpgradedAsync(version, applyFullSchemaSnapshot, cancellationToken).ConfigureAwait(false);
+        await _mediator.NotifySchemaUpgradedAsync(_schemaManagerDataStore.DatabaseName, version, applyFullSchemaSnapshot, cancellationToken).ConfigureAwait(false);
         _logger.LogInformation("Schema upgrade notification sent for version: {Version}, applyFullSchemaSnapshot: {ApplyFullSchemaSnapshot}", version, applyFullSchemaSnapshot);
     }
 

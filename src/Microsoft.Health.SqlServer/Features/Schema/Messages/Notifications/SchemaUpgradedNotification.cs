@@ -10,13 +10,17 @@ namespace Microsoft.Health.SqlServer.Features.Schema.Messages.Notifications;
 
 public class SchemaUpgradedNotification : INotification
 {
-    public SchemaUpgradedNotification(int version, bool isFullSchemaSnapshot)
+    public SchemaUpgradedNotification(string databaseName, int version, bool isFullSchemaSnapshot)
     {
+        EnsureArg.IsNotNullOrEmpty(databaseName);
         EnsureArg.IsGte(version, 1);
 
+        DatabaseName = databaseName;
         Version = version;
         IsFullSchemaSnapshot = isFullSchemaSnapshot;
     }
+
+    public string DatabaseName { get; }
 
     public int Version { get; }
 

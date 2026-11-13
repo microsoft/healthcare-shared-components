@@ -146,6 +146,12 @@ public static class SqlServerBaseRegistrationExtensions
                     : new SchemaManagerDataStore(p.GetRequiredService<SqlConnectionWrapperFactory>(), p.GetRequiredService<IOptions<SqlServerDataStoreConfiguration>>(), p.GetRequiredService<ILogger<SchemaManagerDataStore>>());
             });
 
+        services
+            .AddOptions<SqlSchemaVersionOptions>()
+            .ValidateDataAnnotations();
+
+        services.TryAddEnumerable(ServiceDescriptor.Singleton<IPostConfigureOptions<SqlSchemaVersionOptions>, ConfigureSchemaInformation>());
+
         return services;
     }
 
