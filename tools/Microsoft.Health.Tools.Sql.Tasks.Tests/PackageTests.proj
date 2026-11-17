@@ -1,0 +1,14 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <AutomaticallyUseReferenceAssemblyPackages>false</AutomaticallyUseReferenceAssemblyPackages>
+    <EnableTargetingPackDownload>false</EnableTargetingPackDownload>
+    <GeneratedFullScriptPath>$(MSBuildProjectDirectory)/generated.sql</GeneratedFullScriptPath>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Health.Tools.Sql.Tasks" Version="$(SqlTasksPackageVersion)" GeneratePathProperty="true" />
+    <TInitSqlScript Include="$(SqlTestDirectory)/Sql/transaction-cond.sql" />
+    <TSqlScript Include="$(SqlTestDirectory)/Sql/table1.sql" />
+    <SqlScript Include="$(SqlTestDirectory)/Sql/sprc.sql" />
+  </ItemGroup>
+  <Import Project="$(PkgMicrosoft_Health_Tools_Sql_Tasks)/build/Sql.targets" Condition="Exists('$(PkgMicrosoft_Health_Tools_Sql_Tasks)/build/Sql.targets')" />
+</Project>

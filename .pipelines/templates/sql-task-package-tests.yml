@@ -1,0 +1,17 @@
+steps:
+- pwsh: |
+    $installed = & dotnet --list-sdks
+    if ($LASTEXITCODE -ne 0) {
+        throw 'Could not list installed .NET SDKs.'
+    }
+
+    $sdk10 = @($installed | Where-Object { $_ -match '^10\.\d+\.\d+ ' } |
+        ForEach-Object { ($_ -split ' ')[0] } |
+        Sort-Object { [version]$_ } -Descending | Select-Object -First 1)
+    if ($sdk10.Count -ne 1) {
+        throw 'The .NET 10 SDK is not installed.'
+    }
+    $currentSdk = (Get-Content global.json -Raw | ConvertFrom-Json).sdk.version
+    & ./tools/Microsoft.Health.Tools.Sql.Tasks.Tests/Test-Package.ps1 -SdkVersion @($sdk10[0], $currentSdk)
+  displayName: Test SQL task package
+  workingDirectory: $(Build.SourcesDirectory)

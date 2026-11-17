@@ -76,6 +76,8 @@ stages:
         BUILD_CONFIGURATION: $(buildConfiguration)
         PACKAGE_VERSION: $(version.nuGetVersion)
 
+    - template: /.pipelines/templates/sql-task-package-tests.yml@self
+
     - publish: $(Build.ArtifactStagingDirectory)/packages
       displayName: Publish Packages Artifact
       artifact: packages

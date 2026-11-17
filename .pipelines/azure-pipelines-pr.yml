@@ -69,3 +69,5 @@ extends:
             assemblyVersion: $(version.assemblySemVer)
             fileVersion: $(version.assemblySemFileVer)
             informationalVersion: $(version.informationalVersion)
+
+        - template: /.pipelines/templates/sql-task-package-tests.yml@self
