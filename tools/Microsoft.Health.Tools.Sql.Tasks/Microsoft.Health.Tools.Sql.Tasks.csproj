@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>$(LatestVersion);net472</TargetFrameworks>
+    <TargetFrameworks>net10.0;net472</TargetFrameworks>
     <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
   </PropertyGroup>
 
@@ -14,6 +14,12 @@
     <PackageReference Include="System.Security.Cryptography.Pkcs" />
   </ItemGroup>
 
+  <ItemGroup Condition="'$(TargetFramework)' == 'net10.0'">
+    <!-- Compile against MSBuild assemblies compatible with .NET 10 hosts. -->
+    <PackageReference Update="Microsoft.Build.Framework" VersionOverride="18.9.6" />
+    <PackageReference Update="Microsoft.Build.Utilities.Core" VersionOverride="18.9.6" />
+  </ItemGroup>
+
   <PropertyGroup>
     <NoPackageAnalysis>true</NoPackageAnalysis>
     <NuspecFile>Sql.nuspec</NuspecFile>
@@ -24,7 +30,7 @@
 
   <Target Name="PublishAll" BeforeTargets="GenerateNuspec">
     <MSBuild Projects="$(MSBuildProjectFullPath)" Targets="Publish" Properties="TargetFramework=net472" />
-    <MSBuild Projects="$(MSBuildProjectFullPath)" Targets="Publish" Properties="TargetFramework=$(LatestVersion)" />
+    <MSBuild Projects="$(MSBuildProjectFullPath)" Targets="Publish" Properties="TargetFramework=net10.0" />
   </Target>
 
 </Project>
